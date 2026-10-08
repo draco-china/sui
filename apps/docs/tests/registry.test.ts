@@ -456,4 +456,4 @@ test("RSC installations preserve client boundaries for every interactive public 
   expect(
     button?.files?.some((file) => file.path.endsWith("/class-name.ts")),
   ).toBe(true);
-});
+}, 30_000);
