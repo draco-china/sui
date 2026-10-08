@@ -14,7 +14,11 @@ import { Suspense, use } from "react";
 import { MarkdownCopyButton } from "../components/markdown-copy-button";
 import { getMDXComponents } from "../components/mdx";
 import { getLocale, isLocale, type Locale } from "../lib/i18n";
-import { DocumentationActions, layoutOptions } from "../lib/layout";
+import {
+  DocumentationActions,
+  DocumentationMobileHeader,
+  layoutOptions,
+} from "../lib/layout";
 import { docs, source } from "../lib/source";
 
 const loadDocument = createServerFn({ method: "GET" })
@@ -118,6 +122,7 @@ function Documentation() {
       slots={{
         ...layoutOptions(getLocale(lang)).slots,
         actions: DocumentationActions,
+        header: DocumentationMobileHeader,
       }}
       tabs={false}
     >

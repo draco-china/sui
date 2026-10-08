@@ -6,6 +6,7 @@ import { useClipboard } from "@workspace/ui/hooks/use-clipboard";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type Locale, localePath } from "../lib/i18n";
 import { LayoutLocaleSwitch } from "../lib/layout";
+import { GitHubLink } from "./github-link";
 import { HomeGlassPreview } from "./home-glass-preview";
 import { Logo } from "./logo";
 import { ThemeModeMenu } from "./theme-mode-menu";
@@ -57,6 +58,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           </Link>
         </nav>
         <div className="home-header-actions">
+          <GitHubLink />
           <ThemeModeMenu locale={locale} />
           <ThemePanel locale={locale} />
           <LayoutLocaleSwitch />

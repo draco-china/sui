@@ -1,10 +1,15 @@
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
+import { buttonVariants } from "@workspace/ui/components/button";
 import { LocaleToggle } from "@workspace/ui/components/locale-toggle";
 import { cn } from "cn";
+import { SidebarTrigger } from "fumadocs-ui/components/sidebar/base";
 import { useI18n } from "fumadocs-ui/contexts/i18n";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import type { LanguageSelectProps } from "fumadocs-ui/layouts/shared/slots/language-select";
+import { useSpaciousLayout } from "fumadocs-ui/layouts/spacious";
+import { PanelLeft } from "lucide-react";
 import type { ComponentProps } from "react";
+import { GitHubLink } from "../components/github-link";
 import { Logo } from "../components/logo";
 import { ThemeModeMenu } from "../components/theme-mode-menu";
 import { ThemePanel } from "../components/theme-panel";
@@ -15,6 +20,7 @@ function LayoutThemeSwitch() {
   const locale = getLocale(lang);
   return (
     <div className="flex items-center gap-1">
+      <GitHubLink />
       <ThemeModeMenu locale={locale} />
       <ThemePanel locale={locale} />
     </div>
@@ -94,9 +100,38 @@ export function DocumentationActions({
   const { lang } = useParams({ strict: false });
   return (
     <div {...props} className={`flex items-center gap-1 ${className ?? ""}`}>
+      <GitHubLink />
       <ThemeModeMenu locale={getLocale(lang)} />
       <ThemePanel locale={getLocale(lang)} />
       <LayoutLocaleSwitch />
     </div>
+  );
+}
+
+export function DocumentationMobileHeader({
+  className,
+  ...props
+}: ComponentProps<"header">) {
+  const { slots } = useSpaciousLayout();
+  return (
+    <header
+      {...props}
+      id="nd-subnav"
+      className={cn(
+        "sticky top-(--fd-banner-height,0px) z-30 flex h-(--fd-header-height) items-center bg-fd-card ps-4 pe-2.5 [grid-area:header] md:hidden",
+        className,
+      )}
+    >
+      <slots.navTitle className="me-auto inline-flex items-center gap-2.5 font-semibold" />
+      <GitHubLink />
+      {slots.searchTrigger && (
+        <slots.searchTrigger.sm hideIfDisabled className="p-2" />
+      )}
+      <SidebarTrigger
+        className={buttonVariants({ variant: "ghost", size: "icon" })}
+      >
+        <PanelLeft />
+      </SidebarTrigger>
+    </header>
   );
 }
