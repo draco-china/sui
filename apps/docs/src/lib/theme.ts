@@ -24,6 +24,12 @@ export {
 
 export const THEME_STORAGE_KEY = "sui-docs-accent-v1";
 
+export function defaultThemePalette(dark: boolean) {
+  return dark
+    ? ["#002952", "#005BB5", "#0A84FF", "#71B6FF", "#C5E2FF"]
+    : ["#003366", "#004C99", "#0066CC", "#66A3E0", "#CCE0F5"];
+}
+
 export function readAccent(): string | null {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);

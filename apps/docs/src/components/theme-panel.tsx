@@ -16,6 +16,7 @@ import type { Locale } from "../lib/i18n";
 import {
   applyAccent,
   contrastRatio,
+  defaultThemePalette,
   readAccent,
   saveAccent,
   THEME_STORAGE_KEY,
@@ -28,10 +29,7 @@ export function ThemePanel({ locale }: { locale: Locale }) {
   const [accent, setAccent] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const defaultAccent = resolvedTheme === "dark" ? "#0A84FF" : "#0066CC";
-  const defaultPalette =
-    resolvedTheme === "dark"
-      ? ["#002952", "#005BB5", "#0A84FF", "#71B6FF", "#C5E2FF"]
-      : ["#003366", "#004C99", "#0066CC", "#66A3E0", "#CCE0F5"];
+  const defaultPalette = defaultThemePalette(resolvedTheme === "dark");
 
   useEffect(() => {
     const stored = readAccent();
