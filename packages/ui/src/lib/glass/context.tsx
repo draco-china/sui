@@ -7,10 +7,12 @@ import {
   useContext,
   useLayoutEffect,
 } from "react";
+import { type GlassIntensity, glassIntensityDefaults } from "./intensity";
 import { acquireGlass, updateGlassConfiguration } from "./runtime";
 
+export type { GlassIntensity } from "./intensity";
+
 export type GlassMode = "css" | "auto";
-export type GlassMaterial = "clear" | "frosted";
 
 export type GlassOptions = {
   strength?: number;
@@ -29,14 +31,14 @@ export type GlassCaptureTarget =
 export type GlassConfiguration = {
   id: string;
   mode?: GlassMode;
-  material?: GlassMaterial;
+  intensity?: GlassIntensity;
   options?: GlassOptions;
   captureTarget?: GlassCaptureTarget;
 };
 
 type GlassContextValue = {
   configuration?: GlassConfiguration;
-  material?: GlassMaterial;
+  intensity?: GlassIntensity;
   enabled: boolean;
   surface: boolean;
 };
@@ -46,20 +48,23 @@ export const GlassContext = createContext<GlassContextValue>({
   surface: false,
 });
 
-export type GlassProps = { glass?: boolean; glassMaterial?: GlassMaterial };
+export type GlassProps = { glass?: boolean; glassIntensity?: GlassIntensity };
 
 export function withGlass<P extends object>(
   Component: ComponentType<P>,
   kind: "surface" | "control" | "scope" | "portal" = "surface",
 ) {
-  function GlassComponent({ glass, glassMaterial, ...props }: P & GlassProps) {
+  function GlassComponent({ glass, glassIntensity, ...props }: P & GlassProps) {
     const context = useContext(GlassContext);
     const enabled =
       glass ?? (context.enabled && (kind !== "surface" || !context.surface));
     const configuration = context.configuration;
     const id = configuration?.id ?? "default";
-    const material =
-      glassMaterial ?? context.material ?? configuration?.material ?? "frosted";
+    const intensity =
+      glassIntensity ??
+      context.intensity ??
+      configuration?.intensity ??
+      "default";
     useLayoutEffect(() => {
       if (!enabled) return;
       return acquireGlass({ id });
@@ -76,7 +81,11 @@ export function withGlass<P extends object>(
         style?: CSSProperties | ((state: unknown) => CSSProperties | undefined);
       }
     ).style;
-    const materialStyle = {} as CSSProperties & Record<string, unknown>;
+    const defaults = glassIntensityDefaults(intensity);
+    const materialStyle = {
+      "--glass-initial-blur": `${defaults.blur}px`,
+      "--glass-initial-opacity": `${defaults.tintOpacity * 100}%`,
+    } as CSSProperties & Record<string, unknown>;
     if (options?.tint) materialStyle["--glass-base"] = options.tint;
     if (Number.isFinite(options?.blur))
       materialStyle["--glass-blur"] =
@@ -84,7 +93,10 @@ export function withGlass<P extends object>(
     if (Number.isFinite(options?.tintOpacity))
       materialStyle["--glass-opacity"] =
         `${Math.min(1, Math.max(0, options?.tintOpacity ?? 0)) * 100}%`;
-    if (options?.highlight === 0) materialStyle["--glass-edge"] = "none";
+    if (options?.highlight === 0) {
+      materialStyle["--glass-edge"] = "none";
+      materialStyle["--glass-initial-edge-shadow"] = "0 0 #0000";
+    }
     const initialStyle =
       typeof originalStyle === "function"
         ? (state: unknown) => ({ ...originalStyle(state), ...materialStyle })
@@ -93,7 +105,7 @@ export function withGlass<P extends object>(
       <GlassContext.Provider
         value={{
           configuration,
-          material,
+          intensity,
           enabled,
           surface: childSurface,
         }}
@@ -105,7 +117,7 @@ export function withGlass<P extends object>(
                 style: initialStyle,
                 "data-glass": "true",
                 "data-glass-scope": configuration?.id ?? "default",
-                "data-glass-material": material,
+                "data-glass-intensity": intensity,
                 "data-glass-state": "loading",
               }
             : {})}

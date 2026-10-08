@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { Button } from "@workspace/ui/components/button";
 import { GlassProvider, GlassSurface } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
@@ -31,6 +32,7 @@ import {
   GlassContext,
   withGlass,
 } from "../../../packages/ui/src/lib/glass/context";
+import { glassIntensityDefaults } from "../../../packages/ui/src/lib/glass/intensity";
 
 function Element(props: ComponentProps<"div">) {
   return <div {...props} />;
@@ -47,46 +49,110 @@ function tag(html: string, id: string) {
 }
 
 describe("glass preserves component semantics", () => {
-  test("default provider and per-surface materials render stable semantic markup", () => {
+  test("three intensities render their shared CSS defaults before hydration", () => {
     const html = renderToString(
       <GlassProvider>
-        <GlassSurface id="inherited-material">Default frosted</GlassSurface>
-        <GlassSurface id="clear-material" material="clear">
-          Clear
+        <GlassSurface id="inherited-intensity">Default</GlassSurface>
+        <GlassSurface id="sm-intensity" intensity="sm">
+          Small
+        </GlassSurface>
+        <GlassSurface id="lg-intensity" intensity="lg">
+          Large
         </GlassSurface>
         <GlassSurface id="ordinary" glass={false}>
           Ordinary
         </GlassSurface>
       </GlassProvider>,
     );
-    expect(tag(html, "inherited-material")).toContain('data-glass="true"');
-    expect(tag(html, "clear-material")).toContain('data-glass="true"');
-    expect(tag(html, "clear-material")).toContain(
-      'data-glass-material="clear"',
-    );
-    expect(tag(html, "inherited-material")).toContain(
-      'data-glass-material="frosted"',
-    );
-    expect(tag(html, "clear-material")).not.toContain(" material=");
+    for (const [id, intensity, blur, opacity] of [
+      ["inherited-intensity", "default", 6, 60],
+      ["sm-intensity", "sm", 4, 40],
+      ["lg-intensity", "lg", 8, 78],
+    ] as const) {
+      const element = tag(html, id);
+      expect(element).toContain('data-glass="true"');
+      expect(element).toContain(`data-glass-intensity="${intensity}"`);
+      expect(element).toContain(`--glass-initial-blur:${blur}px`);
+      expect(element).toContain(`--glass-initial-opacity:${opacity}%`);
+      expect(element).not.toContain(" intensity=");
+      expect(element).not.toContain(" material=");
+      expect(element).not.toContain("data-glass-material");
+    }
     expect(tag(html, "ordinary")).not.toContain('data-glass="true"');
     expect(html).toContain('data-glass-state="loading"');
     expect(html).not.toContain('data-glass-state="ready"');
     expect(html).not.toContain("<canvas");
   });
+  test("provider intensity inherits through controls and a surface can override it", () => {
+    const html = renderToString(
+      <GlassProvider intensity="lg">
+        <GlassSurface id="large-surface">
+          <Input id="large-input" />
+          <Input id="small-input" glassIntensity="sm" />
+        </GlassSurface>
+        <GlassSurface intensity="sm" id="small-surface" />
+      </GlassProvider>,
+    );
+    for (const id of ["large-surface", "large-input"])
+      expect(tag(html, id)).toContain('data-glass-intensity="lg"');
+    for (const id of ["small-surface", "small-input"])
+      expect(tag(html, id)).toContain('data-glass-intensity="sm"');
+  });
+  test("invalid runtime intensity values use default constants", () => {
+    expect(glassIntensityDefaults()).toEqual({ blur: 6, tintOpacity: 0.6 });
+    expect(glassIntensityDefaults("unknown")).toEqual({
+      blur: 6,
+      tintOpacity: 0.6,
+    });
+    expect(glassIntensityDefaults("sm")).toEqual({ blur: 4, tintOpacity: 0.4 });
+    expect(glassIntensityDefaults("lg")).toEqual({
+      blur: 8,
+      tintOpacity: 0.78,
+    });
+  });
   test("server material respects zero blur, zero tint opacity, and disabled highlights", () => {
     const html = renderToString(
       <GlassProvider
+        intensity="lg"
         options={{ blur: 0, tint: "#161617", tintOpacity: 0, highlight: 0 }}
       >
         <GlassSurface id="initial-options" style={{ minHeight: 48 }} />
       </GlassProvider>,
     );
     const element = tag(html, "initial-options");
+    expect(element).toContain("--glass-initial-blur:8px");
+    expect(element).toContain("--glass-initial-opacity:78%");
     expect(element).toContain("--glass-blur:0px");
     expect(element).toContain("--glass-opacity:0%");
     expect(element).toContain("--glass-base:#161617");
     expect(element).toContain("--glass-edge:none");
+    expect(element).toContain("--glass-initial-edge-shadow:0 0 #0000");
     expect(element).toContain("min-height:48px");
+  });
+  test("initial native-element lighting follows CSS radius and preserves focus shadows", () => {
+    const css = readFileSync(
+      new URL(
+        "../../../packages/ui/src/styles/components/glass.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    expect(css).not.toContain("data:image/svg+xml");
+    expect(css).toContain("--glass-initial-edge-shadow");
+    expect(css).toContain("inset 0.8px 0.8px");
+    for (const shadow of [
+      "inset-shadow",
+      "inset-ring-shadow",
+      "ring-offset-shadow",
+      "ring-shadow",
+      "shadow",
+    ])
+      expect(css).toContain(`var(--tw-${shadow},`);
+    const html = renderToString(<Input glass id="initial-input" />);
+    expect(html).toMatch(/^<input\b/);
+    expect(tag(html, "initial-input")).toContain("rounded-3xl");
+    expect(tag(html, "initial-input")).toContain('data-glass-state="loading"');
+    expect(html).not.toContain("<svg");
   });
   test("scope enables one surface layer, explicit false overrides and explicit true nests deliberately", () => {
     const html = renderToString(

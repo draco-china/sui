@@ -1,4 +1,5 @@
 export type GlassTextColor = [number, number, number, number];
+export type GlassTextBounds = [number, number, number, number];
 export const maxGlassTextColors = 32;
 
 export class GlassContrastError extends Error {
@@ -81,6 +82,7 @@ export class GlassTextContrastCache {
     {
       revision: number;
       colors: GlassTextColor[];
+      regions: Element[][];
       controls: {
         element: HTMLInputElement | HTMLTextAreaElement;
         filled: boolean;
@@ -105,15 +107,21 @@ export class GlassTextContrastCache {
     )
       return cached.colors;
     const colors = new Map<string, GlassTextColor>();
+    const regions = new Map<string, Element[]>();
     const controls: {
       element: HTMLInputElement | HTMLTextAreaElement;
       filled: boolean;
       placeholder: string;
     }[] = [];
-    const add = (color: string, opacity = 1) => {
+    const add = (element: Element, color: string, opacity = 1) => {
       const parsed = parseGlassColor(color);
       parsed[3] *= opacity;
-      if (parsed[3] > 0) colors.set(parsed.join(","), parsed);
+      if (parsed[3] <= 0) return;
+      const key = parsed.join(",");
+      colors.set(key, parsed);
+      const elements = regions.get(key) ?? [];
+      elements.push(element);
+      regions.set(key, elements);
     };
     const visit = (element: Element, opacity: number) => {
       if (element !== surface && element.getAttribute("data-glass") === "true")
@@ -147,11 +155,12 @@ export class GlassTextContrastCache {
           filled: Boolean(input.value),
           placeholder: input.placeholder,
         });
-        if (input.value) add(style.color, effectiveOpacity);
+        if (input.value) add(element, style.color, effectiveOpacity);
         else if (input.placeholder) {
           const placeholder = getComputedStyle(element, "::placeholder");
           const placeholderOpacity = Number.parseFloat(placeholder.opacity);
           add(
+            element,
             placeholder.color || style.color,
             effectiveOpacity *
               (Number.isFinite(placeholderOpacity) ? placeholderOpacity : 1),
@@ -164,17 +173,35 @@ export class GlassTextContrastCache {
           (node) => node.nodeType === 3 && Boolean(node.textContent?.trim()),
         )
       )
-        add(style.color, effectiveOpacity);
+        add(element, style.color, effectiveOpacity);
       for (const child of element.children) visit(child, effectiveOpacity);
     };
     visit(surface, 1);
-    if (!colors.size) add(getComputedStyle(surface).color);
+    if (!colors.size) add(surface, getComputedStyle(surface).color);
     const result = [...colors.values()];
     this.entries.set(surface, {
       revision: this.revision,
       colors: result,
+      regions: [...colors.keys()].map((key) => regions.get(key) ?? [surface]),
       controls,
     });
     return result;
+  }
+
+  readBounds(surface: HTMLElement): GlassTextBounds[] {
+    this.read(surface);
+    const rect = surface.getBoundingClientRect();
+    return (this.entries.get(surface)?.regions ?? []).map((elements) => {
+      const rectangles = elements
+        .map((element) => element.getBoundingClientRect())
+        .filter((region) => region.width > 0 && region.height > 0);
+      if (!rectangles.length) return [0, 0, rect.width, rect.height];
+      return [
+        Math.min(...rectangles.map((region) => region.left)) - rect.left,
+        Math.min(...rectangles.map((region) => region.top)) - rect.top,
+        Math.max(...rectangles.map((region) => region.right)) - rect.left,
+        Math.max(...rectangles.map((region) => region.bottom)) - rect.top,
+      ];
+    });
   }
 }

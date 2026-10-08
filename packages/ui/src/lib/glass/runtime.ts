@@ -9,7 +9,8 @@ import {
   GlassTextContrastCache,
   parseGlassColor as parseColor,
 } from "./contrast";
-import { glassEdge, glassRadii } from "./edge";
+import { glassEdge, glassRadii, glassShadow } from "./edge";
+import { glassIntensityDefaults } from "./intensity";
 import type { GlassRenderer } from "./renderer";
 
 const managers = new Map<string, GlassManager>();
@@ -199,10 +200,6 @@ function layerOrder(a: Element, b: Element): number | undefined {
 
 function higherLayers(surface: HTMLElement) {
   const blocked = new Set<Element>([surface]);
-  if (surface.dataset.slot === "tab-bar-indicator") {
-    const track = surface.closest('[data-slot="tab-bar-list"]');
-    if (track) blocked.add(track);
-  }
   if (surface.dataset.slot === "tabs-indicator") {
     for (const tab of surface.parentElement?.querySelectorAll('[role="tab"]') ??
       [])
@@ -286,13 +283,20 @@ function higherLayers(surface: HTMLElement) {
 function styleWithoutFrame(style: string | null) {
   return (style ?? "")
     .replace(
-      /--glass-(?:frame|edge|base|blur|opacity|tint-opacity):[^;]+;?/g,
+      /--glass-(?:frame|edge|initial-edge-shadow|base|blur|opacity|tint-opacity):[^;]+;?/g,
       "",
     )
     .trim();
 }
 
 function geometryMutation(record: MutationRecord) {
+  if (
+    record.type === "attributes" &&
+    record.attributeName === "data-glass-motion" &&
+    record.target instanceof HTMLElement &&
+    record.target.dataset.glass === "true"
+  )
+    return true;
   if (
     record.type !== "attributes" ||
     record.attributeName !== "style" ||
@@ -321,6 +325,25 @@ function geometryMutation(record: MutationRecord) {
 }
 
 function relevantMutation(record: MutationRecord) {
+  if (
+    record.target instanceof Element &&
+    record.target.closest("[data-glass-decoration]")
+  )
+    return false;
+  if (
+    record.target instanceof Element &&
+    record.target.getAttribute("data-glass") !== "true" &&
+    record.target.closest('[data-glass="true"][data-glass-frozen="true"]')
+  )
+    return false;
+  if (
+    record.type === "childList" &&
+    [...record.addedNodes, ...record.removedNodes].every(
+      (node) =>
+        node instanceof Element && node.hasAttribute("data-glass-decoration"),
+    )
+  )
+    return false;
   if (record.type === "attributes") {
     if (
       record.attributeName === "data-glass-state" ||
@@ -342,6 +365,27 @@ function relevantMutation(record: MutationRecord) {
   return true;
 }
 
+function nativeBackground(element: HTMLElement) {
+  const probe = element.cloneNode(false) as HTMLElement;
+  probe.removeAttribute("data-glass-state");
+  probe.removeAttribute("id");
+  probe.setAttribute("data-glass-decoration", "");
+  probe.setAttribute("aria-hidden", "true");
+  probe.style.position = "fixed";
+  probe.style.visibility = "hidden";
+  probe.style.pointerEvents = "none";
+  try {
+    element.parentElement?.append(probe);
+    const style = getComputedStyle(probe);
+    const background = style.backgroundColor;
+    return parseColor(background)[3] > 0
+      ? background
+      : style.getPropertyValue("--popover").trim() || "#fff";
+  } finally {
+    probe.remove();
+  }
+}
+
 type SurfaceState = {
   url?: string;
   base: string;
@@ -350,6 +394,8 @@ type SurfaceState = {
   materialKey?: string;
   frameMaterial?: string;
   frameKey?: string;
+  edgeKey?: string;
+  edgeDirty?: boolean;
 };
 
 class GlassManager {
@@ -362,6 +408,7 @@ class GlassManager {
   private queued = false;
   private disposed = false;
   private dirty = false;
+  private materialsDirty = true;
   private scrollingDirty = false;
   private lastCapture = 0;
   private motionFrame = 0;
@@ -374,20 +421,89 @@ class GlassManager {
   private removeListeners: () => void;
 
   constructor(private configuration: GlassConfiguration) {
+    this.configuration = {
+      ...configuration,
+      mode: configuration.mode ?? "auto",
+    };
     this.options = configuration.options ?? {};
-    this.resizeObserver = new ResizeObserver(() => {
-      this.textContrast.invalidate();
-      if (!this.moving.size) invalidateScene();
-      this.schedule();
+    this.resizeObserver = new ResizeObserver((entries) => {
+      let layoutChanged = false;
+      for (const { target } of entries) {
+        if (!(target instanceof HTMLElement)) continue;
+        const state = this.surfaces.get(target);
+        if (state) state.edgeDirty = true;
+        const position = getComputedStyle(target).position;
+        if (position !== "absolute" && position !== "fixed")
+          layoutChanged = true;
+      }
+      if (layoutChanged) {
+        this.materialsDirty = true;
+        this.textContrast.invalidate();
+        invalidateScene();
+      }
+      this.schedule(false, !layoutChanged);
     });
     this.intersectionObserver = new IntersectionObserver(() => this.schedule());
     this.observer = new MutationObserver((records) => {
-      const relevant = records.filter(relevantMutation);
+      const target = this.getTarget();
+      const wholeDocument = [...this.surfaces.keys()].some(
+        (surface) => !target.contains(surface),
+      );
+      const relevant = records.filter((record) => {
+        if (!relevantMutation(record)) return false;
+        if (wholeDocument || target === document.body) return true;
+        const ownsScope = (node: Node) =>
+          node instanceof Element &&
+          (node.getAttribute("data-glass-scope") === this.configuration.id ||
+            [...node.querySelectorAll("[data-glass-scope]")].some(
+              (surface) =>
+                surface.getAttribute("data-glass-scope") ===
+                this.configuration.id,
+            ));
+        if (
+          (record.type === "childList" &&
+            [...record.addedNodes, ...record.removedNodes].some(ownsScope)) ||
+          (record.type === "attributes" &&
+            (ownsScope(record.target) ||
+              (record.attributeName === "data-glass-scope" &&
+                record.oldValue === this.configuration.id)))
+        )
+          return true;
+        if (target.contains(record.target)) return true;
+        if (!record.target.contains(target)) return false;
+        if (record.type !== "childList") return true;
+        return [...record.addedNodes, ...record.removedNodes].some((node) =>
+          node.contains(target),
+        );
+      });
       if (relevant.length) {
-        if (!relevant.every(geometryMutation)) this.textContrast.invalidate();
-        if (!relevant.every(geometryMutation)) invalidateScene();
-        this.scan();
-        this.schedule();
+        const geometryOnly = relevant.every(geometryMutation);
+        if (!geometryOnly) {
+          this.materialsDirty = true;
+          this.textContrast.invalidate();
+          invalidateScene();
+          this.scan();
+        } else
+          for (const record of relevant) {
+            if (record.target instanceof HTMLElement) {
+              const state = this.surfaces.get(record.target);
+              if (state) state.edgeDirty = true;
+            }
+          }
+        for (const record of relevant) {
+          if (
+            record.type !== "attributes" ||
+            record.attributeName !== "data-glass-motion" ||
+            !(record.target instanceof HTMLElement) ||
+            !this.surfaces.has(record.target)
+          )
+            continue;
+          if (record.target.dataset.glassMotion === "true") {
+            this.moving.set(record.target, performance.now() + 3000);
+            this.drawMotion();
+          } else this.moving.delete(record.target);
+        }
+        this.schedule(false, geometryOnly);
       }
     });
     this.scan();
@@ -401,7 +517,10 @@ class GlassManager {
         "inert",
         "data-glass",
         "data-glass-scope",
-        "data-glass-material",
+        "data-glass-intensity",
+        "data-glass-frozen",
+        "data-glass-motion",
+        "data-glass-contrast",
         "data-color",
         "data-state",
         "data-open",
@@ -437,6 +556,7 @@ class GlassManager {
       this.schedule(true);
     };
     const update = () => {
+      this.materialsDirty = true;
       this.textContrast.invalidate();
       invalidateScene();
       this.schedule();
@@ -530,15 +650,17 @@ class GlassManager {
   }
 
   update(configuration: GlassConfiguration) {
+    configuration = { ...configuration, mode: configuration.mode ?? "auto" };
     const previous = this.configuration;
     const same =
       previous.mode === configuration.mode &&
-      previous.material === configuration.material &&
+      previous.intensity === configuration.intensity &&
       previous.captureTarget === configuration.captureTarget &&
       (["strength", "blur", "tint", "tintOpacity", "highlight"] as const).every(
         (key) => previous.options?.[key] === configuration.options?.[key],
       );
     if (!same) {
+      this.materialsDirty = true;
       this.configurationVersion++;
       this.textContrast.invalidate();
     }
@@ -583,6 +705,7 @@ class GlassManager {
   }
 
   refresh() {
+    this.materialsDirty = true;
     this.textContrast.invalidate();
     this.schedule();
   }
@@ -602,10 +725,7 @@ class GlassManager {
     }
     for (const element of elements) {
       const existing = this.surfaces.get(element);
-      if (existing) {
-        this.updateMaterial(element, existing);
-        continue;
-      }
+      if (existing) continue;
       const state: SurfaceState = { base: "", tint: [0, 0, 0], opacity: 0 };
       this.surfaces.set(element, state);
       this.updateMaterial(element, state);
@@ -617,25 +737,17 @@ class GlassManager {
 
   private updateMaterial(element: HTMLElement, state: SurfaceState) {
     const oldState = element.dataset.glassState;
-    delete element.dataset.glassState;
-    const original = getComputedStyle(element);
-    const background = original.backgroundColor;
-    const base =
-      parseColor(background)[3] > 0
-        ? background
-        : original.getPropertyValue("--popover").trim() || "#fff";
-    if (oldState) element.dataset.glassState = oldState;
-    state.base = this.options.tint ?? base;
+    state.base = this.options.tint ?? nativeBackground(element);
     const tint = parseColor(state.base);
     state.tint = [tint[0], tint[1], tint[2]];
     state.opacity = clamp(
       this.options.tintOpacity,
-      element.dataset.glassMaterial === "clear" ? 0.6 : 0.78,
+      glassIntensityDefaults(element.dataset.glassIntensity).tintOpacity,
       0,
       1,
     );
     element.style.setProperty("--glass-base", state.base);
-    this.updateEdge(element);
+    this.updateEdge(element, state);
     const frameMaterial = JSON.stringify([
       state.base,
       state.opacity,
@@ -669,26 +781,40 @@ class GlassManager {
     if (changed) backgroundChanged(element);
   }
 
-  private updateEdge(element: HTMLElement) {
-    const clear = element.dataset.glassMaterial === "clear";
+  private updateEdge(element: HTMLElement, state: SurfaceState) {
+    state.edgeDirty = false;
+    const defaults = glassIntensityDefaults(element.dataset.glassIntensity);
     element.style.setProperty(
       "--glass-blur",
-      `${clamp(this.options.blur, clear ? 6 : 8, 0, 24)}px`,
+      `${clamp(this.options.blur, defaults.blur, 0, 24)}px`,
     );
     element.style.setProperty(
       "--glass-opacity",
-      `${clamp(this.options.tintOpacity, clear ? 0.6 : 0.78, 0, 1) * 100}%`,
+      `${clamp(this.options.tintOpacity, defaults.tintOpacity, 0, 1) * 100}%`,
     );
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
+    const radii = surfaceRadii(element, rect, style);
+    const highlight = clamp(this.options.highlight, 0.3, 0, 1);
+    const color = parseColor(
+      style.getPropertyValue("--foreground").trim() || style.color,
+    );
+    const key = JSON.stringify([
+      rect.width,
+      rect.height,
+      radii,
+      highlight,
+      color,
+    ]);
+    if (state.edgeKey === key) return;
+    state.edgeKey = key;
+    element.style.setProperty(
+      "--glass-initial-edge-shadow",
+      glassShadow(highlight),
+    );
     element.style.setProperty(
       "--glass-edge",
-      glassEdge(
-        rect.width,
-        rect.height,
-        surfaceRadii(element, rect, style),
-        clamp(this.options.highlight, 0.3, 0, 1),
-      ),
+      glassEdge(rect.width, rect.height, radii, highlight, color),
     );
   }
 
@@ -735,7 +861,15 @@ class GlassManager {
     this.scan();
     const active = [...this.surfaces].filter(([element]) => visible(element));
     if (!active.length) return;
-    for (const [element, state] of active) this.updateMaterial(element, state);
+    if (this.materialsDirty) {
+      this.materialsDirty = false;
+      for (const [element, state] of active)
+        this.updateMaterial(element, state);
+    } else {
+      for (const [element, state] of active)
+        if (state.edgeDirty || this.moving.has(element))
+          this.updateEdge(element, state);
+    }
     if (
       this.configuration.mode !== "auto" ||
       window.matchMedia?.(
@@ -779,10 +913,17 @@ class GlassManager {
       ...document.querySelectorAll<HTMLElement>('[data-glass="true"]'),
     ].filter(visible);
     for (const [element, state] of active) {
+      if (element.dataset.glassFrozen === "true") continue;
       if (!current(element, state)) continue;
       const rect = element.getBoundingClientRect();
       const style = getComputedStyle(element);
-      const blocked = higherLayers(element);
+      let blocked: Set<Element>;
+      try {
+        blocked = higherLayers(element);
+      } catch {
+        if (!state.url) element.dataset.glassState = "fallback";
+        continue;
+      }
       // Disjoint peers cannot contribute to each other's background: omit them in the shared capture.
       for (const peer of peers) {
         const peerRect = peer.getBoundingClientRect();
@@ -827,7 +968,11 @@ class GlassManager {
           .join(",");
       const dependencies = dependencyKey();
       const currentFrame = () => {
-        if (!current(element, state) || dependencies !== dependencyKey())
+        if (
+          element.dataset.glassFrozen === "true" ||
+          !current(element, state) ||
+          dependencies !== dependencyKey()
+        )
           return false;
         const latest = element.getBoundingClientRect();
         if (
@@ -856,8 +1001,15 @@ class GlassManager {
           await new Promise((resolve) => setTimeout(resolve, delay));
         if (!currentFrame()) return;
         lastSnapshotTime = performance.now();
-        snapshot = await captureGlassBackground(captureTarget, blocked);
-        if (!currentFrame()) return;
+        try {
+          snapshot = await captureGlassBackground(captureTarget, blocked);
+        } catch {
+          if (current(element, state) && !state.url)
+            element.dataset.glassState = "fallback";
+          continue;
+        }
+        if (!current(element, state) || dependencies !== dependencyKey())
+          return;
         if (cached.frames.size >= 4) cached.frames.clear();
         cached.frames.set(key, snapshot);
       }
@@ -865,17 +1017,12 @@ class GlassManager {
       const strength = clamp(this.options.strength, 22, 0, 64);
       const tint = parseColor(this.options.tint ?? state.base);
       const foreground = parseColor(style.color);
-      const surfaceBlur = Number.parseFloat(
-        style.getPropertyValue("--glass-surface-blur"),
-      );
-      const surfaceOpacity = Number.parseFloat(
-        style.getPropertyValue("--glass-surface-tint-opacity"),
-      );
       const corners = glassRadii(
         rect.width,
         rect.height,
         surfaceRadii(element, rect, style),
       );
+      const surfaceContrast = element.dataset.glassContrast === "surface";
       const frame = {
         width: rect.width,
         height: rect.height,
@@ -885,26 +1032,25 @@ class GlassManager {
         radiusY: [corners[0].y, corners[1].y, corners[2].y, corners[3].y],
         strength,
         blur: clamp(
-          Number.isFinite(surfaceBlur) ? surfaceBlur : this.options.blur,
-          element.dataset.glassMaterial === "clear" ? 6 : 8,
+          this.options.blur,
+          glassIntensityDefaults(element.dataset.glassIntensity).blur,
           0,
           24,
         ),
         tint: [tint[0], tint[1], tint[2]],
-        tintOpacity: clamp(
-          Number.isFinite(surfaceOpacity)
-            ? surfaceOpacity
-            : this.options.tintOpacity,
-          state.opacity,
-          0,
-          1,
-        ),
+        tintOpacity: state.opacity,
         foreground: [foreground[0], foreground[1], foreground[2]],
-        textColors: this.textContrast.read(element),
+        textColors: surfaceContrast
+          ? undefined
+          : this.textContrast.read(element),
+        textBounds: surfaceContrast
+          ? undefined
+          : this.textContrast.readBounds(element),
         minimumContrast:
           element.getAttribute("aria-hidden") === "true" ? 0 : 4.5,
-        highlight: clamp(this.options.highlight, 0.3, 0, 1),
       } satisfies Parameters<GlassRenderer["render"]>[1];
+      const frameKey = `${idFor(snapshot)}:${JSON.stringify(frame)}`;
+      if (state.frameKey === frameKey && state.url) continue;
       let blob: Blob;
       try {
         blob = await renderer.render(snapshot, frame);
@@ -936,7 +1082,6 @@ class GlassManager {
       element.style.setProperty("--glass-frame", `url("${url}")`);
       element.dataset.glassState = "ready";
       if (previous) URL.revokeObjectURL(previous);
-      const frameKey = `${idFor(snapshot)}:${JSON.stringify(frame)}`;
       if (state.frameKey !== frameKey) {
         state.frameKey = frameKey;
         backgroundChanged(element);
@@ -953,6 +1098,7 @@ class GlassManager {
     if (state.url) URL.revokeObjectURL(state.url);
     element.style.removeProperty("--glass-frame");
     element.style.removeProperty("--glass-edge");
+    element.style.removeProperty("--glass-initial-edge-shadow");
     element.style.removeProperty("--glass-blur");
     element.style.removeProperty("--glass-opacity");
     element.style.removeProperty("--glass-base");
@@ -989,7 +1135,7 @@ export function acquireGlass(configuration?: GlassConfiguration) {
     managers.set(resolved.id, manager);
   } else if (
     "mode" in resolved ||
-    "material" in resolved ||
+    "intensity" in resolved ||
     "options" in resolved ||
     "captureTarget" in resolved
   )

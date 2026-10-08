@@ -93,6 +93,24 @@ assert.equal(colors.at(-1)?.[3], 204 / 255, "RGBA text alpha is preserved");
 const scanned = reads;
 assert.equal(cache.read(surface), colors);
 assert.equal(reads, scanned, "unchanged frames reuse the DOM/style scan");
+Object.defineProperty(surface, "getBoundingClientRect", {
+  value: () => new window.DOMRect(100, 200, 300, 160),
+});
+const link = surface.querySelector("a");
+assert.ok(link);
+let linkLeft = 120;
+Object.defineProperty(link, "getBoundingClientRect", {
+  value: () => new window.DOMRect(linkLeft, 220, 80, 20),
+});
+const linkColor = colors.findIndex((color) => color[2] === 204 / 255);
+assert.deepEqual(cache.readBounds(surface)[linkColor], [20, 20, 100, 40]);
+linkLeft = 140;
+assert.deepEqual(cache.readBounds(surface)[linkColor], [40, 20, 120, 40]);
+assert.equal(
+  reads,
+  scanned,
+  "moving text updates bounds without rescanning styles",
+);
 window.dispatchEvent(new window.Event("scroll"));
 assert.equal(cache.read(surface), colors);
 assert.equal(reads, scanned, "scrolling alone cannot invalidate text colors");

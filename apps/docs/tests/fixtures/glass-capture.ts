@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { glassEdge } from "../../../../packages/ui/src/lib/glass/edge";
 
 type CaptureOptions = {
   width?: number;
@@ -318,6 +319,64 @@ await assert.rejects(
 unreadable.style.backgroundImage = 'url("data:image/png;base64,AAAA")';
 await captureGlassBackground(target as unknown as HTMLElement, blocked);
 unreadable.remove();
+const decodedParent = document.createElement("div");
+decodedParent.id = "decoded-glass-parent";
+const embeddedEdge = glassEdge(120, 40, ["20px", "20px", "20px", "20px"], 0.3);
+assert.ok(embeddedEdge.includes("url(%23light0)"));
+assert.ok(embeddedEdge.includes("url(%23soft)"));
+decodedParent.style.backgroundImage = `${embeddedEdge}, url("data:image/png;base64,AAAA")`;
+const quotedEdgeStyle = document.createElement("style");
+quotedEdgeStyle.textContent = `#decoded-glass-parent::before { background-image: ${embeddedEdge.replace(/^url\("/, "url('").replace(/"\)$/, "')")}; }`;
+decodedParent.append(quotedEdgeStyle);
+decodedParent.style.setProperty(
+  "--glass-frame",
+  'url("blob:http://localhost/decoded-parent")',
+);
+decodedParent.style.setProperty(
+  "--glass-edge",
+  'url("blob:http://localhost/redundant-edge")',
+);
+decodedParent.style.setProperty("--glass-opacity", "60%");
+target.append(decodedParent);
+const parentStyleBeforeCapture = decodedParent.style.cssText;
+await captureGlassBackground(target as unknown as HTMLElement, blocked);
+const decodedParentCapture = new window.DOMParser().parseFromString(
+  drawnSource,
+  "image/svg+xml",
+);
+const decodedParentClone = decodedParentCapture.querySelector(
+  "#decoded-glass-parent",
+) as unknown as HTMLElement;
+assert.ok(decodedParentClone);
+assert.equal(
+  decodedParentClone.style.backgroundImage,
+  decodedParent.style.backgroundImage,
+  "retained parent glass keeps embedded SVG gradients and filters without treating their nested fragments as external URLs",
+);
+assert.equal(
+  decodedParentClone.querySelector("style")?.textContent,
+  quotedEdgeStyle.textContent,
+  "single-quoted embedded SVG resources inside generated style rules are retained intact",
+);
+for (const property of ["--glass-frame", "--glass-edge", "--glass-opacity"])
+  assert.equal(
+    decodedParentClone.style.getPropertyValue(property),
+    "",
+    "redundant custom glass properties are removed only from the captured clone",
+  );
+assert.equal(
+  decodedParent.style.cssText,
+  parentStyleBeforeCapture,
+  "capture cleanup never mutates the live parent glass frame or material",
+);
+decodedParent.style.backgroundImage =
+  'url("blob:http://localhost/unembedded-parent")';
+await assert.rejects(
+  captureGlassBackground(target as unknown as HTMLElement, blocked),
+  /resource embedding failed/,
+  "an actually unembedded background image still fails validation",
+);
+decodedParent.remove();
 const failedImage = document.createElement("img");
 failedImage.src = "data:image/png;base64,invalid";
 Object.defineProperties(failedImage, {

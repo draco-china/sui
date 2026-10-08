@@ -227,10 +227,6 @@ function repairClone(
       clone.style.maskImage = "none";
       for (const attribute of ["src", "srcset", "href", "xlink:href"])
         clone.removeAttribute(attribute);
-      for (const property of Array.from(clone.style)) {
-        if (property.startsWith("--glass-"))
-          clone.style.removeProperty(property);
-      }
       clone.replaceChildren();
       continue;
     }
@@ -340,6 +336,19 @@ function repairClone(
   }
   for (const clone of [root, ...root.querySelectorAll(`[${marker}]`)])
     clone.removeAttribute(marker);
+  // html-to-image embeds the resolved background-image, but also copies the
+  // original custom properties. A retained parent's blob-backed frame variable
+  // is redundant in the clone and is not an external resource to fetch again.
+  for (const clone of [
+    root,
+    ...root.querySelectorAll<HTMLElement>("[style]"),
+  ]) {
+    const style = (clone as HTMLElement).style;
+    if (!style) continue;
+    for (const property of Array.from(style)) {
+      if (property.startsWith("--glass-")) style.removeProperty(property);
+    }
+  }
 }
 
 function fontVersion(document: Document) {
@@ -438,8 +447,10 @@ function validateResources(root: Element) {
         `${element.getAttribute("style") ?? ""}${element.localName === "style" ? element.textContent : ""}`,
     )
     .join("\n");
-  for (const match of source.matchAll(/url\(\s*["']?([^)'"\s]*)["']?\s*\)/g)) {
-    const resource = match[1];
+  for (const match of source.matchAll(
+    /url\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^)'"\s]*))\s*\)/g,
+  )) {
+    const resource = match[1] ?? match[2] ?? match[3] ?? "";
     if (
       !resource ||
       (!resource.startsWith("data:") && !resource.startsWith("#"))

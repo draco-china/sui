@@ -15,7 +15,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -46,6 +47,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -89,7 +95,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -125,6 +132,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -167,7 +179,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -198,6 +211,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -275,7 +293,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -311,6 +330,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -355,7 +379,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -408,6 +433,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -448,7 +478,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -479,6 +510,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -522,7 +558,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -553,6 +590,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -632,7 +674,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -663,6 +706,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -706,7 +754,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -742,6 +791,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -785,7 +839,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -816,6 +871,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -861,7 +921,8 @@
         "lucide-react@^1.52.0",
         "react-day-picker@^10.0.2",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -897,6 +958,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -938,7 +1004,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -969,6 +1036,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1014,7 +1086,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1050,6 +1123,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1092,7 +1170,8 @@
         "html-to-image@1.11.13",
         "recharts@3.8.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1123,6 +1202,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1166,7 +1250,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1197,6 +1282,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1241,7 +1331,8 @@
         "html-to-image@1.11.13",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1314,6 +1405,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -1358,7 +1454,8 @@
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
         "shiki@4.4.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1441,6 +1538,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -1495,7 +1597,8 @@
         "@fontsource-variable/inter@^5.3.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1526,6 +1629,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1570,7 +1678,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1638,6 +1747,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -1680,7 +1794,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1733,6 +1848,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -1776,7 +1896,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1834,6 +1955,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -1875,7 +2001,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -1906,6 +2033,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -1995,7 +2127,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2031,6 +2164,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2078,7 +2216,8 @@
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
         "shiki@4.4.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2154,6 +2293,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2245,7 +2389,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2276,6 +2421,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2319,7 +2469,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2350,6 +2501,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2406,7 +2562,8 @@
         "remark-toc@9.0.0",
         "shadcn@^4.21.3",
         "shiki@4.4.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2539,6 +2696,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -2600,7 +2762,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2631,6 +2794,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2674,7 +2842,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2717,6 +2886,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -2755,7 +2929,8 @@
         "@fontsource-variable/inter@^5.3.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2786,6 +2961,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2828,7 +3008,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2859,6 +3040,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2900,7 +3086,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -2931,6 +3118,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -2976,7 +3168,8 @@
         "lucide-react@^1.52.0",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3044,6 +3237,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -3096,7 +3294,8 @@
         "html-to-image@1.11.13",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3144,6 +3343,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -3185,7 +3389,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3233,6 +3438,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -3275,7 +3485,8 @@
         "lucide-react@^1.52.0",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3311,6 +3522,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -3353,7 +3569,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3384,6 +3601,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -3427,7 +3649,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3463,6 +3686,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -3504,7 +3732,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3535,6 +3764,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -3655,7 +3889,8 @@
         "lucide-react@^1.52.0",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3708,6 +3943,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -3748,7 +3988,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3789,6 +4030,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -3842,7 +4088,8 @@
         "remark-toc@9.0.0",
         "shadcn@^4.21.3",
         "shiki@4.4.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -3930,6 +4177,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -3986,7 +4238,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4017,6 +4270,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4060,7 +4318,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4096,6 +4355,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4141,7 +4405,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4177,6 +4442,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4218,7 +4488,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4249,6 +4520,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4326,7 +4602,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4357,6 +4634,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4401,7 +4683,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4432,6 +4715,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4511,7 +4799,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4574,6 +4863,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -4614,7 +4908,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4645,6 +4940,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4687,7 +4987,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4718,6 +5019,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4763,7 +5069,8 @@
         "lucide-react@^1.52.0",
         "qr-code-styling@1.9.2",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4799,6 +5106,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4849,7 +5161,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4885,6 +5198,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -4927,7 +5245,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -4958,6 +5277,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5000,7 +5324,8 @@
         "html-to-image@1.11.13",
         "react-resizable-panels@^4.14.2",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5031,6 +5356,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5109,7 +5439,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5140,6 +5471,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5185,7 +5521,8 @@
         "lucide-react@^1.52.0",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5256,6 +5593,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5335,7 +5677,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5371,6 +5714,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5415,7 +5763,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5483,6 +5832,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -5522,7 +5876,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5553,6 +5908,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5595,7 +5955,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5626,6 +5987,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5668,7 +6034,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5699,6 +6066,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5740,9 +6112,11 @@
         "@fontsource-variable/inter@^5.3.0",
         "class-variance-authority@^0.7.1",
         "cn@^0.4.0",
+        "gsap@3.15.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5753,6 +6127,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/glass.tsx",
+          "type": "registry:ui",
+          "target": "@ui/glass.tsx"
         },
         {
           "path": "packages/ui/src/components/tab-bar.tsx",
@@ -5778,6 +6157,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5819,7 +6203,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5850,6 +6235,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5894,7 +6284,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -5935,6 +6326,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -5979,7 +6375,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6037,6 +6434,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -6076,7 +6478,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6107,6 +6510,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -6151,7 +6559,8 @@
         "html-to-image@1.11.13",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6204,6 +6613,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -6246,7 +6660,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6282,6 +6697,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -6325,7 +6745,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6361,6 +6782,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -6404,7 +6830,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6435,6 +6862,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -6478,7 +6910,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6521,6 +6954,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -6561,7 +6999,8 @@
         "cn@^0.4.0",
         "html-to-image@1.11.13",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6592,6 +7031,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -6641,7 +7085,8 @@
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -6869,6 +7314,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -6911,7 +7361,8 @@
         "html-to-image@1.11.13",
         "morphicons@1.7.1",
         "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
+        "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0"
       ],
       "devDependencies": [
         "@webgpu/types@^0.1.74"
@@ -7004,6 +7455,11 @@
           "target": "@lib/glass/edge.ts"
         },
         {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/renderer.ts",
           "type": "registry:lib",
           "target": "@lib/glass/renderer.ts"
@@ -7048,6 +7504,7 @@
         "lucide-react@^1.52.0",
         "shadcn@^4.21.3",
         "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0",
         "zod@^4.6.5"
       ],
       "devDependencies": [
@@ -7139,6 +7596,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -7255,6 +7717,7 @@
         "cn@^0.4.0",
         "diff@9.0.0",
         "embla-carousel-react@^8.6.0",
+        "gsap@3.15.0",
         "html-to-image@1.11.13",
         "lucide-react@^1.52.0",
         "monaco-editor@0.56.0",
@@ -7273,6 +7736,7 @@
         "shadcn@^4.21.3",
         "shiki@4.4.3",
         "tw-animate-css@^1.4.0",
+        "vgpu@0.5.0",
         "zod@^4.6.5"
       ],
       "devDependencies": [
@@ -7884,6 +8348,11 @@
           "path": "packages/ui/src/lib/glass/edge.ts",
           "type": "registry:lib",
           "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/intensity.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/intensity.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/renderer.ts",
@@ -8067,6 +8536,7 @@
           "@/lib/glass/context",
           "@/lib/glass/contrast",
           "@/lib/glass/edge",
+          "@/lib/glass/intensity",
           "@/lib/glass/renderer",
           "@/lib/glass/runtime",
           "@/lib/qr-code/finder",

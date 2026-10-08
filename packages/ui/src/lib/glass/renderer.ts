@@ -1,7 +1,20 @@
 /// <reference types="@webgpu/types" />
 
 import {
+  type Effect,
+  effect,
+  type Gpu,
+  frame as gpuFrame,
+  init,
+  sampler,
+  type Texture,
+  target,
+  texture,
+} from "vgpu";
+
+import {
   GlassContrastError,
+  type GlassTextBounds,
   type GlassTextColor,
   maxGlassTextColors,
   resolveGlassContrastTint,
@@ -20,8 +33,8 @@ export type GlassFrame = {
   tintOpacity: number;
   foreground: [number, number, number];
   textColors?: readonly GlassTextColor[];
+  textBounds?: readonly GlassTextBounds[];
   minimumContrast?: number;
-  highlight: number;
 };
 
 const shader = `
@@ -30,11 +43,12 @@ struct Params {
   source: vec4f,
   radii: vec4f,
   verticalRadii: vec4f,
-  material: vec4f,
-  tint: vec4f,
-  foreground: vec4f,
+  material: vec2f,
+  tint: vec3f,
+  minimumContrast: f32,
   contrastMaterial: vec4f,
   textColors: array<vec4f, ${maxGlassTextColors}>,
+  textBounds: array<vec4f, ${maxGlassTextColors}>,
 };
 @group(0) @binding(0) var<uniform> params: Params;
 @group(0) @binding(1) var background: texture_2d<f32>;
@@ -53,11 +67,13 @@ fn contrast(a: vec3f, b: vec3f) -> f32 {
   let y = luminance(b) + 0.05;
   return max(x, y) / min(x, y);
 }
-fn supportsTextContrast(background: vec3f) -> bool {
+fn supportsTextContrast(background: vec3f, point: vec2f) -> bool {
   for (var index = 0u; index < u32(params.contrastMaterial.w); index++) {
+    let bounds = params.textBounds[index];
+    if (point.x < bounds.x || point.y < bounds.y || point.x > bounds.z || point.y > bounds.w) { continue; }
     let text = params.textColors[index];
     let foreground = mix(background, text.xyz, text.w);
-    if (contrast(background, foreground) < params.foreground.w) { return false; }
+    if (contrast(background, foreground) < params.minimumContrast) { return false; }
   }
   return true;
 }
@@ -99,20 +115,20 @@ fn sourceColor(p: vec2f) -> vec3f {
   let normal = gradient / max(length(gradient), 0.00001);
   let depth = max(-distance, 0.0);
   let bevel = pow(clamp(1.0 - depth / 17.0, 0.0, 1.0), 2.0);
-  let displaced = p - normal * bevel * params.material.w * 0.45;
-  let split = normal * bevel * min(params.material.w * 0.014, 0.45);
+  let displaced = p - normal * bevel * params.material.y * 0.45;
+  let split = normal * bevel * min(params.material.y * 0.014, 0.45);
   let sampled = vec3f(sourceColor(displaced + split).r, sourceColor(displaced).g, sourceColor(displaced - split).b);
   let luminanceValue = dot(sampled, vec3f(0.2126, 0.7152, 0.0722));
   let saturated = mix(vec3f(luminanceValue), sampled, 1.12);
-  var result = mix(saturated, params.tint.xyz, params.material.y);
+  var result = mix(saturated, params.tint, params.material.x);
   result = clamp(result, vec3f(0.0), vec3f(1.0));
-  if (params.foreground.w > 0.0 && !supportsTextContrast(result)) {
+  if (params.minimumContrast > 0.0 && !supportsTextContrast(result, p)) {
     let safeTint = params.contrastMaterial.xyz;
     for (var index = 0; index < 8; index++) {
-      if (supportsTextContrast(result)) { break; }
+      if (supportsTextContrast(result, p)) { break; }
       result = mix(result, safeTint, 0.18);
     }
-    if (!supportsTextContrast(result)) { result = safeTint; }
+    if (!supportsTextContrast(result, p)) { result = safeTint; }
   }
   return vec4f(result, 1.0 - smoothstep(-0.65, 0.65, distance));
 }`;
@@ -147,61 +163,46 @@ struct BlurParams {
   return result / weight;
 }`;
 
-type Resource = GPUTexture | GPUBuffer;
 type Background = {
-  texture: GPUTexture;
+  texture: Texture;
   width: number;
   height: number;
-  filtered: Map<number, GPUTexture>;
+  filtered: Map<number, Texture>;
 };
 
 export class GlassRenderer {
-  private pipeline?: GPURenderPipeline;
-  private gaussianPipeline?: GPURenderPipeline;
-  private readonly blurUniforms: [GPUBuffer, GPUBuffer];
-  private readonly uniform: GPUBuffer;
-  private readonly sampler: GPUSampler;
-  private readonly resources = new Set<Resource>();
+  private readonly refraction: Effect;
+  private readonly gaussian: [Effect, Effect];
+  private readonly linearSampler: ReturnType<typeof sampler>;
+  private readonly resources = new Set<Texture>();
   private readonly backgrounds = new Map<HTMLCanvasElement, Background>();
   private readonly contrastTints = new Map<string, [number, number, number]>();
   private queue: Promise<void> = Promise.resolve();
   private disposed = false;
   private failure?: Error;
   private readonly abort = () => this.destroy();
-  private readonly gpuError = (event: Event) => {
-    this.failure = new Error((event as GPUUncapturedErrorEvent).error.message);
-  };
+  private readonly unsubscribeError: () => void;
 
   private constructor(
-    private readonly device: GPUDevice,
+    private readonly gpu: Gpu,
     private readonly signal?: AbortSignal,
   ) {
-    this.uniform = device.createBuffer({
-      label: "Glass material",
-      size: 128 + maxGlassTextColors * 16,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    this.unsubscribeError = gpu.onError((error) => {
+      this.failure = new Error(error.message);
     });
-    this.resources.add(this.uniform);
-    const createBlurUniform = () => {
-      const buffer = device.createBuffer({
-        label: "Glass Gaussian blur parameters",
-        size: 32,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      });
-      this.resources.add(buffer);
-      return buffer;
-    };
-    this.blurUniforms = [createBlurUniform(), createBlurUniform()];
-
-    this.sampler = device.createSampler({
+    this.linearSampler = sampler(gpu, {
       minFilter: "linear",
       magFilter: "linear",
       addressModeU: "clamp-to-edge",
       addressModeV: "clamp-to-edge",
     });
+    this.refraction = effect(gpu, shader, { label: "Glass refraction" });
+    this.gaussian = [
+      effect(gpu, gaussianShader, { label: "Glass horizontal blur" }),
+      effect(gpu, gaussianShader, { label: "Glass vertical blur" }),
+    ];
     signal?.addEventListener("abort", this.abort, { once: true });
-    device.addEventListener("uncapturederror", this.gpuError);
-    void device.lost.then((info) => {
+    void gpu.gpu.lost.then((info) => {
       if (!this.disposed)
         this.failure = new Error(info.message || "Glass GPU device lost");
     });
@@ -212,74 +213,24 @@ export class GlassRenderer {
       throw new DOMException("Glass initialization cancelled", "AbortError");
     if (typeof navigator === "undefined" || !navigator.gpu)
       throw new Error("WebGPU unavailable");
-    const adapter = await navigator.gpu.requestAdapter({
-      powerPreference: "low-power",
-    });
-    if (signal?.aborted)
-      throw new DOMException("Glass initialization cancelled", "AbortError");
-    if (!adapter) throw new Error("WebGPU adapter unavailable");
-    const device = await adapter.requestDevice();
+    const gpu = await init({ powerPreference: "low-power", label: "Glass" });
     if (signal?.aborted) {
-      device.destroy();
+      gpu.dispose();
       throw new DOMException("Glass initialization cancelled", "AbortError");
     }
     let renderer: GlassRenderer | undefined;
     try {
-      renderer = new GlassRenderer(device, signal);
-      if (signal?.aborted) renderer.destroy();
-      renderer.assertActive();
-      const module = device.createShaderModule({
-        label: "Glass refraction",
-        code: shader,
-      });
-      const compilation = await module.getCompilationInfo();
-      const errors = compilation.messages.filter(
-        (message) => message.type === "error",
-      );
-      if (errors.length)
-        throw new Error(errors.map((message) => message.message).join("\n"));
-      renderer.assertActive();
-      renderer.pipeline = await device.createRenderPipelineAsync({
-        label: "Glass refraction",
-        layout: "auto",
-        vertex: { module, entryPoint: "vertexMain" },
-        fragment: {
-          module,
-          entryPoint: "fragmentMain",
-          targets: [{ format: "rgba8unorm" }],
-        },
-        primitive: { topology: "triangle-list" },
-      });
-      renderer.assertActive();
-      const gaussian = device.createShaderModule({
-        label: "Glass Gaussian blur",
-        code: gaussianShader,
-      });
-      const gaussianCompilation = await gaussian.getCompilationInfo();
-      const gaussianErrors = gaussianCompilation.messages.filter(
-        (message) => message.type === "error",
-      );
-      if (gaussianErrors.length)
-        throw new Error(
-          gaussianErrors.map((message) => message.message).join("\n"),
-        );
-      renderer.assertActive();
-      renderer.gaussianPipeline = await device.createRenderPipelineAsync({
-        label: "Glass Gaussian blur",
-        layout: "auto",
-        vertex: { module: gaussian, entryPoint: "vertexMain" },
-        fragment: {
-          module: gaussian,
-          entryPoint: "fragmentMain",
-          targets: [{ format: "rgba8unorm" }],
-        },
-        primitive: { topology: "triangle-list" },
-      });
+      renderer = new GlassRenderer(gpu, signal);
+      await Promise.all([
+        renderer.refraction.compile({ colors: ["rgba8unorm"] }),
+        renderer.gaussian[0].compile({ colors: ["rgba8unorm"] }),
+        renderer.gaussian[1].compile({ colors: ["rgba8unorm"] }),
+      ]);
       renderer.assertActive();
       return renderer;
     } catch (error) {
       if (renderer) renderer.destroy();
-      else device.destroy();
+      else gpu.dispose();
       throw error;
     }
   }
@@ -289,16 +240,20 @@ export class GlassRenderer {
     if (this.failure) throw this.failure;
   }
 
+  private releaseTexture(image: Texture) {
+    if (this.resources.delete(image)) image.destroy();
+  }
+
   private releaseBackground(source: HTMLCanvasElement) {
     const background = this.backgrounds.get(source);
     if (!background) return;
     this.backgrounds.delete(source);
-    if (this.resources.delete(background.texture)) background.texture.destroy();
-    for (const texture of background.filtered.values())
-      if (this.resources.delete(texture)) texture.destroy();
+    this.releaseTexture(background.texture);
+    for (const image of background.filtered.values())
+      this.releaseTexture(image);
   }
 
-  private background(source: HTMLCanvasElement): GPUTexture {
+  private background(source: HTMLCanvasElement): Texture {
     const cached = this.backgrounds.get(source);
     if (
       cached &&
@@ -310,24 +265,22 @@ export class GlassRenderer {
       return cached.texture;
     }
     this.releaseBackground(source);
-    const texture = this.device.createTexture({
+    const image = texture(this.gpu, {
+      kind: "2d",
       label: "Glass background",
       size: [source.width, source.height],
       format: "rgba8unorm",
-      usage:
-        GPUTextureUsage.TEXTURE_BINDING |
-        GPUTextureUsage.COPY_DST |
-        GPUTextureUsage.RENDER_ATTACHMENT,
+      usage: ["texture_binding", "copy_dst", "render_attachment"],
     });
-    this.resources.add(texture);
+    this.resources.add(image);
     try {
-      this.device.queue.copyExternalImageToTexture(
+      this.gpu.gpu.queue.copyExternalImageToTexture(
         { source, flipY: false },
-        { texture, premultipliedAlpha: false },
+        { texture: image.gpu, premultipliedAlpha: false },
         [source.width, source.height],
       );
       this.backgrounds.set(source, {
-        texture,
+        texture: image,
         width: source.width,
         height: source.height,
         filtered: new Map(),
@@ -336,9 +289,9 @@ export class GlassRenderer {
         const oldest = this.backgrounds.keys().next().value;
         if (oldest) this.releaseBackground(oldest);
       }
-      return texture;
+      return image;
     } catch (error) {
-      if (this.resources.delete(texture)) texture.destroy();
+      this.releaseTexture(image);
       throw error;
     }
   }
@@ -346,85 +299,69 @@ export class GlassRenderer {
   private filteredBackground(
     source: HTMLCanvasElement,
     blur: number,
-    track: <T extends Resource>(resource: T) => T,
-  ): GPUTexture {
-    const texture = this.background(source);
-    if (blur <= 0) return texture;
+    temporary: Texture[],
+  ): Texture {
+    const image = this.background(source);
+    if (blur <= 0) return image;
     const background = this.backgrounds.get(source);
-    const pipeline = this.gaussianPipeline;
-    if (!background || !pipeline)
-      throw new Error("Glass blur pipeline unavailable");
+    if (!background) throw new Error("Glass background unavailable");
     const cached = background.filtered.get(blur);
     if (cached) {
       background.filtered.delete(blur);
       background.filtered.set(blur, cached);
       return cached;
     }
-    // Blurred snapshots can use half-resolution above 2 CSS pixels; the original
-    // upload and all sampling coordinates remain shared and in CSS pixels.
+    // Share the original upload and each blur level across surfaces. Above 2 CSS
+    // pixels, half-resolution Gaussian targets bound memory and sampling cost.
     const scale = blur >= 2 ? 0.5 : 1;
     const width = Math.max(1, Math.round(source.width * scale));
     const height = Math.max(1, Math.round(source.height * scale));
-    const makeTexture = (label: string) =>
-      this.device.createTexture({
+    const makeTarget = (label: string) => {
+      const output = target(this.gpu, {
         label,
         size: [width, height],
         format: "rgba8unorm",
-        usage:
-          GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
+        clearColor: [0, 0, 0, 0],
       });
-    const horizontal = track(makeTexture("Glass Gaussian intermediate"));
-    const vertical = makeTexture("Glass blurred background");
-    this.resources.add(vertical);
-    background.filtered.set(blur, vertical);
+      this.resources.add(output.color);
+      return output;
+    };
+    const horizontal = makeTarget("Glass Gaussian intermediate");
+    temporary.push(horizontal.color);
+    const vertical = makeTarget("Glass blurred background");
+    background.filtered.set(blur, vertical.color);
     if (background.filtered.size > 3) {
       const oldest = background.filtered.keys().next().value;
       if (oldest !== undefined) {
-        const oldTexture = background.filtered.get(oldest);
-        if (oldTexture && this.resources.delete(oldTexture))
-          oldTexture.destroy();
+        const previous = background.filtered.get(oldest);
+        if (previous) this.releaseTexture(previous);
         background.filtered.delete(oldest);
       }
     }
     const sigma = blur * scale;
     const radius = Math.ceil(sigma * 3);
-    const encoder = this.device.createCommandEncoder();
     const stages = [
-      { input: texture, output: horizontal, step: [1 / width, 0] },
-      { input: horizontal, output: vertical, step: [0, 1 / height] },
+      { input: image, output: horizontal, step: [1 / width, 0] },
+      { input: horizontal.color, output: vertical, step: [0, 1 / height] },
     ];
     for (const [index, stage] of stages.entries()) {
-      const uniform = this.blurUniforms[index];
-      this.device.queue.writeBuffer(
-        uniform,
-        0,
-        new Float32Array([width, height, ...stage.step, sigma, radius, 0, 0]),
-      );
-      const group = this.device.createBindGroup({
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-          { binding: 0, resource: { buffer: uniform } },
-          { binding: 1, resource: stage.input.createView() },
-          { binding: 2, resource: this.sampler },
-        ],
+      this.gaussian[index].set({
+        params: {
+          size: [width, height],
+          step: stage.step,
+          sigma,
+          radius,
+          padding: [0, 0],
+        },
+        background: stage.input,
+        linearSampler: this.linearSampler,
       });
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: stage.output.createView(),
-            clearValue: [0, 0, 0, 0],
-            loadOp: "clear",
-            storeOp: "store",
-          },
-        ],
-      });
-      pass.setPipeline(pipeline);
-      pass.setBindGroup(0, group);
-      pass.draw(3);
-      pass.end();
     }
-    this.device.queue.submit([encoder.finish()]);
-    return vertical;
+    gpuFrame(this.gpu, (frame) => {
+      frame.pass(horizontal, this.gaussian[0]);
+      frame.pass(vertical, this.gaussian[1]);
+    });
+    return vertical.color;
   }
 
   render(source: HTMLCanvasElement, frame: GlassFrame): Promise<Blob> {
@@ -441,8 +378,6 @@ export class GlassRenderer {
     frame: GlassFrame,
   ): Promise<Blob> {
     this.assertActive();
-    const pipeline = this.pipeline;
-    if (!pipeline) throw new Error("Glass pipeline unavailable");
     const textColors: readonly GlassTextColor[] = frame.textColors ?? [
       [...frame.foreground, 1],
     ];
@@ -458,6 +393,16 @@ export class GlassRenderer {
       )
     )
       throw new GlassContrastError("Unsupported glass text colors");
+    const textBounds =
+      frame.textBounds ??
+      textColors.map(() => [0, 0, frame.width, frame.height]);
+    if (
+      textBounds.length !== textColors.length ||
+      textBounds.some(
+        (bounds) => bounds.length !== 4 || !bounds.every(Number.isFinite),
+      )
+    )
+      throw new GlassContrastError("Unsupported glass text bounds");
     const minimum = frame.minimumContrast ?? 4.5;
     const contrastMinimum = minimum > 0 ? minimum + 0.05 : 0;
     const contrastKey = JSON.stringify([
@@ -487,7 +432,6 @@ export class GlassRenderer {
         frame.strength,
         frame.blur,
         frame.tintOpacity,
-        frame.highlight,
         frame.minimumContrast ?? 4.5,
         ...(frame.origin ?? [frame.margin, frame.margin]),
         ...frame.radius,
@@ -509,111 +453,68 @@ export class GlassRenderer {
     const bytesPerRow = Math.ceil((width * 4) / 256) * 256;
     if (
       Math.max(width, height, source.width, source.height) >
-        this.device.limits.maxTextureDimension2D ||
-      bytesPerRow * height > this.device.limits.maxBufferSize
+        this.gpu.gpu.limits.maxTextureDimension2D ||
+      bytesPerRow * height > this.gpu.gpu.limits.maxBufferSize
     )
       throw new Error("Glass frame exceeds GPU limits");
-    const resources: Resource[] = [];
-    const track = <T extends Resource>(resource: T): T => {
-      resources.push(resource);
-      this.resources.add(resource);
-      return resource;
-    };
-    let readback: GPUBuffer | undefined;
+    const temporary: Texture[] = [];
     let scopeOpen = true;
-    this.device.pushErrorScope("validation");
+    this.gpu.gpu.pushErrorScope("validation");
     try {
-      const input = this.filteredBackground(source, frame.blur, track);
-      const output = track(
-        this.device.createTexture({
-          label: "Glass frame",
-          size: [width, height],
-          format: "rgba8unorm",
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
-        }),
-      );
-      readback = track(
-        this.device.createBuffer({
-          label: "Glass pixel readback",
-          size: bytesPerRow * height,
-          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-        }),
-      );
-      this.device.queue.writeBuffer(
-        this.uniform,
-        0,
-        new Float32Array([
-          frame.width,
-          frame.height,
-          width,
-          height,
-          source.width,
-          source.height,
-          ...(frame.origin ?? [frame.margin, frame.margin]),
-          ...frame.radius,
-          ...(frame.radiusY ?? frame.radius),
-          frame.blur,
-          frame.tintOpacity,
-          frame.highlight,
-          frame.strength,
-          ...frame.tint,
-          0,
-          ...frame.foreground,
-          contrastMinimum,
-          ...contrastTint,
-          textColors.length,
-          ...textColors.flat(),
-          ...new Array((maxGlassTextColors - textColors.length) * 4).fill(0),
-        ]),
-      );
-      const group = this.device.createBindGroup({
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-          { binding: 0, resource: { buffer: this.uniform } },
-          { binding: 1, resource: input.createView() },
-          { binding: 2, resource: this.sampler },
-        ],
+      const input = this.filteredBackground(source, frame.blur, temporary);
+      const output = target(this.gpu, {
+        label: "Glass frame",
+        size: [width, height],
+        format: "rgba8unorm",
+        clearColor: [0, 0, 0, 0],
       });
-      const encoder = this.device.createCommandEncoder();
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: output.createView(),
-            clearValue: [0, 0, 0, 0],
-            loadOp: "clear",
-            storeOp: "store",
-          },
-        ],
+      this.resources.add(output.color);
+      temporary.push(output.color);
+      const padding = () =>
+        Array.from({ length: maxGlassTextColors }, () => [0, 0, 0, 0]);
+      const colors = padding();
+      const bounds = padding();
+      textColors.forEach((color, index) => {
+        colors[index] = [...color];
       });
-      pass.setPipeline(pipeline);
-      pass.setBindGroup(0, group);
-      pass.draw(3);
-      pass.end();
-      encoder.copyTextureToBuffer(
-        { texture: output },
-        { buffer: readback, bytesPerRow },
-        [width, height],
-      );
-      this.device.queue.submit([encoder.finish()]);
-      const validation = await this.device.popErrorScope();
+      textBounds.forEach((region, index) => {
+        bounds[index] = [...region];
+      });
+      this.refraction.set({
+        params: {
+          surface: [frame.width, frame.height, width, height],
+          source: [
+            source.width,
+            source.height,
+            ...(frame.origin ?? [frame.margin, frame.margin]),
+          ],
+          radii: frame.radius,
+          verticalRadii: frame.radiusY ?? frame.radius,
+          material: [frame.tintOpacity, frame.strength],
+          tint: frame.tint,
+          minimumContrast: contrastMinimum,
+          contrastMaterial: [...contrastTint, textColors.length],
+          textColors: colors,
+          textBounds: bounds,
+        },
+        background: input,
+        linearSampler: this.linearSampler,
+      });
+      gpuFrame(this.gpu, (frame) => frame.pass(output, this.refraction));
+      await this.gpu.settled();
+      const validation = await this.gpu.gpu.popErrorScope();
       scopeOpen = false;
       if (validation) throw new Error(validation.message);
       this.assertActive();
-      await readback.mapAsync(GPUMapMode.READ);
+      const bytes = await output.color.read({ mipLevel: 0, region: "all" });
       this.assertActive();
-      const bytes = new Uint8Array(readback.getMappedRange());
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Unable to export glass pixels");
       const image = context.createImageData(width, height);
-      for (let row = 0; row < height; row++)
-        image.data.set(
-          bytes.subarray(row * bytesPerRow, row * bytesPerRow + width * 4),
-          row * width * 4,
-        );
-      readback.unmap();
+      image.data.set(bytes);
       context.putImageData(image, 0, 0);
       const blob = await new Promise<Blob>((resolve, reject) =>
         canvas.toBlob((result) => {
@@ -628,11 +529,8 @@ export class GlassRenderer {
       this.releaseBackground(source);
       throw error;
     } finally {
-      if (scopeOpen) await this.device.popErrorScope().catch(() => {});
-      if (readback?.mapState === "mapped") readback.unmap();
-      for (const resource of resources) {
-        if (this.resources.delete(resource)) resource.destroy();
-      }
+      if (scopeOpen) await this.gpu.gpu.popErrorScope().catch(() => {});
+      for (const image of temporary) this.releaseTexture(image);
     }
   }
 
@@ -640,13 +538,11 @@ export class GlassRenderer {
     if (this.disposed) return;
     this.disposed = true;
     this.signal?.removeEventListener("abort", this.abort);
-    this.device.removeEventListener("uncapturederror", this.gpuError);
+    this.unsubscribeError();
     for (const resource of this.resources) resource.destroy();
     this.resources.clear();
     this.backgrounds.clear();
     this.contrastTints.clear();
-    this.pipeline = undefined;
-    this.gaussianPipeline = undefined;
-    this.device.destroy();
+    this.gpu.dispose();
   }
 }

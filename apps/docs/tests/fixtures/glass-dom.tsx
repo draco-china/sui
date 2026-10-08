@@ -82,9 +82,12 @@ const { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } =
 const { GlassContext } = await import(
   "../../../../packages/ui/src/lib/glass/context"
 );
-const { acquireGlass } = await import("@workspace/ui/lib/glass/runtime");
+const { acquireGlass, updateGlassConfiguration } = await import(
+  "@workspace/ui/lib/glass/runtime"
+);
+const { glassShadow } = await import("@workspace/ui/lib/glass/edge");
 const pause = () => new Promise((resolve) => setTimeout(resolve, 300));
-const configuration = { id: "dom-native-controls" };
+const configuration = { id: "dom-native-controls", mode: "css" as const };
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host as unknown as HTMLElement);
@@ -144,17 +147,45 @@ assert.equal(
   "a type=button glass control cannot submit the surrounding form",
 );
 await pause();
-assert.equal(gpuAttempts, 0, "default CSS mode must never request a GPU");
+assert.equal(gpuAttempts, 0, "an explicit CSS scope does not initialize a GPU");
 assert.equal(
   buttonRef.current?.dataset.glassState,
   "css",
   "CSS mode initializes a usable material",
 );
 assert.equal(buttonRef.current?.style.getPropertyValue("--glass-frame"), "");
+assert.equal(
+  buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
+  glassShadow(0.3),
+  "measurement keeps the default outer shadow while replacing only initial inner highlights",
+);
+updateGlassConfiguration({ ...configuration, options: { highlight: 0 } });
+await pause();
+assert.equal(
+  buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
+  "0 0 #0000",
+  "disabling highlights removes outer shading after measurement as well as before hydration",
+);
+assert.equal(buttonRef.current?.style.getPropertyValue("--glass-edge"), "none");
+updateGlassConfiguration(configuration);
+await pause();
+assert.equal(
+  buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
+  glassShadow(0.3),
+);
 await act(async () => root.unmount());
 assert.equal(buttonRef.current, null);
 assert.equal(inputRef.current, null);
 assert.ok(observers.every((observer) => observer.disconnected));
+
+const standaloneRoot = createRoot(host as unknown as HTMLElement);
+await act(async () => {
+  standaloneRoot.render(<Button glass>Standalone glass</Button>);
+});
+await pause();
+assert.ok(gpuAttempts > 0, "standalone glass defaults to auto enhancement");
+assert.equal(host.querySelector("button")?.dataset.glassState, "fallback");
+await act(async () => standaloneRoot.unmount());
 
 const { Toggle } = await import("@workspace/ui/components/toggle");
 const { Switch } = await import("@workspace/ui/components/switch");
@@ -180,6 +211,10 @@ const semanticControls = (checked: boolean) => (
 );
 await act(async () => semanticRoot.render(semanticControls(false)));
 await act(async () => pause());
+assert.ok(
+  gpuAttempts > 0,
+  "the default Provider attempts automatic GPU enhancement",
+);
 const semanticToggle = document.getElementById("semantic-toggle");
 const semanticSwitch = semanticHost.querySelector('[data-slot="switch"]');
 assert.ok(semanticToggle instanceof window.HTMLButtonElement);
@@ -216,12 +251,13 @@ await act(async () => semanticRoot.unmount());
 semanticStyle.remove();
 
 const tooltipHost = document.createElement("div");
+const beforeTooltipGpu = gpuAttempts;
 document.body.append(tooltipHost);
 const tooltipRoot = createRoot(tooltipHost as unknown as HTMLElement);
 await act(async () => {
   tooltipRoot.render(
-    <GlassProvider>
-      <GlassSurface id="tooltip-parent" material="clear">
+    <GlassProvider mode="css">
+      <GlassSurface id="tooltip-parent" intensity="sm">
         <TooltipProvider>
           <Tooltip open>
             <TooltipTrigger
@@ -233,14 +269,27 @@ await act(async () => {
           </Tooltip>
         </TooltipProvider>
       </GlassSurface>
+      <GlassSurface id="default-intensity" />
+      <GlassSurface id="large-intensity" intensity="lg" />
     </GlassProvider>,
   );
 });
 await act(async () => pause());
+for (const [id, intensity, blur, opacity] of [
+  ["tooltip-parent", "sm", "4px", "40%"],
+  ["default-intensity", "default", "6px", "60%"],
+  ["large-intensity", "lg", "8px", "78%"],
+]) {
+  const surface = document.getElementById(id);
+  assert.ok(surface instanceof window.HTMLElement);
+  assert.equal(surface.dataset.glassIntensity, intensity);
+  assert.equal(surface.style.getPropertyValue("--glass-blur"), blur);
+  assert.equal(surface.style.getPropertyValue("--glass-opacity"), opacity);
+}
 const tooltipParent = document.getElementById("tooltip-parent");
 assert.ok(tooltipParent instanceof window.HTMLElement);
-assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "6px");
-assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "60%");
+assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "4px");
+assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "40%");
 assert.equal(
   document.getElementById("tooltip-trigger")?.hasAttribute("data-glass"),
   true,
@@ -251,7 +300,11 @@ assert.equal(
   "true",
   "a portaled tooltip owns an independent material surface",
 );
-assert.equal(gpuAttempts, 0, "portals in CSS mode also avoid GPU requests");
+assert.equal(
+  gpuAttempts,
+  beforeTooltipGpu,
+  "portals in explicit CSS mode also avoid GPU requests",
+);
 await act(async () => tooltipRoot.unmount());
 
 const surface = document.createElement("div");
@@ -570,7 +623,11 @@ await act(async () => pause());
 const sidebarSurface = document.querySelector('[data-slot="sidebar-inner"]');
 assert.ok(sidebarSurface);
 assert.equal(sidebarSurface.getAttribute("data-glass"), "true");
-assert.equal(sidebarSurface.getAttribute("data-glass-state"), "css");
+assert.equal(
+  sidebarSurface.getAttribute("data-glass-state"),
+  "fallback",
+  "the automatic Provider keeps its CSS/SVG material when no GPU adapter is available",
+);
 assert.equal(
   sidebarRef.current?.id,
   "sidebar-layout",

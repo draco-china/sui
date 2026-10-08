@@ -695,39 +695,40 @@
     "[data-glass=\"true\"][data-variant=\"destructive\"]:focus-visible,\n[data-glass=\"true\"][aria-invalid=\"true\"],\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot][aria-invalid=\"true\"]\n)": {
       "--tw-ring-color": "var(--destructive)"
     },
-    "[data-glass=\"true\"][data-glass-material=\"clear\"]": {
-      "--glass-initial-opacity": "60%",
-      "--glass-initial-blur": "6px"
-    },
     "[data-glass=\"true\"][data-glass-state]": {
-      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(\n        --glass-surface-opacity,\n        var(--glass-opacity, var(--glass-initial-opacity, 78%))\n      ),\n    transparent\n  )",
-      "--glass-initial-edge": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22light%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22white%22%20stop-opacity%3D%22.35%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%22.75%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%22.18%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22none%22%20stroke%3D%22url%28%23light%29%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
-      "background-image": "var(--glass-edge, var(--glass-initial-edge)), var(--glass-frame, none)",
+      "--glass-edge": "none",
+      "--glass-frame": "none",
+      "--glass-initial-edge-shadow": "initial",
+      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(--glass-opacity, var(--glass-initial-opacity, 60%)),\n    transparent\n  )",
+      "--glass-initial-edge-color": "color-mix(\n    in srgb,\n    color-mix(in srgb, var(--foreground) 12%, white) 28%,\n    transparent\n  )",
+      "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),\n      -1px 1px 2px -0.5px rgb(0 0 0 / 0.1)\n    ),\n    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
+      "background-image": "var(--glass-edge, none)",
       "background-size": "100% 100%",
       "background-repeat": "no-repeat",
       "background-origin": "border-box",
       "background-clip": "border-box",
-      "-webkit-backdrop-filter": "blur(\n      var(\n        --glass-surface-blur,\n        var(--glass-blur, var(--glass-initial-blur, 8px))\n      )\n    )\n    saturate(1.12)",
-      "backdrop-filter": "blur(\n      var(\n        --glass-surface-blur,\n        var(--glass-blur, var(--glass-initial-blur, 8px))\n      )\n    )\n    saturate(1.12)"
+      "-webkit-backdrop-filter": "blur(\n      var(--glass-blur, var(--glass-initial-blur, 6px))\n    )\n    saturate(1.12)",
+      "backdrop-filter": "blur(var(--glass-blur, var(--glass-initial-blur, 6px)))\n    saturate(1.12)"
     },
     "[data-slot=\"tab-bar-indicator\"][data-glass=\"true\"]": {
-      "--glass-surface-opacity": "6%",
-      "--glass-surface-blur": "0.6px",
-      "--glass-surface-tint-opacity": "0.04"
+      "background-color": "transparent",
+      "-webkit-backdrop-filter": "none",
+      "backdrop-filter": "none"
     },
     "[data-glass=\"true\"][data-glass-state=\"ready\"]": {
       "background-color": "transparent",
-      "background-image": "var(--glass-edge, var(--glass-initial-edge)), var(--glass-frame, none)",
+      "background-image": "var(--glass-edge, none), var(--glass-frame, none)",
       "-webkit-backdrop-filter": "none",
       "backdrop-filter": "none"
     },
     "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
-      "background-image": "var(--glass-edge, var(--glass-initial-edge))"
+      "background-image": "var(--glass-edge, none)"
     },
     "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
       "[data-glass=\"true\"][data-glass-state]": {
         "background-color": "var(--glass-base, var(--popover))",
         "background-image": "none",
+        "--glass-initial-edge-shadow": "0 0 #0000",
         "-webkit-backdrop-filter": "none",
         "backdrop-filter": "none"
       }

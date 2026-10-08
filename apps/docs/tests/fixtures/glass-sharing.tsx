@@ -35,6 +35,8 @@ Object.assign(globalThis, {
   ResizeObserver: Observer,
   IntersectionObserver: Observer,
   getComputedStyle: window.getComputedStyle.bind(window),
+  requestAnimationFrame: window.requestAnimationFrame.bind(window),
+  cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
   innerWidth: 800,
   innerHeight: 600,
 });
@@ -75,6 +77,7 @@ let peakCaptures = 0;
 let fontLeases = 0;
 const contrastFailures: GlassFrame[] = [];
 let nextRenderFailure: Error | undefined;
+let nextCaptureFailure: Error | undefined;
 const { glassLayoutSize } = await import(
   "../../../../packages/ui/src/lib/glass/capture"
 );
@@ -116,6 +119,11 @@ mock.module("../../../../packages/ui/src/lib/glass/capture", () => ({
     });
     await new Promise((resolve) => setTimeout(resolve, captureDelay));
     activeCaptures--;
+    if (nextCaptureFailure) {
+      const error = nextCaptureFailure;
+      nextCaptureFailure = undefined;
+      throw error;
+    }
     return snapshot;
   },
 }));
@@ -260,6 +268,7 @@ assert.equal(captures[0]?.target, target);
 assert.ok(captures[0]?.blocked.has(left));
 assert.ok(captures[0]?.blocked.has(right));
 assert.equal(latestFrame(left).source, captures[0]?.snapshot);
+
 assert.equal(latestFrame(right).source, captures[0]?.snapshot);
 assert.equal(
   latestFrame(left).source.width,
@@ -272,6 +281,7 @@ assert.equal(left.dataset.glassState, "ready");
 assert.equal(right.dataset.glassState, "ready");
 const frameBeforeLease = left.style.getPropertyValue("--glass-frame");
 const capturesBeforeLease = captures.length;
+const rendersBeforeLease = renders.length;
 const releaseAdditionalLease = acquireGlass({ id: "left" });
 assert.equal(
   left.dataset.glassState,
@@ -291,6 +301,23 @@ assert.equal(
   capturesBeforeLease,
   "joining a scope retains its capture target and cached background",
 );
+assert.equal(
+  renders.length,
+  rendersBeforeLease,
+  "an unchanged scene keeps its decoded frame instead of repainting",
+);
+const externalStatus = document.createElement("p");
+document.body.append(externalStatus);
+externalStatus.textContent = "Unrelated page status";
+await settle();
+assert.equal(
+  captures.length,
+  capturesBeforeLease,
+  "an unrelated status outside the capture target cannot resample the scene",
+);
+assert.equal(left.dataset.glassState, "ready");
+assert.equal(left.style.getPropertyValue("--glass-frame"), frameBeforeLease);
+externalStatus.remove();
 const previousImage = left.style.getPropertyValue("--glass-frame");
 let finishDecode = () => {};
 nextDecode = new Promise<void>((resolve) => {
@@ -319,6 +346,29 @@ assert.equal(
 assert.equal(latestFrame(left).frame.strength, 34);
 assert.equal(latestFrame(right).frame.strength, 12);
 assert.equal(latestFrame(left).source, captures[0]?.snapshot);
+
+const beforeHighlightRender = renders.length;
+const beforeHighlightCapture = captures.length;
+const beforeHighlightEdge = left.style.getPropertyValue("--glass-edge");
+updateGlassConfiguration({
+  ...configuration("left", target, 34),
+  options: { strength: 34, highlight: 0.5 },
+});
+await settle();
+assert.equal(
+  renders.length,
+  beforeHighlightRender,
+  "SVG-only highlight updates skip GPU rendering",
+);
+assert.equal(
+  captures.length,
+  beforeHighlightCapture,
+  "SVG-only highlight updates reuse the background",
+);
+assert.notEqual(
+  left.style.getPropertyValue("--glass-edge"),
+  beforeHighlightEdge,
+);
 
 async function expectRefresh(change: () => void, reason: string) {
   const before = captures.length;
@@ -407,9 +457,10 @@ layers.remove();
 
 const tabs = stage();
 const track = surface(tabs, "track", 100, 100, 240, 48);
-track.dataset.slot = "tab-bar-list";
+track.dataset.slot = "glass-surface";
+track.dataset.glassContrast = "surface";
 const indicator = surface(track, "indicator", 120, 108, 64, 32);
-indicator.dataset.slot = "tab-bar-indicator";
+indicator.dataset.slot = "glass-surface";
 paintOrder = [indicator, track, tabs];
 const beforeTabs = captures.length;
 const releaseTrack = acquireGlass(configuration("track", tabs));
@@ -417,13 +468,28 @@ const releaseIndicator = acquireGlass(configuration("indicator", tabs));
 await settle();
 assert.equal(
   captures.length,
-  beforeTabs + 1,
-  "track and moving lens share their canonical exclusion layer",
+  beforeTabs + 2,
+  "nested surfaces sample their own background layers",
 );
-assert.equal(latestFrame(track).source, latestFrame(indicator).source);
-assert.ok(
-  captures.at(-1)?.blocked.has(track),
-  "a moving lens excludes its track from background capture",
+assert.notEqual(latestFrame(track).source, latestFrame(indicator).source);
+assert.equal(
+  latestFrame(track).frame.textBounds,
+  undefined,
+  "navigation uses a continuous material without individual label masks",
+);
+const indicatorCapture = captures.find(
+  ({ snapshot }) => snapshot === latestFrame(indicator).source,
+);
+assert.ok(indicatorCapture?.blocked.has(indicator));
+assert.equal(
+  indicatorCapture?.blocked.has(track),
+  false,
+  "a nested surface preserves its parent's glass background",
+);
+assert.equal(
+  indicatorCapture?.parentFrames.get(track),
+  track.style.getPropertyValue("--glass-frame"),
+  "the nested surface refracts the committed parent frame rather than the page behind it",
 );
 assert.deepEqual(latestFrame(indicator).frame.origin, [120, 108]);
 releaseTrack();
@@ -432,16 +498,13 @@ tabs.remove();
 
 const zeroStage = stage();
 const zero = surface(zeroStage, "zero", 20, 30);
-zero.style.setProperty("--glass-surface-blur", "0px");
-zero.style.setProperty("--glass-surface-tint-opacity", "0");
 paintOrder = [zero, zeroStage];
-const releaseZero = acquireGlass(configuration("zero", zeroStage));
+const releaseZero = acquireGlass({
+  ...configuration("zero", zeroStage),
+  options: { blur: 0, tintOpacity: 0 },
+});
 await settle();
-assert.equal(
-  latestFrame(zero).frame.blur,
-  0,
-  "zero CSS blur override is valid",
-);
+assert.equal(latestFrame(zero).frame.blur, 0, "zero configured blur is valid");
 assert.equal(
   latestFrame(zero).frame.tintOpacity,
   0,
@@ -784,6 +847,7 @@ assert.notEqual(
   retainedFrame,
 );
 const beforeGeometryCapture = captures.length;
+movingSurface.dataset.glassMotion = "true";
 place(movingSurface, 70, 90, 140, 50);
 movingSurface.style.left = "70px";
 movingSurface.style.top = "90px";
@@ -796,6 +860,65 @@ assert.equal(
   captures.length,
   beforeGeometryCapture,
   "adjacent geometry declarations retain the reusable full-viewport snapshot",
+);
+movingSurface.dataset.glassMotion = "false";
+await settle();
+assert.equal(
+  captures.length,
+  beforeGeometryCapture,
+  "GSAP motion lifecycle reuses the captured background",
+);
+const afterMotionRender = renders.length;
+await settle();
+assert.equal(
+  renders.length,
+  afterMotionRender,
+  "completed motion stops redraws",
+);
+const heldBackground = movingSurface.style.getPropertyValue("--glass-frame");
+const beforeFrozenRender = renders.length;
+movingSurface.dataset.glassFrozen = "true";
+updateGlassConfiguration(configuration("moving-coordinates", movingStage, 24));
+movingSurface.style.color = "rgb(30, 30, 30)";
+await settle();
+assert.equal(renders.length, beforeFrozenRender);
+assert.equal(movingSurface.dataset.glassState, "ready");
+assert.equal(
+  movingSurface.style.getPropertyValue("--glass-frame"),
+  heldBackground,
+  "a held navigation surface keeps its committed background while label colors change",
+);
+const frozenContent = movingSurface.ownerDocument.createElement("span");
+movingSurface.appendChild(frozenContent);
+const beforeFrozenCapture = captures.length;
+frozenContent.style.transform = "scale(1.2)";
+frozenContent.dataset.active = "true";
+await settle();
+assert.equal(
+  captures.length,
+  beforeFrozenCapture,
+  "held content animation does not invalidate its frozen background",
+);
+delete movingSurface.dataset.glassFrozen;
+await settle();
+assert.equal(latestFrame(movingSurface).frame.strength, 24);
+const beforeFailedCapture =
+  movingSurface.style.getPropertyValue("--glass-frame");
+nextCaptureFailure = new Error("Temporary capture failure");
+movingStage.style.backgroundColor = "rgb(80, 90, 100)";
+await settle();
+assert.equal(movingSurface.dataset.glassState, "ready");
+assert.equal(
+  movingSurface.style.getPropertyValue("--glass-frame"),
+  beforeFailedCapture,
+  "a failed moving-lens capture retains its decoded frame instead of flashing CSS",
+);
+window.dispatchEvent(new window.Event("scroll"));
+await settle();
+assert.notEqual(
+  movingSurface.style.getPropertyValue("--glass-frame"),
+  beforeFailedCapture,
+  "capture resumes normally after a transient failure",
 );
 releaseMoving();
 movingStage.remove();
@@ -959,6 +1082,16 @@ assert.equal(
   0,
   "CSS-only scopes never acquire capture font resources",
 );
+const portalStage = stage();
+const portalSurface = surface(portalStage, "css-only", 450, 250);
+paintOrder = [portalSurface, cssOnlySurface, portalStage, cssOnlyStage];
+await settle();
+assert.equal(
+  portalSurface.dataset.glassState,
+  "css",
+  "a newly mounted Portal outside a scoped capture target still inherits glass",
+);
+portalStage.remove();
 releaseCssOnly();
 cssOnlyStage.remove();
 const textStage = stage();

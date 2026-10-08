@@ -3,7 +3,7 @@ import { useId, useImperativeHandle, useMemo } from "react";
 import {
   type GlassCaptureTarget,
   GlassContext,
-  type GlassMaterial,
+  type GlassIntensity,
   type GlassMode,
   type GlassOptions,
   type GlassProviderRef,
@@ -14,7 +14,7 @@ import { refreshGlass } from "../lib/glass/runtime";
 export type {
   GlassCaptureTarget,
   GlassHandle,
-  GlassMaterial,
+  GlassIntensity,
   GlassMode,
   GlassOptions,
 } from "../lib/glass/context";
@@ -23,7 +23,7 @@ export type GlassProviderProps = {
   children: ReactNode;
   options?: GlassOptions;
   mode?: GlassMode;
-  material?: GlassMaterial;
+  intensity?: GlassIntensity;
   captureTarget?: GlassCaptureTarget;
   ref?: GlassProviderRef;
 };
@@ -31,8 +31,8 @@ export type GlassProviderProps = {
 export function GlassProvider({
   children,
   options,
-  mode = "css",
-  material = "frosted",
+  mode = "auto",
+  intensity = "default",
   captureTarget,
   ref,
 }: GlassProviderProps) {
@@ -42,14 +42,14 @@ export function GlassProvider({
     () => ({
       id,
       mode,
-      material,
+      intensity,
       options: { strength, blur, tint, tintOpacity, highlight },
       captureTarget,
     }),
     [
       id,
       mode,
-      material,
+      intensity,
       strength,
       blur,
       tint,
@@ -69,7 +69,7 @@ export function GlassProvider({
   );
   return (
     <GlassContext.Provider
-      value={{ configuration, material, enabled: false, surface: false }}
+      value={{ configuration, intensity, enabled: false, surface: false }}
     >
       {children}
     </GlassContext.Provider>
@@ -84,10 +84,12 @@ const DecoratedSurface = withGlass(Surface);
 
 export function GlassSurface({
   glass = true,
-  material,
+  intensity,
   ...props
-}: Omit<ComponentProps<typeof DecoratedSurface>, "glassMaterial"> & {
-  material?: GlassMaterial;
+}: Omit<ComponentProps<typeof DecoratedSurface>, "glassIntensity"> & {
+  intensity?: GlassIntensity;
 }) {
-  return <DecoratedSurface glass={glass} glassMaterial={material} {...props} />;
+  return (
+    <DecoratedSurface glass={glass} glassIntensity={intensity} {...props} />
+  );
 }

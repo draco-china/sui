@@ -2,17 +2,20 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import { gsap } from "gsap";
 import {
   type ComponentProps,
   type ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import { useGlassEnabled, withGlass } from "../lib/glass/context";
+import { GlassContext, useGlassEnabled, withGlass } from "../lib/glass/context";
 import { Button } from "./button";
+import { GlassProvider } from "./glass";
 
 export type TabBarItem = {
   value: string;
@@ -22,14 +25,14 @@ export type TabBarItem = {
 };
 
 const tabBarVariants = cva(
-  "group/tab-bar relative isolate flex w-fit max-w-full gap-1 overflow-auto rounded-full bg-muted p-1 text-muted-foreground transition-[scale] duration-200 ease-out data-[orientation=vertical]:flex-col data-[pressed=true]:overflow-visible motion-reduce:scale-100 motion-reduce:transform-none motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:hover:scale-[1.03]",
+  "group/tab-bar relative isolate flex w-fit max-w-full touch-pan-y select-none gap-1 overflow-auto rounded-full bg-muted p-1 text-muted-foreground data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:flex-col data-[pressed=true]:overflow-visible",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
   },
 );
 const tabBarItemVariants = cva(
-  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-accent focus-visible:z-20 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[glass=true]/tab-bar:data-[active=true]:bg-primary/10 group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent group-data-[glass=true]/tab-bar:active:translate-y-0",
+  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-accent focus-visible:z-20 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent group-data-[glass=true]/tab-bar:active:translate-y-0",
   {
     variants: {
       size: {
@@ -55,7 +58,7 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
 const Lens = withGlass((props: ComponentProps<"div">) => <div {...props} />);
 const indicatorVariants = cva(
-  "pointer-events-none absolute top-0 left-0 z-0 rounded-full transition-[translate,width,height,box-shadow] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-[pressed=true]:shadow-lg motion-reduce:transition-none",
+  "pointer-events-none absolute top-0 left-0 z-0 rounded-full data-[pressed=true]:shadow-lg",
   {
     variants: {
       glass: {
@@ -80,10 +83,18 @@ function TabBarImplementation({
 }: TabBarProps) {
   const track = useRef<HTMLDivElement>(null);
   const glass = useGlassEnabled();
+  const { configuration } = useContext(GlassContext);
   const [heldValue, setHeldValue] = useState<string | null>(null);
-  const [heldPosition, setHeldPosition] = useState<number | null>(null);
+  const selection = useRef<HTMLDivElement>(null);
+  const lens = useRef<HTMLDivElement>(null);
+  const reducedMotion = useRef(false);
+  const selectionMotion = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const lensMotion = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const initialized = useRef(false);
+  const moveLens = useRef<(duration?: number) => void>(() => {});
   const hold = useRef<{
     pointerId: number;
+    capture: boolean;
     value: string;
     timer: ReturnType<typeof setTimeout> | null;
     active: boolean;
@@ -98,8 +109,10 @@ function TabBarImplementation({
     if (pending?.timer) clearTimeout(pending.timer);
     hold.current = null;
     setHeldValue(null);
-    setHeldPosition(null);
-    if (pending && track.current?.hasPointerCapture?.(pending.pointerId))
+    if (
+      pending?.capture &&
+      track.current?.hasPointerCapture?.(pending.pointerId)
+    )
       track.current.releasePointerCapture(pending.pointerId);
   }, []);
   useEffect(() => {
@@ -116,15 +129,8 @@ function TabBarImplementation({
     if (pending.timer) clearTimeout(pending.timer);
     pending.timer = null;
     pending.active = true;
-    element.setPointerCapture?.(pending.pointerId);
-    const rect = element.getBoundingClientRect();
-    setHeldPosition(
-      orientation === "vertical"
-        ? ((pending.y - rect.top) * element.offsetHeight) / rect.height +
-            element.scrollTop
-        : ((pending.x - rect.left) * element.offsetWidth) / rect.width +
-            element.scrollLeft,
-    );
+    if (pending.capture) element.setPointerCapture?.(pending.pointerId);
+    moveLens.current();
     setHeldValue(pending.value);
   }
   const [bounds, setBounds] = useState<{
@@ -149,7 +155,7 @@ function TabBarImplementation({
     .join("\0");
   const measure = useCallback(() => {
     const button = track.current?.querySelector<HTMLElement>(
-      '[data-active="true"]',
+      '[aria-current="page"]',
     );
     const next = button
       ? {
@@ -188,33 +194,153 @@ function TabBarImplementation({
     };
   }, [value, orientation, size, signature, measure]);
 
-  if (!items.length) return null;
   const pressed = heldValue !== null;
-  const lensPosition = { x: bounds?.x ?? 0, y: bounds?.y ?? 0 };
-  if (pressed) {
-    lensPosition.x -= 5;
-    lensPosition.y -= 9;
-  }
-  if (bounds && heldPosition !== null) {
-    if (orientation === "horizontal")
-      lensPosition.x =
-        Math.max(
-          4,
-          Math.min(
-            (track.current?.scrollWidth ?? 0) - bounds.width - 4,
-            heldPosition - bounds.width / 2,
-          ),
-        ) - 5;
-    else if (orientation === "vertical")
-      lensPosition.y =
-        Math.max(
-          4,
-          Math.min(
-            (track.current?.scrollHeight ?? 0) - bounds.height - 4,
-            heldPosition - bounds.height / 2,
-          ),
-        ) - 9;
-  }
+  const animateIndicator = useCallback(
+    (
+      element: HTMLDivElement | null,
+      state: { x: number; y: number; width: number; height: number },
+      target: typeof state,
+      duration: number,
+      ease: string,
+    ) => {
+      if (!element) return;
+      gsap.killTweensOf(state);
+      if (element === lens.current)
+        element.dataset.glassMotion = String(
+          Boolean(hold.current?.active) &&
+            !reducedMotion.current &&
+            duration > 0,
+        );
+      const finish = () => {
+        if (element === lens.current) element.dataset.glassMotion = "false";
+      };
+      gsap.to(state, {
+        ...target,
+        duration: reducedMotion.current ? 0 : duration,
+        ease,
+        overwrite: true,
+        onComplete: finish,
+        onInterrupt: finish,
+        onUpdate: () => {
+          element.style.translate = `${state.x}px ${state.y}px`;
+          element.style.width = `${state.width}px`;
+          element.style.height = `${state.height}px`;
+        },
+      });
+    },
+    [],
+  );
+  useLayoutEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotion.current = preference.matches;
+    const update = () => {
+      reducedMotion.current = preference.matches;
+      if (preference.matches) {
+        for (const state of [selectionMotion.current, lensMotion.current])
+          for (const tween of gsap.getTweensOf(state)) tween.progress(1).kill();
+      }
+      for (const element of track.current?.querySelectorAll<HTMLElement>(
+        "[data-tab-bar-content]",
+      ) ?? []) {
+        gsap.killTweensOf(element);
+        gsap.set(element, {
+          scale:
+            !preference.matches &&
+            element.parentElement?.dataset.held === "true"
+              ? 1.2
+              : 1,
+        });
+      }
+    };
+    preference.addEventListener("change", update);
+    const selectionState = selectionMotion.current;
+    const lensState = lensMotion.current;
+    const element = track.current;
+    return () => {
+      preference.removeEventListener("change", update);
+      gsap.killTweensOf(selectionState);
+      gsap.killTweensOf(lensState);
+      if (element)
+        gsap.killTweensOf(element.querySelectorAll("[data-tab-bar-content]"));
+      if (lens.current) lens.current.dataset.glassMotion = "false";
+    };
+  }, []);
+  useLayoutEffect(() => {
+    if (!bounds) return;
+    moveLens.current = (duration = 0.08) => {
+      const pending = hold.current;
+      const element = track.current;
+      const target = { ...bounds };
+      if (pending?.active && element) {
+        const rect = element.getBoundingClientRect();
+        if (orientation === "horizontal") {
+          const position =
+            ((pending.x - rect.left) * element.offsetWidth) / rect.width +
+            element.scrollLeft;
+          target.x = Math.max(
+            4,
+            Math.min(
+              element.scrollWidth - bounds.width - 4,
+              position - bounds.width / 2,
+            ),
+          );
+        } else {
+          const position =
+            ((pending.y - rect.top) * element.offsetHeight) / rect.height +
+            element.scrollTop;
+          target.y = Math.max(
+            4,
+            Math.min(
+              element.scrollHeight - bounds.height - 4,
+              position - bounds.height / 2,
+            ),
+          );
+        }
+        target.x -= 5;
+        target.y -= 9;
+        target.width += 10;
+        target.height += 18;
+      }
+      animateIndicator(
+        lens.current,
+        lensMotion.current,
+        target,
+        duration,
+        "power2.out",
+      );
+    };
+    animateIndicator(
+      selection.current,
+      selectionMotion.current,
+      bounds,
+      initialized.current ? 0.5 : 0,
+      "elastic.out(1,0.68)",
+    );
+    initialized.current = true;
+    moveLens.current();
+  }, [bounds, orientation, animateIndicator]);
+  useLayoutEffect(() => {
+    moveLens.current(0.18);
+    for (const button of track.current?.querySelectorAll<HTMLButtonElement>(
+      "[data-tab-bar-item]",
+    ) ?? []) {
+      const content = button.querySelector("[data-tab-bar-content]");
+      if (!content) continue;
+      gsap.to(content, {
+        scale:
+          heldValue !== null &&
+          button.dataset.held === "true" &&
+          !reducedMotion.current
+            ? 1.2
+            : 1,
+        duration: reducedMotion.current ? 0 : 0.18,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+  }, [heldValue]);
+
+  if (!items.length) return null;
   return (
     <nav
       ref={ref}
@@ -228,6 +354,8 @@ function TabBarImplementation({
         data-orientation={orientation}
         data-lens={Boolean(bounds)}
         data-pressed={pressed}
+        data-glass-frozen={pressed}
+        data-glass-contrast="surface"
         data-glass={glass ? "true" : undefined}
         className={tabBarVariants({ size })}
         onPointerDown={(event) => {
@@ -238,9 +366,13 @@ function TabBarImplementation({
           if (!button || button.disabled) return;
           const item = items[Number(button.dataset.tabBarItem)];
           if (!item) return;
+          event.preventDefault();
+          if (event.isTrusted)
+            button.focus({ preventScroll: true, focusVisible: false });
           suppressClick.current = false;
           const pending = {
             pointerId: event.pointerId,
+            capture: event.isTrusted,
             value: item.value,
             active: false,
             x: event.clientX,
@@ -250,7 +382,6 @@ function TabBarImplementation({
             timer: null as ReturnType<typeof setTimeout> | null,
           };
           hold.current = pending;
-          track.current?.setPointerCapture?.(pending.pointerId);
           pending.timer = setTimeout(() => {
             if (hold.current !== pending) return;
             activateHold();
@@ -269,18 +400,7 @@ function TabBarImplementation({
             ) >= 6
           )
             activateHold();
-          if (pending.active && track.current) {
-            const rect = track.current.getBoundingClientRect();
-            setHeldPosition(
-              orientation === "vertical"
-                ? ((pending.y - rect.top) * track.current.offsetHeight) /
-                    rect.height +
-                    track.current.scrollTop
-                : ((pending.x - rect.left) * track.current.offsetWidth) /
-                    rect.width +
-                    track.current.scrollLeft,
-            );
-          }
+          if (pending.active) moveLens.current();
           const button = document
             .elementFromPoint(event.clientX, event.clientY)
             ?.closest<HTMLButtonElement>("button[data-tab-bar-item]");
@@ -300,7 +420,7 @@ function TabBarImplementation({
         onPointerUp={(event) => {
           const pending = hold.current;
           if (!pending || pending.pointerId !== event.pointerId) return;
-          {
+          if (pending.active) {
             suppressClick.current = true;
             const button = document
               .elementFromPoint(event.clientX, event.clientY)
@@ -319,7 +439,10 @@ function TabBarImplementation({
           cancelHold();
         }}
         onPointerCancel={cancelHold}
-        onLostPointerCapture={cancelHold}
+        onDragStart={(event) => event.preventDefault()}
+        onLostPointerCapture={(event) => {
+          if (event.target === track.current) cancelHold();
+        }}
         onContextMenu={(event) => {
           if (hold.current?.active) event.preventDefault();
         }}
@@ -378,7 +501,7 @@ function TabBarImplementation({
             variant="ghost"
             disabled={item.disabled}
             data-tab-bar-item={index}
-            data-active={item.value === value && !item.disabled}
+            data-active={item.value === (heldValue ?? value) && !item.disabled}
             aria-current={
               item.value === value && !item.disabled ? "page" : undefined
             }
@@ -392,7 +515,10 @@ function TabBarImplementation({
               if (item.value !== value) onValueChange(item.value);
             }}
           >
-            <span className="pointer-events-none flex flex-col items-center gap-1 transition-transform duration-200 group-data-[held=true]/button:scale-120 motion-reduce:transform-none [@media(hover:hover)_and_(pointer:fine)]:group-hover/button:scale-110">
+            <span
+              data-tab-bar-content=""
+              className="pointer-events-none flex select-none flex-col items-center gap-1"
+            >
               {item.icon ? (
                 <span aria-hidden="true" className="inline-flex">
                   {item.icon}
@@ -403,30 +529,35 @@ function TabBarImplementation({
           </Button>
         ))}
         <div
+          ref={selection}
           data-slot="tab-bar-selection"
+          data-glass-decoration=""
           aria-hidden="true"
           className={indicatorVariants({ glass })}
           style={{
-            translate: `${bounds?.x ?? 0}px ${bounds?.y ?? 0}px`,
-            width: bounds?.width ?? 0,
-            height: bounds?.height ?? 0,
+            translate: "0px 0px",
+            width: 0,
+            height: 0,
             visibility: bounds && !pressed ? "visible" : "hidden",
           }}
         />
-        <Lens
-          glass={glass && pressed}
-          glassMaterial="clear"
-          data-slot="tab-bar-indicator"
-          data-pressed={pressed}
-          aria-hidden="true"
-          className={indicatorVariants({ glass })}
-          style={{
-            translate: `${lensPosition.x}px ${lensPosition.y}px`,
-            width: (bounds?.width ?? 0) + (pressed ? 10 : 0),
-            height: (bounds?.height ?? 0) + (pressed ? 18 : 0),
-            visibility: bounds && pressed ? "visible" : "hidden",
-          }}
-        />
+        <GlassProvider mode="css" options={configuration?.options}>
+          <Lens
+            ref={lens}
+            glass={glass && pressed}
+            glassIntensity="sm"
+            data-slot="tab-bar-indicator"
+            data-pressed={pressed}
+            aria-hidden="true"
+            className={indicatorVariants({ glass })}
+            style={{
+              translate: "0px 0px",
+              width: 0,
+              height: 0,
+              visibility: bounds && pressed ? "visible" : "hidden",
+            }}
+          />
+        </GlassProvider>
       </Track>
     </nav>
   );
