@@ -5,7 +5,11 @@
     [
       "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits"
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "type": "docs", "release": false },
+          { "scope": "docs", "release": false }
+        ]
       }
     ],
     [

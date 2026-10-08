@@ -2,11 +2,17 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "dangerouslyDisablePackageManagerCheck": true,
+  "globalPassThroughEnv": [
+    "EVENT_NAME",
+    "BASE_SHA",
+    "HEAD_SHA",
+    "GITHUB_OUTPUT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", ".wrangler/deploy/**"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]

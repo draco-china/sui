@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
+    outputs:
+      release:
+        description: Whether library commits qualify for a release
+        value: ${{ jobs.check.outputs.release }}
 
 permissions:
   contents: read
@@ -15,8 +19,12 @@ jobs:
   check:
     name: Check, Test & Build
     runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.release.outputs.release }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -28,6 +36,15 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Check release eligibility
+        id: release
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: bun scripts/release-needed.ts
 
       - name: Check registry artifacts
         run: bun run registry:check
@@ -43,3 +60,7 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Validate Cloudflare deployment bundle
+        working-directory: apps/docs
+        run: bunx --bun wrangler deploy --dry-run
