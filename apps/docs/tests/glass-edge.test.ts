@@ -18,6 +18,12 @@ test("glass SVG preserves opposite highlights without an inner dark outline", ()
   expect(source).not.toContain('stop-color="black"');
   expect(source).not.toContain("shadow0");
   expect(source).not.toContain("shadow1");
+  const highlights = [...source.matchAll(/<path[^>]*opacity="([^"]+)"/g)].map(
+    ([, opacity]) => Number(opacity),
+  );
+  expect(highlights).toHaveLength(2);
+  expect(highlights[1]).toBeGreaterThan(0);
+  expect(highlights[1]).toBeLessThan(highlights[0]);
   const lights = [
     ...source.matchAll(/gradientTransform="translate\(([^ ]+) ([^)]+)\)/g),
   ].map(([, x, y]) => [Number(x), Number(y)]);
@@ -37,6 +43,12 @@ test("outer glass shading matches initial CSS, composes with focus rings, and ob
   );
   const outer = glassShadow(0.3);
   expect(outer).not.toContain("inset");
+  const shadows = [...outer.matchAll(/rgb\(0 0 0 \/ ([^)]+)\)/g)].map(
+    ([, opacity]) => Number(opacity),
+  );
+  expect(shadows).toHaveLength(2);
+  expect(shadows[1]).toBeGreaterThan(0);
+  expect(shadows[1]).toBeLessThan(shadows[0]);
   for (const shadow of outer.split(", ")) expect(css).toContain(shadow);
   expect(css).not.toMatch(/inset[^;\n]*rgb\(0 0 0/);
   for (const shadow of [

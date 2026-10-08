@@ -81,7 +81,7 @@ export function glassEdge(
     ${lights
       .map(
         (_, index) =>
-          `<path d="${outline(0.65)}" fill="none" stroke="url(#light${index})" stroke-width=".9" opacity="${opacity}" filter="url(#soft)"/>`,
+          `<path d="${outline(0.65)}" fill="none" stroke="url(#light${index})" stroke-width=".9" opacity="${index === 0 ? opacity : opacity * 0.7}" filter="url(#soft)"/>`,
       )
       .join("")}
   </svg>`;
@@ -91,5 +91,5 @@ export function glassEdge(
 export function glassShadow(highlight: number) {
   if (highlight <= 0) return "0 0 #0000";
   const opacity = Number(Math.min(highlight / 3, 0.28).toFixed(3));
-  return `1px -1px 2px -0.5px rgb(0 0 0 / ${opacity}), -1px 1px 2px -0.5px rgb(0 0 0 / ${opacity})`;
+  return `1px -1px 2px -0.5px rgb(0 0 0 / ${opacity}), -1px 1px 2px -0.5px rgb(0 0 0 / ${Number((opacity * 0.7).toFixed(3))})`;
 }

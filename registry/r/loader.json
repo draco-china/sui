@@ -704,7 +704,7 @@
       "--glass-initial-edge-shadow": "initial",
       "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(--glass-opacity, var(--glass-initial-opacity, 60%)),\n    transparent\n  )",
       "--glass-initial-edge-color": "color-mix(\n    in srgb,\n    color-mix(in srgb, var(--foreground) 12%, white) 28%,\n    transparent\n  )",
-      "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),\n      -1px 1px 2px -0.5px rgb(0 0 0 / 0.1)\n    ),\n    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
+      "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px\n        color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),\n      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),\n      -1px 1px 2px -0.5px rgb(0 0 0 / 0.07)\n    ),\n    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
       "background-image": "var(--glass-edge, none)",
       "background-size": "100% 100%",
       "background-repeat": "no-repeat",
