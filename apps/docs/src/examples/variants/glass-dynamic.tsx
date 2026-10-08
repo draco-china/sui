@@ -21,12 +21,12 @@ export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const stateLabels = chinese
     ? {
-        ready: "当前渲染：WebGPU 增强 + SVG 高光",
+        ready: "当前渲染：vgpu + WGSL 折射 + SVG 高光",
         fallback: "当前渲染：CSS + SVG（增强不可用）",
         loading: "当前渲染：CSS + SVG（等待增强）",
       }
     : {
-        ready: "Rendering: WebGPU enhancement + SVG highlights",
+        ready: "Rendering: vgpu + WGSL refraction + SVG highlights",
         fallback: "Rendering: CSS + SVG (enhancement unavailable)",
         loading: "Rendering: CSS + SVG (awaiting enhancement)",
       };
@@ -60,7 +60,7 @@ export default function Example({ locale }: ExampleProps) {
   }, []);
   const [text, setText] = useState("SUI / REFRACTION");
   const [strength, setStrength] = useState(22);
-  const [blur, setBlur] = useState(8);
+  const [blur, setBlur] = useState(6);
   const [highlight, setHighlight] = useState(0.3);
   const controls = [
     {
@@ -130,7 +130,6 @@ export default function Example({ locale }: ExampleProps) {
         ))}
       </div>
       <GlassProvider
-        mode="auto"
         ref={controller}
         captureTarget={scene}
         options={{ strength, blur, highlight }}
@@ -168,7 +167,7 @@ export default function Example({ locale }: ExampleProps) {
             </div>
           </ScrollArea>
           <GlassSurface
-            material="clear"
+            intensity="default"
             className="absolute top-20 left-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
           >
             <p>{chinese ? "文字与图片背景" : "Text and image background"}</p>
@@ -179,7 +178,7 @@ export default function Example({ locale }: ExampleProps) {
             </p>
           </GlassSurface>
           <GlassSurface
-            material="clear"
+            intensity="default"
             className="absolute top-20 right-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
           >
             <p>

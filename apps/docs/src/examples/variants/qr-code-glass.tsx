@@ -8,7 +8,7 @@ export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const defaultLabel = chinese ? "默认" : "Default";
   return (
-    <GlassProvider mode="css" material="clear">
+    <GlassProvider mode="css" intensity="sm">
       <div className="grid w-full gap-6 rounded-2xl bg-[linear-gradient(135deg,var(--primary),var(--background)_45%,var(--primary))] p-8 sm:grid-cols-2">
         {[false, true].map((glass) => (
           <div key={String(glass)} className="grid justify-items-center gap-3">

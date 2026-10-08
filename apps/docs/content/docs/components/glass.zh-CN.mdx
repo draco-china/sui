@@ -5,7 +5,7 @@ description: 以 SVG 高光和 CSS 磨砂为基础，按能力通过 WebGPU 增�
 
 ## CSS + SVG [#css-svg]
 
-纯 CSS 背景高斯模糊与 SVG 边缘高光，不初始化 WebGPU、不捕获背景。清透与磨砂使用当前主题的背景色，文字保持原有语义颜色。可通过站点的明暗切换比较两种模式。
+纯 CSS 背景高斯模糊与 SVG 边缘高光，不初始化 WebGPU、不捕获背景。三档强度使用当前主题的背景色，文字保持原有语义颜色。可通过站点的明暗切换比较两种模式。
 
 <ComponentPreview name="glass-demo" />
 
@@ -26,7 +26,7 @@ import { useRef } from "react";
 export function GlassPanel() {
   const sceneRef = useRef<HTMLDivElement>(null);
   return (
-    <GlassProvider mode="css" material="frosted" captureTarget={sceneRef}>
+    <GlassProvider intensity="default" captureTarget={sceneRef}>
       <div ref={sceneRef} className="relative rounded-2xl bg-muted p-6">
         <GlassSurface className="rounded-2xl bg-background p-6">
           玻璃表面
@@ -39,23 +39,23 @@ export function GlassPanel() {
 
 ## 表面如何渲染 [#rendering]
 
-Glass 默认使用 SVG 方向性边缘高光和 CSS 背景模糊，无需 GPU 渲染器即可呈现基础外观。服务端渲染不依赖 GPU，组件保持原有 DOM 结构和 ref。
+Glass 首屏使用跟随元素原生圆角的 CSS 内侧柔光和背景模糊。挂载并测量表面后，按实际尺寸生成的 SVG 局部边缘高光替换初始柔光。两个阶段均不依赖 GPU，保留原有 DOM 结构和 ref。
 
-Provider 默认为 `mode="css"`，不会请求 GPU 或捕获文档。显式选择 `mode="auto"` 后，才尝试 WebGPU 增强；仅当 `navigator.gpu` 可用，并且设备初始化和背景采样均成功后，才根据 DOM 快照增强真实折射。存在 `navigator.gpu` 并不保证能启用增强。初始化、采样或渲染失败时，仍保留 SVG 与 CSS 外观。
+Provider 默认为 `mode="auto"`，首屏先显示 CSS 基础外观，测量后接入 SVG 高光，再按能力尝试 WebGPU 增强。仅当 `navigator.gpu` 可用、设备初始化和背景采样均成功，并且增强帧完成解码后，才替换为真实折射。设置 `mode="css"` 可固定使用基础外观，不请求 GPU 或捕获文档。存在 `navigator.gpu` 并不保证能启用增强。初始化、采样或渲染失败时，仍保留 SVG 与 CSS 外观。
 
 默认不添加边框或装饰性外环，由 SVG 软边呈现轮廓；交互控件原有的键盘焦点环仍保留。
 
-CSS、回退和 WebGPU 增强模式共用同一份连续 SVG 边缘光照，GPU 仅负责背景折射与模糊，避免重复边缘。新帧完成解码后才替换旧帧，避免切换时出现空白。
+测量后，CSS、回退和 WebGPU 增强模式共用同一份 SVG 局部边缘高光，同时移除初始 CSS 柔光。GPU 仅负责背景折射与模糊，避免重复边缘。新帧完成解码后才替换旧帧，避免切换时出现空白。
 
-此功能需要显式启用：普通组件默认保持 `glass={false}`。`GlassSurface` 自身默认 `glass={true}`，可关闭以进行直接对照。
+此功能需要显式启用：普通组件默认保持 `glass={false}`。没有 Provider 的启用表面也使用 auto 增强；需要固定为 CSS 与 SVG 时，使用 `mode="css"` 的 Provider。`GlassSurface` 自身默认 `glass={true}`，可关闭以进行直接对照。
 
-Provider 为内部组件共享背景采样与渲染设置。`captureTarget` 接受元素或元素引用，建议限定为实际需要的视觉区域，避免捕获过大的文档。auto 模式下，不同实例的实际捕获目标、场景版本及遮挡集合一致时，共享同一背景快照和同一份上传至 GPU 的纹理。每个表面使用自己的采样坐标和圆角轮廓；仅移动表面时更新坐标，不重新捕获未变化的背景。背景变化会使旧快照失效，Portal 浮层仅在背景或遮挡集合不同时另行取样。截图使用 `html-to-image`，渲染增强使用原生 WebGPU。Glass runtime 静态导入，取样依赖与 WebGPU 渲染器仅在增强需要时加载。
+Provider 为内部组件共享背景采样与渲染设置。`captureTarget` 接受元素或元素引用，建议限定为实际需要的视觉区域，避免捕获过大的文档。auto 模式下，不同实例的实际捕获目标、场景版本及遮挡集合一致时，共享同一背景快照和同一份上传至 GPU 的纹理。每个表面使用自己的采样坐标和圆角轮廓；仅移动表面时更新坐标，不重新捕获未变化的背景。背景变化会使旧快照失效，Portal 浮层仅在背景或遮挡集合不同时另行取样。截图使用 `html-to-image`，由 `vgpu` 管理 GPU 上下文、纹理和渲染通道，WGSL 着色器负责折射与高斯模糊。Glass runtime 静态导入，取样依赖与 WebGPU 渲染器仅在增强需要时加载。
 
 ## WebGPU 增强 [#webgpu]
 
 CSS 背景模糊直接响应底层页面。启用 WebGPU 增强时，文字变化、普通图片、网格、尺寸变化和滚动可更新其背景快照。普通采样最高 5Hz，滚动期间最高 10Hz，并在共享队列中串行执行，因此背景变化与折射画面更新之间有短暂延迟，并不是实时视频。应用需要主动请求新快照时，使用 Provider 引用上的 `refresh()`。
 
-下面演示与上面的 CSS + SVG 演示分开，状态文字显示当前实际渲染模式。示例显式启用 `mode="auto"`，可修改背景文字，并提供折射、模糊与边缘高光滑块。两个独立玻璃表面共享场景，请从表面周围露出的区域滚动背景。增强生效时，将折射强度设为 `0` 可比较原始快照与折射结果；不支持增强的设备继续显示 CSS 与 SVG 材质。
+下面演示与上面的 CSS + SVG 演示分开，状态文字显示当前实际渲染模式。示例使用默认的 `mode="auto"`，可修改背景文字，并提供折射、模糊与边缘高光滑块。两个独立玻璃表面共享场景，请从表面周围露出的区域滚动背景。增强生效时，将折射强度设为 `0` 可比较原始快照与折射结果；不支持增强的设备继续显示 CSS 与 SVG 材质。
 
 <ComponentPreview name="glass-dynamic" />
 
@@ -69,17 +69,25 @@ CSS 背景模糊直接响应底层页面。启用 WebGPU 增强时，文字变�
 
 [TabBar](/zh-CN/docs/components/tab-bar) 提供独立应用导航与移动玻璃镜片，复用同一 Provider 和材质基础，路由仍由应用控制。
 
-## 材质 [#materials]
+## 强度档位 [#materials]
 
-选择 `material="clear"` 呈现更通透的表面，选择 `material="frosted"` 呈现更强的磨砂和色调遮罩。Clear 默认模糊为 `6px`、CSS 色调遮罩透明度为 `0.60`，Frosted 为 `8px` 与 `0.78`。Provider 默认为 `frosted`，`GlassSurface` 可单独覆盖继承的材质。显式设置 `options.blur` 可覆盖材质的默认模糊值。默认演示仅使用 CSS 与 SVG，将普通、清透、磨砂表面并列对照。
+通过 `intensity="sm" | "default" | "lg"` 选择三档强度。默认采用中档，Provider 为内部表面共享强度；`GlassSurface` 的 `intensity` 可单独覆盖继承值。
+
+| 强度 | 背景模糊 | 底色遮罩 |
+| --- | --- | --- |
+| `sm` | `4px` | `40%` |
+| `default` | `6px` | `60%` |
+| `lg` | `8px` | `78%` |
+
+三档使用相同的 SVG 高光与折射基础，背景和正文仍跟随主题。`options.blur` 与 `options.tintOpacity` 可覆盖档位默认值；`options.strength` 独立控制数值型折射强度，默认为 `22`。上面的 CSS + SVG 示例同时展示普通表面和三档强度。
 
 ## 主题与回退 [#themes]
 
 默认色调来自当前表面的背景 token，会跟随浅色、深色及强调配色，并保留主色和危险状态色。可在 Provider 上调整 `strength`、`blur`、`tint`、`tintOpacity` 和 `highlight`，统一表面处理。SVG 柔和高光仅作用于表面边缘，`highlight` 统一控制高光强度；默认的 SVG 与 CSS 外观同样保留这些光线细节；没有 WebGPU 时，`highlight` 和 `blur` 参数仍然生效。
 
-WebGPU 不可用或背景捕获失败时，默认磨砂表面仍然显示，控件仍可使用。玻璃效果用于视觉表现，不应成为理解内容的必要条件。
+WebGPU 不可用或背景捕获失败时，基础玻璃表面仍然显示，控件仍可使用。玻璃效果用于视觉表现，不应成为理解内容的必要条件。
 
-Glass 在局部增强中性说明文字和占位文字的对比度，同时保留主题的主色、危险色与焦点色。选择清透玻璃或调整遮罩透明度时，需要结合实际背景检查文字；透明材质无法保证任意背景上的对比度。底层内容影响阅读时，可使用更浓的色调遮罩或普通表面。
+Glass 在局部增强中性说明文字和占位文字的对比度，同时保留主题的主色、危险色与焦点色。选择清透玻璃或调整遮罩透明度时，需要结合实际背景检查文字；透明材质无法保证任意背景上的对比度。底层内容影响阅读时，可使用更高的强度档位或普通表面。
 
 WebGPU 增强会读取所属表面内正文和输入占位文字的实际颜色与透明度，并调整捕获背景，使这些文字达到至少 4.5:1 的对比度。具有独立背景的子元素与嵌套玻璃分别处理自己的背景；收集到的颜色无法共用可读背景时，增强回退为 CSS 与 SVG。CSS 回退、生成内容或 SVG 文字、自定义混合与滤镜、外层透明度仍需结合实际画面检查。
 
@@ -95,18 +103,18 @@ WebGPU 增强使用的 DOM 捕获不是浏览器合成器截图。跨域图片�
 
 | 属性 | 类型 | 默认值／说明 |
 | --- | --- | --- |
-| Provider `mode` | `"css" \| "auto"` | `"css"`；`"auto"` 尝试 WebGPU 折射 |
-| Provider `material` | `"clear" \| "frosted"` | `"frosted"`；共享材质 |
+| Provider `mode` | `"css" \| "auto"` | `"auto"`；先显示 CSS 与 SVG，再按能力增强 |
+| Provider `intensity` | `"sm" \| "default" \| "lg"` | `"default"`；共享强度 |
 | Provider `options` | `GlassOptions` | 共享渲染设置 |
 | Provider `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | 可选的局部 DOM 捕获目标 |
 | Provider `ref` | `Ref<GlassHandle>` | `refresh(): void` 请求新快照 |
 | Options `strength` | `number` | `22`；WebGPU 折射强度 |
-| Options `blur` | `number` | 使用材质默认值；显式值覆盖 CSS 与增强模糊 |
+| Options `blur` | `number` | 使用强度档位默认值；显式值覆盖 CSS 与增强模糊 |
 | Options `tint` | `string` | 当前表面背景颜色 |
-| Options `tintOpacity` | `number` | CSS 与增强共用材质默认值；显式值覆盖两者 |
+| Options `tintOpacity` | `number` | CSS 与增强共用强度档位默认值；显式值覆盖两者 |
 | Options `highlight` | `number` | `0.3` |
 | Surface `glass` | `boolean` | `true`；普通组件默认 `false` |
-| Surface `material` | `"clear" \| "frosted"` | 继承 Provider 材质 |
+| Surface `intensity` | `"sm" \| "default" \| "lg"` | 继承 Provider 强度 |
 | Surface 其他属性 | 原生 div 属性 | 包含 `className`、`style` 和 `ref` |
 
-模块导出 `GlassProvider`、`GlassSurface`、`GlassOptions`、`GlassCaptureTarget`、`GlassProviderProps`、`GlassMode`、`GlassMaterial` 和 `GlassHandle`。默认表面由 SVG 与 CSS 提供，可选增强使用 [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)。SUI 的组件接入由上表属性控制。
+模块导出 `GlassProvider`、`GlassSurface`、`GlassOptions`、`GlassCaptureTarget`、`GlassProviderProps`、`GlassMode`、`GlassIntensity` 和 `GlassHandle`。默认表面由 SVG 与 CSS 提供，可选增强使用 [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)。SUI 的组件接入由上表属性控制。

@@ -53,7 +53,7 @@ Finder patterns use concentric rounded outer rings and rounded solid centers. Th
 
 ## Glass mode [#glass]
 
-Enable `glass` to use the shared glass material across the entire background, and configure its material and rendering mode with `GlassProvider`. The code fills the surface without a separate rim or solid inner panel. Its `--foreground` modules remain sharp SVG content over the transparent code layer; the small logo surface remains solid. Switching the theme or glass material preserves the encoded content. `glassMaterial` overrides the provider material for this instance.
+Enable `glass` to use the shared glass material across the entire background, and configure its intensity and rendering mode with `GlassProvider`. The code fills the surface without a separate rim or solid inner panel. Its `--foreground` modules remain sharp SVG content over the transparent code layer; the small logo surface remains solid. Switching the theme or glass intensity preserves the encoded content. `glassIntensity` overrides the provider intensity for this instance.
 
 The background behind the glass changes the visible contrast and quiet zone. Test scanning on the actual background, in both appearance modes and at the final display size. Glass does not guarantee the contrast of the default solid surface.
 
@@ -70,7 +70,7 @@ The background behind the glass changes the visible contrast and quiet zone. Tes
 | `label` | `string` | `"QR code"`; accessible description. |
 | `margin` | `number` | `16`; quiet space in CSS pixels at the requested size. |
 | `glass` | `boolean` | Off by default; uses glass across the code background. |
-| `glassMaterial` | `"clear" \| "frosted"` | Overrides the provider material. |
+| `glassIntensity` | `"sm" \| "default" \| "lg"` | Overrides the provider intensity. |
 | `logo` | `ReactNode` | Optional center overlay. |
 | `render`, `ref`, other props | Div / useRender props | Forwarded to the root. |
 

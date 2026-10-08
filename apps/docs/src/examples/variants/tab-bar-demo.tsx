@@ -29,7 +29,7 @@ export default function Example({ locale }: ExampleProps) {
   ];
   const current = items.find((item) => item.value === value);
   return (
-    <GlassProvider mode="auto" material="clear" captureTarget={scene}>
+    <GlassProvider intensity="sm" captureTarget={scene}>
       <div
         ref={scene}
         className="relative isolate flex min-h-80 w-full flex-col justify-between overflow-hidden rounded-2xl bg-muted p-6"
