@@ -14,7 +14,6 @@ import {
 
 import {
   GlassContrastError,
-  type GlassTextBounds,
   type GlassTextColor,
   maxGlassTextColors,
   resolveGlassContrastTint,
@@ -33,7 +32,6 @@ export type GlassFrame = {
   tintOpacity: number;
   foreground: [number, number, number];
   textColors?: readonly GlassTextColor[];
-  textBounds?: readonly GlassTextBounds[];
   minimumContrast?: number;
 };
 
@@ -48,7 +46,6 @@ struct Params {
   minimumContrast: f32,
   contrastMaterial: vec4f,
   textColors: array<vec4f, ${maxGlassTextColors}>,
-  textBounds: array<vec4f, ${maxGlassTextColors}>,
 };
 @group(0) @binding(0) var<uniform> params: Params;
 @group(0) @binding(1) var background: texture_2d<f32>;
@@ -67,10 +64,8 @@ fn contrast(a: vec3f, b: vec3f) -> f32 {
   let y = luminance(b) + 0.05;
   return max(x, y) / min(x, y);
 }
-fn supportsTextContrast(background: vec3f, point: vec2f) -> bool {
+fn supportsTextContrast(background: vec3f) -> bool {
   for (var index = 0u; index < u32(params.contrastMaterial.w); index++) {
-    let bounds = params.textBounds[index];
-    if (point.x < bounds.x || point.y < bounds.y || point.x > bounds.z || point.y > bounds.w) { continue; }
     let text = params.textColors[index];
     let foreground = mix(background, text.xyz, text.w);
     if (contrast(background, foreground) < params.minimumContrast) { return false; }
@@ -122,13 +117,20 @@ fn sourceColor(p: vec2f) -> vec3f {
   let saturated = mix(vec3f(luminanceValue), sampled, 1.12);
   var result = mix(saturated, params.tint, params.material.x);
   result = clamp(result, vec3f(0.0), vec3f(1.0));
-  if (params.minimumContrast > 0.0 && !supportsTextContrast(result, p)) {
+  if (params.minimumContrast > 0.0 && !supportsTextContrast(result)) {
     let safeTint = params.contrastMaterial.xyz;
+    var lower = 0.0;
+    var upper = 1.0;
     for (var index = 0; index < 8; index++) {
-      if (supportsTextContrast(result, p)) { break; }
-      result = mix(result, safeTint, 0.18);
+      let amount = (lower + upper) * 0.5;
+      if (supportsTextContrast(mix(result, safeTint, amount))) {
+        upper = amount;
+      } else {
+        lower = amount;
+      }
     }
-    if (!supportsTextContrast(result, p)) { result = safeTint; }
+    result = mix(result, safeTint, upper);
+    if (!supportsTextContrast(result)) { result = safeTint; }
   }
   return vec4f(result, 1.0 - smoothstep(-0.65, 0.65, distance));
 }`;
@@ -393,16 +395,6 @@ export class GlassRenderer {
       )
     )
       throw new GlassContrastError("Unsupported glass text colors");
-    const textBounds =
-      frame.textBounds ??
-      textColors.map(() => [0, 0, frame.width, frame.height]);
-    if (
-      textBounds.length !== textColors.length ||
-      textBounds.some(
-        (bounds) => bounds.length !== 4 || !bounds.every(Number.isFinite),
-      )
-    )
-      throw new GlassContrastError("Unsupported glass text bounds");
     const minimum = frame.minimumContrast ?? 4.5;
     const contrastMinimum = minimum > 0 ? minimum + 0.05 : 0;
     const contrastKey = JSON.stringify([
@@ -473,12 +465,8 @@ export class GlassRenderer {
       const padding = () =>
         Array.from({ length: maxGlassTextColors }, () => [0, 0, 0, 0]);
       const colors = padding();
-      const bounds = padding();
       textColors.forEach((color, index) => {
         colors[index] = [...color];
-      });
-      textBounds.forEach((region, index) => {
-        bounds[index] = [...region];
       });
       this.refraction.set({
         params: {
@@ -495,7 +483,6 @@ export class GlassRenderer {
           minimumContrast: contrastMinimum,
           contrastMaterial: [...contrastTint, textColors.length],
           textColors: colors,
-          textBounds: bounds,
         },
         background: input,
         linearSampler: this.linearSampler,

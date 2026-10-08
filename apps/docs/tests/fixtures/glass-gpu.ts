@@ -239,8 +239,8 @@ assert.deepEqual(Array.from(shared.uniforms[1]?.slice(6, 8) ?? []), [200, 80]);
 assert.deepEqual(Array.from(shared.uniforms[2]?.slice(6, 8) ?? []), [5, 5]);
 assert.equal(
   shared.uniforms[0]?.length,
-  284,
-  "refraction packing uses a 112-byte base plus two text arrays",
+  156,
+  "refraction packing uses a 112-byte base and text colors without rectangular masks",
 );
 assert.deepEqual(
   Array.from(shared.uniforms[0]?.slice(16, 18) ?? []),
@@ -262,29 +262,11 @@ const textColors: [number, number, number, number][] = [
   [0.35, 0.35, 0.35, 1],
   [0, 0.3, 0.7, 0.9],
 ];
-const textBounds: [number, number, number, number][] = [
-  [4, 8, 30, 20],
-  [40, 8, 68, 20],
-  [80, 8, 110, 20],
-];
-await sharedRenderer.render(viewport, { ...frame, textColors, textBounds });
+await sharedRenderer.render(viewport, { ...frame, textColors });
 assert.equal(shared.uniforms.at(-1)?.[27], textColors.length);
 assert.deepEqual(
   Array.from(shared.uniforms.at(-1)?.slice(28, 40) ?? []),
   textColors.flat().map(Math.fround),
-);
-assert.deepEqual(
-  Array.from(shared.uniforms.at(-1)?.slice(156, 168) ?? []),
-  textBounds.flat(),
-  "vgpu reflection packs bounds into WGSL arrays",
-);
-await assert.rejects(
-  sharedRenderer.render(viewport, {
-    ...frame,
-    textColors,
-    textBounds: [[0, 0, Number.NaN, 12]],
-  }),
-  { name: "GlassContrastError", message: "Unsupported glass text bounds" },
 );
 await assert.rejects(
   sharedRenderer.render(viewport, {

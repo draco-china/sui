@@ -93,24 +93,6 @@ assert.equal(colors.at(-1)?.[3], 204 / 255, "RGBA text alpha is preserved");
 const scanned = reads;
 assert.equal(cache.read(surface), colors);
 assert.equal(reads, scanned, "unchanged frames reuse the DOM/style scan");
-Object.defineProperty(surface, "getBoundingClientRect", {
-  value: () => new window.DOMRect(100, 200, 300, 160),
-});
-const link = surface.querySelector("a");
-assert.ok(link);
-let linkLeft = 120;
-Object.defineProperty(link, "getBoundingClientRect", {
-  value: () => new window.DOMRect(linkLeft, 220, 80, 20),
-});
-const linkColor = colors.findIndex((color) => color[2] === 204 / 255);
-assert.deepEqual(cache.readBounds(surface)[linkColor], [20, 20, 100, 40]);
-linkLeft = 140;
-assert.deepEqual(cache.readBounds(surface)[linkColor], [40, 20, 120, 40]);
-assert.equal(
-  reads,
-  scanned,
-  "moving text updates bounds without rescanning styles",
-);
 window.dispatchEvent(new window.Event("scroll"));
 assert.equal(cache.read(surface), colors);
 assert.equal(reads, scanned, "scrolling alone cannot invalidate text colors");
@@ -174,10 +156,22 @@ for (const { tint, colors: textColors } of cases) {
     ];
     const passes = () =>
       textColors.every((color) => glassTextContrast(result, color) >= 4.55);
-    for (let step = 0; step < 8 && !passes(); step++)
-      result = result.map(
-        (channel, index) => channel * 0.82 + safe[index] * 0.18,
+    if (!passes()) {
+      const original = result;
+      let lower = 0;
+      let upper = 1;
+      for (let step = 0; step < 8; step++) {
+        const amount = (lower + upper) * 0.5;
+        result = original.map(
+          (channel, index) => channel * (1 - amount) + safe[index] * amount,
+        );
+        if (passes()) upper = amount;
+        else lower = amount;
+      }
+      result = original.map(
+        (channel, index) => channel * (1 - upper) + safe[index] * upper,
       );
+    }
     if (!passes()) result = safe;
     const pixels = result.map((channel) => Math.round(channel * 255) / 255);
     for (const color of textColors)

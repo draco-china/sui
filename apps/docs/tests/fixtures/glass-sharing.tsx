@@ -473,9 +473,9 @@ assert.equal(
 );
 assert.notEqual(latestFrame(track).source, latestFrame(indicator).source);
 assert.equal(
-  latestFrame(track).frame.textBounds,
+  latestFrame(track).frame.textColors,
   undefined,
-  "navigation uses a continuous material without individual label masks",
+  "navigation derives shared contrast from the surface foreground",
 );
 const indicatorCapture = captures.find(
   ({ snapshot }) => snapshot === latestFrame(indicator).source,

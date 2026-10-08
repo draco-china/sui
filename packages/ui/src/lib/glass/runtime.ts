@@ -1043,9 +1043,6 @@ class GlassManager {
         textColors: surfaceContrast
           ? undefined
           : this.textContrast.read(element),
-        textBounds: surfaceContrast
-          ? undefined
-          : this.textContrast.readBounds(element),
         minimumContrast:
           element.getAttribute("aria-hidden") === "true" ? 0 : 4.5,
       } satisfies Parameters<GlassRenderer["render"]>[1];
