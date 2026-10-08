@@ -1,0 +1,48 @@
+# Dependencies and package manager caches
+node_modules/
+.pnpm-store/
+
+# Build output and tool caches
+dist/
+apps/docs/public/r/
+.turbo/
+.tanstack/
+.source/
+.output/
+.nitro/
+.vinxi/
+.vite/
+.cache/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+*.log.*
+
+# Local environment files; keep reusable templates
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.sample
+!.env.*.sample
+
+# Local review working notes
+review-plans/
+
+# Local hook overrides
+/lefthook-local.yml
+/lefthook-local.yaml
+
+# OS metadata and editor temporary files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

@@ -1,0 +1,13 @@
+pre-commit:
+  commands:
+    biome:
+      run: bun biome check --write --no-errors-on-unmatched {staged_files}
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css}"
+      exclude:
+        - apps/docs/src/routeTree.gen.ts
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: ./node_modules/.bin/commitlint --edit {1}

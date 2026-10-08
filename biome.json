@@ -1,0 +1,58 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "files": {
+    "includes": [
+      "**",
+      "!!**/routeTree.gen.ts",
+      "!!registry/r",
+      "!!apps/docs/public/r",
+      "!!**/.source",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/.turbo",
+      "!!**/.output",
+      "!!**/.nitro",
+      "!!**/.tanstack",
+      "!!**/.vinxi",
+      "!!**/coverage",
+      "!!**/.pnpm-store",
+      "!!**/bun.lock",
+      "!!**/pnpm-lock.yaml",
+      "!!**/package-lock.json",
+      "!!**/yarn.lock"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "nursery": {
+        "useSortedClasses": {
+          "level": "error",
+          "fix": "safe",
+          "options": {
+            "functions": ["cn", "cva"]
+          }
+        }
+      }
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "preset": "recommended"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
+}
