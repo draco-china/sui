@@ -1,15 +1,18 @@
 import { expect, test } from "bun:test";
-import { analyzeCommits } from "@semantic-release/commit-analyzer";
 import releaseConfig from "../../../.releaserc.json";
 
+const { analyzeCommits } = await import(
+  Bun.resolveSync("@semantic-release/commit-analyzer", import.meta.dir)
+);
 const analyzer = releaseConfig.plugins.find(
   (plugin) =>
     Array.isArray(plugin) && plugin[0] === "@semantic-release/commit-analyzer",
 );
 if (!Array.isArray(analyzer)) throw new Error("Missing commit analyzer");
+const analyzerOptions = analyzer[1];
 
 function analyze(...messages: string[]) {
-  return analyzeCommits(analyzer[1], {
+  return analyzeCommits(analyzerOptions, {
     cwd: import.meta.dir,
     commits: messages.map((message, index) => ({ hash: `${index}`, message })),
     logger: { log() {} },
