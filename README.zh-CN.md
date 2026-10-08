@@ -1,14 +1,38 @@
-# SUI
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/public/logo-dark.svg">
+    <img src="apps/docs/public/logo.svg" alt="SUI 标志" width="96" height="96">
+  </picture>
+</p>
 
-[English](README.md) | 简体中文
+<h1 align="center">SUI</h1>
 
-[![CI](https://img.shields.io/github/actions/workflow/status/draco-china/sui/ci.yml?style=flat&label=CI&logo=githubactions&logoColor=white)](https://github.com/draco-china/sui/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/actions/workflow/status/draco-china/sui/publish.yml?branch=main&style=flat&label=Release&logo=githubactions&logoColor=white)](https://github.com/draco-china/sui/actions/workflows/publish.yml)
-[![Version](https://img.shields.io/github/v/release/draco-china/sui?style=flat&label=Version&color=5882B5)](https://github.com/draco-china/sui/releases)
-[![MIT](https://img.shields.io/badge/License-MIT-6A9475?style=flat)](LICENSE)
+<p align="center">
+  可组合的 React 组件，细致的交互体验，可选的玻璃表面<br>
+  基于 Base UI、Tailwind CSS 4 和 shadcn
+</p>
 
-基于 Base UI 和 Tailwind CSS v4 的开源 React 组件库，提供可复用组件、业务
-Blocks、共享主题和可选玻璃材质，配套 Fumadocs 与 TanStack Start 双语文档站。
+<p align="center">
+  <a href="https://github.com/draco-china/sui/releases"><img src="https://img.shields.io/github/v/release/draco-china/sui?style=flat-square" alt="最新版本"></a>
+  <a href="https://github.com/draco-china/sui/stargazers"><img src="https://img.shields.io/github/stars/draco-china/sui?style=flat-square&amp;logo=github" alt="GitHub Stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/draco-china/sui?style=flat-square" alt="MIT 许可证"></a>
+</p>
+
+<p align="center">
+  <a href="README.md">English</a> · 简体中文<br>
+  <a href="#安装">安装</a> · <a href="#文档">文档</a> · <a href="https://github.com/draco-china/sui/releases">更新记录</a>
+</p>
+
+## 项目特色
+
+| 特色 | 说明 |
+| --- | --- |
+| **组件与 Blocks** | 表单控件、导航、反馈、内容查看器与组合工作流 |
+| **共享主题** | 语义化 OKLCH 变量、八套强调色与明暗模式 |
+| **玻璃表面** | 三档强度，支持 CSS、SVG 折射与 vgpu + WGSL 渲染 |
+| **源码可控** | 通过 shadcn 安装组件和 Blocks，按应用需要调整源码 |
+| **AI 工具** | 通过 shadcn MCP 使用 registry，提供面向 LLM 的文档 |
+| **交互文档** | 中英文 API 与可运行示例，基于 Fumadocs 与 TanStack Start |
 
 ## 安装
 
@@ -16,6 +40,14 @@ Blocks、共享主题和可选玻璃材质，配套 Fumadocs 与 TanStack Start 
 
 ```sh
 bunx --bun shadcn@latest add https://raw.githubusercontent.com/draco-china/sui/main/registry/r/button.json
+```
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+export function SaveButton() {
+  return <Button>保存更改</Button>
+}
 ```
 
 或将 registry 命名空间添加到应用的 `components.json`：
@@ -45,6 +77,8 @@ bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-
 | 主题 | English | 简体中文 |
 | --- | --- | --- |
 | Installation | [Guide](apps/docs/content/docs/installation.mdx) | [安装](apps/docs/content/docs/installation.zh-CN.mdx) |
+| Components | [Browse](apps/docs/content/docs/components/index.mdx) | [浏览](apps/docs/content/docs/components/index.zh-CN.mdx) |
+| Glass | [Guide](apps/docs/content/docs/components/glass.mdx) | [玻璃效果](apps/docs/content/docs/components/glass.zh-CN.mdx) |
 | Theming | [Guide](apps/docs/content/docs/theming.mdx) | [主题](apps/docs/content/docs/theming.zh-CN.mdx) |
 | CLI | [Guide](apps/docs/content/docs/cli.mdx) | [指南](apps/docs/content/docs/cli.zh-CN.mdx) |
 | Registry | [Guide](apps/docs/content/docs/registry.mdx) | [指南](apps/docs/content/docs/registry.zh-CN.mdx) |
@@ -104,8 +138,8 @@ registry/r/      可安装的 shadcn registry 条目
 欢迎提交 Issue 和 Pull Request。保持中英文文档一致，UI 改动后重新生成
 registry，提交前运行上述检查，提交信息使用 Conventional Commits。
 
-文档、CI 和维护类更新不会自动发版，符合条件的组件库与 registry 变更遵循
-semantic-release 版本规则。
+`main` 分支 CI 通过后，semantic-release 根据 `.releaserc.json` 分析上次发布以来的
+全部提交。文档提交不会单独产生版本，功能、修复与破坏性变更遵循配置中的版本规则。
 
 ## 许可证
 

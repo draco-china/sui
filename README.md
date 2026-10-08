@@ -1,15 +1,38 @@
-# SUI
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/public/logo-dark.svg">
+    <img src="apps/docs/public/logo.svg" alt="SUI logo" width="96" height="96">
+  </picture>
+</p>
 
-English | [简体中文](README.zh-CN.md)
+<h1 align="center">SUI</h1>
 
-[![CI](https://img.shields.io/github/actions/workflow/status/draco-china/sui/ci.yml?style=flat&label=CI&logo=githubactions&logoColor=white)](https://github.com/draco-china/sui/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/actions/workflow/status/draco-china/sui/publish.yml?branch=main&style=flat&label=Release&logo=githubactions&logoColor=white)](https://github.com/draco-china/sui/actions/workflows/publish.yml)
-[![Version](https://img.shields.io/github/v/release/draco-china/sui?style=flat&label=Version&color=5882B5)](https://github.com/draco-china/sui/releases)
-[![MIT](https://img.shields.io/badge/License-MIT-6A9475?style=flat)](LICENSE)
+<p align="center">
+  Composable React components with thoughtful interactions and optional glass surfaces.<br>
+  Built with Base UI, Tailwind CSS 4, and shadcn.
+</p>
 
-An open-source React component library built with Base UI and Tailwind CSS v4.
-Includes reusable components, business blocks, shared themes, optional glass
-materials, and bilingual documentation powered by Fumadocs and TanStack Start.
+<p align="center">
+  <a href="https://github.com/draco-china/sui/releases"><img src="https://img.shields.io/github/v/release/draco-china/sui?style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/draco-china/sui/stargazers"><img src="https://img.shields.io/github/stars/draco-china/sui?style=flat-square&amp;logo=github" alt="GitHub stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/draco-china/sui?style=flat-square" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  English · <a href="README.zh-CN.md">简体中文</a><br>
+  <a href="#installation">Installation</a> · <a href="#documentation">Documentation</a> · <a href="https://github.com/draco-china/sui/releases">Changelog</a>
+</p>
+
+## What’s inside
+
+| Feature | Details |
+| --- | --- |
+| **Components & Blocks** | Form controls, navigation, feedback, content viewers, and composed workflows |
+| **Shared themes** | Semantic OKLCH tokens, eight accent palettes, and light/dark appearance |
+| **Glass surfaces** | Three intensity levels with CSS, SVG refraction, and vgpu + WGSL rendering |
+| **Source ownership** | Install components and Blocks through shadcn, then adapt the source to your app |
+| **AI tooling** | Registry integration with shadcn MCP and LLM-ready documentation |
+| **Live documentation** | English and Chinese APIs and interactive examples, powered by Fumadocs and TanStack Start |
 
 ## Installation
 
@@ -18,6 +41,14 @@ Install a component directly:
 
 ```sh
 bunx --bun shadcn@latest add https://raw.githubusercontent.com/draco-china/sui/main/registry/r/button.json
+```
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+export function SaveButton() {
+  return <Button>Save changes</Button>
+}
 ```
 
 Or add the registry namespace to your application's `components.json`:
@@ -49,6 +80,8 @@ client setup.
 | Topic | English | 简体中文 |
 | --- | --- | --- |
 | Installation | [Guide](apps/docs/content/docs/installation.mdx) | [安装](apps/docs/content/docs/installation.zh-CN.mdx) |
+| Components | [Browse](apps/docs/content/docs/components/index.mdx) | [浏览](apps/docs/content/docs/components/index.zh-CN.mdx) |
+| Glass | [Guide](apps/docs/content/docs/components/glass.mdx) | [玻璃效果](apps/docs/content/docs/components/glass.zh-CN.mdx) |
 | Theming | [Guide](apps/docs/content/docs/theming.mdx) | [主题](apps/docs/content/docs/theming.zh-CN.mdx) |
 | CLI | [Guide](apps/docs/content/docs/cli.mdx) | [指南](apps/docs/content/docs/cli.zh-CN.mdx) |
 | Registry | [Guide](apps/docs/content/docs/registry.mdx) | [指南](apps/docs/content/docs/registry.zh-CN.mdx) |

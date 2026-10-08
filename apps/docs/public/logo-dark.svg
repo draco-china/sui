@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" fill="none">
+  <title>SUI — Yin-yang</title>
+  <path d="M36 6a30 30 0 0 0 0 60a15 15 0 0 0 0-30a15 15 0 0 1 0-30Z" fill="#fff"/>
+  <path d="M36 6a30 30 0 0 1 0 60a15 15 0 0 0 0-30a15 15 0 0 1 0-30Z" fill="#17191c"/>
+  <circle cx="36" cy="21" r="3.5" fill="#fff"/>
+  <circle cx="36" cy="51" r="3.5" fill="#17191c"/>
+</svg>
