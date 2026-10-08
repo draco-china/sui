@@ -1,0 +1,1105 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "long-text",
+  "title": "Long Text",
+  "description": "SUI component: long-text. Includes its local dependencies and SUI styles.",
+  "dependencies": [
+    "@base-ui/react@^1.8.0",
+    "@fontsource-variable/inter@^5.3.0",
+    "cn@^0.4.0",
+    "html-to-image@1.11.13",
+    "shadcn@^4.21.3",
+    "tw-animate-css@^1.4.0"
+  ],
+  "devDependencies": [
+    "@webgpu/types@^0.1.74"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "packages/ui/src/components/long-text.tsx",
+      "content": "\"use client\";\n\nimport {\n  Popover,\n  PopoverContent,\n  PopoverTrigger,\n} from \"@/components/ui/popover\";\nimport {\n  Tooltip,\n  TooltipContent,\n  TooltipTrigger,\n} from \"@/components/ui/tooltip\";\nimport { cn } from \"cn\";\nimport { type ReactNode, useEffect, useRef, useState } from \"react\";\n\nexport interface LongTextProps {\n  children: ReactNode;\n  className?: string;\n  contentClassName?: string;\n  label?: string;\n}\n\n/** Reveals truncated text on hover/focus, or on tap for coarse pointers. */\nexport function LongText({\n  children,\n  className,\n  contentClassName,\n  label,\n}: LongTextProps) {\n  const ref = useRef<HTMLSpanElement>(null);\n  const [overflow, setOverflow] = useState(false);\n  const [touch, setTouch] = useState(false);\n  useEffect(() => {\n    const media = window.matchMedia(\"(pointer: coarse)\");\n    const update = () => setTouch(media.matches);\n    update();\n    media.addEventListener(\"change\", update);\n    return () => media.removeEventListener(\"change\", update);\n  }, []);\n  // biome-ignore lint/correctness/useExhaustiveDependencies: Content, width classes, and trigger mode can replace or resize the measured DOM node.\n  useEffect(() => {\n    const element = ref.current;\n    if (!element) return;\n    let disposed = false;\n    const measure = () => {\n      if (!disposed)\n        setOverflow(\n          element.scrollWidth > element.clientWidth ||\n            element.scrollHeight > element.clientHeight,\n        );\n    };\n    measure();\n    const observer =\n      typeof ResizeObserver === \"undefined\"\n        ? undefined\n        : new ResizeObserver(measure);\n    observer?.observe(element);\n    window.addEventListener(\"resize\", measure);\n    void document.fonts?.ready.then(measure);\n    return () => {\n      disposed = true;\n      observer?.disconnect();\n      window.removeEventListener(\"resize\", measure);\n    };\n  }, [children, className, overflow, touch]);\n  const text = (\n    <span ref={ref} data-slot=\"long-text-content\" className=\"block truncate\">\n      {children}\n    </span>\n  );\n  const trigger = (\n    <button\n      type=\"button\"\n      aria-label={label}\n      className=\"block w-full min-w-0 rounded-sm text-start outline-none focus-visible:ring-2 focus-visible:ring-ring\"\n    >\n      {text}\n    </button>\n  );\n  let content = text;\n  if (overflow) {\n    if (touch)\n      content = (\n        <Popover>\n          <PopoverTrigger render={trigger} />\n          <PopoverContent\n            className={cn(\"wrap-anywhere w-fit max-w-xs\", contentClassName)}\n          >\n            {children}\n          </PopoverContent>\n        </Popover>\n      );\n    else\n      content = (\n        <Tooltip>\n          <TooltipTrigger render={trigger} />\n          <TooltipContent className={cn(\"wrap-anywhere\", contentClassName)}>\n            {children}\n          </TooltipContent>\n        </Tooltip>\n      );\n  }\n  return (\n    <div\n      data-slot=\"long-text\"\n      data-overflow={overflow}\n      className={cn(\"min-w-0 max-w-full\", className)}\n    >\n      {content}\n    </div>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "@ui/long-text.tsx"
+    },
+    {
+      "path": "packages/ui/src/components/popover.tsx",
+      "content": "import { Popover as PopoverPrimitive } from \"@base-ui/react/popover\";\nimport { cn } from \"cn\";\nimport type * as React from \"react\";\nimport { withGlass } from \"@/lib/glass/context\";\n\nfunction PopoverImplementation({ ...props }: PopoverPrimitive.Root.Props) {\n  return <PopoverPrimitive.Root data-slot=\"popover\" {...props} />;\n}\n\nfunction PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {\n  return <PopoverPrimitive.Trigger data-slot=\"popover-trigger\" {...props} />;\n}\n\nfunction PopoverContentImplementation({\n  className,\n  align = \"center\",\n  alignOffset = 0,\n  side = \"bottom\",\n  sideOffset = 4,\n  ...props\n}: PopoverPrimitive.Popup.Props &\n  Pick<\n    PopoverPrimitive.Positioner.Props,\n    \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\"\n  >) {\n  return (\n    <PopoverPrimitive.Portal>\n      <PopoverPrimitive.Positioner\n        align={align}\n        alignOffset={alignOffset}\n        side={side}\n        sideOffset={sideOffset}\n        className=\"isolate z-50\"\n      >\n        <PopoverPrimitive.Popup\n          data-slot=\"popover-content\"\n          className={cn(\n            \"data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 z-50 flex w-72 origin-(--transform-origin) flex-col gap-4 rounded-3xl bg-popover p-4 text-popover-foreground text-sm shadow-lg outline-hidden ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in dark:ring-foreground/10\",\n            className,\n          )}\n          {...props}\n        />\n      </PopoverPrimitive.Positioner>\n    </PopoverPrimitive.Portal>\n  );\n}\n\nfunction PopoverHeader({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"popover-header\"\n      className={cn(\"flex flex-col gap-1 text-sm\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction PopoverTitle({ className, ...props }: PopoverPrimitive.Title.Props) {\n  return (\n    <PopoverPrimitive.Title\n      data-slot=\"popover-title\"\n      className={cn(\"font-medium text-base\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction PopoverDescription({\n  className,\n  ...props\n}: PopoverPrimitive.Description.Props) {\n  return (\n    <PopoverPrimitive.Description\n      data-slot=\"popover-description\"\n      className={cn(\"text-muted-foreground\", className)}\n      {...props}\n    />\n  );\n}\n\nconst Popover = withGlass(PopoverImplementation, \"scope\");\nconst PopoverContent = withGlass(PopoverContentImplementation, \"portal\");\n\nexport {\n  Popover,\n  PopoverContent,\n  PopoverDescription,\n  PopoverHeader,\n  PopoverTitle,\n  PopoverTrigger,\n};\n",
+      "type": "registry:ui",
+      "target": "@ui/popover.tsx"
+    },
+    {
+      "path": "packages/ui/src/components/tooltip.tsx",
+      "content": "\"use client\";\n\nimport { Tooltip as TooltipPrimitive } from \"@base-ui/react/tooltip\";\nimport { cn } from \"cn\";\nimport { withGlass } from \"@/lib/glass/context\";\n\nfunction TooltipProvider({\n  delay = 0,\n  ...props\n}: TooltipPrimitive.Provider.Props) {\n  return (\n    <TooltipPrimitive.Provider\n      data-slot=\"tooltip-provider\"\n      delay={delay}\n      {...props}\n    />\n  );\n}\n\nfunction TooltipImplementation({ ...props }: TooltipPrimitive.Root.Props) {\n  return <TooltipPrimitive.Root data-slot=\"tooltip\" {...props} />;\n}\n\nfunction TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {\n  return <TooltipPrimitive.Trigger data-slot=\"tooltip-trigger\" {...props} />;\n}\n\nfunction TooltipContentImplementation({\n  className,\n  side = \"top\",\n  sideOffset = 4,\n  align = \"center\",\n  alignOffset = 0,\n  children,\n  ...props\n}: TooltipPrimitive.Popup.Props &\n  Pick<\n    TooltipPrimitive.Positioner.Props,\n    \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\"\n  >) {\n  return (\n    <TooltipPrimitive.Portal>\n      <TooltipPrimitive.Positioner\n        align={align}\n        alignOffset={alignOffset}\n        side={side}\n        sideOffset={sideOffset}\n        className=\"isolate z-50\"\n      >\n        <TooltipPrimitive.Popup\n          data-slot=\"tooltip-content\"\n          className={cn(\n            \"data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-xl bg-foreground px-3 py-1.5 text-background text-xs has-data-[slot=kbd]:pe-1.5 data-[state=delayed-open]:animate-in data-closed:animate-out data-open:animate-in **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-lg\",\n            className,\n          )}\n          {...props}\n        >\n          {children}\n          <TooltipPrimitive.Arrow className=\"z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=inline-end]:-start-1 data-[side=inline-start]:-end-1 data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-start]:top-1/2! data-[side=left]:top-1/2! data-[side=right]:top-1/2! data-[side=left]:-right-1 data-[side=top]:-bottom-2.5 data-[side=right]:-left-1 data-[side=inline-end]:translate-x-[1.5px] data-[side=inline-start]:translate-x-[-1.5px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px] data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:-translate-y-1/2 data-[side=right]:-translate-y-1/2 rtl:data-[side=inline-end]:-translate-x-[1.5px] rtl:data-[side=inline-start]:-translate-x-[-1.5px] rtl:data-[side=left]:-translate-x-[-1.5px] rtl:data-[side=right]:-translate-x-[1.5px]\" />\n        </TooltipPrimitive.Popup>\n      </TooltipPrimitive.Positioner>\n    </TooltipPrimitive.Portal>\n  );\n}\n\nconst Tooltip = withGlass(TooltipImplementation, \"scope\");\n\nconst TooltipContent = withGlass(TooltipContentImplementation, \"portal\");\n\nexport { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };\n",
+      "type": "registry:ui",
+      "target": "@ui/tooltip.tsx"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/capture.ts",
+      "content": "type CaptureOptions = NonNullable<\n  Parameters<typeof import(\"html-to-image\").toSvg>[1]\n>;\n\nlet library: Promise<typeof import(\"html-to-image\")> | undefined;\ntype FontVersion = {\n  value: number;\n  leases: number;\n  changed: () => void;\n  cache: WeakMap<HTMLElement, { key: string; css: Promise<string> }>;\n};\nconst fontVersions = new WeakMap<Document, FontVersion>();\nconst marker = \"data-glass-capture-id\";\nlet sequence = 0;\nlet capturing = false;\nconst unfinishedSamples = new Set<Promise<unknown>>();\n\nfunction loadLibrary() {\n  library ??= import(\"html-to-image\").catch((error) => {\n    library = undefined;\n    throw error;\n  });\n  return library;\n}\n\nfunction bounded<T>(operation: Promise<T>, milliseconds: number) {\n  return new Promise<T>((resolve, reject) => {\n    const timer = setTimeout(\n      () => reject(new Error(\"Glass background capture timed out\")),\n      milliseconds,\n    );\n    operation.then(\n      (result) => {\n        clearTimeout(timer);\n        resolve(result);\n      },\n      (error) => {\n        clearTimeout(timer);\n        reject(error);\n      },\n    );\n  });\n}\n\nfunction sample<T>(operation: Promise<T>, milliseconds: number) {\n  // html-to-image has no cancellation API. A deadline returns to the CSS\n  // fallback, but the real font/DOM task keeps the sampling lease until it ends.\n  unfinishedSamples.add(operation);\n  const release = () => unfinishedSamples.delete(operation);\n  void operation.then(release, release);\n  return bounded(operation, milliseconds);\n}\n\nfunction included(\n  element: Element,\n  blocked: Set<Element>,\n  keepPlaceholder = false,\n) {\n  return (\n    !element.closest(\n      \"script,iframe,video,[data-glass-exclude],[data-glass-decoration]\",\n    ) &&\n    !Array.from(blocked).some(\n      (item) =>\n        (item === element && !keepPlaceholder) ||\n        (item !== element && item.contains(element)),\n    )\n  );\n}\n\ntype Placement = {\n  element: HTMLElement;\n  id: string;\n  previous: string | null;\n  rect: DOMRect;\n  scrollLeft: number;\n  scrollTop: number;\n  pinned: boolean;\n  hidden: boolean;\n};\n\nexport function glassLayoutSize(\n  element: HTMLElement,\n  rect = element.getBoundingClientRect(),\n) {\n  const style = getComputedStyle(element);\n  const dimension = (axis: \"width\" | \"height\") => {\n    const value = Number.parseFloat(style[axis]);\n    if (Number.isFinite(value) && value > 0) {\n      if (style.boxSizing === \"border-box\") return value;\n      const sides = axis === \"width\" ? [\"Left\", \"Right\"] : [\"Top\", \"Bottom\"];\n      return (\n        value +\n        sides.reduce(\n          (sum, side) =>\n            sum +\n            (Number.parseFloat(\n              style.getPropertyValue(`padding-${side.toLowerCase()}`),\n            ) || 0) +\n            (Number.parseFloat(\n              style.getPropertyValue(`border-${side.toLowerCase()}-width`),\n            ) || 0),\n          0,\n        )\n      );\n    }\n    return (\n      (axis === \"width\" ? element.offsetWidth : element.offsetHeight) ||\n      rect[axis]\n    );\n  };\n  return { width: dimension(\"width\"), height: dimension(\"height\") };\n}\n\nfunction axisAligned(element: HTMLElement) {\n  for (\n    let current: HTMLElement | null = element;\n    current;\n    current = current.parentElement\n  ) {\n    const style = getComputedStyle(current);\n    if (style.perspective && style.perspective !== \"none\") return false;\n    if (\n      style.rotate &&\n      style.rotate !== \"none\" &&\n      !/^0(?:deg|rad|turn)?$/.test(style.rotate)\n    )\n      return false;\n    if (style.scale && style.scale !== \"none\") {\n      const scale = style.scale.split(/\\s+/).map(Number);\n      if (scale.some((value) => !Number.isFinite(value) || value <= 0))\n        return false;\n    }\n    const transform = style.transform;\n    if (!transform || transform === \"none\") continue;\n    const matrix = transform.match(/^matrix\\(([^)]+)\\)$/);\n    if (matrix) {\n      const values = matrix[1].split(\",\").map(Number);\n      const [a, b, c, d, x, y] = values;\n      if (\n        values.length === 6 &&\n        a > 0 &&\n        d > 0 &&\n        b === 0 &&\n        c === 0 &&\n        Number.isFinite(x) &&\n        Number.isFinite(y)\n      )\n        continue;\n    }\n    const matrix3d = transform.match(/^matrix3d\\(([^)]+)\\)$/);\n    if (matrix3d) {\n      const values = matrix3d[1].split(\",\").map(Number);\n      if (\n        values.length === 16 &&\n        values.every(Number.isFinite) &&\n        values[0] > 0 &&\n        values[5] > 0 &&\n        values[10] === 1 &&\n        values[15] === 1 &&\n        [1, 2, 3, 4, 6, 7, 8, 9, 11, 14].every((index) => values[index] === 0)\n      )\n        continue;\n    }\n    return false;\n  }\n  return true;\n}\n\nfunction prepare(\n  target: HTMLElement,\n  blocked: Set<Element>,\n  placements: Placement[],\n) {\n  for (const element of [\n    target,\n    ...target.querySelectorAll<HTMLElement>(\"*\"),\n  ]) {\n    if (!included(element, blocked, true)) continue;\n    const position = getComputedStyle(element).position;\n    const hidden = blocked.has(element);\n    const pinned =\n      element !== target && (position === \"fixed\" || position === \"sticky\");\n    if (!hidden && !pinned && !element.scrollTop && !element.scrollLeft)\n      continue;\n    const id = String(++sequence);\n    placements.push({\n      element,\n      id,\n      previous: element.getAttribute(marker),\n      rect: element.getBoundingClientRect(),\n      scrollLeft: element.scrollLeft,\n      scrollTop: element.scrollTop,\n      pinned,\n      hidden,\n    });\n    element.setAttribute(marker, id);\n  }\n  return placements;\n}\n\nfunction restore(placements: Placement[]) {\n  for (const { element, previous } of placements) {\n    if (previous === null) element.removeAttribute(marker);\n    else element.setAttribute(marker, previous);\n  }\n}\n\nfunction repairClone(\n  root: Element,\n  placements: Placement[],\n  target: HTMLElement,\n) {\n  const clones = new Map<HTMLElement, HTMLElement>();\n  for (const item of placements) {\n    const clone = root.matches(`[${marker}=\"${item.id}\"]`)\n      ? root\n      : root.querySelector(`[${marker}=\"${item.id}\"]`);\n    if (clone) clones.set(item.element, clone as HTMLElement);\n  }\n  for (const item of placements) {\n    const clone = clones.get(item.element);\n    if (!clone) continue;\n    if (item.hidden) {\n      clone.style.visibility = \"hidden\";\n      clone.style.backgroundImage = \"none\";\n      clone.style.maskImage = \"none\";\n      for (const attribute of [\"src\", \"srcset\", \"href\", \"xlink:href\"])\n        clone.removeAttribute(attribute);\n      for (const property of Array.from(clone.style)) {\n        if (property.startsWith(\"--glass-\"))\n          clone.style.removeProperty(property);\n      }\n      clone.replaceChildren();\n      continue;\n    }\n    if (!item.pinned) continue;\n    let parent = item.element.parentElement;\n    while (parent && parent !== target) {\n      const style = getComputedStyle(parent);\n      if (\n        style.position !== \"static\" ||\n        style.transform !== \"none\" ||\n        parent.scrollTop ||\n        parent.scrollLeft\n      )\n        break;\n      parent = parent.parentElement;\n    }\n    parent ??= target;\n    const bounds = parent.getBoundingClientRect();\n    if (!axisAligned(parent) || !axisAligned(item.element))\n      throw new Error(\"Glass pinned content has unsupported geometry\");\n    const parentSize = glassLayoutSize(parent, bounds);\n    const scaleX = bounds.width / parentSize.width;\n    const scaleY = bounds.height / parentSize.height;\n    const width = item.rect.width / scaleX;\n    const height = item.rect.height / scaleY;\n    const itemSize = glassLayoutSize(item.element, item.rect);\n    const localScaleX = width / itemSize.width;\n    const localScaleY = height / itemSize.height;\n    const scrollContainer = Boolean(parent.scrollTop || parent.scrollLeft);\n    const padding = getComputedStyle(parent);\n    const paddingTop = scrollContainer\n      ? Number.parseFloat(padding.paddingTop) || 0\n      : 0;\n    const paddingLeft = scrollContainer\n      ? Number.parseFloat(padding.paddingLeft) || 0\n      : 0;\n    if (getComputedStyle(item.element).position === \"sticky\") {\n      const placeholder = clone.ownerDocument.createElement(\"div\");\n      placeholder.style.cssText = `width:${itemSize.width}px;height:${itemSize.height}px;flex-shrink:0;visibility:hidden`;\n      clone.before(placeholder);\n    }\n    Object.assign(clone.style, {\n      position: \"absolute\",\n      top: `${(item.rect.top - bounds.top) / scaleY - parent.clientTop - paddingTop + parent.scrollTop}px`,\n      left: `${(item.rect.left - bounds.left) / scaleX - parent.clientLeft - paddingLeft + parent.scrollLeft}px`,\n      right: \"auto\",\n      bottom: \"auto\",\n      width: `${itemSize.width}px`,\n      height: `${itemSize.height}px`,\n      boxSizing: \"border-box\",\n      margin: \"0\",\n      transform:\n        localScaleX === 1 && localScaleY === 1\n          ? \"none\"\n          : `scale(${localScaleX},${localScaleY})`,\n      transformOrigin: \"0 0\",\n      translate: \"none\",\n      rotate: \"none\",\n      scale: \"none\",\n      zoom: \"1\",\n    });\n  }\n  // Scroll offsets are not serialized by foreignObject. Move only the clone's\n  // contents, retaining the original scroll container's clipping and background.\n  for (const item of placements) {\n    const clone = clones.get(item.element);\n    if (!clone || item.hidden || (!item.scrollLeft && !item.scrollTop))\n      continue;\n    if (clone.matches(\"input,textarea,select\")) {\n      if (item.scrollLeft || item.scrollTop)\n        throw new Error(\n          \"Scrolled native form content cannot be captured faithfully\",\n        );\n      continue;\n    }\n    const contents = clone.ownerDocument.createElement(\"div\");\n    const style = getComputedStyle(item.element);\n    const paddingX =\n      (Number.parseFloat(style.paddingLeft) || 0) +\n      (Number.parseFloat(style.paddingRight) || 0);\n    const paddingY =\n      (Number.parseFloat(style.paddingTop) || 0) +\n      (Number.parseFloat(style.paddingBottom) || 0);\n    const width = item.element.clientWidth || item.rect.width;\n    const height = item.element.clientHeight || item.rect.height;\n    contents.style.cssText = `position:relative;width:${Math.max(0, width - paddingX)}px;height:${Math.max(0, height - paddingY)}px;transform:translate(${-item.scrollLeft}px,${-item.scrollTop}px);transform-origin:0 0`;\n    for (const property of [\n      \"display\",\n      \"flex-direction\",\n      \"flex-wrap\",\n      \"justify-content\",\n      \"align-items\",\n      \"align-content\",\n      \"gap\",\n      \"row-gap\",\n      \"column-gap\",\n      \"grid-template-columns\",\n      \"grid-template-rows\",\n      \"grid-auto-columns\",\n      \"grid-auto-rows\",\n      \"grid-auto-flow\",\n    ])\n      contents.style.setProperty(property, style.getPropertyValue(property));\n    clone.style.display = \"block\";\n    contents.append(...clone.childNodes);\n    clone.append(contents);\n  }\n  for (const clone of [root, ...root.querySelectorAll(`[${marker}]`)])\n    clone.removeAttribute(marker);\n}\n\nfunction fontVersion(document: Document) {\n  let version = fontVersions.get(document);\n  if (!version) {\n    version = { value: 0, leases: 0, changed: () => {}, cache: new WeakMap() };\n    const current = version;\n    version.changed = () => current.value++;\n    fontVersions.set(document, version);\n  }\n  return version;\n}\n\nexport function acquireGlassCaptureFonts(document: Document) {\n  const version = fontVersion(document);\n  if (version.leases++ === 0) {\n    // Fonts may have changed while no scope was sampling this document.\n    version.value++;\n    document.fonts?.addEventListener(\"loadingdone\", version.changed);\n    document.fonts?.addEventListener(\"loadingerror\", version.changed);\n  }\n  let released = false;\n  return () => {\n    if (released) return;\n    released = true;\n    if (--version.leases > 0) return;\n    document.fonts?.removeEventListener(\"loadingdone\", version.changed);\n    document.fonts?.removeEventListener(\"loadingerror\", version.changed);\n    version.cache = new WeakMap();\n  };\n}\n\nfunction fontKey(target: HTMLElement) {\n  const version = fontVersion(target.ownerDocument);\n  const families = new Set<string>();\n  for (const node of [target, ...target.querySelectorAll(\"*\")])\n    families.add(getComputedStyle(node).fontFamily);\n  const sheets = Array.from(target.ownerDocument.styleSheets, (sheet) => {\n    try {\n      return `${sheet.href ?? \"\"}:${Array.from(sheet.cssRules, (rule) => rule.cssText).join(\"\")}`;\n    } catch {\n      return sheet.href ?? \"\";\n    }\n  });\n  return `${sheets.join(\"|\")}|${Array.from(families).sort().join(\"|\")}|${target.ownerDocument.fonts?.status}|${version.value}`;\n}\n\nasync function embeddedFonts(target: HTMLElement) {\n  const key = fontKey(target);\n  const fontCache = fontVersion(target.ownerDocument).cache;\n  let cached = fontCache.get(target);\n  if (cached?.key !== key) {\n    const { getFontEmbedCSS } = await loadLibrary();\n    const css = sample(\n      getFontEmbedCSS(target, { preferredFontFormat: \"woff2\" }),\n      4000,\n    );\n    cached = { key, css };\n    fontCache.set(target, cached);\n    css.catch(() => {\n      if (fontCache.get(target)?.css === css) fontCache.delete(target);\n    });\n  }\n  return cached.css;\n}\n\nasync function imageReadiness(target: HTMLElement, blocked: Set<Element>) {\n  const images = [\n    ...(target.matches(\"img\") ? [target as HTMLImageElement] : []),\n    ...target.querySelectorAll<HTMLImageElement>(\"img\"),\n  ];\n  await Promise.all(\n    images.map(async (image) => {\n      if (!included(image, blocked) || !image.getAttribute(\"src\")) return;\n      if (!image.complete) await bounded(image.decode(), 3000);\n      if (!image.naturalWidth)\n        throw new Error(\"Glass background contains a failed image\");\n    }),\n  );\n}\n\nfunction validateResources(root: Element) {\n  for (const image of root.querySelectorAll(\"img,image\")) {\n    const source =\n      image.getAttribute(\"src\") ??\n      image.getAttribute(\"href\") ??\n      image.getAttribute(\"xlink:href\");\n    if (source && !source.startsWith(\"data:\"))\n      throw new Error(\"Glass background contains an unreadable image\");\n    if (source === \"\")\n      throw new Error(\"Glass background image embedding failed\");\n  }\n  const source = [root, ...root.querySelectorAll(\"*\")]\n    .map(\n      (element) =>\n        `${element.getAttribute(\"style\") ?? \"\"}${element.localName === \"style\" ? element.textContent : \"\"}`,\n    )\n    .join(\"\\n\");\n  for (const match of source.matchAll(/url\\(\\s*[\"']?([^)'\"\\s]*)[\"']?\\s*\\)/g)) {\n    const resource = match[1];\n    if (\n      !resource ||\n      (!resource.startsWith(\"data:\") && !resource.startsWith(\"#\"))\n    )\n      throw new Error(\"Glass background resource embedding failed\");\n  }\n}\n\nasync function captureBackground(\n  target: HTMLElement,\n  blocked: Set<Element>,\n): Promise<HTMLCanvasElement> {\n  if (!target.isConnected || !included(target, blocked))\n    throw new Error(\"Glass capture target unavailable\");\n  const bounds = target.getBoundingClientRect();\n  if (!bounds.width || !bounds.height || !axisAligned(target))\n    throw new Error(\"Glass capture target has unsupported geometry\");\n  const size = glassLayoutSize(target, bounds);\n  const scaleX = bounds.width / size.width;\n  const scaleY = bounds.height / size.height;\n  await bounded(target.ownerDocument.fonts?.ready ?? Promise.resolve(), 1500);\n  await imageReadiness(target, blocked);\n  const { toSvg } = await loadLibrary();\n  const fontEmbedCSS = await embeddedFonts(target);\n  const placements: Placement[] = [];\n  let svg: string;\n  try {\n    prepare(target, blocked, placements);\n    const options: CaptureOptions = {\n      width: size.width,\n      height: size.height,\n      fontEmbedCSS,\n      pixelRatio: 1,\n      style: {\n        position: \"relative\",\n        left: \"0\",\n        top: \"0\",\n        margin: \"0\",\n        width: `${size.width}px`,\n        height: `${size.height}px`,\n        boxSizing: \"border-box\",\n        maxWidth: \"none\",\n        maxHeight: \"none\",\n        animation: \"none\",\n        transition: \"none\",\n        transform: \"none\",\n        translate: \"none\",\n        scale: \"none\",\n        rotate: \"none\",\n        zoom: \"1\",\n      },\n      filter: (node) =>\n        !(node instanceof Element) || included(node, blocked, true),\n      onImageErrorHandler: (event) => {\n        const failed = typeof event === \"string\" ? null : event.target;\n        const marked =\n          failed instanceof Element ? failed.closest(`[${marker}]`) : null;\n        if (\n          marked &&\n          placements.some(\n            (item) => item.hidden && marked.getAttribute(marker) === item.id,\n          )\n        )\n          return;\n        throw new Error(\"Glass background image embedding failed\");\n      },\n    };\n    svg = await sample(toSvg(target, options), 6000);\n  } finally {\n    restore(placements);\n  }\n  const comma = svg.indexOf(\",\");\n  if (comma < 0 || !svg.startsWith(\"data:image/svg+xml\"))\n    throw new Error(\"Invalid glass capture SVG\");\n  const source = svg.slice(comma + 1);\n  const xml = new DOMParser().parseFromString(\n    svg.slice(0, comma).includes(\";base64\")\n      ? new TextDecoder().decode(\n          Uint8Array.from(atob(source), (character) => character.charCodeAt(0)),\n        )\n      : decodeURIComponent(source),\n    \"image/svg+xml\",\n  );\n  if (xml.querySelector(\"parsererror\"))\n    throw new Error(\"Invalid glass capture SVG\");\n  const root = xml.documentElement;\n  const foreign = root.querySelector(\"foreignObject\");\n  const content = foreign?.firstElementChild;\n  if (!foreign || !content) throw new Error(\"Glass capture content missing\");\n  repairClone(content, placements, target);\n  validateResources(root);\n  root.setAttribute(\"width\", String(innerWidth));\n  root.setAttribute(\"height\", String(innerHeight));\n  root.setAttribute(\"viewBox\", `0 0 ${innerWidth} ${innerHeight}`);\n  foreign.setAttribute(\n    \"x\",\n    scaleX === 1 && scaleY === 1 ? String(bounds.left) : \"0\",\n  );\n  foreign.setAttribute(\n    \"y\",\n    scaleX === 1 && scaleY === 1 ? String(bounds.top) : \"0\",\n  );\n  foreign.setAttribute(\"width\", String(size.width));\n  foreign.setAttribute(\"height\", String(size.height));\n  if (scaleX !== 1 || scaleY !== 1)\n    foreign.setAttribute(\n      \"transform\",\n      `matrix(${scaleX} 0 0 ${scaleY} ${bounds.left} ${bounds.top})`,\n    );\n  const image = new Image();\n  const ready = new Promise<void>((resolve, reject) => {\n    image.onload = () => resolve();\n    image.onerror = () =>\n      reject(new Error(\"Glass background SVG rasterization failed\"));\n  });\n  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(root))}`;\n  try {\n    await bounded(ready, 3000);\n  } finally {\n    image.onload = image.onerror = null;\n  }\n  const canvas = document.createElement(\"canvas\");\n  canvas.width = innerWidth;\n  canvas.height = innerHeight;\n  const context = canvas.getContext(\"2d\");\n  if (!context) throw new Error(\"Glass background canvas unavailable\");\n  context.drawImage(image, 0, 0);\n  context.getImageData(0, 0, 1, 1);\n  return canvas;\n}\n\nexport async function captureGlassBackground(\n  target: HTMLElement,\n  blocked: Set<Element>,\n): Promise<HTMLCanvasElement> {\n  if (capturing || unfinishedSamples.size)\n    throw new Error(\"Glass background capture still active\");\n  capturing = true;\n  try {\n    return await captureBackground(target, blocked);\n  } finally {\n    capturing = false;\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/capture.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/context.tsx",
+      "content": "import {\n  type ComponentType,\n  type CSSProperties,\n  createContext,\n  type Ref,\n  type RefObject,\n  useContext,\n  useLayoutEffect,\n} from \"react\";\nimport { acquireGlass, updateGlassConfiguration } from \"@/lib/glass/runtime\";\n\nexport type GlassMode = \"css\" | \"auto\";\nexport type GlassMaterial = \"clear\" | \"frosted\";\n\nexport type GlassOptions = {\n  strength?: number;\n  blur?: number;\n  tint?: string;\n  tintOpacity?: number;\n  highlight?: number;\n};\n\nexport type GlassHandle = { refresh: () => void };\nexport type GlassCaptureTarget =\n  | HTMLElement\n  | null\n  | RefObject<HTMLElement | null>;\n\nexport type GlassConfiguration = {\n  id: string;\n  mode?: GlassMode;\n  material?: GlassMaterial;\n  options?: GlassOptions;\n  captureTarget?: GlassCaptureTarget;\n};\n\ntype GlassContextValue = {\n  configuration?: GlassConfiguration;\n  material?: GlassMaterial;\n  enabled: boolean;\n  surface: boolean;\n};\n\nexport const GlassContext = createContext<GlassContextValue>({\n  enabled: false,\n  surface: false,\n});\n\nexport type GlassProps = { glass?: boolean; glassMaterial?: GlassMaterial };\n\nexport function withGlass<P extends object>(\n  Component: ComponentType<P>,\n  kind: \"surface\" | \"control\" | \"scope\" | \"portal\" = \"surface\",\n) {\n  function GlassComponent({ glass, glassMaterial, ...props }: P & GlassProps) {\n    const context = useContext(GlassContext);\n    const enabled =\n      glass ?? (context.enabled && (kind !== \"surface\" || !context.surface));\n    const configuration = context.configuration;\n    const id = configuration?.id ?? \"default\";\n    const material =\n      glassMaterial ?? context.material ?? configuration?.material ?? \"frosted\";\n    useLayoutEffect(() => {\n      if (!enabled) return;\n      return acquireGlass({ id });\n    }, [enabled, id]);\n    useLayoutEffect(() => {\n      if (enabled && configuration) updateGlassConfiguration(configuration);\n    }, [enabled, configuration]);\n    const surface = enabled && kind !== \"scope\";\n    let childSurface = context.surface || surface;\n    if (kind === \"scope\") childSurface = glass !== true && context.surface;\n    const options = configuration?.options;\n    const originalStyle = (\n      props as {\n        style?: CSSProperties | ((state: unknown) => CSSProperties | undefined);\n      }\n    ).style;\n    const materialStyle = {} as CSSProperties & Record<string, unknown>;\n    if (options?.tint) materialStyle[\"--glass-base\"] = options.tint;\n    if (Number.isFinite(options?.blur))\n      materialStyle[\"--glass-blur\"] =\n        `${Math.min(24, Math.max(0, options?.blur ?? 0))}px`;\n    if (Number.isFinite(options?.tintOpacity))\n      materialStyle[\"--glass-opacity\"] =\n        `${Math.min(1, Math.max(0, options?.tintOpacity ?? 0)) * 100}%`;\n    if (options?.highlight === 0) materialStyle[\"--glass-edge\"] = \"none\";\n    const initialStyle =\n      typeof originalStyle === \"function\"\n        ? (state: unknown) => ({ ...originalStyle(state), ...materialStyle })\n        : { ...originalStyle, ...materialStyle };\n    return (\n      <GlassContext.Provider\n        value={{\n          configuration,\n          material,\n          enabled,\n          surface: childSurface,\n        }}\n      >\n        <Component\n          {...(props as P)}\n          {...(surface\n            ? {\n                style: initialStyle,\n                \"data-glass\": \"true\",\n                \"data-glass-scope\": configuration?.id ?? \"default\",\n                \"data-glass-material\": material,\n                \"data-glass-state\": \"loading\",\n              }\n            : {})}\n        />\n      </GlassContext.Provider>\n    );\n  }\n  GlassComponent.displayName = `Glass(${Component.displayName ?? Component.name})`;\n  return GlassComponent;\n}\n\nexport type GlassProviderRef = Ref<GlassHandle>;\n\nexport function useGlassEnabled(glass?: boolean) {\n  const context = useContext(GlassContext);\n  return glass ?? (context.enabled && !context.surface);\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/context.tsx"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/contrast.ts",
+      "content": "export type GlassTextColor = [number, number, number, number];\nexport const maxGlassTextColors = 32;\n\nexport class GlassContrastError extends Error {\n  override name = \"GlassContrastError\";\n}\n\nexport function parseGlassColor(color: string): GlassTextColor {\n  if (!color || color === \"transparent\") return [0, 0, 0, 0];\n  const canvas = document.createElement(\"canvas\");\n  canvas.width = canvas.height = 1;\n  const context = canvas.getContext(\"2d\");\n  if (!context) return [0.5, 0.5, 0.5, 1];\n  context.fillStyle = color;\n  context.fillRect(0, 0, 1, 1);\n  const bytes = context.getImageData(0, 0, 1, 1).data;\n  return [bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, bytes[3] / 255];\n}\n\nfunction luminance(color: readonly number[]) {\n  const linear = color\n    .slice(0, 3)\n    .map((channel) =>\n      channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,\n    );\n  return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;\n}\n\nexport function glassTextContrast(\n  background: readonly number[],\n  text: GlassTextColor,\n) {\n  const foreground = text\n    .slice(0, 3)\n    .map(\n      (channel, index) => channel * text[3] + background[index] * (1 - text[3]),\n    );\n  const first = luminance(background) + 0.05;\n  const second = luminance(foreground) + 0.05;\n  return Math.max(first, second) / Math.min(first, second);\n}\n\nexport function resolveGlassContrastTint(\n  tint: [number, number, number],\n  colors: readonly GlassTextColor[],\n  minimum: number,\n): [number, number, number] | undefined {\n  const passes = (candidate: [number, number, number]) =>\n    colors.every((color) => glassTextContrast(candidate, color) >= minimum);\n  if (passes(tint)) return tint;\n  let result: [number, number, number] | undefined;\n  let distance = Number.POSITIVE_INFINITY;\n  const consider = (candidate: [number, number, number]) => {\n    const delta = candidate.reduce(\n      (total, channel, index) => total + (channel - tint[index]) ** 2,\n      0,\n    );\n    if (delta < distance && passes(candidate)) {\n      result = candidate;\n      distance = delta;\n    }\n  };\n  for (let step = 0; step <= 255; step++) {\n    const value = step / 255;\n    consider([value, value, value]);\n    for (const endpoint of [0, 1])\n      consider(\n        tint.map(\n          (channel) =>\n            Math.round((channel * (1 - value) + endpoint * value) * 255) / 255,\n        ) as [number, number, number],\n      );\n  }\n  return result;\n}\n\nexport class GlassTextContrastCache {\n  private revision = 0;\n  private readonly entries = new WeakMap<\n    HTMLElement,\n    {\n      revision: number;\n      colors: GlassTextColor[];\n      controls: {\n        element: HTMLInputElement | HTMLTextAreaElement;\n        filled: boolean;\n        placeholder: string;\n      }[];\n    }\n  >();\n\n  invalidate() {\n    this.revision++;\n  }\n\n  read(surface: HTMLElement): GlassTextColor[] {\n    const cached = this.entries.get(surface);\n    if (\n      cached?.revision === this.revision &&\n      cached.controls.every(\n        ({ element, filled, placeholder }) =>\n          Boolean(element.value) === filled &&\n          element.placeholder === placeholder,\n      )\n    )\n      return cached.colors;\n    const colors = new Map<string, GlassTextColor>();\n    const controls: {\n      element: HTMLInputElement | HTMLTextAreaElement;\n      filled: boolean;\n      placeholder: string;\n    }[] = [];\n    const add = (color: string, opacity = 1) => {\n      const parsed = parseGlassColor(color);\n      parsed[3] *= opacity;\n      if (parsed[3] > 0) colors.set(parsed.join(\",\"), parsed);\n    };\n    const visit = (element: Element, opacity: number) => {\n      if (element !== surface && element.getAttribute(\"data-glass\") === \"true\")\n        return;\n      const style = getComputedStyle(element);\n      const alpha = Number.parseFloat(style.opacity);\n      const effectiveOpacity = opacity * (Number.isFinite(alpha) ? alpha : 1);\n      if (\n        effectiveOpacity <= 0 ||\n        style.display === \"none\" ||\n        style.visibility === \"hidden\" ||\n        style.visibility === \"collapse\" ||\n        element.hasAttribute(\"hidden\") ||\n        element.getAttribute(\"aria-hidden\") === \"true\" ||\n        [\"SCRIPT\", \"STYLE\", \"TEMPLATE\", \"SVG\", \"IFRAME\"].includes(\n          element.tagName.toUpperCase(),\n        )\n      )\n        return;\n      if (\n        element !== surface &&\n        ((style.backgroundImage && style.backgroundImage !== \"none\") ||\n          parseGlassColor(style.backgroundColor)[3] > 0)\n      )\n        return;\n      const input = element as HTMLInputElement | HTMLTextAreaElement;\n      if (element.tagName === \"INPUT\" || element.tagName === \"TEXTAREA\") {\n        if (element.tagName === \"INPUT\" && input.type === \"hidden\") return;\n        controls.push({\n          element: input,\n          filled: Boolean(input.value),\n          placeholder: input.placeholder,\n        });\n        if (input.value) add(style.color, effectiveOpacity);\n        else if (input.placeholder) {\n          const placeholder = getComputedStyle(element, \"::placeholder\");\n          const placeholderOpacity = Number.parseFloat(placeholder.opacity);\n          add(\n            placeholder.color || style.color,\n            effectiveOpacity *\n              (Number.isFinite(placeholderOpacity) ? placeholderOpacity : 1),\n          );\n        }\n        return;\n      }\n      if (\n        [...element.childNodes].some(\n          (node) => node.nodeType === 3 && Boolean(node.textContent?.trim()),\n        )\n      )\n        add(style.color, effectiveOpacity);\n      for (const child of element.children) visit(child, effectiveOpacity);\n    };\n    visit(surface, 1);\n    if (!colors.size) add(getComputedStyle(surface).color);\n    const result = [...colors.values()];\n    this.entries.set(surface, {\n      revision: this.revision,\n      colors: result,\n      controls,\n    });\n    return result;\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/contrast.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/edge.ts",
+      "content": "export function glassRadii(\n  width: number,\n  height: number,\n  radii: [string, string, string, string],\n) {\n  const corners = radii.map((value) => {\n    const [horizontal = \"0\", vertical = horizontal] = value.split(/\\s+/);\n    const resolve = (length: string, size: number) =>\n      Math.max(\n        0,\n        (Number.parseFloat(length) || 0) *\n          (length.endsWith(\"%\") ? size / 100 : 1),\n      );\n    return { x: resolve(horizontal, width), y: resolve(vertical, height) };\n  });\n  const [tl, tr, br, bl] = corners;\n  const scale = Math.min(\n    1,\n    width / (tl.x + tr.x),\n    width / (bl.x + br.x),\n    height / (tl.y + bl.y),\n    height / (tr.y + br.y),\n  );\n  return corners.map((radius) => ({\n    x: radius.x * scale,\n    y: radius.y * scale,\n  }));\n}\n\nexport function glassEdge(\n  width: number,\n  height: number,\n  radii: [string, string, string, string],\n  highlight: number,\n) {\n  if (highlight <= 0 || width <= 0 || height <= 0) return \"none\";\n  const corners = glassRadii(width, height, radii);\n  const outline = (inset: number) => {\n    const [tl, tr, br, bl] = corners.map((radius) => ({\n      x: Math.max(0, radius.x - inset),\n      y: Math.max(0, radius.y - inset),\n    }));\n    const right = width - inset;\n    const bottom = height - inset;\n    return `M${inset + tl.x} ${inset}H${right - tr.x}A${tr.x} ${tr.y} 0 0 1 ${right} ${inset + tr.y}V${bottom - br.y}A${br.x} ${br.y} 0 0 1 ${right - br.x} ${bottom}H${inset + bl.x}A${bl.x} ${bl.y} 0 0 1 ${inset} ${bottom - bl.y}V${inset + tl.y}A${tl.x} ${tl.y} 0 0 1 ${inset + tl.x} ${inset}Z`;\n  };\n  const opacity = Math.min(1, highlight * 2);\n  const shape = outline(0);\n  const svg = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width}\" height=\"${height}\" viewBox=\"0 0 ${width} ${height}\">\n    <defs>\n      <linearGradient id=\"light\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">\n        <stop stop-color=\"#fff\" stop-opacity=\".9\"/>\n        <stop offset=\".3\" stop-color=\"#fff\" stop-opacity=\".18\"/>\n        <stop offset=\".55\" stop-color=\"#fff\" stop-opacity=\"0\"/>\n        <stop offset=\".8\" stop-color=\"#fff\" stop-opacity=\".08\"/>\n        <stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\".5\"/>\n      </linearGradient>\n      <filter id=\"soft\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\" color-interpolation-filters=\"sRGB\">\n        <feGaussianBlur stdDeviation=\".35\"/>\n      </filter>\n    </defs>\n    <path d=\"${shape} ${outline(1)}\" fill=\"url(#light)\" fill-rule=\"evenodd\" opacity=\"${opacity}\" filter=\"url(#soft)\"/>\n  </svg>`;\n  return `url(\"data:image/svg+xml,${encodeURIComponent(svg)}\")`;\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/edge.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/renderer.ts",
+      "content": "import type {} from \"@/lib/sui/types/webgpu\";\n\n/// <reference types=\"@webgpu/types\" />\n\nimport {\n  GlassContrastError,\n  type GlassTextColor,\n  maxGlassTextColors,\n  resolveGlassContrastTint,\n} from \"@/lib/glass/contrast\";\n\nexport type GlassFrame = {\n  width: number;\n  height: number;\n  margin: number;\n  origin?: [number, number];\n  radius: [number, number, number, number];\n  radiusY?: [number, number, number, number];\n  strength: number;\n  blur: number;\n  tint: [number, number, number];\n  tintOpacity: number;\n  foreground: [number, number, number];\n  textColors?: readonly GlassTextColor[];\n  minimumContrast?: number;\n  highlight: number;\n};\n\nconst shader = `\nstruct Params {\n  surface: vec4f,\n  source: vec4f,\n  radii: vec4f,\n  verticalRadii: vec4f,\n  material: vec4f,\n  tint: vec4f,\n  foreground: vec4f,\n  contrastMaterial: vec4f,\n  textColors: array<vec4f, ${maxGlassTextColors}>,\n};\n@group(0) @binding(0) var<uniform> params: Params;\n@group(0) @binding(1) var background: texture_2d<f32>;\n@group(0) @binding(2) var linearSampler: sampler;\n\n@vertex fn vertexMain(@builtin(vertex_index) index: u32) -> @builtin(position) vec4f {\n  var positions = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0));\n  return vec4f(positions[index], 0.0, 1.0);\n}\nfn luminance(rgb: vec3f) -> f32 {\n  let linear = select(rgb / vec3f(12.92), pow((rgb + vec3f(0.055)) / vec3f(1.055), vec3f(2.4)), rgb > vec3f(0.04045));\n  return dot(linear, vec3f(0.2126, 0.7152, 0.0722));\n}\nfn contrast(a: vec3f, b: vec3f) -> f32 {\n  let x = luminance(a) + 0.05;\n  let y = luminance(b) + 0.05;\n  return max(x, y) / min(x, y);\n}\nfn supportsTextContrast(background: vec3f) -> bool {\n  for (var index = 0u; index < u32(params.contrastMaterial.w); index++) {\n    let text = params.textColors[index];\n    let foreground = mix(background, text.xyz, text.w);\n    if (contrast(background, foreground) < params.foreground.w) { return false; }\n  }\n  return true;\n}\nfn ellipseDistance(x: f32, y: f32, rx: f32, ry: f32) -> f32 {\n  let k0 = sqrt(x * x / (rx * rx) + y * y / (ry * ry));\n  let k1 = sqrt(x * x / (rx * rx * rx * rx) + y * y / (ry * ry * ry * ry));\n  if (k1 == 0.0) { return -min(rx, ry); }\n  return k0 * (k0 - 1.0) / k1;\n}\nfn roundedDistance(p: vec2f) -> f32 {\n  let width = params.surface.x;\n  let height = params.surface.y;\n  var distance = max(max(-p.x, p.x - width), max(-p.y, p.y - height));\n  if (params.radii.x > 0.0 && params.verticalRadii.x > 0.0 && p.x < params.radii.x && p.y < params.verticalRadii.x) {\n    distance = max(distance, ellipseDistance(p.x - params.radii.x, p.y - params.verticalRadii.x, params.radii.x, params.verticalRadii.x));\n  }\n  if (params.radii.y > 0.0 && params.verticalRadii.y > 0.0 && p.x > width - params.radii.y && p.y < params.verticalRadii.y) {\n    distance = max(distance, ellipseDistance(p.x - (width - params.radii.y), p.y - params.verticalRadii.y, params.radii.y, params.verticalRadii.y));\n  }\n  if (params.radii.z > 0.0 && params.verticalRadii.z > 0.0 && p.x > width - params.radii.z && p.y > height - params.verticalRadii.z) {\n    distance = max(distance, ellipseDistance(p.x - (width - params.radii.z), p.y - (height - params.verticalRadii.z), params.radii.z, params.verticalRadii.z));\n  }\n  if (params.radii.w > 0.0 && params.verticalRadii.w > 0.0 && p.x < params.radii.w && p.y > height - params.verticalRadii.w) {\n    distance = max(distance, ellipseDistance(p.x - params.radii.w, p.y - (height - params.verticalRadii.w), params.radii.w, params.verticalRadii.w));\n  }\n  return distance;\n}\nfn sourceColor(p: vec2f) -> vec3f {\n  let uv = clamp((p + params.source.zw) / params.source.xy, vec2f(0.0), vec2f(1.0));\n  return textureSampleLevel(background, linearSampler, uv, 0.0).rgb;\n}\n@fragment fn fragmentMain(@builtin(position) pixel: vec4f) -> @location(0) vec4f {\n  let p = pixel.xy * params.surface.xy / params.surface.zw;\n  let distance = roundedDistance(p);\n  let gradient = vec2f(\n    roundedDistance(p + vec2f(0.4, 0.0)) - roundedDistance(p - vec2f(0.4, 0.0)),\n    roundedDistance(p + vec2f(0.0, 0.4)) - roundedDistance(p - vec2f(0.0, 0.4))\n  ) + vec2f(0.00001);\n  let normal = gradient / max(length(gradient), 0.00001);\n  let depth = max(-distance, 0.0);\n  let bevel = pow(clamp(1.0 - depth / 17.0, 0.0, 1.0), 2.0);\n  let displaced = p - normal * bevel * params.material.w * 0.45;\n  let split = normal * bevel * min(params.material.w * 0.014, 0.45);\n  let sampled = vec3f(sourceColor(displaced + split).r, sourceColor(displaced).g, sourceColor(displaced - split).b);\n  let luminanceValue = dot(sampled, vec3f(0.2126, 0.7152, 0.0722));\n  let saturated = mix(vec3f(luminanceValue), sampled, 1.12);\n  var result = mix(saturated, params.tint.xyz, params.material.y);\n  result = clamp(result, vec3f(0.0), vec3f(1.0));\n  if (params.foreground.w > 0.0 && !supportsTextContrast(result)) {\n    let safeTint = params.contrastMaterial.xyz;\n    for (var index = 0; index < 8; index++) {\n      if (supportsTextContrast(result)) { break; }\n      result = mix(result, safeTint, 0.18);\n    }\n    if (!supportsTextContrast(result)) { result = safeTint; }\n  }\n  return vec4f(result, 1.0 - smoothstep(-0.65, 0.65, distance));\n}`;\n\nconst gaussianShader = `\nstruct BlurParams {\n  size: vec2f,\n  step: vec2f,\n  sigma: f32,\n  radius: f32,\n  padding: vec2f,\n};\n@group(0) @binding(0) var<uniform> params: BlurParams;\n@group(0) @binding(1) var background: texture_2d<f32>;\n@group(0) @binding(2) var linearSampler: sampler;\n@vertex fn vertexMain(@builtin(vertex_index) index: u32) -> @builtin(position) vec4f {\n  var positions = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0));\n  return vec4f(positions[index], 0.0, 1.0);\n}\n@fragment fn fragmentMain(@builtin(position) pixel: vec4f) -> @location(0) vec4f {\n  let uv = pixel.xy / params.size;\n  var result = textureSampleLevel(background, linearSampler, uv, 0.0);\n  var weight = 1.0;\n  for (var offset = 1.0; offset <= params.radius; offset += 2.0) {\n    let first = exp(-0.5 * pow(offset / params.sigma, 2.0));\n    let second = select(0.0, exp(-0.5 * pow((offset + 1.0) / params.sigma, 2.0)), offset + 1.0 <= params.radius);\n    let pairWeight = first + second;\n    let delta = params.step * (offset + second / pairWeight);\n    result += (textureSampleLevel(background, linearSampler, uv + delta, 0.0) + textureSampleLevel(background, linearSampler, uv - delta, 0.0)) * pairWeight;\n    weight += 2.0 * pairWeight;\n  }\n  return result / weight;\n}`;\n\ntype Resource = GPUTexture | GPUBuffer;\ntype Background = {\n  texture: GPUTexture;\n  width: number;\n  height: number;\n  filtered: Map<number, GPUTexture>;\n};\n\nexport class GlassRenderer {\n  private pipeline?: GPURenderPipeline;\n  private gaussianPipeline?: GPURenderPipeline;\n  private readonly blurUniforms: [GPUBuffer, GPUBuffer];\n  private readonly uniform: GPUBuffer;\n  private readonly sampler: GPUSampler;\n  private readonly resources = new Set<Resource>();\n  private readonly backgrounds = new Map<HTMLCanvasElement, Background>();\n  private readonly contrastTints = new Map<string, [number, number, number]>();\n  private queue: Promise<void> = Promise.resolve();\n  private disposed = false;\n  private failure?: Error;\n  private readonly abort = () => this.destroy();\n  private readonly gpuError = (event: Event) => {\n    this.failure = new Error((event as GPUUncapturedErrorEvent).error.message);\n  };\n\n  private constructor(\n    private readonly device: GPUDevice,\n    private readonly signal?: AbortSignal,\n  ) {\n    this.uniform = device.createBuffer({\n      label: \"Glass material\",\n      size: 128 + maxGlassTextColors * 16,\n      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,\n    });\n    this.resources.add(this.uniform);\n    const createBlurUniform = () => {\n      const buffer = device.createBuffer({\n        label: \"Glass Gaussian blur parameters\",\n        size: 32,\n        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,\n      });\n      this.resources.add(buffer);\n      return buffer;\n    };\n    this.blurUniforms = [createBlurUniform(), createBlurUniform()];\n\n    this.sampler = device.createSampler({\n      minFilter: \"linear\",\n      magFilter: \"linear\",\n      addressModeU: \"clamp-to-edge\",\n      addressModeV: \"clamp-to-edge\",\n    });\n    signal?.addEventListener(\"abort\", this.abort, { once: true });\n    device.addEventListener(\"uncapturederror\", this.gpuError);\n    void device.lost.then((info) => {\n      if (!this.disposed)\n        this.failure = new Error(info.message || \"Glass GPU device lost\");\n    });\n  }\n\n  static async create(signal?: AbortSignal): Promise<GlassRenderer> {\n    if (signal?.aborted)\n      throw new DOMException(\"Glass initialization cancelled\", \"AbortError\");\n    if (typeof navigator === \"undefined\" || !navigator.gpu)\n      throw new Error(\"WebGPU unavailable\");\n    const adapter = await navigator.gpu.requestAdapter({\n      powerPreference: \"low-power\",\n    });\n    if (signal?.aborted)\n      throw new DOMException(\"Glass initialization cancelled\", \"AbortError\");\n    if (!adapter) throw new Error(\"WebGPU adapter unavailable\");\n    const device = await adapter.requestDevice();\n    if (signal?.aborted) {\n      device.destroy();\n      throw new DOMException(\"Glass initialization cancelled\", \"AbortError\");\n    }\n    let renderer: GlassRenderer | undefined;\n    try {\n      renderer = new GlassRenderer(device, signal);\n      if (signal?.aborted) renderer.destroy();\n      renderer.assertActive();\n      const module = device.createShaderModule({\n        label: \"Glass refraction\",\n        code: shader,\n      });\n      const compilation = await module.getCompilationInfo();\n      const errors = compilation.messages.filter(\n        (message) => message.type === \"error\",\n      );\n      if (errors.length)\n        throw new Error(errors.map((message) => message.message).join(\"\\n\"));\n      renderer.assertActive();\n      renderer.pipeline = await device.createRenderPipelineAsync({\n        label: \"Glass refraction\",\n        layout: \"auto\",\n        vertex: { module, entryPoint: \"vertexMain\" },\n        fragment: {\n          module,\n          entryPoint: \"fragmentMain\",\n          targets: [{ format: \"rgba8unorm\" }],\n        },\n        primitive: { topology: \"triangle-list\" },\n      });\n      renderer.assertActive();\n      const gaussian = device.createShaderModule({\n        label: \"Glass Gaussian blur\",\n        code: gaussianShader,\n      });\n      const gaussianCompilation = await gaussian.getCompilationInfo();\n      const gaussianErrors = gaussianCompilation.messages.filter(\n        (message) => message.type === \"error\",\n      );\n      if (gaussianErrors.length)\n        throw new Error(\n          gaussianErrors.map((message) => message.message).join(\"\\n\"),\n        );\n      renderer.assertActive();\n      renderer.gaussianPipeline = await device.createRenderPipelineAsync({\n        label: \"Glass Gaussian blur\",\n        layout: \"auto\",\n        vertex: { module: gaussian, entryPoint: \"vertexMain\" },\n        fragment: {\n          module: gaussian,\n          entryPoint: \"fragmentMain\",\n          targets: [{ format: \"rgba8unorm\" }],\n        },\n        primitive: { topology: \"triangle-list\" },\n      });\n      renderer.assertActive();\n      return renderer;\n    } catch (error) {\n      if (renderer) renderer.destroy();\n      else device.destroy();\n      throw error;\n    }\n  }\n\n  private assertActive() {\n    if (this.disposed) throw new Error(\"Glass renderer disposed\");\n    if (this.failure) throw this.failure;\n  }\n\n  private releaseBackground(source: HTMLCanvasElement) {\n    const background = this.backgrounds.get(source);\n    if (!background) return;\n    this.backgrounds.delete(source);\n    if (this.resources.delete(background.texture)) background.texture.destroy();\n    for (const texture of background.filtered.values())\n      if (this.resources.delete(texture)) texture.destroy();\n  }\n\n  private background(source: HTMLCanvasElement): GPUTexture {\n    const cached = this.backgrounds.get(source);\n    if (\n      cached &&\n      cached.width === source.width &&\n      cached.height === source.height\n    ) {\n      this.backgrounds.delete(source);\n      this.backgrounds.set(source, cached);\n      return cached.texture;\n    }\n    this.releaseBackground(source);\n    const texture = this.device.createTexture({\n      label: \"Glass background\",\n      size: [source.width, source.height],\n      format: \"rgba8unorm\",\n      usage:\n        GPUTextureUsage.TEXTURE_BINDING |\n        GPUTextureUsage.COPY_DST |\n        GPUTextureUsage.RENDER_ATTACHMENT,\n    });\n    this.resources.add(texture);\n    try {\n      this.device.queue.copyExternalImageToTexture(\n        { source, flipY: false },\n        { texture, premultipliedAlpha: false },\n        [source.width, source.height],\n      );\n      this.backgrounds.set(source, {\n        texture,\n        width: source.width,\n        height: source.height,\n        filtered: new Map(),\n      });\n      if (this.backgrounds.size > 4) {\n        const oldest = this.backgrounds.keys().next().value;\n        if (oldest) this.releaseBackground(oldest);\n      }\n      return texture;\n    } catch (error) {\n      if (this.resources.delete(texture)) texture.destroy();\n      throw error;\n    }\n  }\n\n  private filteredBackground(\n    source: HTMLCanvasElement,\n    blur: number,\n    track: <T extends Resource>(resource: T) => T,\n  ): GPUTexture {\n    const texture = this.background(source);\n    if (blur <= 0) return texture;\n    const background = this.backgrounds.get(source);\n    const pipeline = this.gaussianPipeline;\n    if (!background || !pipeline)\n      throw new Error(\"Glass blur pipeline unavailable\");\n    const cached = background.filtered.get(blur);\n    if (cached) {\n      background.filtered.delete(blur);\n      background.filtered.set(blur, cached);\n      return cached;\n    }\n    // Blurred snapshots can use half-resolution above 2 CSS pixels; the original\n    // upload and all sampling coordinates remain shared and in CSS pixels.\n    const scale = blur >= 2 ? 0.5 : 1;\n    const width = Math.max(1, Math.round(source.width * scale));\n    const height = Math.max(1, Math.round(source.height * scale));\n    const makeTexture = (label: string) =>\n      this.device.createTexture({\n        label,\n        size: [width, height],\n        format: \"rgba8unorm\",\n        usage:\n          GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,\n      });\n    const horizontal = track(makeTexture(\"Glass Gaussian intermediate\"));\n    const vertical = makeTexture(\"Glass blurred background\");\n    this.resources.add(vertical);\n    background.filtered.set(blur, vertical);\n    if (background.filtered.size > 3) {\n      const oldest = background.filtered.keys().next().value;\n      if (oldest !== undefined) {\n        const oldTexture = background.filtered.get(oldest);\n        if (oldTexture && this.resources.delete(oldTexture))\n          oldTexture.destroy();\n        background.filtered.delete(oldest);\n      }\n    }\n    const sigma = blur * scale;\n    const radius = Math.ceil(sigma * 3);\n    const encoder = this.device.createCommandEncoder();\n    const stages = [\n      { input: texture, output: horizontal, step: [1 / width, 0] },\n      { input: horizontal, output: vertical, step: [0, 1 / height] },\n    ];\n    for (const [index, stage] of stages.entries()) {\n      const uniform = this.blurUniforms[index];\n      this.device.queue.writeBuffer(\n        uniform,\n        0,\n        new Float32Array([width, height, ...stage.step, sigma, radius, 0, 0]),\n      );\n      const group = this.device.createBindGroup({\n        layout: pipeline.getBindGroupLayout(0),\n        entries: [\n          { binding: 0, resource: { buffer: uniform } },\n          { binding: 1, resource: stage.input.createView() },\n          { binding: 2, resource: this.sampler },\n        ],\n      });\n      const pass = encoder.beginRenderPass({\n        colorAttachments: [\n          {\n            view: stage.output.createView(),\n            clearValue: [0, 0, 0, 0],\n            loadOp: \"clear\",\n            storeOp: \"store\",\n          },\n        ],\n      });\n      pass.setPipeline(pipeline);\n      pass.setBindGroup(0, group);\n      pass.draw(3);\n      pass.end();\n    }\n    this.device.queue.submit([encoder.finish()]);\n    return vertical;\n  }\n\n  render(source: HTMLCanvasElement, frame: GlassFrame): Promise<Blob> {\n    const operation = this.queue.then(() => this.renderFrame(source, frame));\n    this.queue = operation.then(\n      () => {},\n      () => {},\n    );\n    return operation;\n  }\n\n  private async renderFrame(\n    source: HTMLCanvasElement,\n    frame: GlassFrame,\n  ): Promise<Blob> {\n    this.assertActive();\n    const pipeline = this.pipeline;\n    if (!pipeline) throw new Error(\"Glass pipeline unavailable\");\n    const textColors: readonly GlassTextColor[] = frame.textColors ?? [\n      [...frame.foreground, 1],\n    ];\n    if (\n      textColors.length > maxGlassTextColors ||\n      textColors.some(\n        (color) =>\n          color.length !== 4 ||\n          color.some(\n            (channel) =>\n              !Number.isFinite(channel) || channel < 0 || channel > 1,\n          ),\n      )\n    )\n      throw new GlassContrastError(\"Unsupported glass text colors\");\n    const minimum = frame.minimumContrast ?? 4.5;\n    const contrastMinimum = minimum > 0 ? minimum + 0.05 : 0;\n    const contrastKey = JSON.stringify([\n      frame.tint,\n      textColors,\n      contrastMinimum,\n    ]);\n    let contrastTint = this.contrastTints.get(contrastKey);\n    if (!contrastTint) {\n      contrastTint = resolveGlassContrastTint(\n        frame.tint,\n        textColors,\n        contrastMinimum,\n      );\n      if (!contrastTint)\n        throw new GlassContrastError(\n          \"Glass text colors have no shared contrast background\",\n        );\n      if (this.contrastTints.size >= 64) this.contrastTints.clear();\n      this.contrastTints.set(contrastKey, contrastTint);\n    }\n    if (\n      ![\n        frame.width,\n        frame.height,\n        frame.margin,\n        frame.strength,\n        frame.blur,\n        frame.tintOpacity,\n        frame.highlight,\n        frame.minimumContrast ?? 4.5,\n        ...(frame.origin ?? [frame.margin, frame.margin]),\n        ...frame.radius,\n        ...(frame.radiusY ?? frame.radius),\n        ...frame.tint,\n        ...frame.foreground,\n      ].every(Number.isFinite) ||\n      frame.blur < 0 ||\n      frame.blur > 24 ||\n      frame.width <= 0 ||\n      frame.height <= 0 ||\n      source.width <= 0 ||\n      source.height <= 0\n    )\n      throw new Error(\"Invalid glass frame dimensions or material\");\n    const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 1.5);\n    const width = Math.max(1, Math.round(frame.width * scale));\n    const height = Math.max(1, Math.round(frame.height * scale));\n    const bytesPerRow = Math.ceil((width * 4) / 256) * 256;\n    if (\n      Math.max(width, height, source.width, source.height) >\n        this.device.limits.maxTextureDimension2D ||\n      bytesPerRow * height > this.device.limits.maxBufferSize\n    )\n      throw new Error(\"Glass frame exceeds GPU limits\");\n    const resources: Resource[] = [];\n    const track = <T extends Resource>(resource: T): T => {\n      resources.push(resource);\n      this.resources.add(resource);\n      return resource;\n    };\n    let readback: GPUBuffer | undefined;\n    let scopeOpen = true;\n    this.device.pushErrorScope(\"validation\");\n    try {\n      const input = this.filteredBackground(source, frame.blur, track);\n      const output = track(\n        this.device.createTexture({\n          label: \"Glass frame\",\n          size: [width, height],\n          format: \"rgba8unorm\",\n          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,\n        }),\n      );\n      readback = track(\n        this.device.createBuffer({\n          label: \"Glass pixel readback\",\n          size: bytesPerRow * height,\n          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,\n        }),\n      );\n      this.device.queue.writeBuffer(\n        this.uniform,\n        0,\n        new Float32Array([\n          frame.width,\n          frame.height,\n          width,\n          height,\n          source.width,\n          source.height,\n          ...(frame.origin ?? [frame.margin, frame.margin]),\n          ...frame.radius,\n          ...(frame.radiusY ?? frame.radius),\n          frame.blur,\n          frame.tintOpacity,\n          frame.highlight,\n          frame.strength,\n          ...frame.tint,\n          0,\n          ...frame.foreground,\n          contrastMinimum,\n          ...contrastTint,\n          textColors.length,\n          ...textColors.flat(),\n          ...new Array((maxGlassTextColors - textColors.length) * 4).fill(0),\n        ]),\n      );\n      const group = this.device.createBindGroup({\n        layout: pipeline.getBindGroupLayout(0),\n        entries: [\n          { binding: 0, resource: { buffer: this.uniform } },\n          { binding: 1, resource: input.createView() },\n          { binding: 2, resource: this.sampler },\n        ],\n      });\n      const encoder = this.device.createCommandEncoder();\n      const pass = encoder.beginRenderPass({\n        colorAttachments: [\n          {\n            view: output.createView(),\n            clearValue: [0, 0, 0, 0],\n            loadOp: \"clear\",\n            storeOp: \"store\",\n          },\n        ],\n      });\n      pass.setPipeline(pipeline);\n      pass.setBindGroup(0, group);\n      pass.draw(3);\n      pass.end();\n      encoder.copyTextureToBuffer(\n        { texture: output },\n        { buffer: readback, bytesPerRow },\n        [width, height],\n      );\n      this.device.queue.submit([encoder.finish()]);\n      const validation = await this.device.popErrorScope();\n      scopeOpen = false;\n      if (validation) throw new Error(validation.message);\n      this.assertActive();\n      await readback.mapAsync(GPUMapMode.READ);\n      this.assertActive();\n      const bytes = new Uint8Array(readback.getMappedRange());\n      const canvas = document.createElement(\"canvas\");\n      canvas.width = width;\n      canvas.height = height;\n      const context = canvas.getContext(\"2d\");\n      if (!context) throw new Error(\"Unable to export glass pixels\");\n      const image = context.createImageData(width, height);\n      for (let row = 0; row < height; row++)\n        image.data.set(\n          bytes.subarray(row * bytesPerRow, row * bytesPerRow + width * 4),\n          row * width * 4,\n        );\n      readback.unmap();\n      context.putImageData(image, 0, 0);\n      const blob = await new Promise<Blob>((resolve, reject) =>\n        canvas.toBlob((result) => {\n          if (result) resolve(result);\n          else reject(new Error(\"Unable to export glass frame\"));\n        }, \"image/png\"),\n      );\n      canvas.width = canvas.height = 1;\n      this.assertActive();\n      return blob;\n    } catch (error) {\n      this.releaseBackground(source);\n      throw error;\n    } finally {\n      if (scopeOpen) await this.device.popErrorScope().catch(() => {});\n      if (readback?.mapState === \"mapped\") readback.unmap();\n      for (const resource of resources) {\n        if (this.resources.delete(resource)) resource.destroy();\n      }\n    }\n  }\n\n  destroy() {\n    if (this.disposed) return;\n    this.disposed = true;\n    this.signal?.removeEventListener(\"abort\", this.abort);\n    this.device.removeEventListener(\"uncapturederror\", this.gpuError);\n    for (const resource of this.resources) resource.destroy();\n    this.resources.clear();\n    this.backgrounds.clear();\n    this.contrastTints.clear();\n    this.pipeline = undefined;\n    this.gaussianPipeline = undefined;\n    this.device.destroy();\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/renderer.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/runtime.ts",
+      "content": "import {\n  acquireGlassCaptureFonts,\n  captureGlassBackground,\n  glassLayoutSize,\n} from \"@/lib/glass/capture\";\nimport type { GlassConfiguration, GlassOptions } from \"@/lib/glass/context\";\nimport {\n  GlassContrastError,\n  GlassTextContrastCache,\n  parseGlassColor as parseColor,\n} from \"@/lib/glass/contrast\";\nimport { glassEdge, glassRadii } from \"@/lib/glass/edge\";\nimport type { GlassRenderer } from \"@/lib/glass/renderer\";\n\nconst managers = new Map<string, GlassManager>();\nlet renderer: GlassRenderer | undefined;\nlet initialization: AbortController | undefined;\nlet queue = Promise.resolve();\nlet nextSurface = 0;\nconst elementIds = new WeakMap<Element, number>();\nconst backgroundVersions = new WeakMap<HTMLElement, number>();\nlet sceneRevision = 0;\nlet lastSnapshotTime = 0;\nlet sharedSnapshots = new WeakMap<\n  HTMLElement,\n  { revision: number; frames: Map<string, HTMLCanvasElement> }\n>();\n\nfunction idFor(element: Element) {\n  let id = elementIds.get(element);\n  if (id === undefined) {\n    id = ++nextSurface;\n    elementIds.set(element, id);\n  }\n  return id;\n}\n\nfunction invalidateScene() {\n  sceneRevision++;\n}\n\nfunction backgroundChanged(element: HTMLElement) {\n  backgroundVersions.set(element, (backgroundVersions.get(element) ?? 0) + 1);\n  for (const manager of managers.values()) manager.refreshDependency(element);\n}\n\nfunction overlaps(a: DOMRect, b: DOMRect) {\n  return (\n    a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom\n  );\n}\n\nconst clamp = (\n  value: number | undefined,\n  fallback: number,\n  low: number,\n  high: number,\n) =>\n  Math.min(\n    high,\n    Math.max(low, Number.isFinite(value) ? (value as number) : fallback),\n  );\n\nfunction visible(element: Element) {\n  const bounds = element.getBoundingClientRect();\n  const style = getComputedStyle(element);\n  return (\n    element.isConnected &&\n    bounds.width > 0 &&\n    bounds.height > 0 &&\n    bounds.right > 0 &&\n    bounds.bottom > 0 &&\n    bounds.left < innerWidth &&\n    bounds.top < innerHeight &&\n    style.visibility !== \"hidden\" &&\n    style.display !== \"none\" &&\n    !element.closest(\"[hidden],[inert],[data-closed]\")\n  );\n}\n\nfunction surfaceRadii(\n  element: HTMLElement,\n  rect: DOMRect,\n  style: CSSStyleDeclaration,\n): [string, string, string, string] {\n  const size = glassLayoutSize(element, rect);\n  const corners = glassRadii(size.width, size.height, [\n    style.borderTopLeftRadius,\n    style.borderTopRightRadius,\n    style.borderBottomRightRadius,\n    style.borderBottomLeftRadius,\n  ]);\n  return corners.map(\n    ({ x, y }) =>\n      `${(x * rect.width) / size.width}px ${(y * rect.height) / size.height}px`,\n  ) as [string, string, string, string];\n}\n\nfunction stackingLayer(element: Element) {\n  const style = getComputedStyle(element);\n  const positioned = Boolean(style.position && style.position !== \"static\");\n  const parentDisplay = element.parentElement\n    ? getComputedStyle(element.parentElement).display\n    : \"\";\n  const ordered =\n    positioned || /^(?:inline-)?(?:flex|grid)$/.test(parentDisplay);\n  const z = ordered ? Number.parseInt(style.zIndex, 10) : Number.NaN;\n  const effect = (value: string) => Boolean(value && value !== \"none\");\n  const context =\n    element === document.documentElement ||\n    (ordered && Number.isFinite(z)) ||\n    style.position === \"fixed\" ||\n    style.position === \"sticky\" ||\n    Number.parseFloat(style.opacity) < 1 ||\n    effect(style.transform) ||\n    effect(style.translate) ||\n    effect(style.scale) ||\n    effect(style.rotate) ||\n    effect(style.filter) ||\n    effect(style.backdropFilter) ||\n    effect(style.getPropertyValue(\"-webkit-backdrop-filter\")) ||\n    effect(style.perspective) ||\n    effect(style.clipPath) ||\n    effect(style.maskImage) ||\n    effect(style.getPropertyValue(\"mask-border-source\")) ||\n    style.isolation === \"isolate\" ||\n    /^(?:size|inline-size)$/.test(style.containerType) ||\n    Boolean(style.mixBlendMode && style.mixBlendMode !== \"normal\") ||\n    /\\b(?:layout|paint|strict|content)\\b/.test(style.contain) ||\n    /\\b(?:transform|translate|scale|rotate|opacity|filter|backdrop-filter|perspective|clip-path|mask|isolation)\\b/.test(\n      style.willChange,\n    );\n  let phase: number | undefined;\n  if (context || positioned) {\n    phase = 0;\n    if (Number.isFinite(z)) phase = z;\n  }\n  return { element, context, phase };\n}\n\nfunction layerOrder(a: Element, b: Element): number | undefined {\n  if (\n    document.fullscreenElement ||\n    a.closest(\"dialog[open],[popover]\") ||\n    b.closest(\"dialog[open],[popover]\")\n  )\n    return;\n  const chain = (element: Element) => {\n    const layers: ReturnType<typeof stackingLayer>[] = [];\n    for (let node: Element | null = element; node; node = node.parentElement) {\n      const style = getComputedStyle(node);\n      if (\n        style.transformStyle === \"preserve-3d\" ||\n        (style.perspective && style.perspective !== \"none\") ||\n        (style.animationName &&\n          style.animationName !== \"none\" &&\n          /\\b(?:forwards|both)\\b/.test(style.animationFillMode))\n      )\n        return;\n      const layer = stackingLayer(node);\n      if (layer.context) layers.unshift(layer);\n    }\n    return layers;\n  };\n  const left = chain(a);\n  const right = chain(b);\n  if (!left || !right) return;\n  let index = 0;\n  while (left[index]?.element === right[index]?.element && left[index]) index++;\n  const paintUnit = (element: Element, context?: Element) => {\n    for (\n      let node: Element | null = element;\n      node && node !== context;\n      node = node.parentElement\n    ) {\n      const layer = stackingLayer(node);\n      if (layer.phase !== undefined) return layer;\n    }\n    return stackingLayer(element);\n  };\n  const common = left[index - 1]?.element;\n  const x = left[index] ?? paintUnit(a, common);\n  const y = right[index] ?? paintUnit(b, common);\n  if (x.phase === undefined && y.phase === undefined) return;\n  if (x.phase === undefined)\n    return y.phase !== undefined && y.phase < 0 ? 1 : -1;\n  if (y.phase === undefined) return x.phase < 0 ? -1 : 1;\n  if (x.phase !== y.phase) return x.phase > y.phase ? 1 : -1;\n  // Flex/grid paint order can differ from DOM order; leave that case to the CSS fallback.\n  for (const element of [x.element, y.element]) {\n    for (let node: Element | null = element; node; node = node.parentElement)\n      if (Number.parseInt(getComputedStyle(node).order, 10)) return;\n  }\n  const order = x.element.compareDocumentPosition(y.element);\n  if (order & 1) return;\n  if (order & 4) return -1;\n  if (order & 2) return 1;\n}\n\nfunction higherLayers(surface: HTMLElement) {\n  const blocked = new Set<Element>([surface]);\n  if (surface.dataset.slot === \"tab-bar-indicator\") {\n    const track = surface.closest('[data-slot=\"tab-bar-list\"]');\n    if (track) blocked.add(track);\n  }\n  if (surface.dataset.slot === \"tabs-indicator\") {\n    for (const tab of surface.parentElement?.querySelectorAll('[role=\"tab\"]') ??\n      [])\n      blocked.add(tab);\n  }\n  const rect = surface.getBoundingClientRect();\n  for (const fx of [0.1, 0.5, 0.9]) {\n    for (const fy of [0.1, 0.5, 0.9]) {\n      const x = Math.max(\n        0,\n        Math.min(innerWidth - 1, rect.left + rect.width * fx),\n      );\n      const y = Math.max(\n        0,\n        Math.min(innerHeight - 1, rect.top + rect.height * fy),\n      );\n      const stack = document.elementsFromPoint(x, y);\n      const index = stack.findIndex(\n        (element) => element === surface || surface.contains(element),\n      );\n      if (index < 0) continue;\n      for (const element of stack.slice(0, index)) {\n        if (!element.contains(surface) && !surface.contains(element))\n          blocked.add(element);\n      }\n    }\n  }\n  for (const candidate of document.body.querySelectorAll(\"*\")) {\n    if (\n      candidate.contains(surface) ||\n      surface.contains(candidate) ||\n      [...blocked].some((item) => item.contains(candidate)) ||\n      candidate.closest(\"[data-glass-exclude],[data-glass-decoration]\") ||\n      !visible(candidate)\n    )\n      continue;\n    const bounds = candidate.getBoundingClientRect();\n    if (!overlaps(bounds, rect)) continue;\n    const x = Math.max(\n      0,\n      Math.min(\n        innerWidth - 1,\n        (Math.max(bounds.left, rect.left) +\n          Math.min(bounds.right, rect.right)) /\n          2,\n      ),\n    );\n    const y = Math.max(\n      0,\n      Math.min(\n        innerHeight - 1,\n        (Math.max(bounds.top, rect.top) +\n          Math.min(bounds.bottom, rect.bottom)) /\n          2,\n      ),\n    );\n    const stack = document.elementsFromPoint(x, y);\n    const surfaceIndex = stack.findIndex(\n      (element) => element === surface || surface.contains(element),\n    );\n    const candidateIndex = stack.findIndex(\n      (element) => element === candidate || candidate.contains(element),\n    );\n    if (candidateIndex >= 0 && surfaceIndex >= 0) {\n      if (candidateIndex < surfaceIndex) blocked.add(candidate);\n      continue;\n    }\n    if (\n      getComputedStyle(candidate).pointerEvents !== \"none\" &&\n      candidateIndex < 0\n    )\n      continue;\n    const order = layerOrder(candidate, surface);\n    if (order === undefined)\n      throw new Error(\"Glass background has an ambiguous overlapping layer\");\n    if (order > 0) blocked.add(candidate);\n  }\n  return blocked;\n}\n\nfunction styleWithoutFrame(style: string | null) {\n  return (style ?? \"\")\n    .replace(\n      /--glass-(?:frame|edge|base|blur|opacity|tint-opacity):[^;]+;?/g,\n      \"\",\n    )\n    .trim();\n}\n\nfunction geometryMutation(record: MutationRecord) {\n  if (\n    record.type !== \"attributes\" ||\n    record.attributeName !== \"style\" ||\n    !(record.target instanceof HTMLElement) ||\n    record.target.dataset.glass !== \"true\"\n  )\n    return false;\n  const position = getComputedStyle(record.target).position;\n  if (position !== \"absolute\" && position !== \"fixed\") return false;\n  const withoutGeometry = (style: string | null) =>\n    styleWithoutFrame(style)\n      .split(\";\")\n      .map((declaration) => declaration.trim())\n      .filter(\n        (declaration) =>\n          declaration &&\n          !/^(?:translate|transform|width|height|top|left|right|bottom|visibility)\\s*:/.test(\n            declaration,\n          ),\n      )\n      .join(\";\");\n  return (\n    withoutGeometry(record.oldValue) ===\n    withoutGeometry(record.target.getAttribute(\"style\"))\n  );\n}\n\nfunction relevantMutation(record: MutationRecord) {\n  if (record.type === \"attributes\") {\n    if (\n      record.attributeName === \"data-glass-state\" ||\n      record.attributeName === \"data-glass-capture-id\"\n    )\n      return false;\n    if (\n      record.attributeName === \"style\" &&\n      record.target instanceof HTMLElement &&\n      record.target.dataset.glass === \"true\"\n    ) {\n      return (\n        styleWithoutFrame(record.oldValue) !==\n        styleWithoutFrame(record.target.getAttribute(\"style\"))\n      );\n    }\n    return true;\n  }\n  return true;\n}\n\ntype SurfaceState = {\n  url?: string;\n  base: string;\n  tint: [number, number, number];\n  opacity: number;\n  materialKey?: string;\n  frameMaterial?: string;\n  frameKey?: string;\n};\n\nclass GlassManager {\n  leases = 0;\n  private surfaces = new Map<HTMLElement, SurfaceState>();\n  private observer: MutationObserver;\n  private resizeObserver: ResizeObserver;\n  private intersectionObserver: IntersectionObserver;\n  private timer: ReturnType<typeof setTimeout> | undefined;\n  private queued = false;\n  private disposed = false;\n  private dirty = false;\n  private scrollingDirty = false;\n  private lastCapture = 0;\n  private motionFrame = 0;\n  private moving = new Map<HTMLElement, number>();\n  private pendingFrames = new Map<string, HTMLImageElement>();\n  private captureFonts = new Map<Document, () => void>();\n  private options: GlassOptions;\n  private configurationVersion = 0;\n  private readonly textContrast = new GlassTextContrastCache();\n  private removeListeners: () => void;\n\n  constructor(private configuration: GlassConfiguration) {\n    this.options = configuration.options ?? {};\n    this.resizeObserver = new ResizeObserver(() => {\n      this.textContrast.invalidate();\n      if (!this.moving.size) invalidateScene();\n      this.schedule();\n    });\n    this.intersectionObserver = new IntersectionObserver(() => this.schedule());\n    this.observer = new MutationObserver((records) => {\n      const relevant = records.filter(relevantMutation);\n      if (relevant.length) {\n        if (!relevant.every(geometryMutation)) this.textContrast.invalidate();\n        if (!relevant.every(geometryMutation)) invalidateScene();\n        this.scan();\n        this.schedule();\n      }\n    });\n    this.scan();\n    this.observer.observe(document.documentElement, {\n      attributes: true,\n      attributeOldValue: true,\n      attributeFilter: [\n        \"class\",\n        \"style\",\n        \"hidden\",\n        \"inert\",\n        \"data-glass\",\n        \"data-glass-scope\",\n        \"data-glass-material\",\n        \"data-color\",\n        \"data-state\",\n        \"data-open\",\n        \"data-closed\",\n        \"aria-pressed\",\n        \"data-pressed\",\n        \"aria-checked\",\n        \"data-checked\",\n        \"data-unchecked\",\n        \"aria-selected\",\n        \"data-selected\",\n        \"data-active\",\n        \"data-highlighted\",\n        \"aria-invalid\",\n        \"data-invalid\",\n        \"disabled\",\n        \"aria-hidden\",\n        \"aria-busy\",\n        \"placeholder\",\n        \"value\",\n        \"type\",\n        \"readonly\",\n        \"open\",\n        \"aria-disabled\",\n        \"data-disabled\",\n      ],\n      childList: true,\n      subtree: true,\n      characterData: true,\n    });\n    const scroll = () => {\n      invalidateScene();\n      this.schedule(true);\n    };\n    const update = () => {\n      this.textContrast.invalidate();\n      invalidateScene();\n      this.schedule();\n    };\n    const visibility = () => {\n      if (document.hidden && this.timer) {\n        clearTimeout(this.timer);\n        this.timer = undefined;\n      } else if (!document.hidden) this.schedule();\n    };\n    window.addEventListener(\"scroll\", scroll, { capture: true, passive: true });\n    window.addEventListener(\"resize\", update);\n    document.addEventListener(\"input\", update, true);\n    document.addEventListener(\"change\", update, true);\n    document.addEventListener(\"load\", update, true);\n    document.addEventListener(\"visibilitychange\", visibility);\n    document.fonts?.addEventListener(\"loadingdone\", update);\n    const interaction = (event: Event) => {\n      const target = event.target;\n      if (\n        target instanceof Element &&\n        [...this.surfaces.keys()].some((surface) => surface.contains(target))\n      )\n        update();\n    };\n    for (const type of [\"pointerover\", \"pointerout\", \"focusin\", \"focusout\"])\n      document.addEventListener(type, interaction, true);\n    const appearance = window.matchMedia?.(\"(prefers-color-scheme: dark)\");\n    appearance?.addEventListener(\"change\", update);\n    const transition = (event: TransitionEvent) => {\n      if ([\"color\", \"background-color\", \"opacity\"].includes(event.propertyName))\n        interaction(event);\n      const target = event.target;\n      if (\n        !(target instanceof HTMLElement) ||\n        !this.surfaces.has(target) ||\n        ![\"translate\", \"transform\", \"width\", \"height\"].includes(\n          event.propertyName,\n        )\n      )\n        return;\n      if (\n        event.type === \"transitionrun\" &&\n        this.configuration.mode === \"auto\"\n      ) {\n        this.moving.set(target, performance.now() + 3000);\n        this.drawMotion();\n      } else if (event.type !== \"transitionrun\") {\n        this.moving.delete(target);\n        this.schedule(false, true);\n      }\n    };\n    document.addEventListener(\"transitionrun\", transition, true);\n    document.addEventListener(\"transitionend\", transition, true);\n    document.addEventListener(\"transitioncancel\", transition, true);\n    this.removeListeners = () => {\n      window.removeEventListener(\"scroll\", scroll, true);\n      window.removeEventListener(\"resize\", update);\n      document.removeEventListener(\"input\", update, true);\n      document.removeEventListener(\"change\", update, true);\n      document.removeEventListener(\"load\", update, true);\n      document.removeEventListener(\"visibilitychange\", visibility);\n      document.fonts?.removeEventListener(\"loadingdone\", update);\n      for (const type of [\"pointerover\", \"pointerout\", \"focusin\", \"focusout\"])\n        document.removeEventListener(type, interaction, true);\n      appearance?.removeEventListener(\"change\", update);\n      document.removeEventListener(\"transitionrun\", transition, true);\n      document.removeEventListener(\"transitionend\", transition, true);\n      document.removeEventListener(\"transitioncancel\", transition, true);\n    };\n    this.schedule();\n  }\n\n  private drawMotion() {\n    if (\n      this.motionFrame ||\n      this.disposed ||\n      document.hidden ||\n      this.configuration.mode !== \"auto\"\n    )\n      return;\n    this.motionFrame = requestAnimationFrame(() => {\n      this.motionFrame = 0;\n      const now = performance.now();\n      for (const [element, expiry] of this.moving)\n        if (now >= expiry || !visible(element)) this.moving.delete(element);\n      if (!this.moving.size) return;\n      this.schedule(false, true);\n      this.drawMotion();\n    });\n  }\n\n  update(configuration: GlassConfiguration) {\n    const previous = this.configuration;\n    const same =\n      previous.mode === configuration.mode &&\n      previous.material === configuration.material &&\n      previous.captureTarget === configuration.captureTarget &&\n      ([\"strength\", \"blur\", \"tint\", \"tintOpacity\", \"highlight\"] as const).every(\n        (key) => previous.options?.[key] === configuration.options?.[key],\n      );\n    if (!same) {\n      this.configurationVersion++;\n      this.textContrast.invalidate();\n    }\n    this.configuration = configuration;\n    this.options = configuration.options ?? {};\n    this.scan();\n    if (configuration.mode !== \"auto\")\n      for (const [element, state] of this.surfaces)\n        this.restoreCss(element, state);\n    this.schedule();\n  }\n\n  refreshDependency(background: HTMLElement) {\n    if (\n      this.disposed ||\n      this.configuration.mode !== \"auto\" ||\n      !visible(background)\n    )\n      return;\n    const bounds = background.getBoundingClientRect();\n    for (const [element] of this.surfaces) {\n      if (\n        element === background ||\n        !visible(element) ||\n        !overlaps(bounds, element.getBoundingClientRect())\n      )\n        continue;\n      const target = this.getTarget();\n      const captureTarget = target.contains(element) ? target : document.body;\n      if (!captureTarget.contains(background)) continue;\n      let blocked: Set<Element>;\n      try {\n        blocked = higherLayers(element);\n      } catch {\n        this.schedule();\n        return;\n      }\n      if ([...blocked].some((item) => item.contains(background))) continue;\n      this.schedule();\n      return;\n    }\n  }\n\n  refresh() {\n    this.textContrast.invalidate();\n    this.schedule();\n  }\n\n  private scan() {\n    const elements = new Set(\n      [...document.querySelectorAll<HTMLElement>('[data-glass=\"true\"]')].filter(\n        (element) => element.dataset.glassScope === this.configuration.id,\n      ),\n    );\n    for (const [element, state] of this.surfaces) {\n      if (elements.has(element)) continue;\n      this.resizeObserver.unobserve(element);\n      this.intersectionObserver.unobserve(element);\n      this.releaseFrame(element, state);\n      this.surfaces.delete(element);\n    }\n    for (const element of elements) {\n      const existing = this.surfaces.get(element);\n      if (existing) {\n        this.updateMaterial(element, existing);\n        continue;\n      }\n      const state: SurfaceState = { base: \"\", tint: [0, 0, 0], opacity: 0 };\n      this.surfaces.set(element, state);\n      this.updateMaterial(element, state);\n      element.dataset.glassState = \"loading\";\n      this.resizeObserver.observe(element);\n      this.intersectionObserver.observe(element);\n    }\n  }\n\n  private updateMaterial(element: HTMLElement, state: SurfaceState) {\n    const oldState = element.dataset.glassState;\n    delete element.dataset.glassState;\n    const original = getComputedStyle(element);\n    const background = original.backgroundColor;\n    const base =\n      parseColor(background)[3] > 0\n        ? background\n        : original.getPropertyValue(\"--popover\").trim() || \"#fff\";\n    if (oldState) element.dataset.glassState = oldState;\n    state.base = this.options.tint ?? base;\n    const tint = parseColor(state.base);\n    state.tint = [tint[0], tint[1], tint[2]];\n    state.opacity = clamp(\n      this.options.tintOpacity,\n      element.dataset.glassMaterial === \"clear\" ? 0.6 : 0.78,\n      0,\n      1,\n    );\n    element.style.setProperty(\"--glass-base\", state.base);\n    this.updateEdge(element);\n    const frameMaterial = JSON.stringify([\n      state.base,\n      state.opacity,\n      element.style.getPropertyValue(\"--glass-blur\"),\n    ]);\n    const materialKey = JSON.stringify([\n      frameMaterial,\n      element.style.getPropertyValue(\"--glass-edge\"),\n    ]);\n    if (state.materialKey !== materialKey) {\n      state.materialKey = materialKey;\n      if (oldState === \"ready\" && state.frameMaterial !== frameMaterial) {\n        this.restoreCss(element, state);\n      }\n      state.frameMaterial = frameMaterial;\n      backgroundChanged(element);\n    }\n  }\n\n  private restoreCss(\n    element: HTMLElement,\n    state: SurfaceState,\n    status: \"css\" | \"fallback\" = \"css\",\n  ) {\n    const changed = Boolean(state.url || state.frameKey);\n    if (state.url) URL.revokeObjectURL(state.url);\n    state.url = undefined;\n    state.frameKey = undefined;\n    element.style.removeProperty(\"--glass-frame\");\n    element.dataset.glassState = status;\n    if (changed) backgroundChanged(element);\n  }\n\n  private updateEdge(element: HTMLElement) {\n    const clear = element.dataset.glassMaterial === \"clear\";\n    element.style.setProperty(\n      \"--glass-blur\",\n      `${clamp(this.options.blur, clear ? 6 : 8, 0, 24)}px`,\n    );\n    element.style.setProperty(\n      \"--glass-opacity\",\n      `${clamp(this.options.tintOpacity, clear ? 0.6 : 0.78, 0, 1) * 100}%`,\n    );\n    const rect = element.getBoundingClientRect();\n    const style = getComputedStyle(element);\n    element.style.setProperty(\n      \"--glass-edge\",\n      glassEdge(\n        rect.width,\n        rect.height,\n        surfaceRadii(element, rect, style),\n        clamp(this.options.highlight, 0.3, 0, 1),\n      ),\n    );\n  }\n\n  schedule(scrolling = false, realtime = false) {\n    if (this.disposed || document.hidden) return;\n    this.dirty = true;\n    this.scrollingDirty ||= scrolling;\n    if (this.timer || this.queued) return;\n    let delay = 0;\n    if (!realtime)\n      delay = Math.max(\n        0,\n        (scrolling ? 100 : 200) - (performance.now() - this.lastCapture),\n      );\n    this.timer = setTimeout(() => {\n      this.timer = undefined;\n      if (this.disposed || document.hidden) return;\n      this.queued = true;\n      queue = queue\n        .then(() => this.capture())\n        .catch(() => this.fallback())\n        .finally(() => {\n          this.queued = false;\n          if (this.dirty && !this.disposed)\n            this.schedule(false, this.moving.size > 0);\n        });\n    }, delay);\n  }\n\n  private getTarget() {\n    const target = this.configuration.captureTarget;\n    if (target && \"current\" in target) return target.current ?? document.body;\n    return target ?? document.body;\n  }\n\n  private async capture() {\n    if (this.disposed || document.hidden) return;\n    this.dirty = false;\n    const snapshotInterval = this.scrollingDirty ? 100 : 200;\n    this.scrollingDirty = false;\n    this.lastCapture = performance.now();\n    const configurationVersion = this.configurationVersion;\n    const capturedRevision = sceneRevision;\n    this.scan();\n    const active = [...this.surfaces].filter(([element]) => visible(element));\n    if (!active.length) return;\n    for (const [element, state] of active) this.updateMaterial(element, state);\n    if (\n      this.configuration.mode !== \"auto\" ||\n      window.matchMedia?.(\n        \"(prefers-reduced-transparency: reduce), (forced-colors: active)\",\n      ).matches\n    ) {\n      for (const [element, state] of active) {\n        this.restoreCss(element, state);\n      }\n      return;\n    }\n    const current = (element?: HTMLElement, state?: SurfaceState) =>\n      !this.disposed &&\n      !document.hidden &&\n      this.configurationVersion === configurationVersion &&\n      sceneRevision === capturedRevision &&\n      (!element ||\n        (visible(element) &&\n          element.dataset.glass === \"true\" &&\n          element.dataset.glassScope === this.configuration.id &&\n          this.surfaces.get(element) === state));\n    if (!current()) return;\n    if (!renderer) {\n      const controller = new AbortController();\n      initialization = controller;\n      try {\n        const { GlassRenderer: Renderer } = await import(\"@/lib/glass/renderer\");\n        const created = await Renderer.create(controller.signal);\n        if (!managers.size) {\n          created.destroy();\n          return;\n        }\n        renderer = created;\n      } finally {\n        if (initialization === controller) initialization = undefined;\n      }\n    }\n    if (!current()) return;\n    const target = this.getTarget();\n    const peers = [\n      ...document.querySelectorAll<HTMLElement>('[data-glass=\"true\"]'),\n    ].filter(visible);\n    for (const [element, state] of active) {\n      if (!current(element, state)) continue;\n      const rect = element.getBoundingClientRect();\n      const style = getComputedStyle(element);\n      const blocked = higherLayers(element);\n      // Disjoint peers cannot contribute to each other's background: omit them in the shared capture.\n      for (const peer of peers) {\n        const peerRect = peer.getBoundingClientRect();\n        if (\n          peer === element ||\n          (!peer.contains(element) &&\n            !element.contains(peer) &&\n            (peerRect.right <= rect.left ||\n              peerRect.left >= rect.right ||\n              peerRect.bottom <= rect.top ||\n              peerRect.top >= rect.bottom))\n        )\n          blocked.add(peer);\n      }\n      const captureTarget = target.contains(element) ? target : document.body;\n      const captureDocument = captureTarget.ownerDocument;\n      if (!this.captureFonts.has(captureDocument))\n        this.captureFonts.set(\n          captureDocument,\n          acquireGlassCaptureFonts(captureDocument),\n        );\n      const exclusions = [...blocked]\n        .filter((candidate) => captureTarget.contains(candidate))\n        .filter(\n          (candidate) =>\n            ![...blocked].some(\n              (parent) => parent !== candidate && parent.contains(candidate),\n            ),\n        )\n        .map(idFor)\n        .sort((a, b) => (a ?? 0) - (b ?? 0))\n        .join(\",\");\n      const dependencyKey = () =>\n        peers\n          .filter(\n            (peer) =>\n              captureTarget.contains(peer) &&\n              ![...blocked].some((item) => item.contains(peer)),\n          )\n          .map((peer) => `${idFor(peer)}:${backgroundVersions.get(peer) ?? 0}`)\n          .sort()\n          .join(\",\");\n      const dependencies = dependencyKey();\n      const currentFrame = () => {\n        if (!current(element, state) || dependencies !== dependencyKey())\n          return false;\n        const latest = element.getBoundingClientRect();\n        if (\n          latest.left !== rect.left ||\n          latest.top !== rect.top ||\n          latest.width !== rect.width ||\n          latest.height !== rect.height\n        ) {\n          // Layout and compositor movement need not mutate the surface's DOM.\n          // Keep its displayed frame while a fresh frame uses the new geometry.\n          this.schedule(false, true);\n          return false;\n        }\n        return true;\n      };\n      const key = `${exclusions}|${dependencies}`;\n      let cached = sharedSnapshots.get(captureTarget);\n      if (!cached || cached.revision !== sceneRevision) {\n        cached = { revision: sceneRevision, frames: new Map() };\n        sharedSnapshots.set(captureTarget, cached);\n      }\n      let snapshot = cached.frames.get(key);\n      if (!snapshot) {\n        const delay = snapshotInterval - (performance.now() - lastSnapshotTime);\n        if (delay > 0)\n          await new Promise((resolve) => setTimeout(resolve, delay));\n        if (!currentFrame()) return;\n        lastSnapshotTime = performance.now();\n        snapshot = await captureGlassBackground(captureTarget, blocked);\n        if (!currentFrame()) return;\n        if (cached.frames.size >= 4) cached.frames.clear();\n        cached.frames.set(key, snapshot);\n      }\n      if (!currentFrame()) continue;\n      const strength = clamp(this.options.strength, 22, 0, 64);\n      const tint = parseColor(this.options.tint ?? state.base);\n      const foreground = parseColor(style.color);\n      const surfaceBlur = Number.parseFloat(\n        style.getPropertyValue(\"--glass-surface-blur\"),\n      );\n      const surfaceOpacity = Number.parseFloat(\n        style.getPropertyValue(\"--glass-surface-tint-opacity\"),\n      );\n      const corners = glassRadii(\n        rect.width,\n        rect.height,\n        surfaceRadii(element, rect, style),\n      );\n      const frame = {\n        width: rect.width,\n        height: rect.height,\n        margin: 0,\n        origin: [rect.left, rect.top],\n        radius: [corners[0].x, corners[1].x, corners[2].x, corners[3].x],\n        radiusY: [corners[0].y, corners[1].y, corners[2].y, corners[3].y],\n        strength,\n        blur: clamp(\n          Number.isFinite(surfaceBlur) ? surfaceBlur : this.options.blur,\n          element.dataset.glassMaterial === \"clear\" ? 6 : 8,\n          0,\n          24,\n        ),\n        tint: [tint[0], tint[1], tint[2]],\n        tintOpacity: clamp(\n          Number.isFinite(surfaceOpacity)\n            ? surfaceOpacity\n            : this.options.tintOpacity,\n          state.opacity,\n          0,\n          1,\n        ),\n        foreground: [foreground[0], foreground[1], foreground[2]],\n        textColors: this.textContrast.read(element),\n        minimumContrast:\n          element.getAttribute(\"aria-hidden\") === \"true\" ? 0 : 4.5,\n        highlight: clamp(this.options.highlight, 0.3, 0, 1),\n      } satisfies Parameters<GlassRenderer[\"render\"]>[1];\n      let blob: Blob;\n      try {\n        blob = await renderer.render(snapshot, frame);\n      } catch (error) {\n        if (!(error instanceof GlassContrastError)) throw error;\n        if (currentFrame()) this.restoreCss(element, state, \"fallback\");\n        continue;\n      }\n      if (!currentFrame()) continue;\n      const url = URL.createObjectURL(blob);\n      const image = new window.Image();\n      this.pendingFrames.set(url, image);\n      image.src = url;\n      try {\n        await image.decode();\n      } catch {\n        if (this.pendingFrames.delete(url)) URL.revokeObjectURL(url);\n        if (currentFrame() && !state.url)\n          element.dataset.glassState = \"fallback\";\n        continue;\n      }\n      if (!this.pendingFrames.delete(url)) continue;\n      if (!currentFrame()) {\n        URL.revokeObjectURL(url);\n        continue;\n      }\n      const previous = state.url;\n      state.url = url;\n      element.style.setProperty(\"--glass-frame\", `url(\"${url}\")`);\n      element.dataset.glassState = \"ready\";\n      if (previous) URL.revokeObjectURL(previous);\n      const frameKey = `${idFor(snapshot)}:${JSON.stringify(frame)}`;\n      if (state.frameKey !== frameKey) {\n        state.frameKey = frameKey;\n        backgroundChanged(element);\n      }\n    }\n  }\n\n  private fallback() {\n    for (const [element, state] of this.surfaces)\n      this.restoreCss(element, state, \"fallback\");\n  }\n\n  private releaseFrame(element: HTMLElement, state: SurfaceState) {\n    if (state.url) URL.revokeObjectURL(state.url);\n    element.style.removeProperty(\"--glass-frame\");\n    element.style.removeProperty(\"--glass-edge\");\n    element.style.removeProperty(\"--glass-blur\");\n    element.style.removeProperty(\"--glass-opacity\");\n    element.style.removeProperty(\"--glass-base\");\n    delete element.dataset.glassState;\n  }\n\n  destroy() {\n    this.disposed = true;\n    if (this.timer) clearTimeout(this.timer);\n    if (this.motionFrame) cancelAnimationFrame(this.motionFrame);\n    this.moving.clear();\n    for (const [url, image] of this.pendingFrames) {\n      image.src = \"\";\n      URL.revokeObjectURL(url);\n    }\n    this.pendingFrames.clear();\n    for (const release of this.captureFonts.values()) release();\n    this.captureFonts.clear();\n    this.observer.disconnect();\n    this.resizeObserver.disconnect();\n    this.intersectionObserver.disconnect();\n    this.removeListeners();\n    for (const [element, state] of this.surfaces)\n      this.releaseFrame(element, state);\n    this.surfaces.clear();\n  }\n}\n\nexport function acquireGlass(configuration?: GlassConfiguration) {\n  const resolved = configuration ?? { id: \"default\" };\n  let manager = managers.get(resolved.id);\n  if (!manager) {\n    manager = new GlassManager(resolved);\n    managers.set(resolved.id, manager);\n  } else if (\n    \"mode\" in resolved ||\n    \"material\" in resolved ||\n    \"options\" in resolved ||\n    \"captureTarget\" in resolved\n  )\n    manager.update(resolved);\n  manager.leases++;\n  let released = false;\n  return () => {\n    if (released) return;\n    released = true;\n    if (--manager.leases > 0) return;\n    manager.destroy();\n    managers.delete(resolved.id);\n    if (!managers.size) {\n      sharedSnapshots = new WeakMap();\n      initialization?.abort();\n      renderer?.destroy();\n      renderer = undefined;\n    }\n  };\n}\n\nexport function refreshGlass(id: string) {\n  invalidateScene();\n  managers.get(id)?.refresh();\n}\n\nexport function updateGlassConfiguration(configuration: GlassConfiguration) {\n  managers.get(configuration.id)?.update(configuration);\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/runtime.ts"
+    },
+    {
+      "path": "packages/ui/src/types/webgpu.d.ts",
+      "content": "import \"@webgpu/types\";\n",
+      "type": "registry:file",
+      "target": "@lib/sui/types/webgpu.d.ts"
+    }
+  ],
+  "cssVars": {
+    "theme": {
+      "font-heading": "var(--font-sans)",
+      "color-sidebar-ring": "var(--sidebar-ring)",
+      "color-sidebar-border": "var(--sidebar-border)",
+      "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+      "color-sidebar-accent": "var(--sidebar-accent)",
+      "color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+      "color-sidebar-primary": "var(--sidebar-primary)",
+      "color-sidebar-foreground": "var(--sidebar-foreground)",
+      "color-sidebar": "var(--sidebar)",
+      "color-chart-5": "var(--chart-5)",
+      "color-chart-4": "var(--chart-4)",
+      "color-chart-3": "var(--chart-3)",
+      "color-chart-2": "var(--chart-2)",
+      "color-chart-1": "var(--chart-1)",
+      "color-ring": "var(--ring)",
+      "color-input": "var(--input)",
+      "color-border": "var(--border)",
+      "color-destructive": "var(--destructive)",
+      "color-accent-foreground": "var(--accent-foreground)",
+      "color-accent": "var(--accent)",
+      "color-muted-foreground": "var(--muted-foreground)",
+      "color-muted": "var(--muted)",
+      "color-secondary-foreground": "var(--secondary-foreground)",
+      "color-secondary": "var(--secondary)",
+      "color-primary-foreground": "var(--primary-foreground)",
+      "color-primary": "var(--primary)",
+      "color-popover-foreground": "var(--popover-foreground)",
+      "color-popover": "var(--popover)",
+      "color-card-foreground": "var(--card-foreground)",
+      "color-card": "var(--card)",
+      "color-foreground": "var(--foreground)",
+      "color-background": "var(--background)",
+      "radius-sm": "max(0px, calc(var(--radius) - 0.25rem))",
+      "radius-md": "max(0px, calc(var(--radius) - 0.125rem))",
+      "radius-lg": "var(--radius)",
+      "radius-xl": "calc(var(--radius) + 0.25rem)",
+      "radius-2xl": "calc(var(--radius) + 0.5rem)",
+      "radius-3xl": "calc(var(--radius) + 0.75rem)",
+      "radius-4xl": "calc(var(--radius) + 1rem)",
+      "font-sans": "\"Inter Variable\", sans-serif"
+    },
+    "light": {
+      "background": "oklch(0.97071377 0.00265048 286.35036)",
+      "foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "card": "oklch(1 0 0)",
+      "card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "popover": "oklch(1 0 0)",
+      "popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "primary": "oklch(0.52196619 0.1770896 255.82973)",
+      "primary-foreground": "oklch(1 0 0)",
+      "secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "accent": "oklch(0.95747203 0.02050834 254.91347)",
+      "accent-foreground": "oklch(0.52196619 0.1770896 255.82973)",
+      "destructive": "oklch(0.577 0.245 27.325)",
+      "border": "oklch(0.8652421 0.00682863 286.25614)",
+      "input": "oklch(0.83115757 0.00689828 286.24868)",
+      "ring": "oklch(0.52196619 0.1770896 255.82973)",
+      "chart-1": "oklch(0.52196619 0.1770896 255.82973)",
+      "chart-2": "oklch(0.55844958 0.14613572 147.50221)",
+      "chart-3": "oklch(0.51857386 0.16637669 312.97461)",
+      "chart-4": "oklch(0.57335411 0.13071559 63.06154)",
+      "chart-5": "oklch(0.56125302 0.18494209 12.58196)",
+      "radius": "0.625rem",
+      "sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "sidebar-primary": "oklch(0.52196619 0.1770896 255.82973)",
+      "sidebar-primary-foreground": "oklch(1 0 0)",
+      "sidebar-accent": "oklch(0.95747203 0.02050834 254.91347)",
+      "sidebar-accent-foreground": "oklch(0.52196619 0.1770896 255.82973)",
+      "sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "sidebar-ring": "oklch(0.52196619 0.1770896 255.82973)"
+    },
+    "dark": {
+      "background": "oklch(0.200616 0.00196907 286.22089)",
+      "foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "card": "oklch(0.23157626 0.00380518 286.09885)",
+      "card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "primary": "oklch(0.62425384 0.20557728 255.48612)",
+      "primary-foreground": "oklch(0 0 0)",
+      "secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "accent": "oklch(0.31864243 0.0686499 250.85957)",
+      "accent-foreground": "oklch(0.73105965 0.14117014 255.70879)",
+      "destructive": "oklch(0.704 0.191 22.216)",
+      "border": "oklch(0.38018166 0.00503884 286.15762)",
+      "input": "oklch(0.40237522 0.00330792 286.25012)",
+      "ring": "oklch(0.62425384 0.20557728 255.48612)",
+      "chart-1": "oklch(0.62425384 0.20557728 255.48612)",
+      "chart-2": "oklch(0.75555079 0.20824556 146.98359)",
+      "chart-3": "oklch(0.65604853 0.22741447 312.41572)",
+      "chart-4": "oklch(0.78236525 0.17105514 67.22306)",
+      "chart-5": "oklch(0.70783992 0.18913575 11.59117)",
+      "sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "sidebar-primary": "oklch(0.62425384 0.20557728 255.48612)",
+      "sidebar-primary-foreground": "oklch(0 0 0)",
+      "sidebar-accent": "oklch(0.31864243 0.0686499 250.85957)",
+      "sidebar-accent-foreground": "oklch(0.73105965 0.14117014 255.70879)",
+      "sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "sidebar-ring": "oklch(0.62425384 0.20557728 255.48612)"
+    }
+  },
+  "css": {
+    "@import \"tw-animate-css\"": {},
+    "@import \"shadcn/tailwind.css\"": {},
+    "@import \"@fontsource-variable/inter\"": {},
+    ":root[data-color=\"bamboo\"],\n[data-color=\"bamboo\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.5782686 0.04160174 129.29494)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.9598286 0.00285002 128.4932)",
+      "--accent-foreground": "oklch(0.51538748 0.03624408 129.2751)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.5782686 0.04160174 129.29494)",
+      "--chart-1": "oklch(0.34567122 0.03941146 124.02183)",
+      "--chart-2": "oklch(0.5782686 0.04160174 129.29494)",
+      "--chart-3": "oklch(0.82425406 0.03871716 130.4572)",
+      "--chart-4": "oklch(0.7947809 0.07928184 94.75624)",
+      "--chart-5": "oklch(0.76469751 0.01827977 99.68237)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.5782686 0.04160174 129.29494)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.9598286 0.00285002 128.4932)",
+      "--sidebar-accent-foreground": "oklch(0.51538748 0.03624408 129.2751)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.5782686 0.04160174 129.29494)"
+    },
+    ":root.dark[data-color=\"bamboo\"],\n.dark [data-color=\"bamboo\"],\n[data-color=\"bamboo\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.5782686 0.04160174 129.29494)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.24378851 0.00973209 124.92467)",
+      "--accent-foreground": "oklch(0.66802355 0.03280219 129.9279)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.5782686 0.04160174 129.29494)",
+      "--chart-1": "oklch(0.34567122 0.03941146 124.02183)",
+      "--chart-2": "oklch(0.5782686 0.04160174 129.29494)",
+      "--chart-3": "oklch(0.82425406 0.03871716 130.4572)",
+      "--chart-4": "oklch(0.7947809 0.07928184 94.75624)",
+      "--chart-5": "oklch(0.76469751 0.01827977 99.68237)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.5782686 0.04160174 129.29494)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.24378851 0.00973209 124.92467)",
+      "--sidebar-accent-foreground": "oklch(0.66802355 0.03280219 129.9279)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.5782686 0.04160174 129.29494)"
+    },
+    ":root[data-color=\"mauve\"],\n[data-color=\"mauve\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.52959557 0.0752934 306.85577)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.95508978 0.00696279 304.24047)",
+      "--accent-foreground": "oklch(0.52614681 0.07539982 306.84218)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.52959557 0.0752934 306.85577)",
+      "--chart-1": "oklch(0.35674111 0.06307047 301.17255)",
+      "--chart-2": "oklch(0.52959557 0.0752934 306.85577)",
+      "--chart-3": "oklch(0.6743455 0.05108195 311.54213)",
+      "--chart-4": "oklch(0.83611383 0.03396085 70.27071)",
+      "--chart-5": "oklch(0.84863795 0.04171021 108.7705)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.52959557 0.0752934 306.85577)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.95508978 0.00696279 304.24047)",
+      "--sidebar-accent-foreground": "oklch(0.52614681 0.07539982 306.84218)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.52959557 0.0752934 306.85577)"
+    },
+    ":root.dark[data-color=\"mauve\"],\n.dark [data-color=\"mauve\"],\n[data-color=\"mauve\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.52959557 0.0752934 306.85577)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.23190633 0.01854621 309.92791)",
+      "--accent-foreground": "oklch(0.67818046 0.04970634 307.64833)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.57368859 0.06767035 307.14102)",
+      "--chart-1": "oklch(0.35674111 0.06307047 301.17255)",
+      "--chart-2": "oklch(0.52959557 0.0752934 306.85577)",
+      "--chart-3": "oklch(0.6743455 0.05108195 311.54213)",
+      "--chart-4": "oklch(0.83611383 0.03396085 70.27071)",
+      "--chart-5": "oklch(0.84863795 0.04171021 108.7705)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.52959557 0.0752934 306.85577)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.23190633 0.01854621 309.92791)",
+      "--sidebar-accent-foreground": "oklch(0.67818046 0.04970634 307.64833)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.57368859 0.06767035 307.14102)"
+    },
+    ":root[data-color=\"mist\"],\n[data-color=\"mist\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.45987485 0.03155917 246.81258)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.95088694 0.00253758 228.78488)",
+      "--accent-foreground": "oklch(0.45987485 0.03155917 246.81258)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.45987485 0.03155917 246.81258)",
+      "--chart-1": "oklch(0.31388194 0.03437323 247.35399)",
+      "--chart-2": "oklch(0.45987485 0.03155917 246.81258)",
+      "--chart-3": "oklch(0.75033886 0.02426554 266.8488)",
+      "--chart-4": "oklch(0.73402931 0.02556889 40.29643)",
+      "--chart-5": "oklch(0.76469751 0.01827977 99.68237)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.45987485 0.03155917 246.81258)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.95088694 0.00253758 228.78488)",
+      "--sidebar-accent-foreground": "oklch(0.45987485 0.03155917 246.81258)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.45987485 0.03155917 246.81258)"
+    },
+    ":root.dark[data-color=\"mist\"],\n.dark [data-color=\"mist\"],\n[data-color=\"mist\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.45987485 0.03155917 246.81258)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.21589727 0.00747453 248.17387)",
+      "--accent-foreground": "oklch(0.67155538 0.01876794 248.10759)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.56610265 0.02421944 246.08882)",
+      "--chart-1": "oklch(0.31388194 0.03437323 247.35399)",
+      "--chart-2": "oklch(0.45987485 0.03155917 246.81258)",
+      "--chart-3": "oklch(0.75033886 0.02426554 266.8488)",
+      "--chart-4": "oklch(0.73402931 0.02556889 40.29643)",
+      "--chart-5": "oklch(0.76469751 0.01827977 99.68237)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.45987485 0.03155917 246.81258)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.21589727 0.00747453 248.17387)",
+      "--sidebar-accent-foreground": "oklch(0.67155538 0.01876794 248.10759)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.56610265 0.02421944 246.08882)"
+    },
+    ":root[data-color=\"sand\"],\n[data-color=\"sand\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.69714303 0.0565969 61.15525)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.97162103 0.005134 67.76383)",
+      "--accent-foreground": "oklch(0.52085371 0.04028956 59.78588)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.61984877 0.0489156 62.33286)",
+      "--chart-1": "oklch(0.37962483 0.03940287 47.65588)",
+      "--chart-2": "oklch(0.6258767 0.03396063 63.97898)",
+      "--chart-3": "oklch(0.69714303 0.0565969 61.15525)",
+      "--chart-4": "oklch(0.81947804 0.05008592 60.01069)",
+      "--chart-5": "oklch(0.80640204 0.04275262 165.17277)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.69714303 0.0565969 61.15525)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.97162103 0.005134 67.76383)",
+      "--sidebar-accent-foreground": "oklch(0.52085371 0.04028956 59.78588)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.61984877 0.0489156 62.33286)"
+    },
+    ":root.dark[data-color=\"sand\"],\n.dark [data-color=\"sand\"],\n[data-color=\"sand\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.69714303 0.0565969 61.15525)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.27439792 0.01504691 62.74617)",
+      "--accent-foreground": "oklch(0.69714303 0.0565969 61.15525)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.69714303 0.0565969 61.15525)",
+      "--chart-1": "oklch(0.37962483 0.03940287 47.65588)",
+      "--chart-2": "oklch(0.6258767 0.03396063 63.97898)",
+      "--chart-3": "oklch(0.69714303 0.0565969 61.15525)",
+      "--chart-4": "oklch(0.81947804 0.05008592 60.01069)",
+      "--chart-5": "oklch(0.80640204 0.04275262 165.17277)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.69714303 0.0565969 61.15525)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.27439792 0.01504691 62.74617)",
+      "--sidebar-accent-foreground": "oklch(0.69714303 0.0565969 61.15525)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.69714303 0.0565969 61.15525)"
+    },
+    ":root[data-color=\"pine\"],\n[data-color=\"pine\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.54698085 0.04705048 178.8079)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.95783428 0.00445669 179.73274)",
+      "--accent-foreground": "oklch(0.51471518 0.0440378 179.43557)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.54698085 0.04705048 178.8079)",
+      "--chart-1": "oklch(0.50424878 0.04427522 175.19005)",
+      "--chart-2": "oklch(0.54698085 0.04705048 178.8079)",
+      "--chart-3": "oklch(0.77317895 0.04474795 172.24223)",
+      "--chart-4": "oklch(0.61272391 0.0531127 279.60908)",
+      "--chart-5": "oklch(0.84387403 0.02582371 303.42751)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.54698085 0.04705048 178.8079)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.95783428 0.00445669 179.73274)",
+      "--sidebar-accent-foreground": "oklch(0.51471518 0.0440378 179.43557)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.54698085 0.04705048 178.8079)"
+    },
+    ":root.dark[data-color=\"pine\"],\n.dark [data-color=\"pine\"],\n[data-color=\"pine\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.54698085 0.04705048 178.8079)",
+      "--primary-foreground": "oklch(1 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.23524356 0.01173965 187.08191)",
+      "--accent-foreground": "oklch(0.66486022 0.03462254 181.68776)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.56122275 0.04594902 178.56345)",
+      "--chart-1": "oklch(0.50424878 0.04427522 175.19005)",
+      "--chart-2": "oklch(0.54698085 0.04705048 178.8079)",
+      "--chart-3": "oklch(0.77317895 0.04474795 172.24223)",
+      "--chart-4": "oklch(0.61272391 0.0531127 279.60908)",
+      "--chart-5": "oklch(0.84387403 0.02582371 303.42751)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.54698085 0.04705048 178.8079)",
+      "--sidebar-primary-foreground": "oklch(1 0 0)",
+      "--sidebar-accent": "oklch(0.23524356 0.01173965 187.08191)",
+      "--sidebar-accent-foreground": "oklch(0.66486022 0.03462254 181.68776)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.56122275 0.04594902 178.56345)"
+    },
+    ":root[data-color=\"rose\"],\n[data-color=\"rose\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.63193494 0.15263987 5.70579)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.96236691 0.01350137 0.26002)",
+      "--accent-foreground": "oklch(0.53371482 0.12594022 5.69227)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.63193494 0.15263987 5.70579)",
+      "--chart-1": "oklch(0.5669667 0.17877598 7.117)",
+      "--chart-2": "oklch(0.63193494 0.15263987 5.70579)",
+      "--chart-3": "oklch(0.73103414 0.13978454 358.35851)",
+      "--chart-4": "oklch(0.89140147 0.02901134 343.6267)",
+      "--chart-5": "oklch(0.78113794 0.05820972 268.52997)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.63193494 0.15263987 5.70579)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.96236691 0.01350137 0.26002)",
+      "--sidebar-accent-foreground": "oklch(0.53371482 0.12594022 5.69227)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.63193494 0.15263987 5.70579)"
+    },
+    ":root.dark[data-color=\"rose\"],\n.dark [data-color=\"rose\"],\n[data-color=\"rose\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.63193494 0.15263987 5.70579)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.25315559 0.03949806 1.49009)",
+      "--accent-foreground": "oklch(0.68508464 0.1273685 3.76287)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.63193494 0.15263987 5.70579)",
+      "--chart-1": "oklch(0.5669667 0.17877598 7.117)",
+      "--chart-2": "oklch(0.63193494 0.15263987 5.70579)",
+      "--chart-3": "oklch(0.73103414 0.13978454 358.35851)",
+      "--chart-4": "oklch(0.89140147 0.02901134 343.6267)",
+      "--chart-5": "oklch(0.78113794 0.05820972 268.52997)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.63193494 0.15263987 5.70579)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.25315559 0.03949806 1.49009)",
+      "--sidebar-accent-foreground": "oklch(0.68508464 0.1273685 3.76287)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.63193494 0.15263987 5.70579)"
+    },
+    ":root[data-color=\"lime\"],\n[data-color=\"lime\"]": {
+      "--background": "oklch(0.97071377 0.00265048 286.35036)",
+      "--foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--primary": "oklch(0.91309009 0.1668858 119.72192)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "--secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "--muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "--accent": "oklch(0.99098161 0.01860397 116.56466)",
+      "--accent-foreground": "oklch(0.50927135 0.0886971 119.37955)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--input": "oklch(0.83115757 0.00689828 286.24868)",
+      "--ring": "oklch(0.60965815 0.10716355 119.13757)",
+      "--chart-1": "oklch(0.36472698 0.06938881 127.49401)",
+      "--chart-2": "oklch(0.63030426 0.13784438 122.90539)",
+      "--chart-3": "oklch(0.91309009 0.1668858 119.72192)",
+      "--chart-4": "oklch(0.9499963 0.07610922 117.36693)",
+      "--chart-5": "oklch(0.76174181 0.03125888 157.67069)",
+      "--sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "--sidebar-primary": "oklch(0.91309009 0.1668858 119.72192)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.99098161 0.01860397 116.56466)",
+      "--sidebar-accent-foreground": "oklch(0.50927135 0.0886971 119.37955)",
+      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-ring": "oklch(0.60965815 0.10716355 119.13757)"
+    },
+    ":root.dark[data-color=\"lime\"],\n.dark [data-color=\"lime\"],\n[data-color=\"lime\"].dark": {
+      "--background": "oklch(0.200616 0.00196907 286.22089)",
+      "--foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--card": "oklch(0.23157626 0.00380518 286.09885)",
+      "--card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "--popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--primary": "oklch(0.91309009 0.1668858 119.72192)",
+      "--primary-foreground": "oklch(0 0 0)",
+      "--secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "--secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "--muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "--accent": "oklch(0.32824543 0.04425552 117.48913)",
+      "--accent-foreground": "oklch(0.91309009 0.1668858 119.72192)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--input": "oklch(0.40237522 0.00330792 286.25012)",
+      "--ring": "oklch(0.91309009 0.1668858 119.72192)",
+      "--chart-1": "oklch(0.36472698 0.06938881 127.49401)",
+      "--chart-2": "oklch(0.63030426 0.13784438 122.90539)",
+      "--chart-3": "oklch(0.91309009 0.1668858 119.72192)",
+      "--chart-4": "oklch(0.9499963 0.07610922 117.36693)",
+      "--chart-5": "oklch(0.76174181 0.03125888 157.67069)",
+      "--sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "--sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "--sidebar-primary": "oklch(0.91309009 0.1668858 119.72192)",
+      "--sidebar-primary-foreground": "oklch(0 0 0)",
+      "--sidebar-accent": "oklch(0.32824543 0.04425552 117.48913)",
+      "--sidebar-accent-foreground": "oklch(0.91309009 0.1668858 119.72192)",
+      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-ring": "oklch(0.91309009 0.1668858 119.72192)"
+    },
+    "@property --otp-focus-angle": {
+      "syntax": "\"<angle>\"",
+      "inherits": "false",
+      "initial-value": "0deg"
+    },
+    "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not(\n  [data-glass=\"true\"]\n)": {
+      "background": "linear-gradient(\n      color-mix(in oklch, var(--background), var(--input) 55%) 0 0\n    )\n    padding-box,\n    conic-gradient(\n      from var(--otp-focus-angle),\n      transparent 0% 18%,\n      var(--ring) 30% 48%,\n      transparent 60% 100%\n    )\n    border-box",
+      "animation": "input-otp-focus 1.8s linear infinite"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+      "pointer-events": "none",
+      "animation": "input-otp-collapse 380ms cubic-bezier(0.65, 0, 0.35, 1)\n    var(--otp-collapse-delay, 0ms) both"
+    },
+    "[data-slot=\"input-otp-state\"]": {
+      "animation": "input-otp-reveal 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 240ms both"
+    },
+    "[data-slot=\"input-otp-state-icon\"][data-spinning]": {
+      "animation": "input-otp-spin 750ms linear infinite"
+    },
+    "[data-slot=\"input-otp-halo\"]": {
+      "position": "absolute",
+      "inset": "-4px",
+      "border-radius": "inherit",
+      "box-shadow": "0 0 0 2px color-mix(in oklch, var(--primary) 25%, transparent)",
+      "animation": "input-otp-halo 700ms ease-out 100ms both"
+    },
+    "[data-slot=\"input-otp-particles\"] > span": {
+      "position": "absolute",
+      "width": "4px",
+      "height": "8px",
+      "border-radius": "999px",
+      "background": "var(--primary)",
+      "animation": "input-otp-particle 850ms cubic-bezier(0.16, 1, 0.3, 1)\n    var(--otp-particle-delay) both"
+    },
+    "[data-slot=\"input-otp-particles\"] > span:nth-child(3n + 1)": {
+      "background": "var(--ring)"
+    },
+    "[data-slot=\"input-otp-particles\"] > span:nth-child(3n + 2)": {
+      "background": "var(--accent-foreground)"
+    },
+    "[data-slot=\"input-otp-feedback-clock\"]": {
+      "position": "absolute",
+      "width": "1px",
+      "height": "1px",
+      "opacity": "0",
+      "pointer-events": "none",
+      "animation": "input-otp-feedback var(--otp-feedback-duration, 1250ms) linear both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n  [data-slot=\"input-otp-slot\"]": {
+      "pointer-events": "none",
+      "animation": "input-otp-restore 380ms cubic-bezier(0.16, 1, 0.3, 1) both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n  [data-slot=\"input-otp-state\"]": {
+      "animation": "input-otp-dismiss 180ms ease-in both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n  [data-slot=\"input-otp-feedback-clock\"]": {
+      "animation-name": "input-otp-restoration",
+      "animation-duration": "380ms"
+    },
+    "[data-slot=\"input-otp\"][data-complete][data-feedback=\"restored\"]\n  [data-slot=\"input-otp-slot\"]": {
+      "box-shadow": "0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent)"
+    },
+    "@media (prefers-reduced-motion: reduce)": {
+      "[data-slot=\"input-otp-state\"],\n  [data-slot=\"input-otp-state-icon\"],\n  [data-slot=\"input-otp-halo\"],\n  [data-slot=\"input-otp-feedback-clock\"]": {
+        "animation": "none"
+      },
+      "[data-slot=\"input-otp-state\"]": {
+        "opacity": "1",
+        "scale": "1"
+      },
+      "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not(\n    [data-glass=\"true\"]\n  ),\n  [data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"],\n  [data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n    [data-slot=\"input-otp-slot\"],\n  [data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n    [data-slot=\"input-otp-state\"],\n  [data-slot=\"input-otp\"][data-feedback=\"restoring\"]\n    [data-slot=\"input-otp-feedback-clock\"]": {
+        "animation": "none"
+      },
+      "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+        "opacity": "0"
+      },
+      "[data-slot=\"input-otp-particles\"]": {
+        "display": "none"
+      },
+      "html[data-appearance-transition]::view-transition-new(root)": {
+        "animation": "none"
+      }
+    },
+    "[data-glass=\"true\"]": {
+      "border-color": "transparent",
+      "--tw-ring-color": "transparent",
+      "--muted-foreground": "color-mix(\n    in oklch,\n    var(--foreground) 85%,\n    var(--popover)\n  )"
+    },
+    "[data-glass=\"true\"]:focus-visible,\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot=\"input-group-control\"]:focus-visible\n)": {
+      "--tw-ring-color": "var(--ring)"
+    },
+    "[data-glass=\"true\"][data-variant=\"destructive\"]:focus-visible,\n[data-glass=\"true\"][aria-invalid=\"true\"],\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot][aria-invalid=\"true\"]\n)": {
+      "--tw-ring-color": "var(--destructive)"
+    },
+    "[data-glass=\"true\"][data-glass-material=\"clear\"]": {
+      "--glass-initial-opacity": "60%",
+      "--glass-initial-blur": "6px"
+    },
+    "[data-glass=\"true\"][data-glass-state]": {
+      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(\n        --glass-surface-opacity,\n        var(--glass-opacity, var(--glass-initial-opacity, 78%))\n      ),\n    transparent\n  )",
+      "--glass-initial-edge": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22light%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22white%22%20stop-opacity%3D%22.35%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%22.75%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%22.18%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22none%22%20stroke%3D%22url%28%23light%29%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+      "background-image": "var(--glass-edge, var(--glass-initial-edge)), var(--glass-frame, none)",
+      "background-size": "100% 100%",
+      "background-repeat": "no-repeat",
+      "background-origin": "border-box",
+      "background-clip": "border-box",
+      "-webkit-backdrop-filter": "blur(\n      var(\n        --glass-surface-blur,\n        var(--glass-blur, var(--glass-initial-blur, 8px))\n      )\n    )\n    saturate(1.12)",
+      "backdrop-filter": "blur(\n      var(\n        --glass-surface-blur,\n        var(--glass-blur, var(--glass-initial-blur, 8px))\n      )\n    )\n    saturate(1.12)"
+    },
+    "[data-slot=\"tab-bar-indicator\"][data-glass=\"true\"]": {
+      "--glass-surface-opacity": "6%",
+      "--glass-surface-blur": "0.6px",
+      "--glass-surface-tint-opacity": "0.04"
+    },
+    "[data-glass=\"true\"][data-glass-state=\"ready\"]": {
+      "background-color": "transparent",
+      "background-image": "var(--glass-edge, var(--glass-initial-edge)), var(--glass-frame, none)",
+      "-webkit-backdrop-filter": "none",
+      "backdrop-filter": "none"
+    },
+    "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
+      "background-image": "var(--glass-edge, var(--glass-initial-edge))"
+    },
+    "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+      "[data-glass=\"true\"][data-glass-state]": {
+        "background-color": "var(--glass-base, var(--popover))",
+        "background-image": "none",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none"
+      }
+    },
+    "html[data-appearance-transition]::view-transition-old(root)": {
+      "animation": "none",
+      "mix-blend-mode": "normal"
+    },
+    "html[data-appearance-transition]::view-transition-new(root)": {
+      "mix-blend-mode": "normal"
+    },
+    "html[data-appearance-transition=\"rectangle\"]::view-transition-new(root)": {
+      "animation": "appearance-rectangle 400ms ease-out"
+    },
+    "html[data-appearance-transition=\"circle\"]::view-transition-new(root)": {
+      "animation": "appearance-circle 700ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "html[data-appearance-transition=\"circle-blur\"]::view-transition-new(root)": {
+      "animation": "appearance-circle-soft 700ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "@property --appearance-reveal": {
+      "syntax": "\"<number>\"",
+      "inherits": "false",
+      "initial-value": "0"
+    },
+    "html[data-appearance-transition=\"blinds\"]::view-transition-new(root)": {
+      "mask-image": "repeating-linear-gradient(\n    90deg,\n    #000 0 calc(var(--appearance-reveal) * 72px),\n    transparent calc(var(--appearance-reveal) * 72px) 72px\n  )",
+      "animation": "appearance-blinds 700ms ease-out"
+    },
+    "@custom-variant dark (&:is(.dark *))": {},
+    "@layer base": {
+      "*": {
+        "@apply border-border outline-ring/50": {}
+      },
+      "body": {
+        "@apply bg-background text-foreground": {}
+      },
+      "button:not(:disabled),\n  [role=\"button\"]:not(:disabled)": {
+        "cursor": "pointer"
+      }
+    },
+    "@layer component-animations": {
+      "@keyframes loader-spin": {
+        "to": {
+          "transform": "rotate(360deg)"
+        }
+      },
+      "@keyframes loader-dash": {
+        "0%": {
+          "stroke-dasharray": "2 98",
+          "stroke-dashoffset": "0"
+        },
+        "50%": {
+          "stroke-dasharray": "70 30",
+          "stroke-dashoffset": "-15"
+        },
+        "100%": {
+          "stroke-dasharray": "2 98",
+          "stroke-dashoffset": "-100"
+        }
+      },
+      "@keyframes loader-dot": {
+        "0%,\n  100%": {
+          "transform": "translateY(0)",
+          "opacity": "0.45"
+        },
+        "50%": {
+          "transform": "translateY(calc(var(--loader-size) * -0.22))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-bar": {
+        "0%,\n  100%": {
+          "transform": "scaleY(0.3)"
+        },
+        "50%": {
+          "transform": "scaleY(1)"
+        }
+      },
+      "@keyframes loader-matrix": {
+        "0%,\n  100%": {
+          "opacity": "0.2",
+          "transform": "scale(0.7)"
+        },
+        "50%": {
+          "opacity": "1",
+          "transform": "scale(1)"
+        }
+      },
+      "@keyframes loader-opacity": {
+        "0%,\n  100%": {
+          "opacity": "0.2"
+        },
+        "50%": {
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-metaball-first": {
+        "0%,\n  100%": {
+          "transform": "translateX(0)"
+        },
+        "50%": {
+          "transform": "translateX(33px)"
+        }
+      },
+      "@keyframes loader-metaball-second": {
+        "0%,\n  100%": {
+          "transform": "translateX(0)"
+        },
+        "50%": {
+          "transform": "translateX(-33px)"
+        }
+      },
+      "@keyframes loader-newton-left": {
+        "0%,\n  100%": {
+          "transform": "rotate(-30deg)"
+        },
+        "33.33%,\n  66.66%": {
+          "transform": "rotate(0)"
+        }
+      },
+      "@keyframes loader-newton-right": {
+        "0%,\n  33.33%,\n  100%": {
+          "transform": "rotate(0)"
+        },
+        "66.66%": {
+          "transform": "rotate(30deg)"
+        }
+      },
+      "@keyframes loader-helix-left": {
+        "0%,\n  100%": {
+          "transform": "translateX(0)",
+          "opacity": "0.55"
+        },
+        "50%": {
+          "transform": "translateX(calc(var(--loader-size) * 0.42))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-helix-right": {
+        "0%,\n  100%": {
+          "transform": "translateX(0)",
+          "opacity": "0.55"
+        },
+        "50%": {
+          "transform": "translateX(calc(var(--loader-size) * -0.42))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-morph-pose": {
+        "0%,\n  10%": {
+          "transform": "rotate(0deg) scale(1)"
+        },
+        "20%,\n  30%": {
+          "transform": "rotate(72deg) scale(0.88)"
+        },
+        "40%,\n  50%": {
+          "transform": "rotate(144deg) scale(1)"
+        },
+        "60%,\n  70%": {
+          "transform": "rotate(216deg) scale(0.88)"
+        },
+        "80%,\n  90%": {
+          "transform": "rotate(288deg) scale(1)"
+        },
+        "100%": {
+          "transform": "rotate(360deg) scale(1)"
+        }
+      },
+      "@keyframes loader-morph-shape": {
+        "0%,\n  10%,\n  100%": {
+          "clip-path": "polygon(\n      50.00% 4.00%,\n      61.91% 5.57%,\n      73.00% 10.16%,\n      82.53% 17.47%,\n      89.84% 27.00%,\n      94.43% 38.09%,\n      96.00% 50.00%,\n      94.43% 61.91%,\n      89.84% 73.00%,\n      82.53% 82.53%,\n      73.00% 89.84%,\n      61.91% 94.43%,\n      50.00% 96.00%,\n      38.09% 94.43%,\n      27.00% 89.84%,\n      17.47% 82.53%,\n      10.16% 73.00%,\n      5.57% 61.91%,\n      4.00% 50.00%,\n      5.57% 38.09%,\n      10.16% 27.00%,\n      17.47% 17.47%,\n      27.00% 10.16%,\n      38.09% 5.57%\n    )"
+        },
+        "20%,\n  30%": {
+          "clip-path": "polygon(\n      82.53% 17.47%,\n      82.53% 28.32%,\n      82.53% 39.16%,\n      82.53% 50.00%,\n      82.53% 60.84%,\n      82.53% 71.68%,\n      82.53% 82.53%,\n      71.68% 82.53%,\n      60.84% 82.53%,\n      50.00% 82.53%,\n      39.16% 82.53%,\n      28.32% 82.53%,\n      17.47% 82.53%,\n      17.47% 71.68%,\n      17.47% 60.84%,\n      17.47% 50.00%,\n      17.47% 39.16%,\n      17.47% 28.32%,\n      17.47% 17.47%,\n      28.32% 17.47%,\n      39.16% 17.47%,\n      50.00% 17.47%,\n      60.84% 17.47%,\n      71.68% 17.47%\n    )"
+        },
+        "40%,\n  50%": {
+          "clip-path": "polygon(\n      50.00% 4.00%,\n      54.98% 12.62%,\n      59.96% 21.25%,\n      64.94% 29.88%,\n      69.92% 38.50%,\n      74.90% 47.12%,\n      79.88% 55.75%,\n      84.86% 64.38%,\n      89.84% 73.00%,\n      79.88% 73.00%,\n      69.92% 73.00%,\n      59.96% 73.00%,\n      50.00% 73.00%,\n      40.04% 73.00%,\n      30.08% 73.00%,\n      20.12% 73.00%,\n      10.16% 73.00%,\n      15.14% 64.38%,\n      20.12% 55.75%,\n      25.10% 47.13%,\n      30.08% 38.50%,\n      35.06% 29.88%,\n      40.04% 21.25%,\n      45.02% 12.62%\n    )"
+        },
+        "60%,\n  70%": {
+          "clip-path": "polygon(\n      50.00% 4.00%,\n      59.96% 9.75%,\n      69.92% 15.50%,\n      79.88% 21.25%,\n      89.84% 27.00%,\n      89.84% 38.50%,\n      89.84% 50.00%,\n      89.84% 61.50%,\n      89.84% 73.00%,\n      79.88% 78.75%,\n      69.92% 84.50%,\n      59.96% 90.25%,\n      50.00% 96.00%,\n      40.04% 90.25%,\n      30.08% 84.50%,\n      20.12% 78.75%,\n      10.16% 73.00%,\n      10.16% 61.50%,\n      10.16% 50.00%,\n      10.16% 38.50%,\n      10.16% 27.00%,\n      20.12% 21.25%,\n      30.08% 15.50%,\n      40.04% 9.75%\n    )"
+        },
+        "80%,\n  90%": {
+          "clip-path": "polygon(\n      50.00% 4.00%,\n      57.67% 11.67%,\n      65.33% 19.33%,\n      73.00% 27.00%,\n      80.67% 34.67%,\n      88.33% 42.33%,\n      96.00% 50.00%,\n      88.33% 57.67%,\n      80.67% 65.33%,\n      73.00% 73.00%,\n      65.33% 80.67%,\n      57.67% 88.33%,\n      50.00% 96.00%,\n      42.33% 88.33%,\n      34.67% 80.67%,\n      27.00% 73.00%,\n      19.33% 65.33%,\n      11.67% 57.67%,\n      4.00% 50.00%,\n      11.67% 42.33%,\n      19.33% 34.67%,\n      27.00% 27.00%,\n      34.67% 19.33%,\n      42.33% 11.67%\n    )"
+        }
+      },
+      "@keyframes input-otp-focus": {
+        "to": {
+          "--otp-focus-angle": "360deg"
+        }
+      },
+      "@keyframes input-otp-collapse": {
+        "to": {
+          "transform": "translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px))\n      scale(0.86)",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-restore": {
+        "from": {
+          "transform": "translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px))\n      scale(0.86)",
+          "opacity": "0"
+        },
+        "to": {
+          "transform": "translate(0, 0) scale(1)",
+          "opacity": "1"
+        }
+      },
+      "@keyframes input-otp-dismiss": {
+        "from": {
+          "opacity": "1",
+          "scale": "1"
+        },
+        "to": {
+          "opacity": "0",
+          "scale": "0.72"
+        }
+      },
+      "@keyframes input-otp-restoration": {
+        "from": {
+          "opacity": "0"
+        },
+        "to": {
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-reveal": {
+        "from": {
+          "scale": "0.72",
+          "opacity": "0"
+        },
+        "to": {
+          "scale": "1",
+          "opacity": "1"
+        }
+      },
+      "@keyframes input-otp-spin": {
+        "to": {
+          "rotate": "360deg"
+        }
+      },
+      "@keyframes input-otp-halo": {
+        "0%": {
+          "scale": "0.96",
+          "opacity": "0"
+        },
+        "35%": {
+          "scale": "1.04",
+          "opacity": "0.5"
+        },
+        "100%": {
+          "scale": "1.1",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-particle": {
+        "from": {
+          "transform": "translate(0, 0) scale(0.45)",
+          "opacity": "1"
+        },
+        "to": {
+          "transform": "translate(var(--otp-particle-x), var(--otp-particle-y))\n      rotate(var(--otp-particle-rotation)) scale(1)",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-feedback": {
+        "from": {
+          "opacity": "0"
+        },
+        "to": {
+          "opacity": "0"
+        }
+      },
+      "@keyframes appearance-rectangle": {
+        "from": {
+          "clip-path": "var(--appearance-clip)"
+        },
+        "to": {
+          "clip-path": "inset(0)"
+        }
+      },
+      "@keyframes appearance-circle": {
+        "from": {
+          "clip-path": "circle(0 at var(--appearance-x) var(--appearance-y))"
+        },
+        "to": {
+          "clip-path": "circle(150vmax at var(--appearance-x) var(--appearance-y))"
+        }
+      },
+      "@keyframes appearance-circle-soft": {
+        "from": {
+          "clip-path": "circle(0 at var(--appearance-x) var(--appearance-y))",
+          "filter": "blur(10px)"
+        },
+        "to": {
+          "clip-path": "circle(150vmax at var(--appearance-x) var(--appearance-y))",
+          "filter": "blur(0)"
+        }
+      },
+      "@keyframes appearance-blinds": {
+        "from": {
+          "--appearance-reveal": "0"
+        },
+        "to": {
+          "--appearance-reveal": "1"
+        }
+      }
+    }
+  },
+  "meta": {
+    "source": "https://github.com/draco-china/sui",
+    "tailwindVersion": "4",
+    "base": "base",
+    "entrypoints": [
+      "@/components/ui/long-text"
+    ]
+  },
+  "categories": [
+    "sui",
+    "components"
+  ],
+  "type": "registry:ui"
+}
