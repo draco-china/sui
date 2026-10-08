@@ -53,6 +53,7 @@ export function HomeTabBarPreview(props: Omit<TabBarProps, "ref">) {
       visible &&
       !document.hidden &&
       !reduced.matches &&
+      !document.querySelector('[role="menu"], [role="dialog"]') &&
       !focused &&
       !interacting;
     const schedule = (delay = 1800) => {
@@ -149,7 +150,10 @@ export function HomeTabBarPreview(props: Omit<TabBarProps, "ref">) {
     const up = (event: PointerEvent) => {
       if (!event.isTrusted) return;
       interacting = false;
-      reconcile();
+      timer = window.setTimeout(() => {
+        timer = undefined;
+        reconcile();
+      }, 300);
     };
     const geometryChanged = () => {
       stop();
@@ -167,7 +171,7 @@ export function HomeTabBarPreview(props: Omit<TabBarProps, "ref">) {
     observer.observe(element);
     element.addEventListener("focusin", focusIn);
     element.addEventListener("focusout", focusOut);
-    element.addEventListener("pointerdown", down, true);
+    window.addEventListener("pointerdown", down, true);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
     window.addEventListener("resize", geometryChanged);
@@ -183,7 +187,7 @@ export function HomeTabBarPreview(props: Omit<TabBarProps, "ref">) {
       observer.disconnect();
       element.removeEventListener("focusin", focusIn);
       element.removeEventListener("focusout", focusOut);
-      element.removeEventListener("pointerdown", down, true);
+      window.removeEventListener("pointerdown", down, true);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
       window.removeEventListener("resize", geometryChanged);

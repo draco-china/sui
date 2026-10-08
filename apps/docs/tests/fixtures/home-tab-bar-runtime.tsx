@@ -210,6 +210,35 @@ await act(async () => {
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
 await act(async () => {
+  const down = new window.PointerEvent("pointerdown");
+  Object.defineProperty(down, "isTrusted", { value: true });
+  window.dispatchEvent(down);
+});
+assert.equal(
+  nav.dataset.homeTabBarDemo,
+  "paused",
+  "real input anywhere pauses the demo",
+);
+const menu = document.createElement("div");
+menu.setAttribute("role", "menu");
+document.body.append(menu);
+await act(async () => {
+  const up = new window.PointerEvent("pointerup");
+  Object.defineProperty(up, "isTrusted", { value: true });
+  window.dispatchEvent(up);
+});
+await pause(350);
+assert.equal(
+  nav.dataset.homeTabBarDemo,
+  "paused",
+  "an open header menu suppresses playback",
+);
+menu.remove();
+await act(async () => {
+  intersection?.([{ isIntersecting: true, intersectionRatio: 1 }]);
+});
+assert.equal(nav.dataset.homeTabBarDemo, "idle");
+await act(async () => {
   intersection?.([{ isIntersecting: false, intersectionRatio: 0 }]);
 });
 assert.equal(nav.dataset.homeTabBarDemo, "paused", "offscreen demo stops");
