@@ -1,0 +1,409 @@
+{
+  "label": "baseline",
+  "timestamp": "2026-10-08T07:03:17.576Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "reducedMotion": false,
+  "longTaskSupport": true,
+  "methodology": "Local Vite development harness, real production source, vgpu + WGSL. Renderer times include queue, GPU completion, readback and PNG serialization. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
+  "renderer": {
+    "initializationMs": 9.299999982118607,
+    "newBackground": {
+      "count": 8,
+      "medianMs": 16.69999998807907,
+      "p95Ms": 18.19999998807907,
+      "totalMs": 134.89999994635582
+    },
+    "cachedBackground": {
+      "count": 12,
+      "medianMs": 16.80000001192093,
+      "p95Ms": 18.299999982118607,
+      "totalMs": 201.5
+    },
+    "cachedUploads": 0,
+    "sourcePixels": [960, 540],
+    "outputCssPixels": [240, 100],
+    "devicePixelRatio": 2
+  },
+  "css-1": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 3,
+    "reactActualMs": 3.5999999940395355,
+    "longTasks": {
+      "count": 1,
+      "medianMs": 50,
+      "p95Ms": 50,
+      "totalMs": 50
+    },
+    "ready": {
+      "states": ["css", "css"],
+      "elapsedMs": 606.0999999940395
+    }
+  },
+  "css-1-idle2s": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 0,
+    "reactActualMs": 0,
+    "longTasks": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    }
+  },
+  "css-8": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 3,
+    "reactActualMs": 5.000000029802322,
+    "longTasks": {
+      "count": 3,
+      "medianMs": 70,
+      "p95Ms": 422,
+      "totalMs": 551
+    },
+    "ready": {
+      "states": ["css", "css", "css", "css", "css", "css", "css", "css", "css"],
+      "elapsedMs": 606.2999999821186
+    }
+  },
+  "css-8-idle2s": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 0,
+    "reactActualMs": 0,
+    "longTasks": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    }
+  },
+  "css-drag": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 10,
+    "reactActualMs": 6.800000041723251,
+    "longTasks": {
+      "count": 32,
+      "medianMs": 56,
+      "p95Ms": 119,
+      "totalMs": 2109
+    },
+    "interaction": {
+      "generatedMoves": 60,
+      "held": true,
+      "maximumContentScale": 1.2,
+      "heldWork": {
+        "capture": {
+          "count": 0,
+          "medianMs": 0,
+          "p95Ms": 0,
+          "totalMs": 0
+        },
+        "render": {
+          "count": 0,
+          "medianMs": 0,
+          "p95Ms": 0,
+          "totalMs": 0
+        },
+        "uploads": 0,
+        "reactCommits": 7,
+        "reactActualMs": 5.000000029802322,
+        "longTasks": {
+          "count": 30,
+          "medianMs": 56,
+          "p95Ms": 119,
+          "totalMs": 2003
+        }
+      },
+      "selected": "Settings",
+      "textSelection": "",
+      "method": "Fixture-generated pointer events with capture-registry shim; not native pointer latency"
+    }
+  },
+  "css-highlight-only": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 1,
+    "reactActualMs": 2.300000011920929,
+    "longTasks": {
+      "count": 2,
+      "medianMs": 353,
+      "p95Ms": 353,
+      "totalMs": 415
+    },
+    "ready": {
+      "states": ["css", "css", "css", "css", "css", "css", "css", "css", "css"],
+      "elapsedMs": 607.4000000059605
+    }
+  },
+  "auto-1": {
+    "capture": {
+      "count": 1,
+      "medianMs": 51.80000001192093,
+      "p95Ms": 51.80000001192093,
+      "totalMs": 51.80000001192093
+    },
+    "render": {
+      "count": 2,
+      "medianMs": 8.800000011920929,
+      "p95Ms": 8.800000011920929,
+      "totalMs": 15.599999994039536
+    },
+    "uploads": 1,
+    "reactCommits": 3,
+    "reactActualMs": 4.5,
+    "longTasks": {
+      "count": 1,
+      "medianMs": 73,
+      "p95Ms": 73,
+      "totalMs": 73
+    },
+    "ready": {
+      "states": ["ready", "ready"],
+      "elapsedMs": 938.4000000059605
+    }
+  },
+  "auto-1-idle2s": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 0,
+    "reactActualMs": 0,
+    "longTasks": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    }
+  },
+  "auto-8": {
+    "capture": {
+      "count": 1,
+      "medianMs": 29.400000005960464,
+      "p95Ms": 29.400000005960464,
+      "totalMs": 29.400000005960464
+    },
+    "render": {
+      "count": 9,
+      "medianMs": 9.699999988079071,
+      "p95Ms": 23.69999998807907,
+      "totalMs": 105.49999994039536
+    },
+    "uploads": 1,
+    "reactCommits": 3,
+    "reactActualMs": 5.000000029802322,
+    "longTasks": {
+      "count": 3,
+      "medianMs": 128,
+      "p95Ms": 523,
+      "totalMs": 705
+    },
+    "ready": {
+      "states": [
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready"
+      ],
+      "elapsedMs": 1088.9000000059605
+    }
+  },
+  "auto-8-idle2s": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "uploads": 0,
+    "reactCommits": 0,
+    "reactActualMs": 0,
+    "longTasks": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    }
+  },
+  "auto-drag": {
+    "capture": {
+      "count": 3,
+      "medianMs": 43.5,
+      "p95Ms": 280.60000002384186,
+      "totalMs": 351.7000000178814
+    },
+    "render": {
+      "count": 11,
+      "medianMs": 9.399999976158142,
+      "p95Ms": 1488.9000000059605,
+      "totalMs": 3548.7000000178814
+    },
+    "uploads": 3,
+    "reactCommits": 10,
+    "reactActualMs": 5.299999952316284,
+    "longTasks": {
+      "count": 6,
+      "medianMs": 76,
+      "p95Ms": 200,
+      "totalMs": 555
+    },
+    "interaction": {
+      "generatedMoves": 60,
+      "held": true,
+      "maximumContentScale": 1.2,
+      "heldWork": {
+        "capture": {
+          "count": 1,
+          "medianMs": 280.60000002384186,
+          "p95Ms": 280.60000002384186,
+          "totalMs": 280.60000002384186
+        },
+        "render": {
+          "count": 2,
+          "medianMs": 1488.9000000059605,
+          "p95Ms": 1488.9000000059605,
+          "totalMs": 2843.4000000059605
+        },
+        "uploads": 1,
+        "reactCommits": 7,
+        "reactActualMs": 3.7999999821186066,
+        "longTasks": {
+          "count": 4,
+          "medianMs": 94,
+          "p95Ms": 200,
+          "totalMs": 427
+        }
+      },
+      "selected": "Settings",
+      "textSelection": "",
+      "method": "Fixture-generated pointer events with capture-registry shim; not native pointer latency"
+    }
+  },
+  "auto-highlight-only": {
+    "capture": {
+      "count": 0,
+      "medianMs": 0,
+      "p95Ms": 0,
+      "totalMs": 0
+    },
+    "render": {
+      "count": 10,
+      "medianMs": 10.400000005960464,
+      "p95Ms": 244.09999999403954,
+      "totalMs": 348.30000001192093
+    },
+    "uploads": 0,
+    "reactCommits": 1,
+    "reactActualMs": 1.2000000178813934,
+    "longTasks": {
+      "count": 2,
+      "medianMs": 239,
+      "p95Ms": 239,
+      "totalMs": 290
+    },
+    "ready": {
+      "states": [
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready",
+        "ready"
+      ],
+      "elapsedMs": 907.2000000178814
+    }
+  }
+}
