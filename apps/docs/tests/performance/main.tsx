@@ -10,7 +10,10 @@ import {
   type GlassFrame,
   GlassRenderer,
 } from "../../../../packages/ui/src/lib/glass/renderer";
+import { SvgGlassRenderer } from "../../../../packages/ui/src/lib/glass/svg-renderer";
+import GlassComparison from "../../src/examples/variants/glass-demo";
 import {
+  captureAuditEnabled,
   instrumentGpu,
   measure,
   metrics,
@@ -18,13 +21,17 @@ import {
   snapshot,
   summary,
 } from "./metrics";
-import "../../../../packages/ui/src/styles/globals.css";
+import { svgPixelAudit } from "./svg-audit";
 import "./style.css";
 
 instrumentGpu();
 const render = GlassRenderer.prototype.render;
 GlassRenderer.prototype.render = function (source, frame) {
   return measure("render", () => render.call(this, source, frame));
+};
+const renderSvg = SvgGlassRenderer.prototype.render;
+SvgGlassRenderer.prototype.render = function (source, frame) {
+  return measure("render", () => renderSvg.call(this, source, frame));
 };
 const supportsLongTasks =
   PerformanceObserver.supportedEntryTypes.includes("longtask");
@@ -37,6 +44,8 @@ if (supportsLongTasks) {
 
 const pause = (milliseconds: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+const focusedSvg =
+  new URLSearchParams(location.search).get("scenario") === "svg-init";
 const focusedDrag =
   new URLSearchParams(location.search).get("scenario") === "auto-drag";
 
@@ -63,6 +72,9 @@ async function stable(scene: HTMLElement) {
     if (!pending && performance.now() - changed > 600) {
       return {
         states: surfaces.map((surface) => surface.dataset.glassState),
+        renderers: surfaces.map(
+          (surface) => surface.dataset.glassRenderer ?? "css",
+        ),
         elapsedMs: performance.now() - start,
       };
     }
@@ -148,7 +160,7 @@ function Scene({
   highlight = 0.3,
 }: {
   count: number;
-  mode: "auto" | "css";
+  mode: "auto" | "svg" | "css";
   highlight?: number;
 }) {
   const target = useRef<HTMLDivElement>(null);
@@ -296,10 +308,10 @@ function Benchmark() {
       longTaskSupport: supportsLongTasks,
       scenario: focusedDrag ? "auto-drag diagnostic reproduction" : "full",
       methodology:
-        "Local Vite development harness, real production source, vgpu + WGSL. Renderer times include queue, GPU completion, readback and PNG serialization. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
+        "Local Vite development harness, real production source, CSS, SVG refraction and vgpu + WGSL. GPU renderer times include queue, GPU completion, readback and PNG serialization; SVG renderer times cover map/Blob generation, excluding deferred browser decoding and raster/paint. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
     };
     try {
-      if (!focusedDrag) {
+      if (!focusedDrag && !focusedSvg) {
         resetMetrics();
         setStage("Renderer: new and cached backgrounds");
         try {
@@ -308,10 +320,12 @@ function Benchmark() {
           data.renderer = { error: String(error) };
         }
       }
-      const modes: readonly ("css" | "auto")[] = focusedDrag
+      const modes: readonly ("css" | "svg" | "auto")[] = focusedDrag
         ? ["auto"]
-        : ["css", "auto"];
-      const counts = focusedDrag ? [8] : [1, 8];
+        : focusedSvg
+          ? ["svg"]
+          : ["css", "svg", "auto"];
+      const counts = focusedDrag || focusedSvg ? [8] : [1, 8];
       for (const mode of modes) {
         for (const count of counts) {
           resetMetrics();
@@ -397,6 +411,50 @@ function Benchmark() {
   );
 }
 
+function CaptureAudit() {
+  const [mode, setMode] = useState<"auto" | "svg" | "css">("auto");
+  const [pixels, setPixels] = useState("");
+  return (
+    <main className="dark">
+      <h1>Glass capture audit</h1>
+      <label>
+        Renderer{" "}
+        <select
+          aria-label="Renderer"
+          value={mode}
+          onChange={(event) => setMode(event.target.value as typeof mode)}
+        >
+          <option value="auto">Auto (vgpu → SVG → CSS)</option>
+          <option value="svg">SVG refraction</option>
+          <option value="css">CSS + SVG highlights</option>
+        </select>
+      </label>
+      <GlassComparison locale="zh-CN" mode={mode} />
+      <button
+        type="button"
+        onClick={() =>
+          void svgPixelAudit().then(
+            (result) => setPixels(JSON.stringify(result)),
+            (error) => setPixels(String(error)),
+          )
+        }
+      >
+        Test SVG pixels
+      </button>
+      <pre id="svg-pixel-audit">{pixels}</pre>
+      <details data-glass-exclude="">
+        <summary>Inspect captured background</summary>
+        <pre id="capture-audit-metadata" />
+        <img
+          id="capture-audit-image"
+          alt="Captured background before rendering"
+          className="w-full"
+        />
+      </details>
+    </main>
+  );
+}
+
 const root = document.getElementById("root");
 if (!root) throw new Error("Benchmark root missing");
-createRoot(root).render(<Benchmark />);
+createRoot(root).render(captureAuditEnabled ? <CaptureAudit /> : <Benchmark />);

@@ -29,29 +29,14 @@ export default defineConfig({
                 `let cached = sharedSnapshots.get(captureTarget);
 if (diagnosticsEnabled) debugSnapshot({
   kind: "snapshot-lookup", slot: element.dataset.slot,
-  key, exclusions, dependencies,
+  key, exclusions,
   cachedKeys: cached ? [...cached.frames.keys()] : [],
   cachedRevision: cached?.revision, sceneRevision, capturedRevision,
   hit: cached?.revision === sceneRevision && cached.frames.has(key),
-  peers: peers.map(peer => ({ id: idFor(peer), slot: peer.dataset.slot, version: backgroundVersions.get(peer) ?? 0 })),
+  peers: peers.map(peer => ({ id: idFor(peer), slot: peer.dataset.slot })),
   frozen: element.dataset.glassFrozen,
   rect: [rect.x, rect.y, rect.width, rect.height],
 });`,
-              )
-              .replace(
-                "if (!current(element, state) || dependencies !== dependencyKey())",
-                `if (diagnosticsEnabled) {
-  const latest = element.getBoundingClientRect();
-  debugSnapshot({
-    kind: "capture-return", slot: element.dataset.slot, key,
-    current: current(element, state),
-    dependencies, latestDependencies: dependencyKey(),
-    capturedRevision, sceneRevision,
-    initialRect: [rect.x, rect.y, rect.width, rect.height],
-    latestRect: [latest.x, latest.y, latest.width, latest.height],
-  });
-}
-if (!current(element, state) || dependencies !== dependencyKey())`,
               )
               .replace(
                 "cached.frames.set(key, snapshot);",
@@ -81,9 +66,13 @@ if (diagnosticsEnabled) debugSnapshot({
   throw new Error("Glass background resource embedding failed");
 }`,
             ) +
-          `\nimport { measure, debugSnapshot, diagnosticsEnabled } from ${JSON.stringify(metricsPath)};
+          `\nimport { measure, debugSnapshot, diagnosticsEnabled, recordCaptureAudit } from ${JSON.stringify(metricsPath)};
 export function captureGlassBackground(target, blocked) {
-  return measure("capture", () => originalCaptureGlassBackground(target, blocked));
+  return measure("capture", async () => {
+    const canvas = await originalCaptureGlassBackground(target, blocked);
+    recordCaptureAudit(canvas, blocked);
+    return canvas;
+  });
 }`
         );
       },

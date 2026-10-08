@@ -1,3 +1,6 @@
+@import "../../../../packages/ui/src/styles/globals.css";
+@source "../../src/examples/variants/glass-demo.tsx";
+
 main {
   padding: 24px;
   font-family: system-ui, sans-serif;

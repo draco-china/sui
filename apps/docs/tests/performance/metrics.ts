@@ -140,3 +140,33 @@ export function instrumentGpu() {
     return adapter;
   };
 }
+
+export const captureAuditEnabled = new URLSearchParams(location.search).has(
+  "capture-audit",
+);
+export function recordCaptureAudit(
+  canvas: HTMLCanvasElement,
+  blocked: Set<Element>,
+) {
+  if (!captureAuditEnabled) return;
+  const image = document.getElementById(
+    "capture-audit-image",
+  ) as HTMLImageElement | null;
+  const metadata = document.getElementById("capture-audit-metadata");
+  if (!image || image.hasAttribute("src") || !metadata) return;
+  image.src = canvas.toDataURL("image/png");
+  metadata.textContent = JSON.stringify(
+    {
+      width: canvas.width,
+      height: canvas.height,
+      excludedSurfaces: [...blocked].map((element) => ({
+        slot: element.getAttribute("data-slot"),
+        title:
+          element.querySelector("h3")?.textContent ??
+          element.textContent?.trim(),
+      })),
+    },
+    null,
+    2,
+  );
+}

@@ -5,6 +5,8 @@ reduced motion disabled. The preserved full runs are
 [baseline.json](./results/baseline.json) at 07:03 UTC and
 [optimized.json](./results/optimized.json) at 07:51 UTC.
 
+The saved timing runs precede the later continuous contrast correction and three-tier SVG fallback. They describe that measured revision, not timing guarantees for the newer shader or SVG renderer.
+
 These measurements drove changes to the actual Glass runtime and capture
 pipeline. They are local development measurements, not universal speed or
 frame-rate guarantees.
@@ -138,3 +140,36 @@ full performance runs. The focused diagnostic skips other cases and must not
 be compared as an equivalent full benchmark. Repeat the full run with the
 same foreground browser, viewport and settings when assessing another
 change. Use [README.md](./README.md) for the commands and report comparison.
+
+## Three-tier renderer follow-up
+
+[three-tier.json](./results/three-tier.json) records the later continuous shader,
+shared provider capability detection, SVG refraction renderer, and exclusion of
+all glass modules. It was measured in the foreground Codex in-app browser after
+the build and test processes had finished. The report records browser, DPR,
+actual renderer selection, and complete initialization/drag/idle counters.
+
+All six two-second idle scenarios recorded zero captures, renders, uploads,
+React commits, and long tasks. Nine automatic surfaces shared one capture and
+one GPU upload, with nine renders. Explicit SVG requested no GPU uploads; its
+single-surface case decreased from two capture attempts in
+[three-tier-initial.json](./results/three-tier-initial.json) to one after
+restricting font invalidation to ordinary captured content. The nine-surface
+SVG case still records two initial attempts. A trial that delayed the initial
+capture did not improve that result and was reverted; its raw report is
+[three-tier-layout-delay.json](./results/three-tier-layout-delay.json).
+
+All drag cases reached Settings without text selection. CSS drag recorded no
+capture, render, or upload, and three browser long tasks in this final run.
+Held-interval counters for SVG and auto include one capture completion each
+from the surrounding automatic surfaces; the lens itself remains a transparent
+CSS/SVG decoration without a renderer or frame image. SVG and GPU cases still
+record browser long tasks during material initialization and some interaction
+or settling work. Highlight-only changes recorded no capture, render, or upload
+in all three modes. These are whole-scene development measurements, not a claim
+of uniform frame rate, native pointer latency, or long-task-free enhancement.
+
+SVG render durations cover displacement-map/Blob generation and exclude the
+browser's deferred SVG decode and filter raster/paint work. They must not be
+compared directly with GPU completion/readback/PNG timings. Readiness and idle
+counters cover the actual displayed enhancement.
