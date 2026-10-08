@@ -1,9 +1,12 @@
+"use client";
+
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { Button } from "@workspace/ui/components/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const attachmentVariants = cva(
@@ -153,7 +156,7 @@ function AttachmentAction({
       data-slot="attachment-action"
       variant={variant ?? "ghost"}
       size={size}
-      className={cn(className)}
+      className={mergeClassNames("", className)}
       {...props}
     />
   );

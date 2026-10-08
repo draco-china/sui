@@ -1,5 +1,7 @@
+"use client";
+
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
-import { cn } from "cn";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const GlassSliderTrack = withGlass(SliderPrimitive.Track, "control");
@@ -13,13 +15,15 @@ function SliderImplementation({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
-  let _values = [min, max];
-  if (Array.isArray(value)) _values = value;
-  else if (Array.isArray(defaultValue)) _values = defaultValue;
+  const values = value ?? defaultValue ?? min;
+  const thumbCount = Array.isArray(values) ? values.length : 1;
 
   return (
     <SliderPrimitive.Root
-      className={cn("data-vertical:h-full data-horizontal:w-full", className)}
+      className={mergeClassNames(
+        "data-vertical:h-full data-horizontal:w-full",
+        className,
+      )}
       data-slot="slider"
       defaultValue={defaultValue}
       value={value}
@@ -38,7 +42,7 @@ function SliderImplementation({
             className="select-none bg-primary data-horizontal:h-full data-vertical:w-full"
           />
         </GlassSliderTrack>
-        {Array.from({ length: _values.length }, (_, index) => (
+        {Array.from({ length: thumbCount }, (_, index) => (
           <GlassSliderThumb
             data-slot="slider-thumb"
             // biome-ignore lint/suspicious/noArrayIndexKey: Thumb identity is its position; using its changing value would remount it while dragging.

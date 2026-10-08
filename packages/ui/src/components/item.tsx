@@ -1,9 +1,12 @@
+"use client";
+
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { Separator } from "@workspace/ui/components/separator";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
@@ -29,7 +32,7 @@ function ItemSeparator({
     <Separator
       data-slot="item-separator"
       orientation="horizontal"
-      className={cn("my-2", className)}
+      className={mergeClassNames("my-2", className)}
       {...props}
     />
   );

@@ -61,7 +61,7 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          date.toLocaleString("fa-IR", { month: "short", calendar: "persian" }),
         ...formatters,
       }}
       classNames={{
@@ -146,46 +146,10 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return (
-            <div
-              data-slot="calendar"
-              ref={rootRef}
-              className={cn(className)}
-              {...props}
-            />
-          );
-        },
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return (
-              <ChevronLeftIcon className={cn("size-4", className)} {...props} />
-            );
-          }
-
-          if (orientation === "right") {
-            return (
-              <ChevronRightIcon
-                className={cn("size-4", className)}
-                {...props}
-              />
-            );
-          }
-
-          return (
-            <ChevronDownIcon className={cn("size-4", className)} {...props} />
-          );
-        },
+        Root: CalendarRootRenderer,
+        Chevron: CalendarChevronRenderer,
         DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          );
-        },
+        WeekNumber: CalendarWeekNumberRenderer,
         ...components,
       }}
       {...props}
@@ -208,9 +172,10 @@ function CalendarDayButton({
 
   return (
     <Button
+      ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString()}
+      data-day={day.date.toLocaleDateString("fa-IR")}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&
@@ -227,5 +192,63 @@ function CalendarDayButton({
       )}
       {...props}
     />
+  );
+}
+
+function CalendarRootRenderer({
+  className,
+  rootRef,
+  ...props
+}: React.ComponentProps<
+  NonNullable<
+    NonNullable<React.ComponentProps<typeof DayPicker>["components"]>["Root"]
+  >
+>) {
+  return (
+    <div
+      data-slot="calendar"
+      ref={rootRef}
+      className={cn(className)}
+      {...props}
+    />
+  );
+}
+
+function CalendarChevronRenderer({
+  className,
+  orientation,
+  ...props
+}: React.ComponentProps<
+  NonNullable<
+    NonNullable<React.ComponentProps<typeof DayPicker>["components"]>["Chevron"]
+  >
+>) {
+  if (orientation === "left") {
+    return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
+  }
+
+  if (orientation === "right") {
+    return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
+  }
+
+  return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
+}
+
+function CalendarWeekNumberRenderer({
+  children,
+  ...props
+}: React.ComponentProps<
+  NonNullable<
+    NonNullable<
+      React.ComponentProps<typeof DayPicker>["components"]
+    >["WeekNumber"]
+  >
+>) {
+  return (
+    <td {...props}>
+      <div className="flex size-(--cell-size) items-center justify-center text-center">
+        {children}
+      </div>
+    </td>
   );
 }

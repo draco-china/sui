@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "cn";
 import type { ComponentProps } from "react";
 import { withGlass } from "../lib/glass/context";

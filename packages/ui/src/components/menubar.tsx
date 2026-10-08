@@ -20,6 +20,7 @@ import {
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function MenubarImplementation({
@@ -29,7 +30,10 @@ function MenubarImplementation({
   return (
     <MenubarPrimitive
       data-slot="menubar"
-      className={cn("flex h-9 items-center rounded-3xl border p-1", className)}
+      className={mergeClassNames(
+        "flex h-9 items-center rounded-3xl border p-1",
+        className,
+      )}
       {...props}
     />
   );
@@ -58,7 +62,7 @@ function MenubarTriggerImplementation({
   return (
     <DropdownMenuTrigger
       data-slot="menubar-trigger"
-      className={cn(
+      className={mergeClassNames(
         "flex select-none items-center rounded-2xl px-2 py-0.75 font-medium text-sm outline-hidden hover:bg-muted aria-expanded:bg-accent aria-expanded:text-accent-foreground aria-expanded:hover:bg-accent",
         className,
       )}
@@ -80,7 +84,7 @@ function MenubarContentImplementation({
       align={align}
       alignOffset={alignOffset}
       sideOffset={sideOffset}
-      className={cn(
+      className={mergeClassNames(
         "data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 min-w-48 rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-open:animate-in dark:ring-foreground/10",
         className,
       )}
@@ -100,7 +104,7 @@ function MenubarItem({
       data-slot="menubar-item"
       data-inset={inset}
       data-variant={variant}
-      className={cn(
+      className={mergeClassNames(
         "group/menubar-item gap-2.5 rounded-2xl px-3 py-2 font-medium text-sm focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:ps-9.5 data-[variant=destructive]:text-destructive data-disabled:opacity-50 data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive!",
         className,
       )}
@@ -122,7 +126,7 @@ function MenubarCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="menubar-checkbox-item"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-9.5 pe-3 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -157,7 +161,7 @@ function MenubarRadioItem({
     <MenuPrimitive.RadioItem
       data-slot="menubar-radio-item"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-9.5 pe-3 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -184,7 +188,7 @@ function MenubarLabel({
     <DropdownMenuLabel
       data-slot="menubar-label"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "px-3.5 py-2.5 text-muted-foreground text-xs data-inset:ps-9.5",
         className,
       )}
@@ -200,7 +204,7 @@ function MenubarSeparator({
   return (
     <DropdownMenuSeparator
       data-slot="menubar-separator"
-      className={cn("-mx-1.5 my-0.5 h-px bg-border/50", className)}
+      className={mergeClassNames("-mx-1.5 my-0.5 h-px bg-border/50", className)}
       {...props}
     />
   );
@@ -239,7 +243,7 @@ function MenubarSubTrigger({
     <DropdownMenuSubTrigger
       data-slot="menubar-sub-trigger"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "gap-2 rounded-2xl px-3 py-2 font-medium text-sm focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-inset:ps-9.5 data-open:text-accent-foreground [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
@@ -255,7 +259,7 @@ function MenubarSubContentImplementation({
   return (
     <DropdownMenuSubContent
       data-slot="menubar-sub-content"
-      className={cn(
+      className={mergeClassNames(
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 min-w-32 rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in dark:ring-foreground/10",
         className,
       )}

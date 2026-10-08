@@ -25,23 +25,11 @@ export function CalendarCustomDays() {
           className="[--cell-size:--spacing(10)] md:[--cell-size:--spacing(12)]"
           formatters={{
             formatMonthDropdown: (date) => {
-              return date.toLocaleString("default", { month: "long" });
+              return date.toLocaleString("en-US", { month: "long" });
             },
           }}
           components={{
-            DayButton: ({ children, modifiers, day, ...props }) => {
-              const isWeekend =
-                day.date.getDay() === 0 || day.date.getDay() === 6;
-
-              return (
-                <CalendarDayButton day={day} modifiers={modifiers} {...props}>
-                  {children}
-                  {!modifiers.outside && (
-                    <span>{isWeekend ? "$120" : "$100"}</span>
-                  )}
-                </CalendarDayButton>
-              );
-            },
+            DayButton: CalendarDayButtonRenderer,
           }}
         />
       </CardContent>
@@ -50,3 +38,19 @@ export function CalendarCustomDays() {
 }
 
 export default CalendarCustomDays;
+
+function CalendarDayButtonRenderer({
+  children,
+  modifiers,
+  day,
+  ...props
+}: React.ComponentProps<typeof CalendarDayButton>) {
+  const isWeekend = day.date.getDay() === 0 || day.date.getDay() === 6;
+
+  return (
+    <CalendarDayButton day={day} modifiers={modifiers} {...props}>
+      {children}
+      {!modifiers.outside && <span>{isWeekend ? "$120" : "$100"}</span>}
+    </CalendarDayButton>
+  );
+}

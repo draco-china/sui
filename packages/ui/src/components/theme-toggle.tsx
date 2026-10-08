@@ -6,6 +6,7 @@ import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
+import { mergeClassNames } from "../lib/class-name";
 import { type IconNode, MorphIcon, type MorphIconProps } from "./morph-icon";
 import {
   Tooltip,
@@ -207,7 +208,10 @@ function ThemeToggle({
               glass={glass}
               aria-label={label}
               aria-pressed={theme === "dark"}
-              className={cn(themeToggleVariants({ glass }), className)}
+              className={mergeClassNames(
+                cn(themeToggleVariants({ glass })),
+                className,
+              )}
               onClick={(event) => {
                 onClick?.(event);
                 if (!event.defaultPrevented)

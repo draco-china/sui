@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { mergeClassNames } from "../lib/class-name";
 import {
   type ColorFormat,
   clampColor,
@@ -355,7 +356,7 @@ function ColorPicker({
             type="button"
             variant="outline"
             disabled={disabled}
-            className={cn("gap-2 font-mono", className)}
+            className={mergeClassNames("gap-2 font-mono", className)}
             {...triggerProps}
           />
         }

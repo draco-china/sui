@@ -1,3 +1,5 @@
+"use client";
+
 import type { ComponentProps, ReactNode } from "react";
 import { useId, useImperativeHandle, useLayoutEffect, useMemo } from "react";
 import {

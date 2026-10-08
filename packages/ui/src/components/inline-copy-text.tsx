@@ -9,6 +9,7 @@ import {
   type ClipboardOptions,
   useClipboard,
 } from "../hooks/use-clipboard";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 import { CopyIcon } from "./copy-icon";
 
@@ -86,7 +87,10 @@ function InlineCopyTextImplementation({
       data-copy-status={status}
       aria-busy={status === "pending"}
       aria-label={props["aria-label"] ?? labels?.copy ?? `Copy ${text}`}
-      className={cn(inlineCopyVariants({ variant, size }), className)}
+      className={mergeClassNames(
+        cn(inlineCopyVariants({ variant, size })),
+        className,
+      )}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) void copy();

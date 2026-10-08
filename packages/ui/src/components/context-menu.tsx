@@ -4,6 +4,7 @@ import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu
 import { cn } from "cn";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function ContextMenuImplementation({
@@ -25,7 +26,7 @@ function ContextMenuTrigger({
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
-      className={cn("select-none", className)}
+      className={mergeClassNames("select-none", className)}
       {...props}
     />
   );
@@ -54,7 +55,7 @@ function ContextMenuContentImplementation({
       >
         <ContextMenuPrimitive.Popup
           data-slot="context-menu-content"
-          className={cn(
+          className={mergeClassNames(
             "data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 z-50 grid max-h-(--available-height) min-w-48 origin-(--transform-origin) gap-1 overflow-y-auto overflow-x-hidden rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg outline-none ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in dark:ring-foreground/10",
             className,
           )}
@@ -72,7 +73,7 @@ function ContextMenuGroup({
   return (
     <ContextMenuPrimitive.Group
       data-slot="context-menu-group"
-      className={cn("grid gap-1", className)}
+      className={mergeClassNames("grid gap-1", className)}
       {...props}
     />
   );
@@ -89,7 +90,7 @@ function ContextMenuLabel({
     <ContextMenuPrimitive.GroupLabel
       data-slot="context-menu-label"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "px-3 py-2.5 text-muted-foreground text-xs data-inset:ps-9.5",
         className,
       )}
@@ -112,7 +113,7 @@ function ContextMenuItem({
       data-slot="context-menu-item"
       data-inset={inset}
       data-variant={variant}
-      className={cn(
+      className={mergeClassNames(
         "group/context-menu-item relative flex cursor-default select-none items-center gap-2.5 rounded-2xl px-3 py-2 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-inset:ps-9.5 data-[variant=destructive]:text-destructive data-disabled:opacity-50 data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive",
         className,
       )}
@@ -139,7 +140,7 @@ function ContextMenuSubTrigger({
     <ContextMenuPrimitive.SubmenuTrigger
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "flex cursor-default select-none items-center rounded-2xl px-3 py-2 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-inset:ps-9.5 data-open:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -177,7 +178,7 @@ function ContextMenuCheckboxItem({
     <ContextMenuPrimitive.CheckboxItem
       data-slot="context-menu-checkbox-item"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-3 pe-8 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -201,7 +202,7 @@ function ContextMenuRadioGroup({
   return (
     <ContextMenuPrimitive.RadioGroup
       data-slot="context-menu-radio-group"
-      className={cn("grid gap-1", className)}
+      className={mergeClassNames("grid gap-1", className)}
       {...props}
     />
   );
@@ -219,7 +220,7 @@ function ContextMenuRadioItem({
     <ContextMenuPrimitive.RadioItem
       data-slot="context-menu-radio-item"
       data-inset={inset}
-      className={cn(
+      className={mergeClassNames(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-3 pe-8 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -242,7 +243,7 @@ function ContextMenuSeparator({
   return (
     <ContextMenuPrimitive.Separator
       data-slot="context-menu-separator"
-      className={cn("-mx-1.5 my-0.5 h-px bg-border/50", className)}
+      className={mergeClassNames("-mx-1.5 my-0.5 h-px bg-border/50", className)}
       {...props}
     />
   );

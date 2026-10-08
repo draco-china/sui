@@ -18,6 +18,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { createMorph, type Morph, morphToCompletion } from "./morph-icon";
 import {
   Tooltip,
@@ -208,10 +209,12 @@ function LocaleToggle({
                 variant="ghost"
                 size={size}
                 glass={glass}
-                className={cn(
-                  localeToggleVariants({ glass }),
+                className={mergeClassNames(
+                  cn(
+                    localeToggleVariants({ glass }),
+                    changing && !disabled && "disabled:opacity-100",
+                  ),
                   className,
-                  changing && !disabled && "disabled:opacity-100",
                 )}
                 aria-label={accessibleName}
                 aria-pressed={
@@ -258,11 +261,13 @@ function LocaleToggle({
                 aria-label={name}
                 aria-busy={changing}
                 onClick={onClick}
-                className={cn(
-                  localeToggleVariants({ glass }),
-                  "size-9 justify-center bg-transparent p-0 hover:bg-muted/50 [&>svg:last-child]:hidden",
+                className={mergeClassNames(
+                  cn(
+                    localeToggleVariants({ glass }),
+                    "size-9 justify-center bg-transparent p-0 hover:bg-muted/50 [&>svg:last-child]:hidden",
+                    changing && !disabled && "disabled:opacity-100",
+                  ),
                   className,
-                  changing && !disabled && "disabled:opacity-100",
                 )}
               />
             }

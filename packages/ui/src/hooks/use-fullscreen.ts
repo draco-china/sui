@@ -76,6 +76,12 @@ function bindFullscreenKeyboard(
   let disposed = false;
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.defaultPrevented || !isTop()) return;
+    // Nested popup portals manage their own focus and Escape handling.
+    const target = event.target as Element | null;
+    const popup = target?.closest?.(
+      '[data-base-ui-portal], [role="dialog"], [role="alertdialog"]',
+    );
+    if (popup && !popup.contains(element)) return;
     const eventDocument = event.currentTarget as Document;
     if (
       eventDocument !== owner &&

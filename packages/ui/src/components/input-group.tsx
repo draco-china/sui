@@ -6,6 +6,7 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function InputGroupImplementation({
@@ -102,7 +103,10 @@ function InputGroupButton({
       type={type}
       data-size={size}
       variant={variant}
-      className={cn(inputGroupButtonVariants({ size }), className)}
+      className={mergeClassNames(
+        cn(inputGroupButtonVariants({ size })),
+        className,
+      )}
       {...props}
     />
   );

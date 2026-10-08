@@ -6,9 +6,9 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@workspace/ui/components/input-group";
-import { cn } from "cn";
 import { ChevronDownIcon, XIcon } from "lucide-react";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const Autocomplete = withGlass(AutocompletePrimitive.Root, "scope") as {
@@ -38,7 +38,7 @@ function AutocompleteInputGroup({
     <AutocompletePrimitive.InputGroup
       data-slot="autocomplete-input-group"
       render={render}
-      className={cn("w-full data-disabled:opacity-50", className)}
+      className={mergeClassNames("w-full data-disabled:opacity-50", className)}
       {...props}
     />
   );
@@ -52,7 +52,7 @@ function AutocompleteInput({
   return (
     <AutocompletePrimitive.Input
       render={render}
-      className={cn(className)}
+      className={mergeClassNames("", className)}
       {...props}
     />
   );
@@ -68,7 +68,10 @@ function AutocompleteTrigger({
     <AutocompletePrimitive.Trigger
       data-slot="autocomplete-trigger"
       render={render}
-      className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+      className={mergeClassNames(
+        "[&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
       {...props}
     >
       {children ?? <ChevronDownIcon aria-hidden="true" />}
@@ -87,7 +90,7 @@ function AutocompleteClear({
       data-slot="autocomplete-clear"
       aria-label="Clear text"
       render={render}
-      className={cn(className)}
+      className={mergeClassNames("", className)}
       {...props}
     >
       {children ?? <XIcon aria-hidden="true" />}
@@ -120,7 +123,7 @@ function AutocompleteContentImplementation({
       >
         <AutocompletePrimitive.Popup
           data-slot="autocomplete-content"
-          className={cn(
+          className={mergeClassNames(
             "data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 relative max-h-(--available-height) w-(--anchor-width) min-w-40 max-w-(--available-width) origin-(--transform-origin) overflow-hidden rounded-[calc(var(--radius)+0.875rem)] bg-popover text-popover-foreground shadow-lg outline-none ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in dark:ring-foreground/10",
             className,
           )}
@@ -138,7 +141,7 @@ function AutocompleteList({
   return (
     <AutocompletePrimitive.List
       data-slot="autocomplete-list"
-      className={cn(
+      className={mergeClassNames(
         "no-scrollbar grid max-h-[min(--spacing(72),var(--available-height))] scroll-py-1.5 gap-1 overflow-y-auto overscroll-contain p-1.5 data-empty:p-0",
         className,
       )}
@@ -154,7 +157,7 @@ function AutocompleteItem({
   return (
     <AutocompletePrimitive.Item
       data-slot="autocomplete-item"
-      className={cn(
+      className={mergeClassNames(
         "relative flex w-full cursor-default select-none items-center gap-2.5 rounded-2xl px-3 py-2 font-medium text-sm outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -170,7 +173,7 @@ function AutocompleteGroup({
   return (
     <AutocompletePrimitive.Group
       data-slot="autocomplete-group"
-      className={cn("grid gap-1", className)}
+      className={mergeClassNames("grid gap-1", className)}
       {...props}
     />
   );
@@ -183,7 +186,10 @@ function AutocompleteGroupLabel({
   return (
     <AutocompletePrimitive.GroupLabel
       data-slot="autocomplete-group-label"
-      className={cn("px-3 py-2 text-muted-foreground text-sm", className)}
+      className={mergeClassNames(
+        "px-3 py-2 text-muted-foreground text-sm",
+        className,
+      )}
       {...props}
     />
   );
@@ -202,7 +208,7 @@ function AutocompleteEmpty({
   return (
     <AutocompletePrimitive.Empty
       data-slot="autocomplete-empty"
-      className={cn(
+      className={mergeClassNames(
         "px-3 py-4 text-center text-muted-foreground text-sm empty:p-0",
         className,
       )}
@@ -218,7 +224,10 @@ function AutocompleteStatus({
   return (
     <AutocompletePrimitive.Status
       data-slot="autocomplete-status"
-      className={cn("px-3 py-2 text-muted-foreground text-sm", className)}
+      className={mergeClassNames(
+        "px-3 py-2 text-muted-foreground text-sm",
+        className,
+      )}
       {...props}
     />
   );
@@ -231,7 +240,7 @@ function AutocompleteSeparator({
   return (
     <AutocompletePrimitive.Separator
       data-slot="autocomplete-separator"
-      className={cn(
+      className={mergeClassNames(
         "my-0.5 shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch",
         className,
       )}

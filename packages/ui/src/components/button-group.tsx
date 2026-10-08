@@ -1,8 +1,11 @@
+"use client";
+
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { Separator } from "@workspace/ui/components/separator";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const buttonGroupVariants = cva(
@@ -71,7 +74,7 @@ function ButtonGroupSeparator({
     <Separator
       data-slot="button-group-separator"
       orientation={orientation}
-      className={cn(
+      className={mergeClassNames(
         "relative self-stretch bg-input data-horizontal:mx-px data-vertical:my-px data-vertical:h-auto data-horizontal:w-auto",
         className,
       )}

@@ -32,6 +32,7 @@ import {
 import { useClipboard } from "../hooks/use-clipboard";
 import { useFullscreen } from "../hooks/use-fullscreen";
 import { useViewerTheme } from "../hooks/use-viewer-theme";
+import { mergeClassNames } from "../lib/class-name";
 import { useGlassEnabled } from "../lib/glass/context";
 import type { ViewerThemes } from "../lib/viewer/shiki";
 import { useShikiThemes } from "../lib/viewer/shiki-context";
@@ -202,7 +203,7 @@ export function EditorToolbarButton({
     <TooltipButton
       size={size}
       variant={variant}
-      className={cn(
+      className={mergeClassNames(
         "text-muted-foreground hover:bg-background/70 hover:text-foreground [&_svg]:size-3.5",
         className,
       )}

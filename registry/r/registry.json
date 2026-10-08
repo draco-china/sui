@@ -29,6 +29,11 @@
           "target": "@ui/accordion.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -122,6 +127,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -342,6 +352,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -453,6 +468,11 @@
           "target": "@ui/textarea.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -540,6 +560,11 @@
           "path": "packages/ui/src/components/avatar.tsx",
           "type": "registry:ui",
           "target": "@ui/avatar.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -853,6 +878,11 @@
           "target": "@ui/separator.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -941,6 +971,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -1038,6 +1073,11 @@
           "path": "packages/ui/src/components/calendar.tsx",
           "type": "registry:ui",
           "target": "@ui/calendar.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -1225,6 +1265,11 @@
           "target": "@ui/carousel.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -1404,6 +1449,11 @@
           "target": "@ui/checkbox.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -1533,6 +1583,11 @@
           "path": "packages/ui/src/hooks/use-clipboard.ts",
           "type": "registry:hook",
           "target": "@hooks/use-clipboard.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -1676,6 +1731,11 @@
           "path": "packages/ui/src/hooks/use-viewer-theme.ts",
           "type": "registry:hook",
           "target": "@hooks/use-viewer-theme.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -1902,6 +1962,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/color/model.ts",
           "type": "registry:lib",
           "target": "@lib/color/model.ts"
@@ -2016,6 +2081,11 @@
           "path": "packages/ui/src/components/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -2135,6 +2205,11 @@
           "target": "@ui/textarea.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -2223,6 +2298,11 @@
           "path": "packages/ui/src/components/context-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/context-menu.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -2366,6 +2446,11 @@
           "target": "@ui/dialog.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -2503,6 +2588,11 @@
           "path": "packages/ui/src/hooks/use-viewer-theme.ts",
           "type": "registry:hook",
           "target": "@hooks/use-viewer-theme.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -2643,6 +2733,11 @@
           "target": "@ui/drawer.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -2731,6 +2826,11 @@
           "path": "packages/ui/src/components/dropdown-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/dropdown-menu.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -2914,6 +3014,11 @@
           "path": "packages/ui/src/hooks/use-viewer-theme.ts",
           "type": "registry:hook",
           "target": "@hooks/use-viewer-theme.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/editor/monaco-client.tsx",
@@ -3146,6 +3251,11 @@
           "target": "@ui/separator.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -3320,6 +3430,11 @@
           "path": "packages/ui/src/components/hover-card.tsx",
           "type": "registry:ui",
           "target": "@ui/hover-card.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -3537,6 +3652,11 @@
           "target": "@hooks/use-reduced-motion.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -3653,6 +3773,11 @@
           "target": "@hooks/use-clipboard.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -3758,6 +3883,11 @@
           "target": "@ui/textarea.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -3852,6 +3982,11 @@
           "path": "packages/ui/src/components/morph-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/morph-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -4036,6 +4171,11 @@
           "path": "packages/ui/src/components/separator.tsx",
           "type": "registry:ui",
           "target": "@ui/separator.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -4313,6 +4453,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -4410,6 +4555,11 @@
           "path": "packages/ui/src/components/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -4565,6 +4715,11 @@
           "path": "packages/ui/src/hooks/use-viewer-theme.ts",
           "type": "registry:hook",
           "target": "@hooks/use-viewer-theme.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -4767,6 +4922,11 @@
           "target": "@ui/menubar.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -4862,6 +5022,11 @@
           "path": "packages/ui/src/components/message-scroller.tsx",
           "type": "registry:ui",
           "target": "@ui/message-scroller.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -5167,6 +5332,11 @@
           "target": "@ui/navigation-menu.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -5323,6 +5493,11 @@
           "target": "@ui/separator.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -5412,6 +5587,11 @@
           "target": "@ui/popover.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -5499,6 +5679,11 @@
           "path": "packages/ui/src/components/progress.tsx",
           "type": "registry:ui",
           "target": "@ui/progress.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -5700,6 +5885,11 @@
           "target": "@ui/questionnaire.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -5787,6 +5977,11 @@
           "path": "packages/ui/src/components/radio-group.tsx",
           "type": "registry:ui",
           "target": "@ui/radio-group.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -5961,6 +6156,11 @@
           "path": "packages/ui/src/components/scroll-area.tsx",
           "type": "registry:ui",
           "target": "@ui/scroll-area.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         }
       ],
       "meta": {
@@ -6001,6 +6201,11 @@
           "path": "packages/ui/src/components/select.tsx",
           "type": "registry:ui",
           "target": "@ui/select.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -6135,6 +6340,11 @@
           "target": "@hooks/use-clipboard.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -6218,6 +6428,11 @@
           "path": "packages/ui/src/components/separator.tsx",
           "type": "registry:ui",
           "target": "@ui/separator.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         }
       ],
       "meta": {
@@ -6264,6 +6479,11 @@
           "path": "packages/ui/src/components/sheet.tsx",
           "type": "registry:ui",
           "target": "@ui/sheet.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -6390,6 +6610,11 @@
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -6569,6 +6794,11 @@
           "target": "@ui/slider.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -6656,6 +6886,11 @@
           "path": "packages/ui/src/components/switch.tsx",
           "type": "registry:ui",
           "target": "@ui/switch.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -6757,6 +6992,11 @@
           "path": "packages/ui/src/components/tab-bar.tsx",
           "type": "registry:ui",
           "target": "@ui/tab-bar.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -6948,6 +7188,11 @@
           "target": "@hooks/use-reduced-motion.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -7062,6 +7307,11 @@
           "path": "packages/ui/src/components/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -7263,6 +7513,11 @@
           "target": "@hooks/use-reduced-motion.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -7357,6 +7612,11 @@
           "path": "packages/ui/src/components/toast.tsx",
           "type": "registry:ui",
           "target": "@ui/toast.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -7454,6 +7714,11 @@
           "target": "@ui/toggle.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -7542,6 +7807,11 @@
           "path": "packages/ui/src/components/toggle.tsx",
           "type": "registry:ui",
           "target": "@ui/toggle.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -7644,6 +7914,11 @@
           "target": "@ui/toolbar.tsx"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -7731,6 +8006,11 @@
           "path": "packages/ui/src/components/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -8024,6 +8304,11 @@
           "target": "@hooks/use-reduced-motion.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -8173,6 +8458,11 @@
           "path": "packages/ui/src/hooks/use-reduced-motion.ts",
           "type": "registry:hook",
           "target": "@hooks/use-reduced-motion.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -8326,6 +8616,11 @@
           "path": "packages/ui/src/hooks/use-reduced-motion.ts",
           "type": "registry:hook",
           "target": "@hooks/use-reduced-motion.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -9065,6 +9360,11 @@
           "target": "@hooks/use-viewer-theme.ts"
         },
         {
+          "path": "packages/ui/src/lib/class-name.ts",
+          "type": "registry:lib",
+          "target": "@lib/class-name.ts"
+        },
+        {
           "path": "packages/ui/src/lib/color/model.ts",
           "type": "registry:lib",
           "target": "@lib/color/model.ts"
@@ -9297,6 +9597,7 @@
           "@/hooks/use-reduced-motion",
           "@/hooks/use-viewer-code",
           "@/hooks/use-viewer-theme",
+          "@/lib/class-name",
           "@/lib/color/model",
           "@/lib/editor/monaco-client",
           "@/lib/editor/monaco-features",

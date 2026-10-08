@@ -8,7 +8,14 @@ import {
   type LucideIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { type ComponentProps, isValidElement, useId, useRef } from "react";
+import {
+  type ComponentProps,
+  createContext,
+  isValidElement,
+  useContext,
+  useId,
+  useRef,
+} from "react";
 import type {
   Components,
   Options as ReactMarkdownOptions,
@@ -224,6 +231,22 @@ export interface MarkdownViewerProps {
   labels?: Partial<MarkdownViewerLabels>;
 }
 
+const MarkdownContext = createContext<{
+  headingPrefix: string;
+  theme: "light" | "dark";
+  labels?: Partial<MarkdownViewerLabels>;
+}>({ headingPrefix: "", theme: "light" });
+
+function createHeadingId(
+  headingPrefix: string,
+  level: number,
+  children: unknown,
+  offset?: number,
+) {
+  const baseId = `${headingPrefix}-h${level}-${slugify(getNodeText(children))}`;
+  return offset === undefined ? baseId : `${baseId}-${offset}`;
+}
+
 export function MarkdownViewer({
   content,
   theme,
@@ -236,265 +259,6 @@ export function MarkdownViewer({
   const headingPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
-  const createHeadingId = (
-    level: number,
-    children: unknown,
-    offset?: number,
-  ) => {
-    const baseId = `${headingPrefix}-h${level}-${slugify(getNodeText(children))}`;
-    return offset === undefined ? baseId : `${baseId}-${offset}`;
-  };
-  const components: Components = {
-    div: (props) => <MarkdownDiv {...props} labels={labels} />,
-    ...markdownBlockElements,
-    a: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <a
-          className={cn(
-            "font-medium text-primary underline underline-offset-4 hover:text-primary/80",
-            className,
-          )}
-          {...elementProps}
-          rel={
-            typeof elementProps.href === "string" &&
-            elementProps.href.startsWith("#")
-              ? undefined
-              : "noopener noreferrer"
-          }
-          target={
-            typeof elementProps.href === "string" &&
-            elementProps.href.startsWith("#")
-              ? undefined
-              : "_blank"
-          }
-        >
-          {children}
-        </a>
-      );
-    },
-    code: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <code
-          className={cn(
-            "rounded-md border bg-muted px-1.5 py-0.5 font-medium font-mono text-[0.875em] text-foreground",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </code>
-      );
-    },
-    pre: ({ children, node }) => {
-      const codeNode = node?.children.find(
-        (child) => child.type === "element" && child.tagName === "code",
-      );
-      const classes =
-        codeNode?.type === "element"
-          ? codeNode.properties.className
-          : undefined;
-      let className = "";
-      if (Array.isArray(classes)) className = classes.join(" ");
-      else if (typeof classes === "string") className = classes;
-      const lang = /language-([\w-]+)/.exec(className)?.[1] ?? "text";
-      return (
-        <CodeViewer
-          code={getNodeText(children).replace(/\n$/, "")}
-          lang={lang}
-          theme={resolvedTheme}
-          labels={labels?.code}
-          className="not-prose my-5 shadow-sm"
-          title={lang}
-        />
-      );
-    },
-    h1: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h1
-          id={createHeadingId(1, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mb-6 scroll-m-20 font-semibold text-2xl first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h1>
-      );
-    },
-    h2: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h2
-          id={createHeadingId(2, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h2>
-      );
-    },
-    h3: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h3
-          id={createHeadingId(3, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mt-8 mb-3 scroll-m-20 font-semibold text-xl first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h3>
-      );
-    },
-    h4: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h4
-          id={createHeadingId(4, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mt-6 mb-2 scroll-m-20 font-semibold text-lg first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h4>
-      );
-    },
-    h5: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h5
-          id={createHeadingId(5, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mt-5 mb-2 font-semibold text-sm first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h5>
-      );
-    },
-    h6: (props) => {
-      const { className, children, ...elementProps } =
-        withoutMarkdownNode(props);
-      return (
-        <h6
-          id={createHeadingId(6, children, props.node?.position?.start?.offset)}
-          className={cn(
-            "mt-5 mb-2 font-semibold text-muted-foreground text-sm first:mt-0 last:mb-0",
-            className,
-          )}
-          {...elementProps}
-        >
-          {children}
-        </h6>
-      );
-    },
-    kbd: (props) => {
-      const { className, ...elementProps } = withoutMarkdownNode(props);
-      return (
-        <kbd
-          className={cn(
-            "rounded border bg-muted px-1.5 py-0.5 font-medium font-mono text-[0.8em] text-muted-foreground",
-            className,
-          )}
-          {...elementProps}
-        />
-      );
-    },
-    strong: (props) => {
-      const { className, ...elementProps } = withoutMarkdownNode(props);
-      return (
-        <strong
-          className={cn("font-semibold text-foreground", className)}
-          {...elementProps}
-        />
-      );
-    },
-    sup: (props) => {
-      const { className, ...elementProps } = withoutMarkdownNode(props);
-      return (
-        <sup
-          className={cn("[&>a]:text-sm [&>a]:no-underline", className)}
-          {...elementProps}
-        />
-      );
-    },
-    table: (props) => {
-      const { children, ...elementProps } = withoutMarkdownNode(props);
-      return (
-        <div
-          className={
-            "not-prose my-6 w-full overflow-x-auto rounded-lg border border-border shadow-sm"
-          }
-        >
-          <table
-            className="w-full min-w-full border-separate border-spacing-0 text-sm"
-            {...elementProps}
-          >
-            {children}
-          </table>
-        </div>
-      );
-    },
-    tbody: (props) => {
-      const { className, ...elementProps } = withoutMarkdownNode(props);
-      return (
-        <tbody
-          className={cn("[&_tr:last-child>*]:border-b-0", className)}
-          {...elementProps}
-        />
-      );
-    },
-    td: (props) => {
-      const { className, align, ...elementProps } = withoutMarkdownNode(props);
-
-      return (
-        <td
-          align={align}
-          className={cn(
-            "border-border border-r border-b px-4 py-2.5 align-top last:border-r-0",
-            getMarkdownTableAlignClass(align),
-            className,
-          )}
-          {...elementProps}
-        />
-      );
-    },
-    th: (props) => {
-      const { className, align, ...elementProps } = withoutMarkdownNode(props);
-
-      return (
-        <th
-          align={align}
-          className={cn(
-            "border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0",
-            getMarkdownTableAlignClass(align),
-            className,
-          )}
-          {...elementProps}
-        />
-      );
-    },
-  };
 
   if (!content.trim()) {
     return (
@@ -505,31 +269,33 @@ export function MarkdownViewer({
   }
 
   return (
-    <GlassSurface
-      ref={rootRef}
-      glass={glassEnabled}
-      data-slot="markdown-viewer"
-      className={cn(
-        "max-w-none text-foreground text-sm",
-        resolvedTheme === "dark" && "dark",
-        "[&_.contains-task-list]:list-none [&_.contains-task-list]:pl-0 [&_.task-list-item]:my-1 [&_.task-list-item]:flex [&_.task-list-item]:items-start [&_.task-list-item]:gap-2 [&_.task-list-item_input]:mt-1",
-        "[&_.footnotes]:mt-10 [&_.footnotes]:border-t [&_.footnotes]:pt-4 [&_.footnotes]:text-sm",
-        "[&_.math-display]:my-4 [&_.math-display]:overflow-x-auto [&_.math-inline_svg]:inline-block",
-        className,
-      )}
-    >
-      <ReactMarkdown
-        remarkPlugins={markdownRemarkPlugins}
-        rehypePlugins={[
-          ...(markdownRehypePlugins ?? []),
-          [rehypeViewerAnchors, { prefix: headingPrefix }],
-        ]}
-        remarkRehypeOptions={{ clobberPrefix: `${headingPrefix}-` }}
-        components={components}
+    <MarkdownContext value={{ headingPrefix, theme: resolvedTheme, labels }}>
+      <GlassSurface
+        ref={rootRef}
+        glass={glassEnabled}
+        data-slot="markdown-viewer"
+        className={cn(
+          "max-w-none text-foreground text-sm",
+          resolvedTheme === "dark" && "dark",
+          "[&_.contains-task-list]:list-none [&_.contains-task-list]:pl-0 [&_.task-list-item]:my-1 [&_.task-list-item]:flex [&_.task-list-item]:items-start [&_.task-list-item]:gap-2 [&_.task-list-item_input]:mt-1",
+          "[&_.footnotes]:mt-10 [&_.footnotes]:border-t [&_.footnotes]:pt-4 [&_.footnotes]:text-sm",
+          "[&_.math-display]:my-4 [&_.math-display]:overflow-x-auto [&_.math-inline_svg]:inline-block",
+          className,
+        )}
       >
-        {content}
-      </ReactMarkdown>
-    </GlassSurface>
+        <ReactMarkdown
+          remarkPlugins={markdownRemarkPlugins}
+          rehypePlugins={[
+            ...(markdownRehypePlugins ?? []),
+            [rehypeViewerAnchors, { prefix: headingPrefix }],
+          ]}
+          remarkRehypeOptions={{ clobberPrefix: `${headingPrefix}-` }}
+          components={markdownComponents}
+        >
+          {content}
+        </ReactMarkdown>
+      </GlassSurface>
+    </MarkdownContext>
   );
 }
 
@@ -837,3 +603,285 @@ function rehypeViewerAnchors({ prefix }: { prefix: string }) {
     });
   };
 }
+
+const markdownComponents: Components = {
+  div: function MarkdownDivRenderer(props) {
+    const { labels } = useContext(MarkdownContext);
+    return <MarkdownDiv {...props} labels={labels} />;
+  },
+  ...markdownBlockElements,
+  a: (props) => {
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <a
+        className={cn(
+          "font-medium text-primary underline underline-offset-4 hover:text-primary/80",
+          className,
+        )}
+        {...elementProps}
+        rel={
+          typeof elementProps.href === "string" &&
+          elementProps.href.startsWith("#")
+            ? undefined
+            : "noopener noreferrer"
+        }
+        target={
+          typeof elementProps.href === "string" &&
+          elementProps.href.startsWith("#")
+            ? undefined
+            : "_blank"
+        }
+      >
+        {children}
+      </a>
+    );
+  },
+  code: (props) => {
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <code
+        className={cn(
+          "rounded-md border bg-muted px-1.5 py-0.5 font-medium font-mono text-[0.875em] text-foreground",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </code>
+    );
+  },
+  pre: function MarkdownCodeRenderer({ children, node }) {
+    const { theme: resolvedTheme, labels } = useContext(MarkdownContext);
+    const codeNode = node?.children.find(
+      (child) => child.type === "element" && child.tagName === "code",
+    );
+    const classes =
+      codeNode?.type === "element" ? codeNode.properties.className : undefined;
+    let className = "";
+    if (Array.isArray(classes)) className = classes.join(" ");
+    else if (typeof classes === "string") className = classes;
+    const lang = /language-([\w-]+)/.exec(className)?.[1] ?? "text";
+    return (
+      <CodeViewer
+        code={getNodeText(children).replace(/\n$/, "")}
+        lang={lang}
+        theme={resolvedTheme}
+        labels={labels?.code}
+        className="not-prose my-5 shadow-sm"
+        title={lang}
+      />
+    );
+  },
+  h1: function MarkdownHeading1(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h1
+        id={createHeadingId(
+          headingPrefix,
+          1,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mb-6 scroll-m-20 font-semibold text-2xl first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h1>
+    );
+  },
+  h2: function MarkdownHeading2(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h2
+        id={createHeadingId(
+          headingPrefix,
+          2,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h2>
+    );
+  },
+  h3: function MarkdownHeading3(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h3
+        id={createHeadingId(
+          headingPrefix,
+          3,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mt-8 mb-3 scroll-m-20 font-semibold text-xl first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h3>
+    );
+  },
+  h4: function MarkdownHeading4(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h4
+        id={createHeadingId(
+          headingPrefix,
+          4,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mt-6 mb-2 scroll-m-20 font-semibold text-lg first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h4>
+    );
+  },
+  h5: function MarkdownHeading5(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h5
+        id={createHeadingId(
+          headingPrefix,
+          5,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mt-5 mb-2 font-semibold text-sm first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h5>
+    );
+  },
+  h6: function MarkdownHeading6(props) {
+    const { headingPrefix } = useContext(MarkdownContext);
+    const { className, children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <h6
+        id={createHeadingId(
+          headingPrefix,
+          6,
+          children,
+          props.node?.position?.start?.offset,
+        )}
+        className={cn(
+          "mt-5 mb-2 font-semibold text-muted-foreground text-sm first:mt-0 last:mb-0",
+          className,
+        )}
+        {...elementProps}
+      >
+        {children}
+      </h6>
+    );
+  },
+  kbd: (props) => {
+    const { className, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <kbd
+        className={cn(
+          "rounded border bg-muted px-1.5 py-0.5 font-medium font-mono text-[0.8em] text-muted-foreground",
+          className,
+        )}
+        {...elementProps}
+      />
+    );
+  },
+  strong: (props) => {
+    const { className, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <strong
+        className={cn("font-semibold text-foreground", className)}
+        {...elementProps}
+      />
+    );
+  },
+  sup: (props) => {
+    const { className, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <sup
+        className={cn("[&>a]:text-sm [&>a]:no-underline", className)}
+        {...elementProps}
+      />
+    );
+  },
+  table: (props) => {
+    const { children, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <div
+        className={
+          "not-prose my-6 w-full overflow-x-auto rounded-lg border border-border shadow-sm"
+        }
+      >
+        <table
+          className="w-full min-w-full border-separate border-spacing-0 text-sm"
+          {...elementProps}
+        >
+          {children}
+        </table>
+      </div>
+    );
+  },
+  tbody: (props) => {
+    const { className, ...elementProps } = withoutMarkdownNode(props);
+    return (
+      <tbody
+        className={cn("[&_tr:last-child>*]:border-b-0", className)}
+        {...elementProps}
+      />
+    );
+  },
+  td: (props) => {
+    const { className, align, ...elementProps } = withoutMarkdownNode(props);
+
+    return (
+      <td
+        align={align}
+        className={cn(
+          "border-border border-r border-b px-4 py-2.5 align-top last:border-r-0",
+          getMarkdownTableAlignClass(align),
+          className,
+        )}
+        {...elementProps}
+      />
+    );
+  },
+  th: (props) => {
+    const { className, align, ...elementProps } = withoutMarkdownNode(props);
+
+    return (
+      <th
+        align={align}
+        className={cn(
+          "border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0",
+          getMarkdownTableAlignClass(align),
+          className,
+        )}
+        {...elementProps}
+      />
+    );
+  },
+};

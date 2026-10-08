@@ -22,6 +22,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 import * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 // Keep grouped buttons, page input, and selects on the same opaque surface.
@@ -501,7 +502,7 @@ function PaginationSeparator({
     <Separator
       data-slot="pagination-separator"
       orientation={orientation}
-      className={cn("h-6 data-vertical:self-center", className)}
+      className={mergeClassNames("h-6 data-vertical:self-center", className)}
       {...props}
     />
   );

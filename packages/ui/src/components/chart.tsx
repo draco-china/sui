@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "cn";
 import * as React from "react";
 import type { TooltipValueType } from "recharts";
@@ -112,6 +114,56 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+// Recharts passes configuration alongside DOM attributes to custom content.
+const chartOnlyProps = new Set([
+  "accessibilityLayer",
+  "activeIndex",
+  "coordinate",
+  "viewBox",
+  "separator",
+  "wrapperClassName",
+  "contentStyle",
+  "itemStyle",
+  "labelStyle",
+  "itemSorter",
+  "allowEscapeViewBox",
+  "animationDuration",
+  "animationEasing",
+  "axisId",
+  "content",
+  "cursor",
+  "defaultIndex",
+  "filterNull",
+  "includeHidden",
+  "isAnimationActive",
+  "offset",
+  "payloadUniqBy",
+  "portal",
+  "position",
+  "reverseDirection",
+  "shared",
+  "trigger",
+  "useTranslate3d",
+  "wrapperStyle",
+  "iconSize",
+  "iconType",
+  "layout",
+  "align",
+  "inactiveColor",
+  "formatter",
+  "chartWidth",
+  "chartHeight",
+  "width",
+  "height",
+  "margin",
+  "onBBoxUpdate",
+]);
+function chartDomProps(props: object): React.ComponentProps<"div"> {
+  return Object.fromEntries(
+    Object.entries(props).filter(([key]) => !chartOnlyProps.has(key)),
+  );
+}
+
 function ChartTooltipContentImplementation({
   active,
   payload,
@@ -126,6 +178,7 @@ function ChartTooltipContentImplementation({
   color,
   nameKey,
   labelKey,
+  ...props
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean;
@@ -186,6 +239,7 @@ function ChartTooltipContentImplementation({
 
   return (
     <div
+      {...chartDomProps(props)}
       className={cn(
         "grid min-w-32 items-start gap-1.5 rounded-xl bg-popover px-2.5 py-1.5 text-popover-foreground text-xs shadow-lg ring-1 ring-foreground/5 dark:ring-foreground/10",
         className,
@@ -275,6 +329,7 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
+  ...props
 }: React.ComponentProps<"div"> & {
   hideIcon?: boolean;
   nameKey?: string;
@@ -287,6 +342,7 @@ function ChartLegendContent({
 
   return (
     <div
+      {...chartDomProps(props)}
       className={cn(
         "flex items-center justify-center gap-4",
         verticalAlign === "top" ? "pb-3" : "pt-3",

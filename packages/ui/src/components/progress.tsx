@@ -1,7 +1,7 @@
 "use client";
 
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
-import { cn } from "cn";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function ProgressImplementation({
@@ -14,7 +14,7 @@ function ProgressImplementation({
     <ProgressPrimitive.Root
       value={value}
       data-slot="progress"
-      className={cn("flex flex-wrap gap-3", className)}
+      className={mergeClassNames("flex flex-wrap gap-3", className)}
       {...props}
     >
       {children}
@@ -31,7 +31,7 @@ function ProgressTrackImplementation({
 }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
-      className={cn(
+      className={mergeClassNames(
         "relative flex h-3 w-full items-center overflow-x-hidden rounded-full bg-muted",
         className,
       )}
@@ -48,7 +48,7 @@ function ProgressIndicator({
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
-      className={cn("h-full bg-primary transition-all", className)}
+      className={mergeClassNames("h-full bg-primary transition-all", className)}
       {...props}
     />
   );
@@ -57,7 +57,7 @@ function ProgressIndicator({
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
-      className={cn("font-medium text-sm", className)}
+      className={mergeClassNames("font-medium text-sm", className)}
       data-slot="progress-label"
       {...props}
     />
@@ -67,7 +67,7 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
 function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
-      className={cn(
+      className={mergeClassNames(
         "ms-auto text-muted-foreground text-sm tabular-nums",
         className,
       )}

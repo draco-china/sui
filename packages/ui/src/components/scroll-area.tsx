@@ -1,5 +1,7 @@
+"use client";
+
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
-import { cn } from "cn";
+import { mergeClassNames } from "../lib/class-name";
 
 function ScrollArea({
   className,
@@ -9,7 +11,7 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      className={mergeClassNames("relative", className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
@@ -34,7 +36,7 @@ function ScrollBar({
       data-slot="scroll-area-scrollbar"
       data-orientation={orientation}
       orientation={orientation}
-      className={cn(
+      className={mergeClassNames(
         "flex touch-none select-none p-px transition-colors data-horizontal:h-2.5 data-vertical:h-full data-vertical:w-2.5 data-horizontal:flex-col data-vertical:border-s data-vertical:border-s-transparent data-horizontal:border-t data-horizontal:border-t-transparent",
         className,
       )}

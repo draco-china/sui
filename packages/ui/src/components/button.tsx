@@ -1,6 +1,8 @@
+"use client";
+
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "cn";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const buttonVariants = cva(
@@ -48,7 +50,7 @@ function ButtonImplementation({
     <ButtonPrimitive
       data-slot="button"
       data-variant={variant}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={mergeClassNames(buttonVariants({ variant, size }), className)}
       {...props}
     />
   );

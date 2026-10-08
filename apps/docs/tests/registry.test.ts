@@ -402,3 +402,58 @@ test("build produces a searchable catalog and prunes removed item payloads", asy
     await rm(published, { recursive: true, force: true });
   }
 }, 30_000);
+
+test("RSC installations preserve client boundaries for every interactive public entry", async () => {
+  const uiPackage = join(repositoryRoot, "packages/ui");
+  const cliRoot = dirname(Bun.resolveSync("shadcn", uiPackage));
+  const { transform } = await import(
+    Bun.resolveSync(
+      "@shadcn/registry/internal/utils/transformers/index",
+      cliRoot,
+    )
+  );
+  const config = JSON.parse(
+    await readFile(join(uiPackage, "components.json"), "utf8"),
+  );
+  config.rsc = true;
+  let checked = 0;
+  for (const item of registry.items) {
+    const entry = item.files?.find(
+      (file) => file.path === `packages/ui/src/components/${item.name}.tsx`,
+    );
+    if (
+      !entry ||
+      !/@base-ui\/react|@shadcn\/react|withGlass/.test(entry.content ?? "")
+    )
+      continue;
+    const installed = await transform({
+      filename: entry.path,
+      raw: entry.content,
+      config,
+      isRemote: true,
+    });
+    const source = ts.createSourceFile(
+      entry.path,
+      installed,
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const directive = source.statements[0];
+    expect(
+      ts.isExpressionStatement(directive) &&
+        ts.isStringLiteral(directive.expression) &&
+        directive.expression.text === "use client",
+      item.name,
+    ).toBe(true);
+    checked += 1;
+  }
+  expect(checked).toBeGreaterThan(36);
+  const button = registry.items.find((item) => item.name === "button");
+  expect(
+    button?.files?.find((file) => file.path.endsWith("/glass/context.tsx"))
+      ?.content,
+  ).toMatch(/^"use client";/);
+  expect(
+    button?.files?.some((file) => file.path.endsWith("/class-name.ts")),
+  ).toBe(true);
+});

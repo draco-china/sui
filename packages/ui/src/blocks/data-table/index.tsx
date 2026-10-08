@@ -49,6 +49,7 @@ import {
 } from "./labels";
 import { DataTablePagination } from "./pagination";
 import {
+  getColumnDefId,
   sortRowsByRank,
   type TableFeatureOptions,
   useTableColumnState,
@@ -171,11 +172,7 @@ function useTableController<TData extends RowData, TValue>({
       ...Object.fromEntries(
         getLeafColumnDefs(tableColumns)
           .filter((column) => column.meta?.filterOnly)
-          .map((column) => [
-            column.id ??
-              ("accessorKey" in column ? String(column.accessorKey) : ""),
-            false,
-          ]),
+          .map((column, index) => [getColumnDefId(column, index), false]),
       ),
     }),
     [columnVisibility, tableColumns],

@@ -29,6 +29,12 @@ export type UrlColumnFilterConfig =
       deserialize?: (value: unknown) => unknown;
     };
 
+function positiveInteger(value: number | undefined, fallback: number) {
+  if (value === undefined || !Number.isFinite(value)) return fallback;
+  const integer = Math.floor(value);
+  return integer >= 1 ? integer : fallback;
+}
+
 /** Internal implementation of the public URL state hook. */
 export function useTableUrlStateValue(params: {
   search: Record<string, unknown>;
@@ -65,8 +71,8 @@ export function useTableUrlStateValue(params: {
   } = params;
   const pageKey = paginationCfg?.pageKey ?? "page";
   const pageSizeKey = paginationCfg?.pageSizeKey ?? "pageSize";
-  const defaultPage = Math.max(1, paginationCfg?.defaultPage ?? 1);
-  const defaultPageSize = Math.max(1, paginationCfg?.defaultPageSize ?? 10);
+  const defaultPage = positiveInteger(paginationCfg?.defaultPage, 1);
+  const defaultPageSize = positiveInteger(paginationCfg?.defaultPageSize, 10);
   const sortKey = sortingCfg?.sortKey ?? "sort";
   const orderKey = sortingCfg?.orderKey ?? "order";
 
@@ -79,12 +85,8 @@ export function useTableUrlStateValue(params: {
       typeof search[pageSizeKey] === "number"
         ? search[pageSizeKey]
         : Number(search[pageSizeKey]);
-    const normalizedPage =
-      Number.isFinite(page) && page > 0 ? Math.floor(page) : defaultPage;
-    const normalizedPageSize =
-      Number.isFinite(pageSize) && pageSize > 0
-        ? Math.floor(pageSize)
-        : defaultPageSize;
+    const normalizedPage = positiveInteger(page, defaultPage);
+    const normalizedPageSize = positiveInteger(pageSize, defaultPageSize);
     const sortId = search[sortKey];
     const columnFilters: ColumnFiltersState = [];
 

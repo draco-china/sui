@@ -1,9 +1,12 @@
+"use client";
+
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
 import { toggleVariants } from "@workspace/ui/components/toggle";
 import type { VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 const ToggleGroupContext = React.createContext<
@@ -38,8 +41,9 @@ function ToggleGroupImplementation({
       data-size={size}
       data-spacing={spacing}
       data-orientation={orientation}
+      orientation={orientation}
       style={{ "--gap": spacing } as React.CSSProperties}
-      className={cn(
+      className={mergeClassNames(
         "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-vertical:flex-col data-vertical:items-stretch",
         className,
       )}
@@ -69,12 +73,14 @@ function ToggleGroupItemImplementation({
       data-variant={context.variant || variant}
       data-size={context.size || size}
       data-spacing={context.spacing}
-      className={cn(
-        "shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:ps-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pe-2.5 group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-e-3xl group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-s-3xl group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl",
-        toggleVariants({
-          variant: context.variant || variant,
-          size: context.size || size,
-        }),
+      className={mergeClassNames(
+        cn(
+          "shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:ps-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pe-2.5 group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-e-3xl group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-s-3xl group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl",
+          toggleVariants({
+            variant: context.variant || variant,
+            size: context.size || size,
+          }),
+        ),
         className,
       )}
       {...props}

@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "cn";
 import { ChevronDownIcon } from "lucide-react";
 import type * as React from "react";

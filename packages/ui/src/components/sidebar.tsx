@@ -23,6 +23,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { useGlassEnabled, withGlass } from "../lib/glass/context";
 
 const SidebarSurface = withGlass((props: React.ComponentProps<"div">) => (
@@ -80,17 +81,14 @@ function SidebarProviderImplementation({
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === "function" ? value(open) : value;
-      if (setOpenProp) {
-        setOpenProp(openState);
-      } else {
-        _setOpen(openState);
-      }
+      if (openProp === undefined) _setOpen(openState);
+      setOpenProp?.(openState);
 
       // This sets the cookie to keep the sidebar state.
       // biome-ignore lint/suspicious/noDocumentCookie: Preserve synchronous cookie persistence in browsers without the Cookie Store API.
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
-    [setOpenProp, open],
+    [setOpenProp, openProp, open],
   );
 
   // Helper to toggle the sidebar.
@@ -271,7 +269,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon-sm"
-      className={cn(className)}
+      className={mergeClassNames("", className)}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
@@ -372,7 +370,7 @@ function SidebarSeparator({
     <Separator
       data-slot="sidebar-separator"
       data-sidebar="separator"
-      className={cn("mx-2 w-auto bg-sidebar-border", className)}
+      className={mergeClassNames("mx-2 w-auto bg-sidebar-border", className)}
       {...props}
     />
   );

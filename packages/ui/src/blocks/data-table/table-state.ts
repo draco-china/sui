@@ -50,13 +50,14 @@ export interface ColumnFilterMeta<TData extends RowData> {
   onFilter?: (value: string, record: TData) => boolean;
 }
 
-function getColumnDefId<TData extends RowData, TValue>(
+export function getColumnDefId<TData extends RowData, TValue>(
   column: ColumnDef<TData, TValue>,
   index: number,
 ) {
   if (column.id) return column.id;
-  if ("accessorKey" in column && typeof column.accessorKey === "string")
-    return column.accessorKey;
+  if ("accessorKey" in column && column.accessorKey !== undefined)
+    return String(column.accessorKey).replaceAll(".", "_");
+  if (typeof column.header === "string") return column.header;
   return String(index);
 }
 
@@ -83,6 +84,8 @@ function getPinnedColumnIds<TData extends RowData, TValue>(
     return pinned === side ? [id] : [];
   });
 }
+
+const emptyColumnPinning: ColumnPinningState = { start: [], end: [] };
 
 export function useTableColumnState<TData extends RowData, TValue>(
   columns: ColumnDef<TData, TValue>[],
@@ -113,10 +116,9 @@ export function useTableColumnState<TData extends RowData, TValue>(
   const [columnOrder, setColumnOrder] = useState<string[]>(defaultColumnOrder);
   const [internalColumnPinning, setInternalColumnPinning] =
     useState<ColumnPinningState>(defaultColumnPinning);
-  const columnPinning =
-    typeof tableOptions?.pinning === "object" && tableOptions.pinning.value
-      ? tableOptions.pinning.value
-      : internalColumnPinning;
+  let columnPinning = internalColumnPinning;
+  if (!pinningEnabled) columnPinning = emptyColumnPinning;
+  else if (controlledColumnPinning) columnPinning = controlledColumnPinning;
 
   useEffect(() => {
     setColumnOrder((current) => {

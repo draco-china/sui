@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "cn";
 import useEmblaCarousel, {
@@ -5,6 +7,7 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 type CarouselApi = UseEmblaCarouselType[1];
@@ -75,15 +78,28 @@ function CarouselImplementation({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        scrollPrev();
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        scrollNext();
-      }
+      const target = event.target as HTMLElement;
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        target.closest(
+          "input, textarea, select, [contenteditable]:not([contenteditable='false'])",
+        )
+      )
+        return;
+      const previousKey = orientation === "vertical" ? "ArrowUp" : "ArrowLeft";
+      const nextKey = orientation === "vertical" ? "ArrowDown" : "ArrowRight";
+      if (event.key !== previousKey && event.key !== nextKey) return;
+      event.preventDefault();
+      const backwards = event.key === previousKey;
+      const rtl = orientation === "horizontal" && opts?.direction === "rtl";
+      if (backwards !== rtl) scrollPrev();
+      else scrollNext();
     },
-    [scrollPrev, scrollNext],
+    [orientation, opts?.direction, scrollPrev, scrollNext],
   );
 
   React.useEffect(() => {
@@ -184,11 +200,13 @@ function CarouselPrevious({
       data-slot="carousel-previous"
       variant={variant}
       size={size}
-      className={cn(
-        "absolute touch-manipulation rounded-full",
-        orientation === "horizontal"
-          ? "inset-y-0 -start-12 my-auto"
-          : "start-1/2 -top-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+      className={mergeClassNames(
+        cn(
+          "absolute touch-manipulation rounded-full",
+          orientation === "horizontal"
+            ? "inset-y-0 -start-12 my-auto"
+            : "start-1/2 -top-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+        ),
         className,
       )}
       disabled={!canScrollPrev}
@@ -214,11 +232,13 @@ function CarouselNext({
       data-slot="carousel-next"
       variant={variant}
       size={size}
-      className={cn(
-        "absolute touch-manipulation rounded-full",
-        orientation === "horizontal"
-          ? "inset-y-0 -end-12 my-auto"
-          : "start-1/2 -bottom-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+      className={mergeClassNames(
+        cn(
+          "absolute touch-manipulation rounded-full",
+          orientation === "horizontal"
+            ? "inset-y-0 -end-12 my-auto"
+            : "start-1/2 -bottom-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+        ),
         className,
       )}
       disabled={!canScrollNext}

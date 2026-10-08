@@ -1,3 +1,5 @@
+"use client";
+
 import { Label } from "@workspace/ui/components/label";
 import { Separator } from "@workspace/ui/components/separator";
 import { cva, type VariantProps } from "class-variance-authority";

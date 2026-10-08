@@ -1,6 +1,9 @@
+"use client";
+
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
 import { cn } from "cn";
 import type * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
 function AvatarImplementation({
@@ -14,7 +17,7 @@ function AvatarImplementation({
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
-      className={cn(
+      className={mergeClassNames(
         "group/avatar relative flex size-8 shrink-0 select-none rounded-full after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className,
       )}
@@ -27,7 +30,7 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
-      className={cn(
+      className={mergeClassNames(
         "aspect-square size-full rounded-full object-cover",
         className,
       )}
@@ -43,7 +46,7 @@ function AvatarFallbackImplementation({
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
-      className={cn(
+      className={mergeClassNames(
         "flex size-full items-center justify-center rounded-full bg-muted text-muted-foreground text-sm group-data-[size=sm]/avatar:text-xs",
         className,
       )}

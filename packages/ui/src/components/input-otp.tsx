@@ -4,6 +4,7 @@ import { OTPField } from "@base-ui/react/otp-field";
 import { cn } from "cn";
 import { MinusIcon } from "lucide-react";
 import * as React from "react";
+import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 import { type IconNode, MorphIcon } from "./morph-icon";
 
@@ -343,7 +344,7 @@ function InputOTPSeparator({
   return (
     <OTPField.Separator
       data-slot="input-otp-separator"
-      className={cn(
+      className={mergeClassNames(
         "flex items-center text-muted-foreground [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
