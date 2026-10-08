@@ -110,8 +110,9 @@ Issues and pull requests are welcome. Keep English and Chinese documentation
 aligned, regenerate registry artifacts after UI changes, and run the checks above
 before submitting. Use Conventional Commits for commit messages.
 
-Documentation, CI, and maintenance updates do not trigger automatic releases.
-Qualifying component and registry changes follow semantic-release versioning.
+After CI passes on `main`, semantic-release evaluates all commits since the last
+release using `.releaserc.json`. Documentation commits do not create a release;
+features, fixes, and breaking changes follow the configured versioning rules.
 
 ## License
 
