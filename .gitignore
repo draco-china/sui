@@ -13,6 +13,7 @@ apps/docs/public/r/
 .vinxi/
 .vite/
 .cache/
+.wrangler/
 *.tsbuildinfo
 
 # Test coverage
@@ -25,6 +26,8 @@ coverage/
 
 # Local environment files; keep reusable templates
 .env
+.dev.vars
+.dev.vars.*
 .env.*
 !.env.example
 !.env.*.example

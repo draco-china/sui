@@ -13,6 +13,7 @@
       "!!**/.output",
       "!!**/.nitro",
       "!!**/.tanstack",
+      "!!**/.wrangler",
       "!!**/.vinxi",
       "!!**/coverage",
       "!!**/.pnpm-store",
