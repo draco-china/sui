@@ -1,0 +1,284 @@
+---
+title: Combobox
+description: "自动完成输入并包含建议列表"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
+---
+
+<ComponentPreview name="combobox-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/combobox
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@workspace/ui/components/combobox"
+```
+
+```tsx showLineNumbers
+const frameworks = ["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"]
+
+export function ExampleCombobox() {
+  return (
+    <Combobox items={frameworks}>
+      <ComboboxInput placeholder="Select a framework" />
+      <ComboboxContent>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
+              {item}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+```
+
+## 组合结构 [#composition]
+
+### 简单结构 [#simple]
+
+单行输入和平面列表（请参阅[Basic](#basic)）。
+
+```text
+Combobox
+├── ComboboxInput
+└── ComboboxContent
+    ├── ComboboxEmpty
+    └── ComboboxList
+        ├── ComboboxItem
+        └── ComboboxItem
+```
+
+### 带选项标签 [#with-chips]
+
+使用 `multiple`、选项标签和标签输入框进行多重选择（请参阅[Multiple](#multiple)）。
+
+```text
+Combobox
+├── ComboboxChips
+│   ├── ComboboxValue
+│   │   └── ComboboxChip
+│   └── ComboboxChipsInput
+└── ComboboxContent
+    ├── ComboboxEmpty
+    └── ComboboxList
+        ├── ComboboxItem
+        └── ComboboxItem
+```
+
+### 分组与集合 [#with-groups-and-collection]
+
+每个组在每个 `ComboboxGroup` 内使用 `ComboboxCollection` 嵌套项目，组之间有分隔符（请参阅[组](#groups)）。
+
+```text
+Combobox
+├── ComboboxInput
+└── ComboboxContent
+    ├── ComboboxEmpty
+    └── ComboboxList
+        ├── ComboboxGroup
+        │   ├── ComboboxLabel
+        │   └── ComboboxCollection
+        │       ├── ComboboxItem
+        │       └── ComboboxItem
+        ├── ComboboxSeparator
+        └── ComboboxGroup
+            ├── ComboboxLabel
+            └── ComboboxCollection
+                ├── ComboboxItem
+                └── ComboboxItem
+```
+
+## 自定义选项 [#custom-items]
+
+当您的物品是物体时，请使用 `itemToStringValue`。
+
+```tsx showLineNumbers
+import * as React from "react"
+
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@workspace/ui/components/combobox"
+
+type Framework = {
+  label: string
+  value: string
+}
+
+const frameworks: Framework[] = [
+  { label: "Next.js", value: "next" },
+  { label: "SvelteKit", value: "sveltekit" },
+  { label: "Nuxt", value: "nuxt" },
+]
+
+export function ExampleComboboxCustomItems() {
+  return (
+    <Combobox
+      items={frameworks}
+      itemToStringValue={(framework) => framework.label}
+    >
+      <ComboboxInput placeholder="Select a framework" />
+      <ComboboxContent>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(framework) => (
+            <ComboboxItem key={framework.value} value={framework}>
+              {framework.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+```
+
+## 多选 [#multiple-selection]
+
+将 `multiple` 与芯片一起使用以实现多选行为。
+
+```tsx showLineNumbers
+import * as React from "react"
+
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+} from "@workspace/ui/components/combobox"
+
+const frameworks = ["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"]
+
+export function ExampleComboboxMultiple() {
+  const [value, setValue] = React.useState<string[]>([])
+
+  return (
+    <Combobox
+      items={frameworks}
+      multiple
+      value={value}
+      onValueChange={setValue}
+    >
+      <ComboboxChips>
+        <ComboboxValue>
+          {value.map((item) => (
+            <ComboboxChip key={item}>{item}</ComboboxChip>
+          ))}
+        </ComboboxValue>
+        <ComboboxChipsInput placeholder="Add framework" />
+      </ComboboxChips>
+      <ComboboxContent>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
+              {item}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  )
+}
+```
+
+## 基本用法 [#basic]
+
+一个带有框架列表的简单组合框。
+
+<ComponentPreview name="combobox-basic" />
+
+## 同时展开多项 [#multiple]
+
+使用 `multiple` 和 `ComboboxChips` 进行多重选择的组合框。
+
+<ComponentPreview name="combobox-multiple" />
+
+## 清除按钮 [#clear-button]
+
+使用 `showClear` 属性显示清除按钮。
+
+<ComponentPreview name="combobox-clear" />
+
+## 分组 [#groups]
+
+使用 `ComboboxGroup` 和 `ComboboxSeparator` 对项目进行分组。
+
+<ComponentPreview name="combobox-groups" />
+
+## 自定义选项 [#custom-items-1]
+
+您可以在 `ComboboxItem` 内渲染自定义组件。
+
+<ComponentPreview name="combobox-custom" />
+
+## 无效状态 [#invalid]
+
+使用 `aria-invalid` 属性使组合框无效。
+
+<ComponentPreview name="combobox-invalid" />
+
+## 禁用状态 [#disabled]
+
+使用 `disabled` 属性禁用组合框。
+
+<ComponentPreview name="combobox-disabled" />
+
+## 自动高亮 [#auto-highlight]
+
+使用 `autoHighlight` 属性自动突出显示过滤器上的第一项。
+
+<ComponentPreview name="combobox-auto-highlight" />
+
+## 弹出列表 [#popup]
+
+您可以使用 `render` 属性从按钮或任何其他组件触发组合框。将`ComboboxInput`移到`ComboboxContent`内部。
+
+<ComponentPreview name="combobox-popup" />
+
+## 输入框组 [#input-group]
+
+您可以使用 `ComboboxInput` 内的 `InputGroupAddon` 组件将插件添加到组合框。
+
+<ComponentPreview name="combobox-input-group" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="combobox-rtl" align="start" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+有关更多信息，请参阅[Base UI](https://base-ui.com/react/components/combobox#api-reference) 文档。

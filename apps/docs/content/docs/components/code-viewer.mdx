@@ -1,0 +1,97 @@
+---
+title: Code Viewer
+description: Syntax-highlighted code with folding, line highlights, copying, and streaming feedback.
+---
+
+<ComponentPreview name="code-viewer-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/code-viewer
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { CodeViewer } from "@workspace/ui/components/code-viewer";
+
+<CodeViewer code={'const theme = "bamboo";'} lang="typescript" title="theme.ts" />;
+```
+
+## Lines, folding, and layout [#lines]
+
+Line numbers are shown by default. `highlightLines` uses one-based line numbers. Indented blocks following `{`, `[`, or `(` can be folded with the gutter controls; changing `code` resets folding. This is an indentation-based view, not a syntax-aware code editor.
+
+Set `wrap` for long lines or change `maxHeight` to limit the scrolling viewport. Use `showLineNumbers={false}` for compact snippets. The viewport is reachable with Tab and supports keyboard scrolling with a visible theme-colored focus ring.
+
+## Streaming content [#streaming]
+
+Pass `status="streaming"` while appending code, then switch to `"complete"`. The viewer displays status feedback and follows content near the bottom. Scrolling more than 32px away pauses following; returning to the bottom resumes it. Starting a new streaming session restores following by default. The example replays a local sequence and cleans up its timer on unmount.
+
+<ComponentPreview name="code-viewer-streaming" />
+
+## Copy and theme behavior [#copy]
+
+Copy writes the original complete code, including folded lines, and provides success or failure feedback. Set `copyable={false}` to remove the action. Highlighting loads asynchronously with a bounded skeleton; streaming updates keep incoming text visible while tokens are prepared. If loading is pending, the complete source remains available to copy and to assistive technology; if highlighting fails, readable plain code remains available. An empty string displays the empty-state label.
+
+The viewer follows the surrounding light or dark theme unless `theme` is supplied. Translate `labels` for copy, loading, empty, folding, writing, ready, copied, and copy failure.
+
+## Plain style and highlighting configuration [#plain]
+
+`variant="plain"` removes the outer frame and title bar while retaining the code and copy action. Override `--code-highlight-bg` to customize highlighted-line backgrounds.
+
+An optional `ShikiProvider` shares highlighting configuration across its viewers and editors. `themes` provides light and dark themes, and `languages` preloads requested languages. Highlighting works without a provider; recognized languages and aliases load on demand, while unknown languages fall back to plain text.
+
+<ComponentPreview name="code-viewer-plain" />
+
+```tsx
+import { CodeViewer, ShikiProvider } from "@workspace/ui/components/code-viewer";
+
+<ShikiProvider
+  themes={{ light: "github-light", dark: "github-dark" }}
+  languages={["python", "sql"]}
+>
+  <CodeViewer
+    code={code}
+    lang="python"
+    variant="plain"
+    highlightLines={[2]}
+    className="[--code-highlight-bg:var(--accent)]"
+  />
+</ShikiProvider>;
+```
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `variant` | `"default" \| "plain"` | `"default"`. |
+| `code` | `string` | Required source text. |
+| `lang` | `string` | `"typescript"`. |
+| `theme` | `"light" \| "dark"` | Follows surrounding theme. |
+| `title` | `ReactNode` | Optional header title. |
+| `status` | `"streaming" \| "complete"` | `"complete"`. |
+| `showLineNumbers` | `boolean` | `true`. |
+| `highlightLines` | `number[]` | `[]`; one-based. |
+| `maxHeight` | `number` | `280` pixels. |
+| `wrap` | `boolean` | `false`. |
+| `copyable` | `boolean` | `true`. |
+| `labels` | `Partial<CodeViewerLabels>` | English labels. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `CodeViewerProps` and `CodeViewerLabels`. Highlighting uses [Shiki](https://shiki.style/guide/). To edit instead of view, use [Editor](/docs/components/editor).
+
+`ShikiProviderProps` is also exported from this module; theme names use Shiki bundled themes.
+
+### ShikiProvider [#shiki-provider-api]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `themes` | `{ light: BundledTheme; dark: BundledTheme }` | `one-light` and `one-dark-pro`. |
+| `languages` | `readonly string[]` | Optional languages to preload. |
+| `onError` | `(error: unknown) => void` | Reports preload failure without changing the plain-text fallback. |
+
+Keep static `themes` and `languages` outside the component to avoid restarting preloads.

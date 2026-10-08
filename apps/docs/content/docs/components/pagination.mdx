@@ -1,0 +1,254 @@
+---
+title: Pagination
+description: Compact data pagination with range information, page navigation, and page-size selection.
+base: base
+component: true
+---
+
+`Pagination` combines a range summary and compact navigation controls. Use it for data tables, lists, or sequential API results. The component manages navigation state; your application supplies and renders the data for the selected page.
+
+<ComponentPreview name="pagination-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/pagination
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+When `children` is omitted, `Pagination` renders `PaginationInfo` and `PaginationControls` automatically. Provide `totalCount` to enable first, previous, page input, next, and last controls.
+
+```tsx
+import { Pagination } from "@workspace/ui/components/pagination";
+import { useState } from "react";
+
+export function ResultsPagination() {
+  const [page, setPage] = useState(1);
+
+  return (
+    <Pagination
+      page={page}
+      onPageChange={setPage}
+      perPage={10}
+      totalCount={100}
+    />
+  );
+}
+```
+
+Pages start at `1`. Omit `page` for internal page state, starting at page `1`; `onPageChange` still reports changes. With a controlled `page`, update it in `onPageChange`. Use the current page and page size to slice local data or request the corresponding server results.
+
+For known totals, the page input commits on Enter or blur. Whole-number input is clamped to the available page range; empty, fractional, or nonnumeric input restores the current page. Escape cancels editing. Enter does not submit an enclosing form.
+
+## Simple [#simple]
+
+Set `controls="simple"` to retain the range summary and show only previous and next buttons. The first and last buttons and page selector are hidden.
+
+<ComponentPreview name="pagination-simple" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={10}
+  totalCount={100}
+  controls="simple"
+/>
+```
+
+## Unknown totals [#unknown-totals]
+
+Omit `totalCount` for APIs that only indicate whether another page exists. Set `hasNextPage` from the response. Unknown totals always use sequential previous and next controls, even when `controls="full"`; there is no first, last, or arbitrary-page selector.
+
+The default summary is `Page N`. `PaginationInfo` can render a custom summary. Its `from` and `to` values are inferred from the page size when the total is unknown; they do not describe the actual number of items returned by the server.
+
+<ComponentPreview name="pagination-unknown-total" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={20}
+  hasNextPage={response.hasNextPage}
+/>
+```
+
+Without `hasNextPage={true}`, the next button is disabled. Previous navigation remains available after the first page.
+
+## States [#states]
+
+Known totals work with middle pages and large datasets. `totalCount={0}` displays `Showing 0–0 of 0` and disables navigation. Root `disabled` also disables the page selector, navigation buttons, and nested page-size selector.
+
+<ComponentPreview name="pagination-states" />
+
+If the total or page size changes and the requested page is outside the new range, the UI immediately displays the nearest valid page and reports that correction through `onPageChange`.
+
+## Composition [#composition]
+
+Pass children to arrange the summary, controls, and page-size selector yourself. `PaginationInfo`, `PaginationControls`, and `PaginationPageSize` read shared state from the parent `Pagination`. Passing `children={null}` intentionally renders no default content.
+
+```tsx
+import {
+  Pagination,
+  PaginationControls,
+  PaginationInfo,
+  PaginationPageSize,
+  PaginationSeparator,
+} from "@workspace/ui/components/pagination";
+```
+
+```text
+Pagination
+├── PaginationInfo
+└── div
+    ├── PaginationPageSize
+    ├── PaginationSeparator
+    └── PaginationControls
+```
+
+### Page sizes and custom summaries [#page-sizes]
+
+`PaginationPageSize` is controlled independently. Keep its `value` synchronized with root `perPage`, and usually return to page `1` when the size changes. Its options default to `[10, 20, 50, 100]`; invalid or repeated options are removed, and the current value is included automatically.
+
+Use a render function in `PaginationInfo` to customize the summary. Alternatively, set `labels.range` once on the root to customize every default `PaginationInfo` summary.
+
+<ComponentPreview name="pagination-custom" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={perPage}
+  totalCount={205}
+>
+  <PaginationInfo>
+    {({ page, pageCount, perPage }) =>
+      `Page ${page} of ${pageCount}, ${perPage} rows per page`
+    }
+  </PaginationInfo>
+  <div className="flex flex-wrap items-center gap-3">
+    <PaginationPageSize
+      value={perPage}
+      onValueChange={(size) => {
+        setPerPage(size);
+        setPage(1);
+      }}
+      options={[10, 20, 50]}
+      label="Rows per page"
+    />
+    <PaginationSeparator />
+    <PaginationControls />
+  </div>
+</Pagination>
+```
+
+### Dropdown page selector [#dropdown]
+
+Set `pageSelector="dropdown"` on `PaginationControls` to select a page from a menu. This applies to full controls with a known total. Above 200 pages, it automatically falls back to the numeric input to keep the menu bounded.
+
+<ComponentPreview name="pagination-dropdown" />
+
+```tsx
+<Pagination page={page} onPageChange={setPage} perPage={25} totalCount={500}>
+  <PaginationInfo />
+  <PaginationControls pageSelector="dropdown" />
+</Pagination>
+```
+
+## Icons only [#icons-only]
+
+Combine simple controls with a page-size selector for a compact table footer. The navigation buttons use icons with accessible labels.
+
+<ComponentPreview name="pagination-icons-only" />
+
+## Traditional numbered links [#numbered-links]
+
+The existing `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext`, and `PaginationEllipsis` components remain available for URL-based navigation. They do not automatically update root page state or generate page numbers; supply the links, current page, and disabled boundaries yourself.
+
+`PaginationLink` renders an anchor and uses `isActive` to set `aria-current="page"`. Disabled links have no `href`, are removed from the Tab order, and ignore click handlers. The example uses meaningful `?page=N` destinations and handles navigation locally so the preview stays on the documentation page.
+
+<ComponentPreview name="pagination-links" />
+
+```tsx
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@workspace/ui/components/pagination";
+```
+
+```tsx
+<Pagination>
+  <PaginationContent>
+    <PaginationItem>
+      <PaginationPrevious href="?page=1" text="Previous" />
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="?page=1">1</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="?page=2" isActive>2</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationEllipsis />
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationNext href="?page=3" text="Next" />
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
+```
+
+## RTL [#rtl]
+
+Wrap right-to-left interfaces in the shared `DirectionProvider` and set `dir="rtl"` on the relevant container. Navigation icons mirror automatically. Pass translated `labels` and a localized `range` formatter separately; direction does not select a language.
+
+<ComponentPreview name="pagination-rtl" direction="rtl" />
+
+## Accessibility and localization [#accessibility]
+
+The root is a labeled `nav`. Every icon button and selector has an accessible name from `labels`; `PaginationInfo` announces summary changes politely. All data-navigation buttons use `type="button"`.
+
+The page input supports keyboard editing, Enter to commit, and Escape to restore the current page. The dropdown selectors use the shared [Select](/docs/components/select) component and its keyboard behavior.
+
+Translate `navigation`, `firstPage`, `previousPage`, `nextPage`, `lastPage`, `pageNumber`, `pageSize`, and `range`. For traditional links, also translate the visible `text` on `PaginationPrevious` and `PaginationNext`, and provide meaningful labels for numbered links. Set the `PaginationPageSize` visible `label` explicitly when localizing it.
+
+## API reference [#api-reference]
+
+### Pagination [#pagination-api]
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `page` | `number` | Internal state, initially `1` | Controlled one-based page. |
+| `onPageChange` | `(page: number) => void` | — | Reports navigation and corrections after range changes. |
+| `perPage` | `number` | `10` | Items per page. |
+| `totalCount` | `number` | — | Total items; omit for unknown totals. |
+| `hasNextPage` | `boolean` | — | Enables the next page when the total is unknown. |
+| `controls` | `"full" \| "simple"` | `"full"` | Default controls mode. |
+| `disabled` | `boolean` | `false` | Disables nested navigation and selectors. |
+| `labels` | `PaginationLabels` | English labels | Accessible names and summary formatter. |
+| `children` | `ReactNode` | Info + controls | Custom composition; `null` suppresses the default layout. |
+
+Other native `nav` props, including `className`, `aria-label`, and `ref`, are forwarded.
+
+### Parts [#parts-api]
+
+| Component | Additional props | Behavior |
+| --- | --- | --- |
+| `PaginationInfo` | `children?: ReactNode \| ((info: PaginationRangeInfo) => ReactNode)` | Custom content or summary render function. |
+| `PaginationControls` | `controls?: "full" \| "simple"`, `pageSelector?: "input" \| "dropdown"` | Inherits root mode; selector defaults to `"input"`. |
+| `PaginationPageSize` | `value: number`, `onValueChange: (value: number) => void`, `options?: readonly number[]`, `label?: ReactNode`, `disabled?: boolean` | Controlled size selector; visible label defaults to `"Rows per page"`; `label={null}` hides it. |
+| `PaginationSeparator` | [Separator props](/docs/components/separator) | Vertical by default. |
+| `PaginationLink` | `isActive?: boolean`, `disabled?: boolean`, `size` | Native anchor props plus active and disabled states. |
+| `PaginationPrevious`, `PaginationNext` | Link props, `text?: string` | Previous/next links; visible text defaults to `"Previous"`/`"Next"`. |
+
+`PaginationInfo`, `PaginationControls`, and `PaginationPageSize` forward native `div` props. `PaginationRangeInfo` contains `page`, `perPage`, `from`, `to`, and optional `totalCount` and `pageCount`. Empty known totals produce `from=0`, `to=0`, and `pageCount=1`.
+
+The range, labels, and component prop types are exported from `@workspace/ui/components/pagination`. The composed selectors use the shared Select wrapper; see the [Base UI Select API](https://base-ui.com/react/components/select) for its underlying behavior.

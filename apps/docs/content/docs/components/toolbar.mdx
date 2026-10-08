@@ -1,0 +1,73 @@
+---
+title: Toolbar
+description: Groups related commands and controls with arrow-key focus navigation.
+---
+
+Toolbar gives a set of actions a shared keyboard navigation model. Compose buttons, toggle groups, links, and a final input while keeping each action's own accessible name.
+
+<ComponentPreview name="toolbar-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/toolbar
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx showLineNumbers
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+  ToolbarSeparator,
+} from "@workspace/ui/components/toolbar"
+
+<Toolbar aria-label="Document actions">
+  <ToolbarGroup aria-label="Editing actions">
+    <ToolbarButton onClick={undo}>Undo</ToolbarButton>
+    <ToolbarButton onClick={redo} disabled={!canRedo}>Redo</ToolbarButton>
+  </ToolbarGroup>
+  <ToolbarSeparator />
+  <ToolbarButton onClick={save}>Save</ToolbarButton>
+</Toolbar>
+```
+
+## Toggle and trigger composition
+
+`ToolbarButton` supports the same `variant` and `size` values as `Button`, defaulting to `ghost` and `default`. Use `render` to compose it with `Toggle`, a menu trigger, or another Base UI control. `ToggleGroup` manages related format choices, while the toolbar coordinates focus among controls.
+
+Use `ToolbarGroup` for related actions and `ToolbarSeparator` between groups. A separator automatically uses the orientation opposite to its toolbar.
+
+## Search input
+
+`ToolbarInput` participates in the toolbar's keyboard model. In a horizontal toolbar, place a single input last so text editing and horizontal focus movement stay predictable. The example filters real notes and moves between the matching results.
+
+<ComponentPreview name="toolbar-search" />
+
+## Vertical and disabled toolbars
+
+Set `orientation="vertical"` to use a vertical layout and Up/Down focus navigation. `disabled` on `Toolbar` disables button and input controls; `disabled` on `ToolbarGroup` disables a set of actions. Buttons can also be disabled independently.
+
+<ComponentPreview name="toolbar-disabled" />
+
+## Accessibility and keyboard
+
+Give the toolbar an `aria-label` describing its purpose. Label each icon button, and label groups when their purpose adds useful context. Tab enters the toolbar, arrow keys move between its controls, and Tab leaves it. Focus wraps by default; set `loopFocus={false}` to stop at the ends.
+
+Base UI disabled buttons remain focusable by default. Use `focusableWhenDisabled={false}` when disabled controls should be skipped. Keep native event handlers and the `render` composition intact so keyboard activation follows the same path as pointer interaction.
+
+## API reference
+
+| Part | Purpose |
+| --- | --- |
+| `Toolbar` | Accepts `orientation` (`horizontal` by default), `disabled`, `loopFocus`, normal root props, and `ref`. |
+| `ToolbarButton` | A toolbar action with `variant`, `size`, `disabled`, `focusableWhenDisabled`, and `render`. |
+| `ToolbarLink` | A navigable link with Button `variant`/`size`, anchor props, and `render`. |
+| `ToolbarInput` | A text input integrated with toolbar focus navigation, styled through `Input`. |
+| `ToolbarGroup` | Groups related controls and accepts a group-level `disabled` state. |
+| `ToolbarSeparator` | Separates groups; its direction follows the toolbar unless explicitly overridden. |
+
+See the [Base UI Toolbar API](https://base-ui.com/react/components/toolbar#api-reference) for all primitive props and keyboard behavior.

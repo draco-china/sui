@@ -1,0 +1,542 @@
+---
+title: Design guidelines
+description: Complete typography, spacing, surface, and interaction rules with recommended and avoid examples for every rule.
+---
+
+Apply all of these rules when composing application interfaces with SUI. Every rule includes a working visual comparison and copyable code. Styles in the avoid column are teaching examples and should not be used in product interfaces.
+
+## Shared styles and semantic colors [#shared-styles]
+
+Import `@workspace/ui/globals.css` and compose components from `@workspace/ui/components/*`. Style native text elements with Tailwind size and weight utilities. Use semantic tokens such as `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `bg-primary`, `border-border`, and `ring-ring`; keep destructive actions on their independent `destructive` tokens.
+
+The default appearance uses Apple-inspired neutral surfaces and a blue accent. Select shared palettes with `data-color`: `default`, `bamboo`, `mauve`, `mist`, `sand`, `pine`, or `rose`. Remove the attribute or select `default` to reset the appearance; use `dark` for dark mode. Accent, focus, and chart colors change together while backgrounds and body text remain neutral. See [Theming](/docs/theming) for configuration.
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+```html
+<html data-color="pine" class="dark">
+```
+
+## Use 14px for content text [#content-text-size]
+
+All content text—body, buttons, data, other interactables—must be 14px in size. 16px and above are restricted to headings and subheadings.
+
+<ComponentPreview name="design-guidelines-content-text-size" />
+
+**Recommended**
+
+```tsx
+<p className="text-sm">Content text</p>;
+```
+
+**Avoid**
+
+```tsx
+<p className="text-base">Content text</p>;
+```
+
+## Always sentence case headings [#heading-case]
+
+Never capitalize or uppercase headings. Product names must be title-cased.
+
+The avoid column shows both title case and an `uppercase` transformation.
+
+<ComponentPreview name="design-guidelines-heading-case" />
+
+**Recommended**
+
+```tsx
+<h2 className="font-semibold text-lg">Recent requests</h2>;
+```
+
+**Avoid**
+
+```tsx
+<h2 className="font-semibold text-lg">Recent Requests</h2>;
+```
+
+```tsx
+<h2 className="font-semibold text-lg uppercase">Recent requests</h2>;
+```
+
+## Never change the font’s tracking [#font-tracking]
+
+Do not use the `tracking-*` classes to change the spacing between characters.
+
+<ComponentPreview name="design-guidelines-font-tracking" />
+
+**Recommended**
+
+```tsx
+<h3 className="font-semibold text-lg">Project metrics</h3>;
+```
+
+**Avoid**
+
+```tsx
+<h3 className="font-semibold text-lg tracking-tight">Project metrics</h3>;
+```
+
+## Never use font-bold [#font-weight]
+
+Use `font-semibold` for headings and `font-medium` for bold inline text. Never use `font-bold`.
+
+<ComponentPreview name="design-guidelines-font-weight" />
+
+**Recommended**
+
+```tsx
+<>
+  <h3 className="font-semibold text-lg">Account settings</h3>
+  <strong className="font-medium text-sm">required</strong>
+</>;
+```
+
+**Avoid**
+
+```tsx
+<>
+  <h3 className="font-bold text-lg">Account settings</h3>
+  <strong className="font-bold text-sm">required</strong>
+</>;
+```
+
+## Put related text closer together [#related-text-spacing]
+
+Related text should have smaller spacing around it than the content it belongs to.
+
+<ComponentPreview name="design-guidelines-related-text-spacing" />
+
+**Recommended**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="grid gap-6">
+  <div className="grid gap-1.5">
+    <h3 className="font-semibold text-lg">Web analytics</h3>
+    <p className="text-sm">Measure site traffic without changing your code.</p>
+  </div>
+  <Button>Configure</Button>
+</div>;
+```
+
+**Avoid**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="grid gap-4">
+  <h3 className="font-semibold text-lg">Web analytics</h3>
+  <p className="text-sm">Measure site traffic without changing your code.</p>
+  <Button>Configure</Button>
+</div>;
+```
+
+## Optically align spacing around text [#text-spacing]
+
+Spacing around text should take into account its line height. Typically this means vertical spacing should be slightly smaller than horizontal.
+
+<ComponentPreview name="design-guidelines-text-spacing" />
+
+**Recommended**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="px-5 py-4">Content text</Card>;
+```
+
+**Avoid**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="p-5">Content text</Card>;
+```
+
+## Never transition colors for hover states [#hover-color-transitions]
+
+Color changes on hover must be immediate. Transitions on fast interactions make the UI feel sluggish.
+
+Move the pointer between the two buttons to compare their response. SUI buttons can still transition `transform` and `box-shadow`; the hover color changes immediately.
+
+<ComponentPreview name="design-guidelines-hover-color-transitions" />
+
+**Recommended**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button variant="ghost" className="hover:bg-muted">
+  Hover me
+</Button>;
+```
+
+**Avoid**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button
+  variant="ghost"
+  className="transition-colors duration-300 hover:bg-muted"
+>
+  Hover me
+</Button>;
+```
+
+## Never use borders with drop shadows [#shadow-borders]
+
+Use `ring-1 ring-border` to create a transparent border that maintains sharp edges. Do not combine `border` with a drop shadow on the same surface.
+
+SUI Card already supplies a shadow and a subtle ring. The avoid example disables that ring to show the border-and-shadow combination explicitly.
+
+<ComponentPreview name="design-guidelines-shadow-borders" />
+
+**Recommended**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="px-4 shadow-md ring-1 ring-border">Content text</Card>;
+```
+
+**Avoid**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="border border-border px-4 shadow-md ring-0">
+  Content text
+</Card>;
+```
+
+## Use concentric border radii [#concentric-border-radius]
+
+When borders or rings are 8px or less apart, their corner radii must be mathematically concentric: outer radius = inner radius + padding.
+
+At the default SUI radius, `rounded-lg` is 10px, `rounded-xl` is 14px, and `p-1` is 4px. The radius scale uses fixed offsets: `xl` adds `0.25rem`, `2xl` adds `0.5rem`, `3xl` adds `0.75rem`, and `4xl` adds `1rem` to the base radius. Changing `--radius` preserves those gaps. `sm` and `md` subtract `0.25rem` and `0.125rem`, clamped at zero.
+
+Pair `rounded-xl` outside with `rounded-lg` inside and `p-1`; use `rounded-2xl` outside with `p-2`. For other padding values, calculate the outer radius as the inner radius plus that padding. The scale alone does not make arbitrary combinations concentric. Change the base radius below to compare the two examples.
+
+If the outer container uses a `border`, include its width in the distance between the two boxes. A `ring` does not occupy layout space.
+
+<ComponentPreview name="design-guidelines-concentric-border-radius" />
+
+**Recommended**
+
+```tsx
+<div className="rounded-xl bg-muted p-1 ring-1 ring-border">
+  <div className="rounded-lg bg-background p-4 ring-1 ring-border">
+    Content text
+  </div>
+</div>;
+```
+
+**Avoid**
+
+```tsx
+<div className="rounded-xl bg-muted p-1 ring-1 ring-border">
+  <div className="rounded-xl bg-background p-4 ring-1 ring-border">
+    Content text
+  </div>
+</div>;
+```
+
+## Align icons with the first line of text [#icon-alignment]
+
+Inline icons must be optically the same size as and be center-aligned with text. Use `h-lh flex items-center` for multi-line alignment.
+
+The avoid column includes both a missing line-height wrapper and vertical centering against the entire paragraph. Decorative icons use `aria-hidden`; icon-only actions need an accessible name.
+
+<ComponentPreview name="design-guidelines-icon-alignment" />
+
+**Recommended**
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-start gap-2 text-sm leading-6">
+  <span className="flex h-lh items-center">
+    <InfoIcon className="size-4" aria-hidden="true" />
+  </span>
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+**Avoid**
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-start gap-2 text-sm leading-6">
+  <span className="flex items-center">
+    <InfoIcon className="size-4" aria-hidden="true" />
+  </span>
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-center gap-2 text-sm leading-6">
+  <InfoIcon className="size-4" aria-hidden="true" />
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+## Reduce the font size of inline monospaced text [#inline-monospace-size]
+
+Monospaced text should have a slightly smaller font size (~0.9em) when mixed with regular text.
+
+<ComponentPreview name="design-guidelines-inline-monospace-size" />
+
+**Recommended**
+
+```tsx
+<p className="text-sm">
+  Edit <code className="font-mono text-[0.9em]">config.ts</code> to continue.
+</p>;
+```
+
+**Avoid**
+
+```tsx
+<p className="text-sm">
+  Edit <code className="font-mono">config.ts</code> to continue.
+</p>;
+```
+
+## Use a border to separate sticky elements [#sticky-borders]
+
+Use `border` to separate sticky elements from the content.
+
+Scroll each column to inspect the boundary under its sticky header. A separating border is appropriate here because the header has no drop shadow.
+
+<ComponentPreview name="design-guidelines-sticky-borders" />
+
+**Recommended**
+
+```tsx
+<div className="h-40 overflow-y-auto rounded-xl bg-muted">
+  <div className="sticky top-0 border-b border-border bg-background px-3 py-2">
+    Recent requests
+  </div>
+  <div className="grid gap-4 p-3">
+    {Array.from({ length: 8 }, (_, index) => ({
+      id: `request-${index + 1}`,
+      number: index + 1,
+    })).map((request) => (
+      <p key={request.id}>Request {request.number}</p>
+    ))}
+  </div>
+</div>;
+```
+
+**Avoid**
+
+```tsx
+<div className="h-40 overflow-y-auto rounded-xl bg-muted">
+  <div className="sticky top-0 bg-background px-3 py-2">Recent requests</div>
+  <div className="grid gap-4 p-3">
+    {Array.from({ length: 8 }, (_, index) => ({
+      id: `request-${index + 1}`,
+      number: index + 1,
+    })).map((request) => (
+      <p key={request.id}>Request {request.number}</p>
+    ))}
+  </div>
+</div>;
+```
+
+## Maintain content size during collapse animations [#collapse-content-size]
+
+Collapsible content must maintain its content size while closing to avoid its content shifting during animations.
+
+Toggle each panel and watch the paragraph. Animate the outer wrapper from 256px to 0 while keeping the recommended inner content at `w-64`; the avoid example shrinks the text container and changes its line breaks. Reduced motion removes the transition.
+
+<ComponentPreview name="design-guidelines-collapse-content-size" />
+
+**Recommended**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export function RecommendedExample() {
+  const [open, setOpen] = useState(true);
+  const reduce = useReducedMotion();
+  return (
+    <div className="grid gap-4">
+      <Button variant="outline" onClick={() => setOpen(!open)}>
+        Toggle panel
+      </Button>
+      <motion.div
+        initial={false}
+        animate={{ width: open ? 256 : 0 }}
+        transition={{ duration: reduce ? 0 : 0.4 }}
+        className="max-w-full overflow-hidden"
+      >
+        <div className="w-64 rounded-xl bg-muted p-3 text-sm">
+          Text should keep the same line breaks while this panel closes.
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+```
+
+**Avoid**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export function AvoidExample() {
+  const [open, setOpen] = useState(true);
+  const reduce = useReducedMotion();
+  return (
+    <div className="grid gap-4">
+      <Button variant="outline" onClick={() => setOpen(!open)}>
+        Toggle panel
+      </Button>
+      <motion.div
+        initial={false}
+        animate={{ width: open ? 256 : 0 }}
+        transition={{ duration: reduce ? 0 : 0.4 }}
+        className="max-w-full overflow-hidden"
+      >
+        <div className="w-full min-w-0 rounded-xl bg-muted p-3 text-sm">
+          Text should keep the same line breaks while this panel closes.
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+```
+
+## Never stack elevated cards [#layer-card-nesting]
+
+Never stack elevated cards on top of one another.
+
+Use a plain container, spacing, or separators to group content inside a card. The recommended heading sits outside the elevated surface.
+
+<ComponentPreview name="design-guidelines-layer-card-nesting" />
+
+**Recommended**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<div className="grid gap-3">
+  <h3 className="font-semibold text-lg">Recent requests</h3>
+  <Card size="sm" className="px-4">
+    Request data
+  </Card>
+</div>;
+```
+
+**Avoid**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card size="sm" className="px-4">
+  <h3 className="font-semibold text-lg">Recent requests</h3>
+  <Card size="sm" className="px-4">
+    Request data
+  </Card>
+</Card>;
+```
+
+## Never conditionally render dialogs [#dialog-rendering]
+
+Conditionally rendering dialogs disables their open/close animation. Use the `open` prop to determine if a dialog should be visible or not.
+
+Open and close both dialogs. The recommended `Dialog` remains in the React tree while Base UI manages the popup’s presence, exit animation, focus, and dismissal. In the avoid example, setting `open` to false immediately removes the entire dialog tree. Always include a title and description.
+
+<ComponentPreview name="design-guidelines-dialog-rendering" />
+
+**Recommended**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import { useState } from "react";
+
+export function RecommendedExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Open dialog
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle className="font-semibold">Edit project</DialogTitle>
+          <DialogDescription>Update this project’s settings.</DialogDescription>
+        </DialogHeader>
+        <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+**Avoid**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import { useState } from "react";
+
+export function AvoidExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        Open dialog
+      </Button>
+      {open && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent showCloseButton={false}>
+            <DialogHeader>
+              <DialogTitle className="font-semibold">Edit project</DialogTitle>
+              <DialogDescription>
+                Update this project’s settings.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose render={<Button variant="outline" />}>
+              Close
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+}
+```

@@ -1,0 +1,116 @@
+---
+title: Alert
+description: "显示标注以引起用户注意"
+base: base
+component: true
+---
+
+<ComponentPreview name="alert-demo" previewClassName="h-auto sm:h-72 p-6" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/alert
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
+```
+
+```tsx showLineNumbers
+<Alert>
+  <InfoIcon />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+  <AlertAction>
+    <Button variant="outline">Enable</Button>
+  </AlertAction>
+</Alert>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Alert`：
+
+```text
+Alert
+├── Icon
+├── AlertTitle
+├── AlertDescription
+└── AlertAction
+```
+
+## 基本用法 [#basic]
+
+带有图标、标题和说明的基本提示。
+
+<ComponentPreview name="alert-basic" previewClassName="h-auto sm:h-72 p-6" />
+
+## 危险操作 [#destructive]
+
+使用 `variant="destructive"` 创建危险提示。
+
+<ComponentPreview name="alert-destructive" previewClassName="h-auto sm:h-72 p-6" />
+
+## 操作 [#action]
+
+使用 `AlertAction` 向提示添加按钮或其他操作元素。
+
+<ComponentPreview name="alert-action" previewClassName="h-auto sm:h-72 p-6" />
+
+## 自定义颜色 [#custom-colors]
+
+您可以通过将自定义类（例如 `bg-amber-50 dark:bg-amber-950`）添加到 `Alert` 组件来自定义提示颜色。
+
+<ComponentPreview name="alert-colors" previewClassName="h-auto sm:h-72 p-6" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="alert-rtl" previewClassName="h-auto sm:h-72 p-6" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### Alert [#alert]
+
+`Alert` 组件显示标注以引起用户注意
+
+| 属性 |类型 |默认 |
+| --------- | ---------------------------- | ----------- |
+| `variant` | `"default" \| "destructive"` | `"default"` |
+
+### AlertTitle [#alerttitle]
+
+`AlertTitle` 组件显示提示的标题
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### AlertDescription [#alertdescription]
+
+`AlertDescription` 组件显示提示的描述或内容
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### AlertAction [#alertaction]
+
+`AlertAction` 组件显示一个绝对位于提示右上角的操作元素（如按钮）
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |

@@ -1,0 +1,67 @@
+---
+title: Slider
+description: "用户从给定范围内选择一个值的输入"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/slider
+  api: https://base-ui.com/react/components/slider#api-reference
+---
+
+<ComponentPreview name="slider-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/slider
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Slider } from "@workspace/ui/components/slider"
+```
+
+```tsx
+<Slider defaultValue={[33]} max={100} step={1} />
+```
+
+## 范围 [#range]
+
+使用具有两个值的数组作为范围滑块。
+
+<ComponentPreview name="slider-range" />
+
+## 多个滑块 [#multiple-thumbs]
+
+使用具有多个拇指的多个值的数组。
+
+<ComponentPreview name="slider-multiple" />
+
+## 垂直布局 [#vertical]
+
+使用 `orientation="vertical"` 作为垂直滑块。
+
+<ComponentPreview name="slider-vertical" />
+
+## 受控模式 [#controlled]
+
+<ComponentPreview name="slider-controlled" />
+
+## 禁用状态 [#disabled]
+
+使用 `disabled` 属性禁用滑块。
+
+<ComponentPreview name="slider-disabled" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="slider-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 滑块](https://base-ui.com/react/components/slider#api-reference) 文档。

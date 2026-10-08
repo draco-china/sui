@@ -1,0 +1,132 @@
+---
+title: DataTable
+description: 支持搜索、筛选、列设置、选择、分页和拖拽排序的共享表格组合。
+---
+
+DataTable 组合 SUI 的 [Table](/zh-CN/docs/components/table)、Input、Combobox、Checkbox、Badge、Empty、Skeleton 和 Pagination。简单表格可直接使用 Table 组件。
+
+## 搜索、筛选、排序和列设置
+
+通过列元数据配置搜索，点击搜索按钮或按 Enter 应用。列设置支持显示、隐藏、固定及顺序调整；密度控制行间距。打开可排序表头菜单，选择升序、降序、清除排序或隐藏该列。
+
+<ComponentPreview name="block-table-demo" align="start" />
+
+## 自由组合与独立控件
+
+刷新、列设置和密度都是可单独引用的共享 block 控件。表格不预设业务头部，通过 `children` 渲染回调按业务需要组合 `DataTableRefresh`、`DataTableColumnSettings`、`DataTableDensity` 和 `DataTableSearch`。回调提供表格实例、密度及其更新回调、刷新回调、加载状态、标签、默认列设置和 `content`。`content` 包含表格列头、表体、加载状态、分页和批量操作；可把业务标题、搜索和控件放在它的任意位置。
+
+<ComponentPreview name="block-table-header" align="start" />
+
+## 搜索位置与布局
+
+`DataTableSearch` 不依赖头部，可以和标题或操作按钮同排、独占一行，也可以放在 `content` 后面。通过 `className` 控制位置与宽度。`layout="inline"` 让输入、筛选和按钮靠在一起并按可用宽度换行；默认的 `layout="stacked"` 保留窄屏上下排列、桌面搜索与操作分开的布局。
+
+基础示例将搜索放在独立行，自由组合示例将它放在标题旁。下面把搜索和状态筛选放在表格及分页后，并用 `className="justify-end"` 靠右排列。输入或选择只是修改条件草稿，点击搜索或按 Enter 才应用，重置会清除条件。
+
+<ComponentPreview name="block-table-search" align="start" />
+
+## 选择、行操作和批量操作
+
+用 SUI Checkbox 添加 `select` 列。`bulkToolbar` 回调接收已选行和表格实例。工具列 `select`、`drag` 默认固定在起始侧，`actions`、`operation` 固定在末尾。
+
+<ComponentPreview name="block-table-selection" align="start" />
+
+## 固定列、分组表头与内容对齐
+
+组合选择、长文本、居中状态、右对齐金额和操作列，验证不同密度及拖拽模式。`layout="full"` 在有限高度中滚动，分组表头按实际行高固定，固定列保持与整行一致的悬停和选中背景。
+
+本例有两层表头：“项目”包含 ID 和域名，“详情”包含状态和金额。上层是分组标题，下层是具体列名；普通列定义只生成一层表头。
+
+<ComponentPreview name="block-table-layout" align="start" />
+
+## 拖拽排序和空状态
+
+提供稳定行 ID，并保存回调中的新顺序。拖拽模式关闭普通排序和分页，以保持显示顺序一致。拖拽手柄也支持键盘：空格拾起、方向键移动、空格放下。
+
+<ComponentPreview name="block-table-drag" align="start" />
+
+## 请求数据
+
+传入引用稳定的 `request` 回调，返回 `{ data, total }`。回调接收分页、排序和列筛选状态，由服务端应用这些操作。旧请求晚到的结果会被忽略。这里使用本地异步适配器演示。不返回 `total` 时使用顺序分页，遇到不足一页的数据后停止翻页。在头部组合 `DataTableRefresh` 重新请求数据，失败后可在空状态中重试。
+
+<ComponentPreview name="block-table-request" align="start" />
+
+## 加载、空数据和请求失败
+
+首次加载使用 SUI Skeleton，已有数据时在表格上显示居中加载浮层，空状态和请求失败使用 SUI Empty。通过 `labels` 覆盖提示文案。
+
+<ComponentPreview name="block-table-states" align="start" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+使用上方 shadcn CLI 命令安装此 Block。按照[安装指南](/zh-CN/docs/installation)配置 registry、依赖和样式。下方示例使用工作区导入路径；registry 安装的源码使用消费应用 `components.json` 配置的别名。
+
+## 使用
+
+```tsx
+import { DataTable, DataTableSearch, type DataTableColumnDef } from "@workspace/ui/blocks/data-table"
+
+type Project = { id: string; name: string }
+const columns: DataTableColumnDef<Project>[] = [
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "name", header: "名称", meta: { search: true } },
+]
+
+<DataTable
+  columns={columns}
+  data={[{ id: "1", name: "SUI" }]}
+  rowKey="id"
+  layout="auto"
+  label="项目列表"
+>
+  {({ table, loading, labels, content }) => (
+    <>
+      <DataTableSearch table={table} disabled={loading} labels={labels} />
+      {content}
+    </>
+  )}
+</DataTable>
+```
+
+## API
+
+| 属性 | 说明 |
+| --- | --- |
+| `columns`、`data` | TanStack Table v9 列定义和本地记录。 |
+| `rowKey` | 记录字段或返回稳定 ID 的函数，用于可靠的选择与拖拽。 |
+| `request` | 接收 `DataTableState`，同步或异步返回 `{ data, total? }`。 |
+| `initialState`、`onChange` | 初始分页、排序、列筛选状态及变更通知。 |
+| `children` | 渲染回调，接收表格状态及 `content`，使用方自行布局。省略时直接显示表格内容。 |
+| `bulkToolbar` | 内容或渲染回调，接收 `DataTableRenderContext`，包括表格、当前行、选择、密度及更新回调、刷新、加载状态、标签和默认列设置。 |
+| `pagination` | 设为 `false` 显示全部本地数据。 |
+| `dragSort` | `{ rowKey, onDragSortEnd }`，使用方保存新顺序。 |
+| `loading` | 布尔值或 `{ rows }`，控制骨架行数。 |
+| `layout` | `auto` 适应内容高度，`full` 适合有高度限制的应用容器。 |
+| `table` | `{ stickyHeader, manual, pinning }`，`manual` 跳过本地筛选和分页，排序仍在本地执行。 |
+| `labels`、`label` | `TableLabels` 的部分覆盖与表格可访问名称。控件默认英文，翻译由应用传入。 |
+
+列元数据支持 `search`、`filter: { options, multiple, onFilter }`、`align` 和 `pinned`。可通过 `useDataTableUrlState` 将分页、排序和筛选同步到路由查询参数，无需在共享 UI 中引入路由依赖。
+
+## 可组合部件
+
+共享模块还导出 `DataTableRefresh`、`DataTableColumnSettings`、`DataTableDensity`、`DataTableColumnHeader`、`DataTableFacetedFilter`、`DataTableSearch`、`DataTablePagination` 和 `DataTableBulkActions`，可接收 `@workspace/ui/blocks/data-table/types` 中的表格或列实例。
+
+`DataTableDensity` 使用受控的 `value` / `onValueChange`，`DataTableRefresh` 使用 `onRefresh` / `loading`。
+
+拆分参考 [shadcn-admin data-table](https://github.com/satnaing/shadcn-admin/tree/main/src/components/data-table)，并适配 SUI 的 Base UI 组件和 TanStack Table v9。
+
+### 应用负责翻译
+
+Block 只内置英文默认文案，不包含 locale 判断或国际化依赖。应用自行维护翻译，通过 `labels` 传入 `TableLabels` 的部分覆盖。`searchPlaceholder`、`paginationPage`、`paginationTotalRows`、`bulkAnnouncement` 等函数文案由应用处理插值和复数规则。组合控件应使用 render callback 提供的已解析 `labels`，保证文案一致。
+
+```tsx
+<DataTable
+  columns={columns}
+  data={rows}
+  labels={{ search: t("table.search"), noData: t("table.empty"), paginationPage: (page) => t("table.page", { page }) }}
+/>
+```

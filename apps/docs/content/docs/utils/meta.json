@@ -1,0 +1,5 @@
+{
+  "title": "Utilities",
+  "defaultOpen": true,
+  "pages": ["!index", "scroll-fade", "shimmer"]
+}

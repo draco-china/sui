@@ -1,0 +1,97 @@
+---
+title: Resizable
+description: "通过键盘支持可访问可调整大小的面板组和布局"
+base: base
+component: true
+links:
+  doc: https://github.com/bvaughn/react-resizable-panels
+  api: https://github.com/bvaughn/react-resizable-panels/tree/main/packages/react-resizable-panels
+---
+
+<ComponentPreview name="resizable-demo" previewClassName="h-80" />
+
+## 关于 [#about]
+
+`Resizable` 组件是由 [bvaughn](https://github.com/bvaughn) 构建在 [react-ressized-panels](https://github.com/bvaughn/react-resizable-panels)] 之上。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/resizable
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@workspace/ui/components/resizable"
+```
+
+```tsx showLineNumbers
+<ResizablePanelGroup orientation="horizontal">
+  <ResizablePanel>One</ResizablePanel>
+  <ResizableHandle />
+  <ResizablePanel>Two</ResizablePanel>
+</ResizablePanelGroup>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `ResizablePanelGroup`：
+
+```text
+ResizablePanelGroup
+├── ResizablePanel
+├── ResizableHandle
+└── ResizablePanel
+```
+
+## 垂直布局 [#vertical]
+
+使用 `orientation="vertical"` 进行垂直调整大小。
+
+<ComponentPreview name="resizable-vertical" />
+
+## 拖动手柄 [#handle]
+
+在 `ResizableHandle` 上使用 `withHandle` 属性来显示可见的手柄。
+
+<ComponentPreview name="resizable-handle" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="resizable-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅 [react-ressized-panels](https://github.com/bvaughn/react-resizable-panels/tree/main/packages/react-resizable-panels) 文档。
+
+## 更新记录 [#changelog]
+
+### 2025-02-02 `react-resizable-panels` v4 [#2025-02-02-react-resizable-panels-v4]
+
+已更新到 `react-resizable-panels` v4。完整变更见 [v4.0.0 发布说明](https://github.com/bvaughn/react-resizable-panels/releases/tag/4.0.0)。
+
+直接使用 `react-resizable-panels` 底层组件时，请注意以下变更：
+
+| v3                           | v4                      |
+| ---------------------------- | ----------------------- |
+| `PanelGroup`                 | `Group`                 |
+| `PanelResizeHandle`          | `Separator`             |
+| `direction` prop             | `orientation` prop      |
+| `defaultSize={50}`           | `defaultSize="50%"`     |
+| `onLayout`                   | `onLayoutChange`        |
+| `ImperativePanelHandle`      | `PanelImperativeHandle` |
+| `ref` prop on Panel          | `panelRef` prop         |
+| `data-panel-group-direction` | `aria-orientation`      |
+
+<Callout>
+  shadcn/ui 的样式组件（`ResizablePanelGroup`、`ResizablePanel` 与 `ResizableHandle`）保持不变。
+</Callout>

@@ -1,0 +1,159 @@
+---
+title: Sensitive Input
+description: 使用固定遮罩的敏感内容输入框，支持点击揭示、键盘操作与复制反馈
+links:
+  doc: https://base-ui.com/react/components/input
+  api: https://base-ui.com/react/components/input#api-reference
+---
+
+<ComponentPreview name="sensitive-input-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/sensitive-input
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { SensitiveInput } from "@workspace/ui/components/sensitive-input";
+
+<SensitiveInput
+  aria-label="密码"
+  autoComplete="current-password"
+  defaultValue="example-password"
+  labels={{
+    reveal: "点击显示",
+    instruction: "点击或按 Enter 显示内容",
+    hidden: "内容已隐藏",
+    show: "显示密码",
+    hide: "隐藏密码",
+    copy: "复制密码",
+    pending: "正在复制密码…",
+    copied: "已复制密码",
+    failed: "复制失败，请重试",
+  }}
+/>;
+```
+
+非空内容在隐藏时被固定的 `••••••••` 遮罩覆盖，与实际长度无关。原生输入框仍然挂载在下面，但需要先显示内容才能编辑。悬停或聚焦控件时，会显示“点击显示”的提示，不改变布局。
+
+点击遮罩，或用 Tab 聚焦揭示按钮后按 Enter 或 Space，会显示真实输入框并聚焦它。显示后的输入框使用 `type="text"`；眼睛按钮可以再次隐藏内容。按 Escape 会恢复遮罩，并将焦点移到揭示按钮。显示、隐藏和复制按钮均使用 `type="button"`，不会提交所在表单。
+
+空值没有遮罩，可以直接编辑，首次输入会请求显示内容。焦点离开整个输入组时，非空内容会重新遮罩；焦点在输入框与内部复制、眼睛按钮之间移动时，保留当前状态。
+
+## 复制当前值 [#copying-the-current-value]
+
+`copyable` 默认为 `true`。点击内置复制按钮时，会读取原生输入框当前的实际 `value`，包括非受控模式下编辑后的值，以及表单重置恢复后的值，不会复制过时的初始值。内容隐藏或只读时仍可复制，复制也不会改变显隐状态。
+
+复制控件是输入组右上边缘上方的文字标签，悬停或焦点位于输入组内时显示。其宽度为进行中、已复制和失败反馈预留空间，状态变化不会引起布局移动。空值仍保留复制按钮，可以复制空字符串。
+
+写入剪贴板期间，按钮显示进行中状态并阻止重复操作。只有写入完成后才显示成功。成功反馈在 `resetDelay` 毫秒后恢复，默认 `1500` 毫秒。失败时提供通用反馈，并允许重试；反馈中不会包含敏感内容。
+
+`onCopySuccess` 接收成功写入的值，`onCopyError` 在写入失败时接收 `Error`。可以用回调更新状态，但不要把敏感值渲染到界面或写入日志。例如，通过原生 ref 比较当前输入，只展示是否匹配：
+
+```tsx
+import { SensitiveInput } from "@workspace/ui/components/sensitive-input";
+import { useRef, useState } from "react";
+
+export function CopyVerification() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [matches, setMatches] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <>
+      <SensitiveInput
+        ref={inputRef}
+        aria-label="API 密钥"
+        defaultValue="example-api-key"
+        labels={{
+          reveal: "点击显示",
+          instruction: "点击或按 Enter 显示内容",
+          hidden: "内容已隐藏",
+          show: "显示密钥",
+          hide: "隐藏密钥",
+          copy: "复制密钥",
+          pending: "正在复制密钥…",
+          copied: "已复制密钥",
+          failed: "复制失败，请重试",
+        }}
+        onCopySuccess={(value) => {
+          setFailed(false);
+          setMatches(value === inputRef.current?.value);
+        }}
+        onCopyError={() => {
+          setFailed(true);
+          setMatches(null);
+        }}
+      />
+      <output aria-live="polite">
+        {failed && "复制失败，请重试"}
+        {!failed && matches === null && "尚未复制"}
+        {!failed && matches !== null && (
+          matches
+            ? "复制值与当前输入匹配"
+            : "复制值与当前输入不匹配"
+        )}
+      </output>
+    </>
+  );
+}
+```
+
+输入框的原生 `onCopy` 保持为选中文字后进行复制时的剪贴板事件处理函数。内置按钮的异步复制结果通过 `onCopySuccess` 通知。
+
+## 受控状态 [#controlled-state]
+
+通过原生 `value` 与 `onChange` 控制输入值。显隐状态单独管理：可使用 `visible` 与 `onVisibleChange`，或用 `defaultVisible` 设置非受控模式的初始状态。
+
+受控 `visible` 决定最终状态。点击、键盘操作、空字段首次输入和焦点离开输入组时，会通过 `onVisibleChange` 请求改变状态；在该回调中更新 `visible`，即可接受这些请求。复制始终读取当前原生输入值，绝不会请求改变显隐状态。
+
+此示例通过 `ref` 核对复制值，展示原生 `onCopy` 事件次数，反馈中不显示任何敏感内容。
+
+<ComponentPreview name="sensitive-input-controlled" />
+
+## 只读与禁用 [#read-only-and-disabled]
+
+`readOnly` 禁止编辑，但仍可通过指针或键盘揭示、隐藏和复制内容。`disabled` 禁止输入、揭示、隐藏与复制。设置 `copyable={false}` 只会移除内置复制按钮，揭示、编辑和原生输入事件仍然可用。
+
+示例还包含空字段：可以直接输入，然后将焦点移出输入组，观察非空内容重新被遮罩。
+
+<ComponentPreview name="sensitive-input-states" />
+
+## 组合与表单 [#composition]
+
+Sensitive Input 组合了 `InputGroup`、`InputGroupInput`、`InputGroupAddon` 与 `InputGroupButton`。外层可使用常规 `Field`、`FieldLabel` 与 `FieldDescription`；可见标签应关联输入框的 `id`。
+
+`className` 调整输入组样式，`inputClassName` 调整输入框样式。`ref` 指向原生输入框；`name`、`form`、`required`、`autoComplete`、`aria-describedby` 等原生属性会透传到输入框。
+
+首个示例使用非受控表单，并提供明确的提交和重置按钮。复制与切换显隐不会增加提交次数。提交时，将 `FormData` 与当前原生输入值比较，不显示敏感值；重置会恢复 `defaultValue` 并清除反馈。编辑并复制后，再重置并复制：另一条布尔反馈会核对复制值是否与初始默认值匹配。两处反馈都不显示具体内容。受控模式下，请在表单的 `onReset` 中重置应用管理的输入值。
+
+## 无障碍 [#accessibility]
+
+为输入框提供关联的可见标签或 `aria-label`。遮罩上的原生揭示按钮可通过 Tab 聚焦，并用 Enter 或 Space 激活。说明文字介绍揭示方式，状态消息播报内容已经隐藏。被遮罩的原生输入框仍然挂载，以保留原生 ref 和表单数据。
+
+显示后的输入框支持正常键盘编辑。Escape 将焦点移回揭示按钮；离开输入组会请求重新遮罩，内部焦点移动则保持状态。显隐动作通过 `aria-controls` 关联输入框，眼睛图标仅用于装饰。复制按钮关联同一输入框，通过 `aria-busy` 表达进行中状态；复制反馈由状态区域播报。
+
+使用 `labels.reveal` 本地化可见的揭示提示，使用 `labels.instruction` 本地化键盘说明，使用 `labels.hidden` 本地化内容已隐藏的播报。`labels.show` 与 `labels.hide` 用于动作名称，`labels.copy`、`labels.pending`、`labels.copied` 与 `labels.failed` 用于复制反馈。失败提示应说明可执行的下一步，不包含敏感数据。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `visible` | `boolean` | — | 受控显隐状态 |
+| `defaultVisible` | `boolean` | `false` | 非受控模式的初始显隐状态 |
+| `onVisibleChange` | `(visible: boolean) => void` | — | 指针、键盘、首次输入或离组失焦请求改变显隐状态时调用 |
+| `copyable` | `boolean` | `true` | 是否提供内置复制按钮 |
+| `onCopySuccess` | `(value: string) => void` | — | 当前值成功写入剪贴板后调用 |
+| `onCopyError` | `(error: Error) => void` | — | 写入剪贴板失败时调用 |
+| `resetDelay` | `number` | `1500` | 成功复制反馈的持续时间，单位为毫秒 |
+| `labels` | `{ reveal?: string; instruction?: string; hidden?: string; show?: string; hide?: string; copy?: string; pending?: string; copied?: string; failed?: string }` | 英文标签 | 揭示提示、键盘说明、隐藏播报、动作名称与复制反馈 |
+| `className` | `string` | — | 输入组的额外类名 |
+| `inputClassName` | `string` | — | 输入框的额外类名 |
+| `...props` | 除 `type` 外的原生输入框属性 | — | 包括 `value`、`defaultValue`、`onChange`、原生 `onCopy`、`ref`、`disabled` 与 `readOnly` |
+
+底层输入行为遵循 [Base UI Input API](https://base-ui.com/react/components/input#api-reference)。

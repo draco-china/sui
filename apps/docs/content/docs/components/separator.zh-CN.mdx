@@ -1,0 +1,57 @@
+---
+title: Separator
+description: "在视觉上或语义上分隔内容"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/separator
+  api: https://base-ui.com/react/components/separator#api-reference
+---
+
+<ComponentPreview name="separator-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/separator
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Separator } from "@workspace/ui/components/separator"
+```
+
+```tsx showLineNumbers
+<Separator />
+```
+
+## 垂直布局 [#vertical]
+
+使用 `orientation="vertical"` 作为垂直分离器。
+
+<ComponentPreview name="separator-vertical" />
+
+## 菜单组合 [#menu]
+
+带有描述的菜单项之间的垂直分隔符。
+
+<ComponentPreview name="separator-menu" />
+
+## 列表组合 [#list]
+
+列表项之间的水平分隔符。
+
+<ComponentPreview name="separator-list" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="separator-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI Separator](https://base-ui.com/react/components/separator#api-reference) 文档。

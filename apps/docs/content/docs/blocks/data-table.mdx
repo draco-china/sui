@@ -1,0 +1,132 @@
+---
+title: DataTable
+description: A shared table block with search, filters, column settings, selection, pagination, and drag sorting.
+---
+
+DataTable composes SUI's [Table](/docs/components/table), Input, Combobox, Checkbox, Badge, Empty, Skeleton, and Pagination. Use the Table component directly for simple markup.
+
+## Search, filters, sorting, and column controls
+
+Search uses column metadata and the Search button or Enter. Column settings support visibility, pinning, and ordering. Density changes row spacing. Open a sortable header menu to choose ascending, descending, clear sorting, or hide the column.
+
+<ComponentPreview name="block-table-demo" align="start" />
+
+## Free composition and independent controls
+
+Refresh, column settings, and density are independently exported block controls. The table has no business header slot. Compose `DataTableRefresh`, `DataTableColumnSettings`, `DataTableDensity`, and `DataTableSearch` in the `children` render callback. It provides the table, density and setter, refresh callback, loading state, labels, default column settings, and `content`. The content includes column headers, rows, loading states, pagination, and bulk actions; arrange your title, search, and controls around it.
+
+<ComponentPreview name="block-table-header" align="start" />
+
+## Search placement and layout
+
+`DataTableSearch` can share a row with a title or actions, occupy its own row, or appear after `content`. Use `className` for placement and width. `layout="inline"` keeps inputs, filters, and actions together with wrapping; the default `layout="stacked"` retains stacked controls on narrow screens and separates fields from actions on desktop.
+
+The basic example uses a separate search row, and the composition example places it next to the title. Here search and status filters follow the table and pagination, aligned with `className="justify-end"`. Editing conditions changes the draft; Search or Enter applies it, and Reset clears it.
+
+<ComponentPreview name="block-table-search" align="start" />
+
+## Selection, row actions, and bulk actions
+
+Add a `select` column using SUI Checkbox. The `bulkToolbar` callback receives selected rows and the table instance. Utility columns `select` and `drag` pin to the start; `actions` and `operation` pin to the end.
+
+<ComponentPreview name="block-table-selection" align="start" />
+
+## Pinned columns, grouped headers, and alignment
+
+Combine selection, long text, centered status, end-aligned amounts, and row actions. Try density settings and drag mode. `layout="full"` scrolls within a constrained height; grouped headers stick at their measured offsets and pinned cells share the row's hover and selection surface.
+
+This example has two header levels: Project groups ID and Domain, while Details groups Status and Amount. The upper row names the groups and the lower row names the columns. Flat column definitions produce a single header row.
+
+<ComponentPreview name="block-table-layout" align="start" />
+
+## Drag sorting and empty state
+
+Supply stable row IDs and handle the reordered records. Drag sorting disables sorting and pagination to keep displayed order consistent. The handle also supports keyboard dragging: Space to pick up, arrow keys to move, and Space to drop.
+
+<ComponentPreview name="block-table-drag" align="start" />
+
+## Requested data
+
+Provide a stable `request` callback returning `{ data, total }`. The callback receives pagination, sorting, and column filters; it applies those operations on the server. Late responses from previous requests are ignored. This example uses a local asynchronous adapter. Without `total`, pagination uses sequential controls and stops after a short page. Compose `DataTableRefresh` in the header to reload requested data. Request failures offer retry.
+
+<ComponentPreview name="block-table-request" align="start" />
+
+## Loading, empty, and failed requests
+
+First load uses SUI Skeleton. Existing rows remain under a centered loading overlay; empty and failed requests use SUI Empty. Override messages through `labels`.
+
+<ComponentPreview name="block-table-states" align="start" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+Install this Block with the shadcn CLI command above. Follow the [installation guide](/docs/installation) for registry, dependency, and style setup. The examples below use workspace imports; registry-installed source uses the aliases configured in the consuming application's `components.json`.
+
+## Usage
+
+```tsx
+import { DataTable, DataTableSearch, type DataTableColumnDef } from "@workspace/ui/blocks/data-table"
+
+type Project = { id: string; name: string }
+const columns: DataTableColumnDef<Project>[] = [
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "name", header: "Name", meta: { search: true } },
+]
+
+<DataTable
+  columns={columns}
+  data={[{ id: "1", name: "SUI" }]}
+  rowKey="id"
+  layout="auto"
+  label="Projects"
+>
+  {({ table, loading, labels, content }) => (
+    <>
+      <DataTableSearch table={table} disabled={loading} labels={labels} />
+      {content}
+    </>
+  )}
+</DataTable>
+```
+
+## API
+
+| Prop | Description |
+| --- | --- |
+| `columns`, `data` | TanStack Table v9 columns and local records. |
+| `rowKey` | A record key or function returning a stable ID. Required for reliable selection and dragging. |
+| `request` | Receives `DataTableState`, returns `{ data, total? }` synchronously or asynchronously. |
+| `initialState`, `onChange` | Initial pagination, sorting, and column filters, and change notifications. |
+| `children` | Render callback receiving table state and `content` for caller-owned layout. Omit it to render just the table content. |
+| `bulkToolbar` | Content or render callbacks receiving `DataTableRenderContext` with table, rows, selection, density and setter, refresh, loading, labels, and default column settings. |
+| `pagination` | Set `false` to show all local rows. |
+| `dragSort` | `{ rowKey, onDragSortEnd }`; consumers store the resulting order. |
+| `loading` | Boolean or `{ rows }` for first-load skeleton count; existing rows use a centered loading overlay. |
+| `layout` | `auto` for content height; `full` for a constrained application container. |
+| `table` | `{ stickyHeader, manual, pinning }`; `manual` skips local filtering and pagination, while sorting stays local. |
+| `labels`, `label` | Partial `TableLabels` overrides and the accessible table name. Controls default to English; translations are supplied by your application. |
+
+Column metadata supports `search`, `filter: { options, multiple, onFilter }`, `align`, and `pinned`. Use `useDataTableUrlState` to connect pagination, sorting, and filters to your router's search parameters without importing a router into the UI package.
+
+## Composition
+
+The shared block also exports `DataTableRefresh`, `DataTableColumnSettings`, `DataTableDensity`, `DataTableColumnHeader`, `DataTableFacetedFilter`, `DataTableSearch`, `DataTablePagination`, and `DataTableBulkActions`. They accept the typed table or column instance from `@workspace/ui/blocks/data-table/types`.
+
+`DataTableDensity` uses controlled `value`/`onValueChange`; `DataTableRefresh` uses `onRefresh`/`loading`.
+
+Their separation follows the [shadcn-admin data-table patterns](https://github.com/satnaing/shadcn-admin/tree/main/src/components/data-table), adapted to SUI Base UI components and TanStack Table v9.
+
+### Application translations
+
+The block ships English defaults only and has no locale or i18n dependency. Keep translations in your application and pass a partial `TableLabels` object through `labels`. Function labels such as `searchPlaceholder`, `paginationPage`, `paginationTotalRows`, and `bulkAnnouncement` let your application handle interpolation and plural rules. Pass the resolved `labels` from the render callback to composed controls so they use the same translations.
+
+```tsx
+<DataTable
+  columns={columns}
+  data={rows}
+  labels={{ search: t("table.search"), noData: t("table.empty"), paginationPage: (page) => t("table.page", { page }) }}
+/>
+```

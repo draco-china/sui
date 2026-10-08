@@ -1,0 +1,67 @@
+---
+title: Slider
+description: An input where the user selects a value from within a given range.
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/slider
+  api: https://base-ui.com/react/components/slider#api-reference
+---
+
+<ComponentPreview name="slider-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/slider
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { Slider } from "@workspace/ui/components/slider"
+```
+
+```tsx
+<Slider defaultValue={[33]} max={100} step={1} />
+```
+
+## Range
+
+Use an array with two values for a range slider.
+
+<ComponentPreview name="slider-range" />
+
+## Multiple Thumbs
+
+Use an array with multiple values for multiple thumbs.
+
+<ComponentPreview name="slider-multiple" />
+
+## Vertical
+
+Use `orientation="vertical"` for a vertical slider.
+
+<ComponentPreview name="slider-vertical" />
+
+## Controlled
+
+<ComponentPreview name="slider-controlled" />
+
+## Disabled
+
+Use the `disabled` prop to disable the slider.
+
+<ComponentPreview name="slider-disabled" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="slider-rtl" direction="rtl" />
+
+## API Reference
+
+See the [Base UI Slider](https://base-ui.com/react/components/slider#api-reference) documentation.

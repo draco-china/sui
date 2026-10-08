@@ -1,0 +1,70 @@
+---
+title: Toast
+description: "暂时显示的简洁消息"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/toast
+  api: https://base-ui.com/react/components/toast#api-reference
+---
+
+<ComponentPreview name="toast-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/toast
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { toast } from "@workspace/ui/components/toast"
+```
+
+```tsx
+toast.add({
+  title: "Event created",
+  description: "Sunday, December 3 at 9:00 AM",
+})
+```
+
+## 类型 [#types]
+
+设置 `type` 选项以呈现状态图标。内置渲染器可以识别
+`success`、`info`、`warning`、`error` 和 `loading`。
+
+<ComponentPreview name="toast-types" />
+
+## 操作 [#action]
+
+使用 `actionProps` 传递按钮属性来渲染动作。
+
+```tsx
+const id = toast.add({
+  title: "Event created",
+  actionProps: {
+    children: "Undo",
+    onClick() {
+      toast.close(id)
+    },
+  },
+})
+```
+
+## 异步任务 [#promise]
+
+当异步任务移动时，使用 `toast.promise` 更新一个 Toast
+加载、成功和错误状态。
+
+<ComponentPreview name="toast-promise" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI Toast 文档](https://base-ui.com/react/components/toast)
+有关管理器选项、堆叠、滑动消除和原语的详细信息
+API。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/toast#api-reference)。

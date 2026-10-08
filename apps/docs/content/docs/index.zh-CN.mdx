@@ -1,0 +1,51 @@
+---
+title: 简介
+description: 从一个组件开始，构建属于你的界面
+---
+
+SUI 是基于 Base UI 与 Tailwind CSS 4 构建的可组合 React 组件集合，为表单、导航、反馈和内容展示提供一致的视觉基础。源码保存在 `packages/ui` 中，你可以直接阅读、修改，并按照应用需求自由组合。
+
+## 从这里开始 [#start-here]
+
+1. **接入应用。** 按照[安装指南](/zh-CN/docs/installation)添加工作区依赖、加载共享样式，并配置 Tailwind 扫描组件源码。
+2. **试用组件。** 浏览[组件目录](/zh-CN/docs/components)，每个页面都提供交互预览和完整示例源码。
+3. **调整风格。** 通过[主题指南](/zh-CN/docs/theming)设置颜色与 CSS 变量，参考[设计指南](/zh-CN/docs/design-guidelines)统一字体、间距、表面和动效。
+
+SUI 当前通过 Bun 工作区中的私有包 `@workspace/ui` 使用，尚未发布 SUI registry 或独立安装命令。复制示例前，请先完成安装指南中的配置。
+
+## 第一个组件 [#your-first-component]
+
+完成接入后，从组件各自的模块导入：
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+export function SaveButton() {
+  return <Button>Save changes</Button>;
+}
+```
+
+文档预览与应用使用同一个共享包。代码标签展示包含导入和组合方式的完整示例文件，中英文页面共用这些示例。
+
+## 找到需要的组件 [#find-the-right-pieces]
+
+| 构建场景 | 推荐起点 |
+| --- | --- |
+| 表单与设置 | [Field](/zh-CN/docs/components/field)、[Input](/zh-CN/docs/components/input)、[Select](/zh-CN/docs/components/select)、[Switch](/zh-CN/docs/components/switch) |
+| 导航与反馈 | [Tabs](/zh-CN/docs/components/tabs)、[Dialog](/zh-CN/docs/components/dialog)、[Toast](/zh-CN/docs/components/toast) |
+| 内容与对话 | [Message](/zh-CN/docs/components/message)、[Markdown Viewer](/zh-CN/docs/components/markdown-viewer)、[Code Viewer](/zh-CN/docs/components/code-viewer) |
+| 可选玻璃表面 | [Glass](/zh-CN/docs/components/glass) |
+
+## 有目的地组合 [#compose-with-intent]
+
+组件通过具名子组件表达结构。对话框由触发器、内容、标题、说明和操作组成；表单字段由标签、控件、说明和错误信息组成。将关联部分放在一起，保持交互完整，也让每一步操作都有清晰的目的。
+
+Base UI 底层组件提供键盘交互、焦点管理和 ARIA 语义。应用仍需补充明确的标签、有用的说明和易于理解的反馈。请使用键盘与辅助技术验证自定义组合。
+
+## 使用源码与文档 [#work-with-the-source]
+
+- `packages/ui` 保存组件、共享 Hook、CSS 变量和强调色主题。
+- `apps/docs` 保存双语文档站与可运行示例。
+- [CSS 工具](/zh-CN/docs/utils)提供 Scroll Fade、Shimmer 等共享效果。
+
+使用编程助手时，可通过 [llms.txt](/zh-CN/llms.txt)获取文档索引，通过 [llms-full.txt](/zh-CN/llms-full.txt)读取完整参考内容与示例源码。各文档页也可以通过页面操作查看 Markdown。

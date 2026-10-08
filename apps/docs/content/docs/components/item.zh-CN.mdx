@@ -1,0 +1,252 @@
+---
+title: Item
+description: "一个多功能组件，用于显示带有媒体、标题、描述和操作的内容"
+base: base
+component: true
+---
+
+<ComponentPreview name="item-demo" />
+
+`Item` 组件是一个简单的弹性容器，几乎可以容纳任何类型的内容。使用它来显示标题、描述和操作。将其与 `ItemGroup` 组件分组以创建项目列表。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/item
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@workspace/ui/components/item"
+```
+
+```tsx showLineNumbers
+<Item>
+  <ItemMedia variant="icon">
+    <Icon />
+  </ItemMedia>
+  <ItemContent>
+    <ItemTitle>Title</ItemTitle>
+    <ItemDescription>Description</ItemDescription>
+  </ItemContent>
+  <ItemActions>
+    <Button>Action</Button>
+  </ItemActions>
+</Item>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Item`：
+
+```text
+ItemGroup
+└── Item
+    ├── ItemHeader
+    ├── ItemMedia
+    ├── ItemContent
+    │   ├── ItemTitle
+    │   └── ItemDescription
+    ├── ItemActions
+    └── ItemFooter
+```
+
+## Item 与 Field [#item-vs-field]
+
+如果需要显示表单输入（例如复选框、输入、单选或选择），请使用 `Field`。
+
+如果您只需要显示标题、描述和操作等内容，请使用`Item`。
+
+## 变体 [#variant]
+
+使用 `variant` 属性更改项目的视觉样式。
+
+<ComponentPreview name="item-variant" previewClassName="h-96" />
+
+## 尺寸 [#size]
+
+使用 `size` 属性更改项目的大小。可用尺寸为 `default`、`sm` 和 `xs`。
+
+<ComponentPreview name="item-size" previewClassName="h-96" />
+
+## 图标 [#icon]
+
+使用`ItemMedia`和`variant="icon"`来显示图标。
+
+<ComponentPreview name="item-icon" />
+
+## 头像组合 [#avatar]
+
+您可以使用`ItemMedia`和`variant="avatar"`来显示头像。
+
+<ComponentPreview name="item-avatar" />
+
+## 图片 [#image]
+
+使用`ItemMedia`和`variant="image"`来显示图像。
+
+<ComponentPreview name="item-image" />
+
+## 组合 [#group]
+
+使用 `ItemGroup` 将相关项目分组在一起。
+
+<ComponentPreview name="item-group" previewClassName="h-96" />
+
+## 页头 [#header]
+
+使用 `ItemHeader` 在项目内容上方添加标题。
+
+<ComponentPreview name="item-header" previewClassName="h-96" />
+
+## 链接 [#link]
+
+使用 `render` 属性将项目呈现为链接。悬停和焦点状态将应用于锚元素。
+
+<ComponentPreview name="item-link" />
+
+```tsx showLineNumbers
+<Item render={<a href="/dashboard" />}>
+  <ItemMedia variant="icon">
+    <HomeIcon />
+  </ItemMedia>
+  <ItemContent>
+    <ItemTitle>Dashboard</ItemTitle>
+    <ItemDescription>Overview of your account and activity.</ItemDescription>
+  </ItemContent>
+</Item>
+```
+
+## 下拉菜单 [#dropdown]
+
+<ComponentPreview name="item-dropdown" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="item-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### Item [#item]
+
+显示带有媒体、标题、描述和操作的内容的主要组件
+
+| 属性|类型 |默认 |
+| --------- | ----------------------------------- | ----------- |
+| `variant` | `"default" \| "outline" \| "muted"` | `"default"` |
+| `size` | `"default" \| "sm" \| "xs"` | `"default"` |
+| `render` | `React.ReactElement` |             |
+
+### ItemGroup [#itemgroup]
+
+将相关项目分组在一起并具有一致样式的容器。
+
+```tsx
+<ItemGroup>
+  <Item />
+  <Item />
+</ItemGroup>
+```
+
+### ItemSeparator [#itemseparator]
+
+组中项目之间的分隔符。
+
+```tsx
+<ItemGroup>
+  <Item />
+  <ItemSeparator />
+  <Item />
+</ItemGroup>
+```
+
+### ItemMedia [#itemmedia]
+
+使用 `ItemMedia` 显示图标、图像或头像等媒体内容
+
+| 属性|类型 |默认 |
+| --------- | -------------------------------- | ----------- |
+| `variant` | `"default" \| "icon" \| "image"` | `"default"` |
+
+```tsx
+<ItemMedia variant="icon">
+  <Icon />
+</ItemMedia>
+```
+
+```tsx
+<ItemMedia variant="image">
+  <img src="..." alt="..." />
+</ItemMedia>
+```
+
+### ItemContent [#itemcontent]
+
+包裹项目的标题和描述。
+
+```tsx
+<ItemContent>
+  <ItemTitle>Title</ItemTitle>
+  <ItemDescription>Description</ItemDescription>
+</ItemContent>
+```
+
+### ItemTitle [#itemtitle]
+
+显示项目的标题。
+
+```tsx
+<ItemTitle>Item Title</ItemTitle>
+```
+
+### ItemDescription [#itemdescription]
+
+显示项目的描述。
+
+```tsx
+<ItemDescription>Item description</ItemDescription>
+```
+
+### ItemActions [#itemactions]
+
+操作按钮或其他交互元素的容器。
+
+```tsx
+<ItemActions>
+  <Button>Action</Button>
+</ItemActions>
+```
+
+### ItemHeader [#itemheader]
+
+在项目内容上方显示标题。
+
+```tsx
+<Item>
+  <ItemHeader>Header</ItemHeader>
+  <ItemContent>...</ItemContent>
+</Item>
+```
+
+### ItemFooter [#itemfooter]
+
+在项目内容下方显示页脚。
+
+```tsx
+<Item>
+  <ItemContent>...</ItemContent>
+  <ItemFooter>Footer</ItemFooter>
+</Item>
+```

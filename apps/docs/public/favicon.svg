@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" fill="none">
+  <title>sui</title>
+  <circle cx="36" cy="36" r="30" fill="#17191c"/>
+  <path d="M36 6a30 30 0 0 1 0 60a15 15 0 0 0 0-30a15 15 0 0 1 0-30Z" fill="#fff"/>
+  <circle cx="36" cy="21" r="4" fill="#17191c"/>
+  <circle cx="36" cy="51" r="4" fill="#fff"/>
+  <circle cx="36" cy="36" r="30" stroke="#17191c" stroke-width="2"/>
+</svg>

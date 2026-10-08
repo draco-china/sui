@@ -1,0 +1,40 @@
+---
+title: 兼容性
+description: 应用职责、SSR、Worker 加载和浏览器能力
+---
+
+SUI 使用 React 19、Tailwind CSS 4 和 Base UI 基础交互。源码安装复用应用的别名和 CSS 入口，详见[安装指南](/zh-CN/docs/installation)。视觉体系使用 OKLCH 颜色、背景滤镜等现代 CSS 特性。
+
+## SSR 与应用状态 [#ssr-and-application-state]
+
+文档站使用 TanStack Start 和 SSR。依赖浏览器的 Viewer 和编辑器在挂载后初始化，加载期间显示基础内容或骨架。应用若区分服务端与客户端组件，应将交互组件放在客户端边界内，保留安装文件中的 `use client` 声明。
+
+主题持久化、语言路由、校验和业务请求由应用负责。ThemeToggle 和 LocaleToggle 接受受控值与回调。Blocks 提供英文默认文案，通过 `labels` 接收应用语言系统的翻译。标签、描述和校验信息使用 [Field](/zh-CN/docs/components/field)组合。
+
+## Editor Workers [#editor-workers]
+
+[Editor](/zh-CN/docs/components/editor) 在本地加载 Monaco 与 Workers，安装源码使用兼容 Vite 的 `?worker` 导入。其他构建工具需要提供等价的 Worker 接入，安装源码不会自动配置该构建工具。将安装的 `worker.d.ts` 包含在 TypeScript 的源码范围中。
+
+高亮失败时，CodeViewer 和 DiffViewer 仍可展示并复制原始内容。编辑器与 Viewer 复用基于 Shiki 的高亮基础。
+
+## 浏览器能力 [#browser-features]
+
+| 功能 | 应用注意事项 |
+| --- | --- |
+| 复制 | 是否可用由浏览器权限与安全上下文决定，组件提供失败反馈 |
+| 全屏 | 浏览器全屏是可选能力，权限或平台限制可能阻止进入 |
+| Glass | 默认使用 CSS + SVG，可选 WebGPU 增强在能力不足或取样失败时降级 |
+| 主题转场 | 切换组件遵循减少动态效果设置，也可直接更新主题 |
+| HTML 预览 | HtmlViewer 默认允许脚本且不允许同源权限，Editor 内置 HTML 预览禁用脚本 |
+
+跨域图片、iframe、视频、Canvas 与取样频率见 [Glass 限制](/zh-CN/docs/components/glass#limits)。透明表面应在实际背景上保持可读，必要时使用普通表面或更浓的材质。
+
+## 无障碍与方向 [#accessibility-and-direction]
+
+为纯图标操作组合可见标签或无障碍名称。弹窗保留标题，图片提供描述，加载与反馈文案从应用传入。基础交互提供键盘和焦点行为，替换原生控件的自定义结构可能改变这些行为。
+
+使用 [Direction](/zh-CN/docs/components/direction)提供 RTL 上下文，并保持应用的 `dir` 属性一致。Loader 和主题转场遵循减少动态效果偏好，应用新增动画也应考虑该设置。
+
+## 验证 [#verification]
+
+安装后运行消费应用的类型检查和生产构建，检查键盘流程、表单、浮层、复制反馈、主题和翻译文案。SUI 文档示例用于验证组件，不会替应用验证路由、持久化、业务请求或部署。

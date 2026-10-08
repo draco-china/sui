@@ -1,0 +1,123 @@
+---
+title: Select
+description: "显示选项列表供用户选择（由按钮触发）"
+base: base
+component: true
+featured: true
+links:
+  doc: https://base-ui.com/react/components/select
+  api: https://base-ui.com/react/components/select#api-reference
+---
+
+<ComponentPreview name="select-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/select
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
+```
+
+```tsx showLineNumbers
+const items = [
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
+  { label: "System", value: "system" },
+]
+
+<Select items={items}>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Theme" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      {items.map((item) => (
+        <SelectItem key={item.value} value={item.value}>
+          {item.label}
+        </SelectItem>
+      ))}
+    </SelectGroup>
+  </SelectContent>
+</Select>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Select`：
+
+```text
+Select
+├── SelectTrigger
+│   └── SelectValue
+└── SelectContent
+    ├── SelectGroup
+    │   ├── SelectLabel
+    │   ├── SelectItem
+    │   └── SelectItem
+    ├── SelectSeparator
+    └── SelectGroup
+        ├── SelectLabel
+        ├── SelectItem
+        └── SelectItem
+```
+
+## 将选项与触发器对齐 [#align-item-with-trigger]
+
+在`SelectContent`上使用`alignItemWithTrigger`来控制所选项目是否与触发器对齐。当 `true`（默认）时，弹出位置使所选项目出现在触发器上方。当 `false` 时，弹出窗口与触发边缘对齐。
+
+<ComponentPreview name="select-align-item" />
+
+## 分组 [#groups]
+
+使用 `SelectGroup`、`SelectLabel` 和 `SelectSeparator` 整理物品。
+
+<ComponentPreview name="select-groups" />
+
+## 可滚动区域 [#scrollable]
+
+包含许多滚动项目的选择。
+
+<ComponentPreview name="select-scrollable" />
+
+## 禁用状态 [#disabled]
+
+<ComponentPreview name="select-disabled" />
+
+## 无效状态 [#invalid]
+
+将 `data-invalid` 属性添加到 `Field` 组件，将 `aria-invalid` 属性添加到 `SelectTrigger` 组件以显示错误状态。
+
+```tsx showLineNumbers /data-invalid/ /aria-invalid/
+<Field data-invalid>
+  <FieldLabel>Fruit</FieldLabel>
+  <SelectTrigger aria-invalid>
+    <SelectValue />
+  </SelectTrigger>
+</Field>
+```
+
+<ComponentPreview name="select-invalid" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="select-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI Select](https://base-ui.com/react/components/select#api-reference) 文档。

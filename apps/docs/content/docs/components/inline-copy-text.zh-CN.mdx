@@ -1,0 +1,89 @@
+---
+title: Inline Copy Text
+description: 可读的行内代码，点击或键盘激活后复制其值
+component: true
+---
+
+<ComponentPreview name="inline-copy-text-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/inline-copy-text
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+```
+
+## 使用 [#usage]
+
+```tsx
+<p>运行 <InlineCopyText>bun run dev</InlineCopyText> 启动开发服务。</p>
+```
+
+这是紧凑、无边框的行内代码按钮，支持键盘操作，不会提交外层表单。按压时不缩放或位移；复制、成功与失败图标共享固定位置，反馈不会改变文本宽度。只有异步写入成功后才显示成功图标；失败会播报并传入 `onCopyError`。
+
+## 自定义展示内容 [#custom-display-content]
+
+当 `children` 为 React 元素而不是字符串时，必须显式设置 `value`。展示内容可以与复制的纯文本不同。使用 `variant="muted"` 让按钮融入周围正文。
+
+<ComponentPreview name="inline-copy-text-custom-value" />
+
+## 资源行 [#resource-row]
+
+外层添加未命名的 `group`，即可在整行悬停或焦点进入行内时显示复制图标。图标始终占据固定空间，只改变可见度；触屏设备保持可见。复制完成后，成功标记保留至反馈计时结束。
+
+```tsx
+<div className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground">
+  <span className="min-w-0 truncate text-sm">生产数据库</span>
+  <InlineCopyText labels={{ copy: "复制数据库 ID", copied: "数据库 ID 已复制" }}>
+    database_72c31
+  </InlineCopyText>
+</div>;
+```
+
+## 尺寸与禁用 [#size-and-disabled-state]
+
+使用 `size="sm"` 呈现紧凑文本、`truncate={false}` 展示完整内容，或用 `disabled` 禁用复制。
+
+<ComponentPreview name="inline-copy-text-disabled" />
+
+## 反馈 [#feedback]
+
+```tsx
+<InlineCopyText
+  value="workspace_72c31"
+  labels={{ copy: "复制工作区 ID", copied: "已复制", failed: "复制失败" }}
+  onCopy={(value) => console.log(value)}
+  onCopyError={(error) => console.error(error)}
+>
+  工作区 ID
+</InlineCopyText>
+```
+
+只有激活按钮后才访问剪贴板。Clipboard API 不可用时，可选择文本后手动复制。写入期间不能并发复制；过期的结果不会覆盖新值或已卸载组件的反馈。
+
+## API [#api]
+
+| 属性 | 类型 | 默认值 |
+| --- | --- | --- |
+| `children` | `ReactNode` | 必填 |
+| `value` | `string` | 字符串 children |
+| `variant` | `"default" \| "muted"` | `"default"` |
+| `size` | `"sm" \| "default"` | `"default"` |
+| `truncate` | `boolean` | `true` |
+| `iconVisibility` | `"hover"`（默认）或 `"always"`，控制空闲时是否始终显示复制图标。 |
+| `disabled` | `boolean` | `false` |
+| `resetDelay` | `number`，毫秒 | `1500` |
+| `onCopy` | `(value: string) => void` | — |
+| `onCopyError` | `(error: Error) => void` | — |
+| `labels` | `{ copy?, pending?, copied?, failed? }` | 英文文案 |
+
+使用 Base UI Button 原语，支持 `ref`、`render`、`onClick`、`className` 等属性。行内样式不继承普通 Button 的按压位移。在 `onClick` 中调用 `event.preventDefault()` 可取消复制。通过 `data-copy-status` 暴露 `idle`、`pending`、`copied` 或 `error` 状态。组合方式参见 [Base UI Button](https://base-ui.com/react/components/button)。
+
+## 图标形变 [#icon-motion]
+
+复制图标与成功勾选通过共享 `MorphIcon` 在同一 SVG 路径上形变，保留固定尺寸，遵循系统减少动态效果设置；进行中和失败也保留明确反馈。通用组件可从 `@workspace/ui/components/morph-icon` 直接导入，接受 `IconNode` 或路径字符串，通过 `icon` 变化触发形变，默认使用 `spring="snappy"` 与 `reducedMotion="user"`，尺寸、线宽与动画参数可覆盖；`CopyIcon` 位于 `@workspace/ui/components/copy-icon`，通过 `status` 或 `copied`、`pending`、`error` 控制反馈

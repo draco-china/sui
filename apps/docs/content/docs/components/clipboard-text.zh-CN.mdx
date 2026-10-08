@@ -1,0 +1,57 @@
+---
+title: Clipboard Text
+description: 可选择的文本字段，配备独立复制按钮和异步反馈
+component: true
+---
+
+<ComponentPreview name="clipboard-text-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/clipboard-text
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { ClipboardText } from "@workspace/ui/components/clipboard-text";
+```
+
+## 使用 [#usage]
+
+```tsx
+<ClipboardText text="bun run dev" />
+```
+
+展示的文本仍可手动选择。长文本仅在视觉上截断，悬停可查看完整值，复制按钮始终复制完整文本。
+
+## 分别设置展示值与复制值 [#display-and-copy-different-values]
+
+使用 `textToCopy` 展示简短标签，同时复制完整地址。`size` 支持 `sm`、`default` 和 `lg`。
+
+<ComponentPreview name="clipboard-text-display-value" />
+
+## 反馈与禁用状态 [#feedback-and-disabled-state]
+
+剪贴板写入成功后才显示成功状态，并调用 `onCopy`，参数为已复制的字符串。用 `onCopyError` 提供可见的失败提示。`labels` 可本地化操作说明及屏幕阅读器反馈。写入期间按钮禁用；禁用的字段无法发起复制。
+
+<ComponentPreview name="clipboard-text-feedback" />
+
+组件使用浏览器 Clipboard API。API 不可用或权限被拒绝时，会播报失败并调用 `onCopyError`，用户仍可选择文本后手动复制。渲染组件不会请求剪贴板权限。
+
+## API [#api]
+
+| 属性 | 类型 | 默认值 |
+| --- | --- | --- |
+| `text` | `string` | 必填 |
+| `textToCopy` | `string` | `text` |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` |
+| `disabled` | `boolean` | `false` |
+| `resetDelay` | `number`，毫秒 | `1500` |
+| `onCopy` | `(value: string) => void` | — |
+| `onCopyError` | `(error: Error) => void` | — |
+| `labels` | `{ copy?, pending?, copied?, failed? }` | 英文文案 |
+| `render` | React 元素或渲染函数 | `InputGroup` |
+
+支持根节点标准 `div` 属性及 ref，可用 `className` 或 Base UI 的 `render` 自定义。复制按钮复用 SUI [Input Group](/zh-CN/docs/components/input-group) 与 [Tooltip](/zh-CN/docs/components/tooltip)，异步状态通过 `data-copy-status="idle|pending|copied|error"` 暴露。组合与 ref 行为参见 [Base UI 文档](https://base-ui.com/react/handbook/composition)。

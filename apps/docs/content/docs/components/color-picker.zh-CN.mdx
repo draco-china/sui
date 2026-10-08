@@ -1,0 +1,74 @@
+---
+title: ColorPicker
+description: 通过饱和度区域、色相和透明度滑条、颜色值与预设色板选择颜色
+---
+
+<ComponentPreview name="color-picker-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/color-picker
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 用法 [#usage]
+
+```tsx
+import { ColorPicker } from "@workspace/ui/components/color-picker";
+import { useState } from "react";
+
+export function AccentColor() {
+  const [color, setColor] = useState("#007AFF");
+  return <ColorPicker value={color} onValueChange={setColor} />;
+}
+```
+
+使用 `value` 和 `onValueChange` 控制颜色，也可以通过 `defaultValue` 管理本地状态。HEX 接受三位或六位颜色，可省略 `#`；开启 `alpha` 后也支持四位和八位透明度颜色。回调输出统一为大写六位 HEX，开启透明度后输出八位 HEX。无效输入保留编辑内容并显示反馈，不改变当前有效颜色
+
+## 编辑格式 [#formats]
+
+格式选择器支持 HEX、RGB、HSL、HSB 和 OKLCH。RGB 可输入 `rgb(0 122 255)`；HSL 和 HSB 使用百分比，例如 `hsl(211 100% 50%)`。开启透明度后，可使用 `/ 0.5` 或 `/ 50%`。切换编辑格式保留当前颜色，回调仍输出 HEX
+
+OKLCH 可输入 `oklch(62.8% 0.2577 29.23 / 50%)`，亮度接受百分比或 0–1，色度接受数字或百分比（100% 对应 0.4），色相支持无单位角度、`deg`、`rad`、`grad` 和 `turn`。组件输出 sRGB HEX，超出 sRGB 色域的颜色会保持亮度与色相、降低色度后映射，再量化到八位通道，因此不会保留原始广色域值。输入采用明确数值，不支持 `none`、`calc()` 或相对颜色；亮度与透明度必须在有效范围内，色度不能为负
+
+## 透明度与内嵌布局 [#opacity]
+
+`inline` 直接显示整套控件。棋盘格区分透明色与黑白色；透明度变化输出八位 HEX。组件不会修改应用主题或持久化偏好
+
+<ComponentPreview name="color-picker-alpha" />
+
+## 色板与玻璃 [#swatches]
+
+通过 `swatches` 提供 HEX 色板，无效颜色和规范化后重复的颜色会被排除。`glass` 用于弹出层表面，饱和度区域与滑条保留颜色编码，色板按钮不重复嵌套玻璃效果
+
+<ComponentPreview name="color-picker-swatches" />
+
+## 键盘与屏幕取色 [#accessibility]
+
+聚焦饱和度区域后，左右方向键调整饱和度，上下方向键调整亮度，按住 Shift 增大步长；Home 和 End 将饱和度设为最小或最大。色相和透明度滑条沿用 Slider 键盘操作。Tab 切换控件，Escape 关闭弹出层并返回触发按钮。所有按钮使用 `type="button"`，不会提交外围表单
+
+屏幕取色按钮仅在安全上下文且浏览器支持时出现，取消后保留原值，卸载时取消进行中的取色请求。可通过 `eyeDropper={false}` 隐藏。使用 `labels` 翻译可访问标签与反馈。`id`、`aria-describedby`、`ref`、`size`、`variant` 等原生触发按钮属性会转发到按钮；`inline` 没有触发按钮，因此不使用这些属性
+
+## 组合方式 [#composition]
+
+同一模块导出 `ColorPickerArea`、`ColorPickerSlider` 与 `ColorPickerSwatches`。Area 和 Slider 接受 `color: HSVColor` 与 `onColorChange(color)`；Slider 通过 `channel="hue" | "alpha"` 指定通道。Swatches 接受 `value`、`swatches` 与 `onValueChange(value)`，多个控件可共用一份 HSV 状态。纯颜色转换函数通过 `@workspace/ui/lib/color/model` 导入，包括 `parseHexColor`、`colorToHex`、`parseColor`、`formatColor` 和 `colorToCSS`
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `value` | `string` | 受控 HEX 颜色 |
+| `defaultValue` | `string` | `"#0088FF"` |
+| `onValueChange` | `(value: string) => void` | 规范化后的颜色变化时调用 |
+| `alpha` | `boolean` | `false`，开启透明度与八位 HEX 输出 |
+| `swatches` | `readonly string[]` | `[]` |
+| `disabled` | `boolean` | 禁用全部交互 |
+| `inline` | `boolean` | `false`，无需弹出层直接显示控件 |
+| `glass` | `boolean` | `false`，弹出层材质 |
+| `eyeDropper` | `boolean` | `true`，取决于浏览器支持 |
+| `labels` | `Partial<ColorPickerLabels>` | 可访问标签与反馈 |
+| `contentClassName` | `string` | 弹出层样式 |
+
+模块同时导出组件与各个组合控件的属性类型。弹出层与滑条使用 [Base UI Popover](https://base-ui.com/react/components/popover) 和 [Slider](https://base-ui.com/react/components/slider)

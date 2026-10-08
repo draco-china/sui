@@ -1,0 +1,40 @@
+---
+title: Registry
+description: Understand SUI manifests, shared styles, and GitHub distribution.
+---
+
+The SUI registry distributes editable component source through the [CLI](/docs/cli) and [MCP](/docs/mcp). Configure the `@sui` namespace as described in [installation](/docs/installation).
+
+## GitHub files [#github-files]
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+`registry/r/registry.json` is the searchable catalog. `registry/r/button.json`, for example, contains the installation payload for Button. Names do not have a locale prefix; installed components use English defaults and accept application-owned text.
+
+| Item | Content |
+| --- | --- |
+| Component name, such as `button` | Component, transitive local files, dependencies, CSS, and theme tokens |
+| `data-table`, `delete-resource`, `tanstack-form` | A Block and its required source and styles |
+| `sui-style` | Shared theme and component CSS |
+| `sui-theme` | Theme helpers and shared styles |
+| `sui` | All components and Blocks |
+
+## Files and dependencies [#files-and-dependencies]
+
+Manifests use shadcn's registry schema. `dependencies` and `devDependencies` declare package versions. `files` contains source and targets resolved against application aliases; `css` and `cssVars` merge into the configured stylesheet.
+
+Each item is self-contained, including local hooks, helpers, declarations, and other components it imports. This avoids depending on a consumer's namespace or accidentally resolving a same-named component from another registry. The catalog describes items without duplicating their source; the individual payloads carry full content.
+
+The CLI rewrites imports to your aliases. Workspace imports in documentation are explained in the [import mapping](/docs/installation#import-installed-source). Installed theme values and source are editable; review their differences when adding SUI to an existing design system.
+
+## Update installed source [#updating-source]
+
+Preview changes with the [CLI](/docs/cli#review-an-update) before updating components and shared dependencies. Installation copies source; files do not automatically follow library changes. Keep your application's package-manager lockfile and review styles alongside local edits.
+
+LLM documentation lives on the documentation site's [text endpoints](/docs/llms-txt). Registry JSON supplies installation data; an MCP client starts the shadcn stdio server separately.

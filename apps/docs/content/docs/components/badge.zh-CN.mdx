@@ -1,0 +1,72 @@
+---
+title: Badge
+description: "显示徽章或看起来像徽章的组件"
+base: base
+component: true
+---
+
+<ComponentPreview name="badge-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/badge
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Badge } from "@workspace/ui/components/badge"
+```
+
+```tsx
+<Badge variant="default | outline | secondary | destructive">Badge</Badge>
+```
+
+## 变体 [#variants]
+
+使用 `variant` 属性更改徽章的变体。
+
+<ComponentPreview name="badge-variants" />
+
+## 带图标 [#with-icon]
+
+您可以在徽章内呈现一个图标。使用`data-icon="inline-start"`渲染左侧的图标，使用`data-icon="inline-end"`渲染右侧的图标。
+
+<ComponentPreview name="badge-icon" />
+
+## 带加载指示器 [#with-loader]
+
+您可以在徽章内渲染一个Loader。请记住将 `data-icon="inline-start"` 或 `data-icon="inline-end"` 属性添加到Loader中。
+
+<ComponentPreview name="badge-loading" />
+
+## 链接 [#link]
+
+使用 `render` 属性将链接渲染为徽章。
+
+<ComponentPreview name="badge-link" />
+
+## 自定义颜色 [#custom-colors]
+
+您可以通过向 `Badge` 组件添加自定义类（例如 `bg-green-50 dark:bg-green-800`）来自定义徽章的颜色。
+
+<ComponentPreview name="badge-colors" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="badge-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### 徽标 [#badge]
+`Badge` 组件显示徽章或看起来像徽章的组件
+
+| 属性 |类型 |默认 |
+| ----------- | -------------------------------------------------------------------------------------------------- | ----------- |
+| `variant` | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link"` | `"default"` |
+| `className` | `string` | - |

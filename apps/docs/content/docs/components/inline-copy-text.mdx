@@ -1,0 +1,89 @@
+---
+title: Inline Copy Text
+description: Inline code that stays readable and copies its value when activated.
+component: true
+---
+
+<ComponentPreview name="inline-copy-text-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/inline-copy-text
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+```
+
+## Usage
+
+```tsx
+<p>Run <InlineCopyText>bun run dev</InlineCopyText> to start.</p>
+```
+
+This is a compact, borderless inline code button with keyboard support. It does not submit a surrounding form. Pressing it does not scale or move the text; copy, success, and failure icons share a fixed position so feedback does not change its width. The check mark appears after the asynchronous write succeeds; failure is announced and sent to `onCopyError`.
+
+## Custom display content
+
+Set `value` whenever `children` is a React element rather than a string. The displayed content and copied plain text can differ. `variant="muted"` blends the control into surrounding prose.
+
+<ComponentPreview name="inline-copy-text-custom-value" />
+
+## Resource row
+
+Add an unnamed `group` to the enclosing row to reveal the copy icon when the row is hovered or receives focus within. The icon always reserves its space and changes only visibility; it remains visible on touch devices. A successful checkmark remains until the feedback timer resets.
+
+```tsx
+<div className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground">
+  <span className="min-w-0 truncate text-sm">Production database</span>
+  <InlineCopyText labels={{ copy: "Copy database ID", copied: "Database ID copied" }}>
+    database_72c31
+  </InlineCopyText>
+</div>;
+```
+
+## Size and disabled state
+
+Use `size="sm"` for compact text, `truncate={false}` to show the complete visible content, or `disabled` to prevent copying.
+
+<ComponentPreview name="inline-copy-text-disabled" />
+
+## Feedback
+
+```tsx
+<InlineCopyText
+  value="workspace_72c31"
+  labels={{ copy: "Copy workspace ID", copied: "Copied", failed: "Copy failed" }}
+  onCopy={(value) => console.log(value)}
+  onCopyError={(error) => console.error(error)}
+>
+  Workspace ID
+</InlineCopyText>
+```
+
+Clipboard access is requested only on activation. If Clipboard API access is unavailable, select and copy the text manually. Pending writes cannot overlap; stale writes cannot overwrite feedback for a changed value or an unmounted control.
+
+## API
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `children` | `ReactNode` | Required |
+| `value` | `string` | String children |
+| `variant` | `"default" \| "muted"` | `"default"` |
+| `size` | `"sm" \| "default"` | `"default"` |
+| `truncate` | `boolean` | `true` |
+| `iconVisibility` | `"hover"` (default) or `"always"`; controls whether the idle copy icon stays visible. |
+| `disabled` | `boolean` | `false` |
+| `resetDelay` | `number`, milliseconds | `1500` |
+| `onCopy` | `(value: string) => void` | — |
+| `onCopyError` | `(error: Error) => void` | — |
+| `labels` | `{ copy?, pending?, copied?, failed? }` | English labels |
+
+Uses the Base UI Button primitive and supports `ref`, `render`, `onClick`, and `className`. Its inline styling does not inherit the regular Button press movement. Calling `event.preventDefault()` in `onClick` cancels copying. `data-copy-status` exposes `idle`, `pending`, `copied`, or `error`. See [Base UI Button](https://base-ui.com/react/components/button) for composition.
+
+## Icon motion [#icon-motion]
+
+The copy icon morphs into the success checkmark on the same SVG path, keeps a fixed size, and respects reduced motion. Pending and error states retain their feedback. Import the generic `MorphIcon` from `@workspace/ui/components/morph-icon`: it accepts an `IconNode` or path string, animates changes to `icon`, and defaults to `spring="snappy"` and `reducedMotion="user"`. Size, stroke width, and animation options can be overridden. The `CopyIcon` adapter at `@workspace/ui/components/copy-icon` accepts `status` or the `copied`, `pending`, and `error` flags.

@@ -1,0 +1,40 @@
+---
+title: Registry
+description: 了解 SUI 条目、共享样式和 GitHub 分发方式
+---
+
+SUI registry 通过 [CLI](/zh-CN/docs/cli) 和 [MCP](/zh-CN/docs/mcp) 分发可编辑的组件源码。按照[安装指南](/zh-CN/docs/installation)配置 `@sui` 命名空间。
+
+## GitHub 文件 [#github-files]
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+`registry/r/registry.json` 是可搜索的目录索引，`registry/r/button.json` 等文件包含对应组件的安装内容。条目名称不带语言前缀，安装的组件使用英文默认文案，并接受应用提供的文本。
+
+| 条目 | 内容 |
+| --- | --- |
+| `button` 等组件名称 | 组件、传递的本地依赖文件、包依赖、CSS 和主题 token |
+| `data-table`、`delete-resource`、`tanstack-form` | Block 及其所需源码和样式 |
+| `sui-style` | 共享主题与组件 CSS |
+| `sui-theme` | 主题工具与共享样式 |
+| `sui` | 全部组件和 Blocks |
+
+## 文件与依赖 [#files-and-dependencies]
+
+条目使用 shadcn registry schema。`dependencies` 和 `devDependencies` 声明包版本，`files` 包含源码及根据应用别名解析的目标路径，`css` 和 `cssVars` 合并到配置的样式文件。
+
+每个条目自包含所需的本地 hooks、工具、类型声明和被引用组件。这样不会依赖消费应用的命名空间，也不会意外从其他 registry 安装同名组件。索引只描述条目，完整源码放在对应的安装文件中。
+
+CLI 根据别名重写导入，文档工作区路径的替换方式见[导入映射](/zh-CN/docs/installation#import-installed-source)。安装后的主题值和源码可以修改；接入已有设计系统时先检查差异。
+
+## 更新已安装源码 [#updating-source]
+
+通过 [CLI](/zh-CN/docs/cli#review-an-update) 预览变更后，再更新组件与共享依赖。安装属于源码复制，文件不会自动跟随组件库变更。保留应用的包管理器锁文件，并检查样式与本地修改。
+
+LLM 文档由文档站的[纯文本接口](/zh-CN/docs/llms-txt)提供。Registry JSON 用于安装数据，MCP 客户端则单独启动 shadcn stdio 服务。

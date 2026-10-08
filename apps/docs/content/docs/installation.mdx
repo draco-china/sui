@@ -1,0 +1,83 @@
+---
+title: Installation
+description: Install editable SUI source with the shadcn CLI.
+---
+
+Install SUI source through its shadcn registry. Components, styles, and dependencies integrate with your application configuration.
+
+## Install through the registry
+
+### Prepare the consuming application
+
+Use React 19, Tailwind CSS 4, and a shadcn project configured for Base UI. In an existing application that has not initialized shadcn, run:
+
+```bash
+bunx --bun shadcn@latest init --base base
+```
+
+Merge this entry into the application's existing `components.json`. Preserve its CSS path and aliases:
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+The catalog URL is `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`. Individual manifests use the same directory.
+
+### Search, inspect, and install
+
+Run the following commands from the consuming application directory:
+
+```bash
+bunx --bun shadcn@latest search @sui -q button
+bunx --bun shadcn@latest view @sui/button
+bunx --bun shadcn@latest add @sui/button @sui/editor
+```
+
+Install the business blocks by their registry names:
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+```
+
+To install the complete collection, including all components and blocks:
+
+```bash
+bunx --bun shadcn@latest add @sui/sui
+```
+
+Each manifest includes the item's local component dependencies, hooks, helpers, types, package dependencies, and SUI CSS and theme tokens. The CLI installs source into the directories configured by your aliases and merges styles into the configured Tailwind CSS file. Standalone entries `@sui/sui-style` and `@sui/sui-theme` provide the shared styles and theme helpers.
+
+Review the generated files and CSS when adding SUI to an application that already has components with the same names or custom theme values. Preview an update before applying it:
+
+```bash
+bunx --bun shadcn@latest add @sui/button --dry-run
+bunx --bun shadcn@latest add @sui/button --diff
+```
+
+Editor uses locally bundled Monaco workers and requires a Vite-compatible `?worker` loader. Keep the installed `worker.d.ts` in your TypeScript include paths. This also applies when installing the complete collection.
+
+Blocks default to English. Pass labels from your application's locale configuration to customize their visible text; see the [Data Table](/docs/blocks/data-table), [Delete Resource](/docs/blocks/delete-resource), and [TanStack Form](/docs/blocks/tanstack-form) references.
+
+### Import installed source
+
+With the default shadcn aliases, import from your own application:
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+export function SaveButton() {
+  return <Button>Save changes</Button>;
+}
+```
+
+Use the actual aliases in your `components.json` if they differ. Examples throughout this reference use workspace imports such as `@workspace/ui/components/button`. For a registry installation, replace `@workspace/ui/components/*` with your `ui` alias, `@workspace/ui/blocks/*` with your `components` alias followed by `/blocks/*`, and hook or helper imports with your `hooks` or `lib` alias. For example, the default aliases use `@/components/ui/button`, `@/components/blocks/data-table`, and `@/hooks/use-mobile`. The CLI adapts imports inside the installed files automatically.
+
+## Connect the shadcn MCP server [#connect-the-shadcn-mcp-server]
+
+The [MCP guide](/docs/mcp) covers client configuration, project working directories, example requests, and troubleshooting. MCP shares this application's `@sui` registry configuration. For API documentation and complete example text, use [LLMs](/docs/llms-txt).
+
+See [Theming](/docs/theming) for CSS tokens and [Compatibility](/docs/compatibility) for runtime requirements.

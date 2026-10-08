@@ -1,0 +1,110 @@
+---
+title: Input
+description: "用于表单和用户数据输入的文本输入组件，具有内置样式和辅助功能"
+base: base
+component: true
+---
+
+<ComponentPreview name="input-demo" previewClassName="*:max-w-xs" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/input
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Input } from "@workspace/ui/components/input"
+```
+
+```tsx
+<Input />
+```
+
+## 基本用法 [#basic]
+
+<ComponentPreview name="input-basic" previewClassName="*:max-w-xs" />
+
+## Field [#field]
+
+使用 `Field`、`FieldLabel` 和 `FieldDescription` 创建带有
+标签和说明。
+
+<ComponentPreview name="input-field" previewClassName="*:max-w-xs" />
+
+## 字段组 [#field-group]
+
+使用 `FieldGroup` 显示多个 `Field` 块并构建表单。
+
+<ComponentPreview name="input-fieldgroup" previewClassName="*:max-w-xs" />
+
+## 禁用状态 [#disabled]
+
+使用 `disabled` 属性禁用输入。要设置禁用状态的样式，请将 `data-disabled` 属性添加到 `Field` 组件。
+
+<ComponentPreview name="input-disabled" previewClassName="*:max-w-xs" />
+
+## 无效状态 [#invalid]
+
+使用 `aria-invalid` 属性将输入标记为无效。要设置无效状态的样式，请将 `data-invalid` 属性添加到 `Field` 组件。
+
+<ComponentPreview name="input-invalid" previewClassName="*:max-w-xs" />
+
+## 文件 [#file]
+
+使用 `type="file"` 属性创建文件输入。
+
+<ComponentPreview name="input-file" previewClassName="*:max-w-xs" />
+
+## 行内布局 [#inline]
+
+使用 `Field` 和 `orientation="horizontal"` 创建内联输入。
+与 `Button` 配对，通过按钮创建搜索输入。
+
+<ComponentPreview name="input-inline" previewClassName="*:max-w-xs" />
+
+## 网格布局 [#grid]
+
+使用网格布局并排放置多个输入。
+
+<ComponentPreview name="input-grid" previewClassName="p-6" />
+
+## 必填 [#required]
+
+使用 `required` 属性来指示所需的输入。
+
+<ComponentPreview name="input-required" previewClassName="*:max-w-xs" />
+
+## 徽标 [#badge]
+
+在标签中使用 `Badge` 突出显示推荐字段。
+
+<ComponentPreview name="input-badge" previewClassName="*:max-w-xs" />
+
+## 输入框组 [#input-group]
+
+要在输入内添加图标、文本或按钮，请使用 `InputGroup` 组件。有关更多示例，请参阅[输入组](/zh-CN/docs/components/input-group) 组件。
+
+<ComponentPreview name="input-input-group" previewClassName="*:max-w-xs" />
+
+## 按钮组 [#button-group]
+
+要将按钮添加到输入，请使用 `ButtonGroup` 组件。有关更多示例，请参阅[Button Group](/zh-CN/docs/components/button-group) 组件。
+
+<ComponentPreview name="input-button-group" previewClassName="*:max-w-xs" />
+
+## 表单 [#form]
+
+具有多个输入、一个选择和一个按钮的完整表单示例。
+
+<ComponentPreview name="input-form" previewClassName="h-[32rem]" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="input-rtl" previewClassName="*:max-w-xs" direction="rtl" />

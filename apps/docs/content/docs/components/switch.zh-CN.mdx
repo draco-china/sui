@@ -1,0 +1,67 @@
+---
+title: Switch
+description: "允许用户在选中和不选中之间切换的控件"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/switch
+  api: https://base-ui.com/react/components/switch#api-reference
+---
+
+<ComponentPreview name="switch-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/switch
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Switch } from "@workspace/ui/components/switch"
+```
+
+```tsx
+<Switch />
+```
+
+## 说明 [#description]
+
+<ComponentPreview name="switch-description" />
+
+## 选择卡片 [#choice-card]
+
+卡片样式选择，其中 `FieldLabel` 包裹整个 `Field` 以形成可点击的卡片图案。
+
+<ComponentPreview name="switch-choice-card" />
+
+## 禁用状态 [#disabled]
+
+将 `disabled` 属性添加到 `Switch` 组件以禁用该开关。将 `data-disabled` 属性添加到 `Field` 组件以进行样式设置。
+
+<ComponentPreview name="switch-disabled" />
+
+## 无效状态 [#invalid]
+
+将 `aria-invalid` 属性添加到 `Switch` 组件以指示无效状态。将 `data-invalid` 属性添加到 `Field` 组件以进行样式设置。
+
+<ComponentPreview name="switch-invalid" />
+
+## 尺寸 [#size]
+
+使用 `size` 属性更改开关的大小。
+
+<ComponentPreview name="switch-sizes" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="switch-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 交换机](https://base-ui.com/react/components/switch#api-reference) 文档。

@@ -1,0 +1,59 @@
+---
+title: Aspect Ratio
+description: "以所需的比例显示内容"
+base: base
+component: true
+---
+
+<ComponentPreview name="aspect-ratio-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/aspect-ratio
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { AspectRatio } from "@workspace/ui/components/aspect-ratio"
+```
+
+```tsx showLineNumbers
+<AspectRatio ratio={16 / 9}>
+  <img src="..." alt="Image" className="rounded-md object-cover" />
+</AspectRatio>
+```
+
+## 正方形 [#square]
+
+使用 `ratio={1 / 1}` 属性的方形纵横比组件。这对于以方形格式显示图像很有用。
+
+<ComponentPreview name="aspect-ratio-square" />
+
+## 竖向比例 [#portrait]
+
+使用 `ratio={9 / 16}` 属性的纵向纵横比组件。这对于以纵向格式显示图像非常有用。
+
+<ComponentPreview name="aspect-ratio-portrait" previewClassName="h-96" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="aspect-ratio-rtl" previewClassName="h-96" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### AspectRatio [#aspectratio]
+
+`AspectRatio` 组件以所需的比例显示内容
+
+| 属性 |类型 |默认 |必填|
+| ----------- | -------- | -------- | -------- |
+| `ratio` | `number` | - |是的 |
+| `className` | `string` | - |没有 |
+
+有关更多信息，请参阅[Base UI 文档](https://base-ui.com/react/components/aspect-ratio#api-reference)。

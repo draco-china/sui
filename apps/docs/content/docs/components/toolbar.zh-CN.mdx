@@ -1,0 +1,73 @@
+---
+title: Toolbar
+description: 将相关操作与控件组合在一起，并提供方向键焦点导航
+---
+
+Toolbar 为一组操作提供统一的键盘导航。可以组合按钮、切换选项、链接，以及放在最后的输入框，同时保留每个操作的无障碍名称。
+
+<ComponentPreview name="toolbar-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/toolbar
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+  ToolbarSeparator,
+} from "@workspace/ui/components/toolbar"
+
+<Toolbar aria-label="Document actions">
+  <ToolbarGroup aria-label="Editing actions">
+    <ToolbarButton onClick={undo}>Undo</ToolbarButton>
+    <ToolbarButton onClick={redo} disabled={!canRedo}>Redo</ToolbarButton>
+  </ToolbarGroup>
+  <ToolbarSeparator />
+  <ToolbarButton onClick={save}>Save</ToolbarButton>
+</Toolbar>
+```
+
+## 切换与触发器组合 [#toggle-and-trigger-composition]
+
+`ToolbarButton` 支持与 `Button` 相同的 `variant` 和 `size`，默认值分别为 `ghost` 和 `default`。通过 `render` 可以与 `Toggle`、菜单触发器或其他 Base UI 控件组合。`ToggleGroup` 管理相关的格式选项，工具栏则协调各控件之间的焦点。
+
+使用 `ToolbarGroup` 组合相关操作，通过 `ToolbarSeparator` 分隔不同组。分隔线会自动使用与工具栏相反的方向。
+
+## 搜索输入 [#search-input]
+
+`ToolbarInput` 会参与工具栏的键盘导航。水平工具栏中建议只放一个输入框，并将其置于最后，避免文本编辑与水平方向键导航产生混淆。下方示例会过滤实际笔记，并在匹配结果之间切换。
+
+<ComponentPreview name="toolbar-search" />
+
+## 垂直与禁用工具栏 [#vertical-and-disabled-toolbars]
+
+通过 `orientation="vertical"` 使用竖向布局及上下方向键导航。在 `Toolbar` 上设置 `disabled` 会禁用按钮和输入控件；在 `ToolbarGroup` 上设置 `disabled` 可以禁用一组操作。按钮也可以单独禁用。
+
+<ComponentPreview name="toolbar-disabled" />
+
+## 无障碍与键盘 [#accessibility-and-keyboard]
+
+通过 `aria-label` 说明工具栏的用途。为每个图标按钮命名，如果分组名称能提供有用信息，也为分组添加标签。Tab 进入工具栏，方向键在控件之间移动焦点，再次按 Tab 离开。焦点默认循环；使用 `loopFocus={false}` 可以在两端停止。
+
+Base UI 默认允许禁用按钮获得焦点。需要跳过禁用控件时，可设置 `focusableWhenDisabled={false}`。保留原生事件处理与 `render` 组合，使键盘激活和指针操作使用相同的执行路径。
+
+## API 参考 [#api-reference]
+
+| 部件 | 用途 |
+| --- | --- |
+| `Toolbar` | 接收 `orientation`（默认 `horizontal`）、`disabled`、`loopFocus`、常规根元素属性和 `ref` |
+| `ToolbarButton` | 支持 `variant`、`size`、`disabled`、`focusableWhenDisabled` 与 `render` 的工具栏操作 |
+| `ToolbarLink` | 支持 Button 的 `variant`/`size`、链接属性和 `render` 的导航链接 |
+| `ToolbarInput` | 参与焦点导航的文本输入框，复用 `Input` 的样式 |
+| `ToolbarGroup` | 组合相关控件，并支持组级别的 `disabled` |
+| `ToolbarSeparator` | 分隔控件组，默认根据工具栏方向调整，也可以显式指定方向 |
+
+全部原语属性和键盘行为见 [Base UI Toolbar API](https://base-ui.com/react/components/toolbar#api-reference)。

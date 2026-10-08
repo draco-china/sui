@@ -1,0 +1,49 @@
+---
+title: CLI
+description: Search, inspect, install, and update SUI source with shadcn.
+---
+
+SUI uses the shadcn CLI. Complete the [registry configuration](/docs/installation#prepare-the-consuming-application) in the consuming application, then run commands from that application's directory.
+
+## Search and inspect [#search-and-inspect]
+
+```bash
+bunx --bun shadcn@latest search @sui -q input
+bunx --bun shadcn@latest view @sui/sensitive-input
+```
+
+Search matches registry names and descriptions. View shows a manifest's files and dependencies before you install it. The [registry guide](/docs/registry) explains the catalog and item formats.
+
+## Install source [#install-source]
+
+```bash
+bunx --bun shadcn@latest add @sui/button @sui/sensitive-input
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+The CLI copies required source files into your configured `ui`, `components`, `lib`, and `hooks` directories, installs package dependencies, and merges SUI styles into the CSS file in `components.json`. Files become part of your application and can be edited locally.
+
+Each item carries its local dependency closure. Installing a component does not require first installing the entire library. Use `@sui/sui` for the complete collection, `@sui/sui-style` for shared CSS, or `@sui/sui-theme` for the theme helpers and styles.
+
+Editor and the complete collection require the local Monaco worker setup described in [compatibility](/docs/compatibility#editor-workers).
+
+## Review an update [#review-an-update]
+
+```bash
+bunx --bun shadcn@latest add @sui/button --dry-run
+bunx --bun shadcn@latest add @sui/button --diff
+```
+
+An update can affect shared dependencies and CSS as well as the requested component. Compare changes with your local edits before accepting an overwrite. Installation is a source copy; installed files do not automatically follow future changes in the SUI repository.
+
+## Common issues [#common-issues]
+
+| Symptom | Check |
+| --- | --- |
+| Unknown `@sui` registry | Run from the consuming application and check its `components.json`. |
+| GitHub returns `404` | Check the configured URL and whether the requested item is available in the registry. |
+| Import path differs from a docs example | Follow configured aliases, rather than workspace paths. See [import mapping](/docs/installation#import-installed-source). |
+| Missing animation or theme styles | Confirm the configured CSS file is imported by the application. |
+| Monaco worker import fails | Use a compatible `?worker` loader and include the installed declaration file. |
+
+For installation through an assistant, see [MCP](/docs/mcp). For API and example text, see [LLMs](/docs/llms-txt).

@@ -1,0 +1,542 @@
+---
+title: 设计规范
+description: 完整的排版、间距、表面与交互设计规则，包含每条规则的推荐和避免对照
+---
+
+组合 SUI 应用界面时，遵循下面的全部规则。每一条都提供可运行的视觉对照和可复制的代码。避免栏中的样式是教学用反例，请勿直接用于产品界面。
+
+## 共享样式与语义颜色 [#shared-styles]
+
+导入 `@workspace/ui/globals.css`，使用 `@workspace/ui/components/*` 中的组件。原生文字元素通过 Tailwind 类设置字号和字重。组件颜色使用 `bg-background`、`bg-card`、`text-foreground`、`text-muted-foreground`、`bg-primary`、`border-border` 与 `ring-ring` 等语义 token，危险操作保留独立的 `destructive` 语义。
+
+默认外观为 Apple 风格的中性色背景与蓝色强调色。共享配色通过 `data-color` 选择 `default`、`bamboo`、`mauve`、`mist`、`sand`、`pine` 或 `rose`。移除该属性或设置 `default` 可恢复默认外观；`dark` 控制暗色模式。配色只调整强调色、焦点和图表，背景与正文保持中性。具体配置见[主题](/zh-CN/docs/theming)。
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+```html
+<html data-color="pine" class="dark">
+```
+
+## 正文统一使用 14px [#content-text-size]
+
+所有内容文本，包括正文、按钮、数据以及其他交互控件中的文字，都必须使用 14px。16px 及以上字号仅用于标题和副标题。
+
+<ComponentPreview name="design-guidelines-content-text-size" />
+
+**推荐**
+
+```tsx
+<p className="text-sm">Content text</p>;
+```
+
+**避免**
+
+```tsx
+<p className="text-base">Content text</p>;
+```
+
+## 标题使用句首大写 [#heading-case]
+
+英文标题使用句首大写，不要把每个单词的首字母都大写，也不要把整个标题转换为大写。产品名称保留其规范的大小写。中文标题按自然语言书写。
+
+避免栏同时展示逐词首字母大写，以及使用 `uppercase` 转换为全大写的情况。
+
+<ComponentPreview name="design-guidelines-heading-case" />
+
+**推荐**
+
+```tsx
+<h2 className="font-semibold text-lg">Recent requests</h2>;
+```
+
+**避免**
+
+```tsx
+<h2 className="font-semibold text-lg">Recent Requests</h2>;
+```
+
+```tsx
+<h2 className="font-semibold text-lg uppercase">Recent requests</h2>;
+```
+
+## 不要修改字间距 [#font-tracking]
+
+不要使用 `tracking-*` 类修改字符间距。保留字体本身的字间距。
+
+<ComponentPreview name="design-guidelines-font-tracking" />
+
+**推荐**
+
+```tsx
+<h3 className="font-semibold text-lg">Project metrics</h3>;
+```
+
+**避免**
+
+```tsx
+<h3 className="font-semibold text-lg tracking-tight">Project metrics</h3>;
+```
+
+## 不要使用 font-bold [#font-weight]
+
+标题使用 `font-semibold`，行内强调使用 `font-medium`。不要使用 `font-bold`。
+
+<ComponentPreview name="design-guidelines-font-weight" />
+
+**推荐**
+
+```tsx
+<>
+  <h3 className="font-semibold text-lg">Account settings</h3>
+  <strong className="font-medium text-sm">required</strong>
+</>;
+```
+
+**避免**
+
+```tsx
+<>
+  <h3 className="font-bold text-lg">Account settings</h3>
+  <strong className="font-bold text-sm">required</strong>
+</>;
+```
+
+## 相关文字放得更近 [#related-text-spacing]
+
+相关文字之间的间距，应小于这一组文字与外部内容之间的间距。
+
+<ComponentPreview name="design-guidelines-related-text-spacing" />
+
+**推荐**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="grid gap-6">
+  <div className="grid gap-1.5">
+    <h3 className="font-semibold text-lg">Web analytics</h3>
+    <p className="text-sm">Measure site traffic without changing your code.</p>
+  </div>
+  <Button>Configure</Button>
+</div>;
+```
+
+**避免**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="grid gap-4">
+  <h3 className="font-semibold text-lg">Web analytics</h3>
+  <p className="text-sm">Measure site traffic without changing your code.</p>
+  <Button>Configure</Button>
+</div>;
+```
+
+## 根据文字行高调整留白 [#text-spacing]
+
+文字周围的留白需要考虑行高。通常，垂直方向的留白应略小于水平方向。
+
+<ComponentPreview name="design-guidelines-text-spacing" />
+
+**推荐**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="px-5 py-4">Content text</Card>;
+```
+
+**避免**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="p-5">Content text</Card>;
+```
+
+## 悬停颜色不要使用过渡动画 [#hover-color-transitions]
+
+悬停状态的颜色必须立即变化。快速交互上的过渡动画会让界面显得迟缓。
+
+将指针分别移到两个按钮上，对比响应速度。SUI 按钮可以对 `transform` 和 `box-shadow` 使用过渡，悬停颜色仍然立即变化。
+
+<ComponentPreview name="design-guidelines-hover-color-transitions" />
+
+**推荐**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button variant="ghost" className="hover:bg-muted">
+  Hover me
+</Button>;
+```
+
+**避免**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button
+  variant="ghost"
+  className="transition-colors duration-300 hover:bg-muted"
+>
+  Hover me
+</Button>;
+```
+
+## 阴影表面不要叠加 border [#shadow-borders]
+
+使用 `ring-1 ring-border` 创建保持边缘清晰、不会挤占布局空间的轮廓。同一表面不要同时使用 `border` 和投影。
+
+SUI Card 已自带阴影和细轮廓。避免示例明确关闭其默认 ring，展示 border 与阴影叠加的情况。
+
+<ComponentPreview name="design-guidelines-shadow-borders" />
+
+**推荐**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="px-4 shadow-md ring-1 ring-border">Content text</Card>;
+```
+
+**避免**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card className="border border-border px-4 shadow-md ring-0">
+  Content text
+</Card>;
+```
+
+## 嵌套圆角保持同心 [#concentric-border-radius]
+
+当两层边框或 ring 之间的距离不超过 8px 时，圆角半径必须在数学上保持同心：外层半径 = 内层半径 + 内边距。
+
+SUI 默认圆角下，`rounded-lg` 为 10px，`rounded-xl` 为 14px，`p-1` 为 4px。圆角阶梯采用固定增量：`xl`、`2xl`、`3xl`、`4xl` 分别在基准圆角上增加 `0.25rem`、`0.5rem`、`0.75rem`、`1rem`，修改 `--radius` 后仍保持这些差值。`sm` 与 `md` 分别减去 `0.25rem`、`0.125rem`，最小为零。
+
+内层使用 `rounded-lg` 时，外层的 `rounded-xl` 配合 `p-1`，`rounded-2xl` 配合 `p-2`。其他内边距应按“内层半径 + 内边距”计算外层半径；圆角阶梯不会让任意组合自动同心。切换下方基准圆角，观察两种写法的区别。
+
+外层如果使用 `border`，两层盒子的实际距离还要包含边框宽度；`ring` 不占用布局空间。
+
+<ComponentPreview name="design-guidelines-concentric-border-radius" />
+
+**推荐**
+
+```tsx
+<div className="rounded-xl bg-muted p-1 ring-1 ring-border">
+  <div className="rounded-lg bg-background p-4 ring-1 ring-border">
+    Content text
+  </div>
+</div>;
+```
+
+**避免**
+
+```tsx
+<div className="rounded-xl bg-muted p-1 ring-1 ring-border">
+  <div className="rounded-xl bg-background p-4 ring-1 ring-border">
+    Content text
+  </div>
+</div>;
+```
+
+## 图标与第一行文字对齐 [#icon-alignment]
+
+行内图标在视觉上应与文字大小相当，并与文字垂直居中。多行文本使用 `h-lh flex items-center`，让图标对齐第一行。
+
+避免栏包含两种情况：图标外层缺少行高，以及图标与整段文字居中。装饰性图标使用 `aria-hidden`；只有图标的交互按钮需要可访问名称。
+
+<ComponentPreview name="design-guidelines-icon-alignment" />
+
+**推荐**
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-start gap-2 text-sm leading-6">
+  <span className="flex h-lh items-center">
+    <InfoIcon className="size-4" aria-hidden="true" />
+  </span>
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+**避免**
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-start gap-2 text-sm leading-6">
+  <span className="flex items-center">
+    <InfoIcon className="size-4" aria-hidden="true" />
+  </span>
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+```tsx
+import { InfoIcon } from "lucide-react";
+
+<div className="flex items-center gap-2 text-sm leading-6">
+  <InfoIcon className="size-4" aria-hidden="true" />
+  <p>Text that may wrap onto multiple lines and still align with the icon.</p>
+</div>;
+```
+
+## 行内等宽文字略微缩小 [#inline-monospace-size]
+
+等宽文字与普通文字混排时，字号应略小，约为周围文字的 `0.9em`。
+
+<ComponentPreview name="design-guidelines-inline-monospace-size" />
+
+**推荐**
+
+```tsx
+<p className="text-sm">
+  Edit <code className="font-mono text-[0.9em]">config.ts</code> to continue.
+</p>;
+```
+
+**避免**
+
+```tsx
+<p className="text-sm">
+  Edit <code className="font-mono">config.ts</code> to continue.
+</p>;
+```
+
+## 使用 border 分隔吸顶元素 [#sticky-borders]
+
+使用 `border` 将吸顶元素与下面滚动的内容分隔开。
+
+滚动两栏，观察吸顶标题与下方内容的边界。这里的标题不带投影，因此使用分隔 border。
+
+<ComponentPreview name="design-guidelines-sticky-borders" />
+
+**推荐**
+
+```tsx
+<div className="h-40 overflow-y-auto rounded-xl bg-muted">
+  <div className="sticky top-0 border-b border-border bg-background px-3 py-2">
+    Recent requests
+  </div>
+  <div className="grid gap-4 p-3">
+    {Array.from({ length: 8 }, (_, index) => ({
+      id: `request-${index + 1}`,
+      number: index + 1,
+    })).map((request) => (
+      <p key={request.id}>Request {request.number}</p>
+    ))}
+  </div>
+</div>;
+```
+
+**避免**
+
+```tsx
+<div className="h-40 overflow-y-auto rounded-xl bg-muted">
+  <div className="sticky top-0 bg-background px-3 py-2">Recent requests</div>
+  <div className="grid gap-4 p-3">
+    {Array.from({ length: 8 }, (_, index) => ({
+      id: `request-${index + 1}`,
+      number: index + 1,
+    })).map((request) => (
+      <p key={request.id}>Request {request.number}</p>
+    ))}
+  </div>
+</div>;
+```
+
+## 折叠动画期间保持内容尺寸 [#collapse-content-size]
+
+可折叠内容在关闭过程中必须保持自身尺寸，避免内容在动画期间移动或重新排版。
+
+分别切换两栏面板并观察段落。外层宽度从 256px 动画变为 0，推荐示例的内层保持 `w-64`；避免示例会同步缩小文字容器，导致换行变化。减少动态效果时不使用过渡。
+
+<ComponentPreview name="design-guidelines-collapse-content-size" />
+
+**推荐**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export function RecommendedExample() {
+  const [open, setOpen] = useState(true);
+  const reduce = useReducedMotion();
+  return (
+    <div className="grid gap-4">
+      <Button variant="outline" onClick={() => setOpen(!open)}>
+        Toggle panel
+      </Button>
+      <motion.div
+        initial={false}
+        animate={{ width: open ? 256 : 0 }}
+        transition={{ duration: reduce ? 0 : 0.4 }}
+        className="max-w-full overflow-hidden"
+      >
+        <div className="w-64 rounded-xl bg-muted p-3 text-sm">
+          Text should keep the same line breaks while this panel closes.
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+```
+
+**避免**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
+import { motion } from "motion/react";
+import { useState } from "react";
+
+export function AvoidExample() {
+  const [open, setOpen] = useState(true);
+  const reduce = useReducedMotion();
+  return (
+    <div className="grid gap-4">
+      <Button variant="outline" onClick={() => setOpen(!open)}>
+        Toggle panel
+      </Button>
+      <motion.div
+        initial={false}
+        animate={{ width: open ? 256 : 0 }}
+        transition={{ duration: reduce ? 0 : 0.4 }}
+        className="max-w-full overflow-hidden"
+      >
+        <div className="w-full min-w-0 rounded-xl bg-muted p-3 text-sm">
+          Text should keep the same line breaks while this panel closes.
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+```
+
+## 不要嵌套有阴影的卡片 [#layer-card-nesting]
+
+不要将有阴影的卡片再叠放在另一张有阴影的卡片上。
+
+卡片内部使用普通容器、间距或分隔线组织内容。推荐示例将标题放在有阴影的表面之外。
+
+<ComponentPreview name="design-guidelines-layer-card-nesting" />
+
+**推荐**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<div className="grid gap-3">
+  <h3 className="font-semibold text-lg">Recent requests</h3>
+  <Card size="sm" className="px-4">
+    Request data
+  </Card>
+</div>;
+```
+
+**避免**
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+
+<Card size="sm" className="px-4">
+  <h3 className="font-semibold text-lg">Recent requests</h3>
+  <Card size="sm" className="px-4">
+    Request data
+  </Card>
+</Card>;
+```
+
+## 不要根据 open 条件挂载弹窗 [#dialog-rendering]
+
+根据条件挂载或卸载弹窗，会让打开和关闭动画无法正常完成。使用 `open` 属性控制弹窗是否可见。
+
+分别打开并关闭两栏弹窗。推荐示例的 `Dialog` 始终保留在 React 树中，由 Base UI 管理弹出层是否挂载、关闭动画、焦点和关闭交互。避免示例在 `open` 变为 false 时立即删除整棵弹窗树。始终提供标题和描述。
+
+<ComponentPreview name="design-guidelines-dialog-rendering" />
+
+**推荐**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import { useState } from "react";
+
+export function RecommendedExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Open dialog
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle className="font-semibold">Edit project</DialogTitle>
+          <DialogDescription>Update this project’s settings.</DialogDescription>
+        </DialogHeader>
+        <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+**避免**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import { useState } from "react";
+
+export function AvoidExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        Open dialog
+      </Button>
+      {open && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent showCloseButton={false}>
+            <DialogHeader>
+              <DialogTitle className="font-semibold">Edit project</DialogTitle>
+              <DialogDescription>
+                Update this project’s settings.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose render={<Button variant="outline" />}>
+              Close
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+}
+```

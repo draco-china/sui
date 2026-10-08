@@ -1,0 +1,203 @@
+---
+title: Button Group
+description: "将相关按钮分组在一起并具有一致样式的容器"
+base: base
+component: true
+---
+
+<ComponentPreview name="button-group-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/button-group
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+} from "@workspace/ui/components/button-group"
+```
+
+```tsx
+<ButtonGroup>
+  <Button>Button 1</Button>
+  <Button>Button 2</Button>
+</ButtonGroup>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `ButtonGroup`：
+
+```text
+ButtonGroup
+├── Button or Input
+├── ButtonGroupSeparator
+└── ButtonGroupText
+```
+
+## 无障碍 [#accessibility]
+
+- `ButtonGroup` 组件的 `role` 属性设置为 `group`。
+-  使用 <Kbd>Tab</Kbd> 在组中的按钮之间导航。
+- 使用`aria-label`或`aria-labelledby`来标记按钮组。
+
+```tsx showLineNumbers
+<ButtonGroup aria-label="Button group">
+  <Button>Button 1</Button>
+  <Button>Button 2</Button>
+</ButtonGroup>
+```
+
+## ButtonGroup 与 ToggleGroup [#buttongroup-vs-togglegroup]
+
+-  当您想要对执行操作的按钮进行分组时，请使用 `ButtonGroup` 组件。
+-  当您想要对切换状态的按钮进行分组时，请使用 `ToggleGroup` 组件。
+
+## 方向 [#orientation]
+
+设置 `orientation` 属性以更改按钮组布局。
+
+<ComponentPreview name="button-group-orientation" />
+
+## 尺寸 [#size]
+
+使用各个按钮上的 `size` 属性控制按钮的大小。
+
+<ComponentPreview name="button-group-size" />
+
+## 嵌套 [#nested]
+
+嵌套 `<ButtonGroup>` 组件以创建带间距的按钮组。
+
+<ComponentPreview name="button-group-nested" />
+
+## 分隔线 [#separator]
+
+`ButtonGroupSeparator` 组件在视觉上将按钮划分为一组。
+
+具有变体 `outline` 的按钮不需要分隔符，因为它们有边框。对于其他变体，建议使用分隔符来改善视觉层次结构。
+
+<ComponentPreview name="button-group-separator" />
+
+## 拆分按钮 [#split]
+
+通过添加由 `ButtonGroupSeparator` 分隔的两个按钮来创建拆分按钮组。
+
+<ComponentPreview name="button-group-split" />
+
+## 输入框组合 [#input]
+
+用按钮包裹 `Input` 组件。
+
+<ComponentPreview name="button-group-input" />
+
+## 输入框组 [#input-group]
+
+封装 `InputGroup` 组件以创建复杂的输入布局。
+
+<ComponentPreview name="button-group-input-group" />
+
+## 下拉菜单组合 [#dropdown-menu]
+
+使用 `DropdownMenu` 组件创建拆分按钮组。
+
+<ComponentPreview name="button-group-dropdown" />
+
+## 选择器组合 [#select]
+
+与 `Select` 组件配对。
+
+<ComponentPreview name="button-group-select" />
+
+## 弹出层组合 [#popover]
+
+与 `Popover` 组件一起使用。
+
+<ComponentPreview name="button-group-popover" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="button-group-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### ButtonGroup [#buttongroup]
+
+`ButtonGroup` 组件是一个容器，它将相关按钮以一致的样式分组在一起
+
+| 属性 |类型 |默认 |
+| ------------- | ---------------------------- | -------------- |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
+
+```tsx
+<ButtonGroup>
+  <Button>Button 1</Button>
+  <Button>Button 2</Button>
+</ButtonGroup>
+```
+
+嵌套多个按钮组以创建带间距的复杂布局。有关更多详细信息，请参阅 [nested](#nested) 示例。
+
+```tsx
+<ButtonGroup>
+  <ButtonGroup />
+  <ButtonGroup />
+</ButtonGroup>
+```
+
+### ButtonGroupSeparator [#buttongroupseparator]
+
+`ButtonGroupSeparator` 组件在视觉上将按钮划分为一组
+
+| 属性 |类型 |默认|
+| ------------- | ---------------------------- | ------------ |
+| `orientation` | `"horizontal" \| "vertical"` | `"vertical"` |
+
+```tsx
+<ButtonGroup>
+  <Button>Button 1</Button>
+  <ButtonGroupSeparator />
+  <Button>Button 2</Button>
+</ButtonGroup>
+```
+
+### ButtonGroupText [#buttongrouptext]
+
+使用此组件可以显示按钮组中的文本
+
+| 属性 |类型 |默认 |
+| -------- | -------------------- | -------- |
+| `render` | `React.ReactElement` |         |
+
+```tsx
+<ButtonGroup>
+  <ButtonGroupText>Text</ButtonGroupText>
+  <Button>Button</Button>
+</ButtonGroup>
+```
+
+使用 `render` 属性将自定义组件渲染为文本，例如标签。
+
+```tsx showLineNumbers
+import { ButtonGroupText } from "@workspace/ui/components/button-group"
+import { Label } from "@workspace/ui/components/label"
+
+export function ButtonGroupTextDemo() {
+  return (
+    <ButtonGroup>
+      <ButtonGroupText render={<Label htmlFor="name" />}>Text</ButtonGroupText>
+      <Input placeholder="Type something here..." id="name" />
+    </ButtonGroup>
+  )
+}
+```

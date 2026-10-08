@@ -1,0 +1,244 @@
+---
+title: Attachment
+description: "显示带有媒体、元数据、上传状态和操作的文件或图像附件"
+base: base
+component: true
+---
+
+<ComponentPreview name="attachment-demo" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+`Attachment` 显示文件或图片附件的预览、名称与元数据，也可包含操作按钮及上传状态。适用于聊天输入区、消息对话与上传列表。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/attachment
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "@workspace/ui/components/attachment"
+```
+
+```tsx
+<Attachment>
+  <AttachmentMedia>
+    <FileTextIcon />
+  </AttachmentMedia>
+  <AttachmentContent>
+    <AttachmentTitle>sales-dashboard.pdf</AttachmentTitle>
+    <AttachmentDescription>PDF · 2.4 MB</AttachmentDescription>
+  </AttachmentContent>
+  <AttachmentActions>
+    <AttachmentAction aria-label="Remove sales-dashboard.pdf">
+      <XIcon />
+    </AttachmentAction>
+  </AttachmentActions>
+</Attachment>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建附件：
+
+```text
+Attachment
+├── AttachmentMedia
+├── AttachmentContent
+│   ├── AttachmentTitle
+│   └── AttachmentDescription
+├── AttachmentActions
+│   └── AttachmentAction
+└── AttachmentTrigger
+```
+
+使用 `AttachmentGroup` 将多个附件布置在可滚动行中：
+
+```text
+AttachmentGroup
+├── Attachment
+└── Attachment
+```
+
+## 特性 [#features]
+
+- 通过 `AttachmentMedia` 显示图标或图片
+- 上传状态 `idle`、`uploading`、`processing`、`error` 与 `done` 均有内置样式，进行中的状态显示流光效果
+- 三种尺寸，可选择水平或垂直布局
+- `AttachmentTrigger` 覆盖整个卡片，用于打开链接或对话框；其他操作仍可独立点击
+- `AttachmentGroup` 支持水平滚动、滚动吸附与边缘渐隐
+- 每个子组件都可通过 `className` 自定义样式
+
+## 图片 [#image]
+
+在`AttachmentMedia`上设置`variant="image"`并在其中渲染一个`<img>`。使用 `orientation="vertical"` 将媒体堆叠在内容上方。
+
+<ComponentPreview name="attachment-image" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+## 状态 [#states]
+
+使用 `state` 表达上传过程。`uploading` 与 `processing` 会让标题显示流光效果，`error` 则应用危险状态样式。
+
+<ComponentPreview name="attachment-states" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+## 尺寸 [#sizes]
+
+使用`size`在`default`、`sm`和`xs`之间切换。
+
+<ComponentPreview name="attachment-sizes" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+## 组合 [#group]
+
+使用 `AttachmentGroup` 包裹多个附件，将其排列在支持滚动吸附与边缘渐隐的水平滚动区域中。
+
+<ComponentPreview name="attachment-group" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+## 触发器 [#trigger]
+
+添加 `AttachmentTrigger`，让整张卡片都可打开链接或对话框。触发器覆盖卡片，但位于操作按钮后方，因此其他操作仍可点击。
+
+<ComponentPreview name="attachment-trigger" previewClassName="h-auto theme-blue bg-surface dark:bg-background" />
+
+```tsx showLineNumbers
+<Dialog>
+  <Attachment>
+    {/* media, content, actions */}
+    <DialogTrigger
+      render={<AttachmentTrigger aria-label="Preview research-summary.pdf" />}
+    />
+  </Attachment>
+  <DialogContent>{/* ... */}</DialogContent>
+</Dialog>
+```
+
+## 无障碍 [#accessibility]
+
+`AttachmentAction` 渲染为 Button，`AttachmentTrigger` 默认渲染为真实的 `<button>`，也可通过 `render` 使用其他元素。遵循下列要求，让控件可操作且能够被辅助技术正确识别。
+
+### 为纯图标操作提供标签 [#label-icon-only-actions]
+
+`AttachmentAction` 通常只显示图标，请为每个操作提供描述动作与目标的 `aria-label`。
+
+```tsx showLineNumbers
+<AttachmentAction aria-label="Remove sales-dashboard.pdf">
+  <XIcon />
+</AttachmentAction>
+```
+
+### 为触发器提供标签 [#label-the-trigger]
+
+`AttachmentTrigger` 覆盖整个卡片，没有独立文字内容，因此需要通过 `aria-label` 说明激活后的行为。
+
+```tsx showLineNumbers
+<AttachmentTrigger
+  render={
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Open workspace.png"
+    />
+  }
+/>
+```
+
+触发器的层级位于操作按钮后方，不会拦截操作按钮的点击。`AttachmentAction` 与 `AttachmentTrigger` 都可独立聚焦和点击。
+
+### 键盘滚动 [#keyboard-scrolling]
+
+`AttachmentGroup` 支持水平滚动。附件包含触发器或操作按钮时，键盘用户可以通过 Tab 访问屏幕外的附件。如果附件仅用于展示，可为组添加 `tabIndex={0}`、`role="group"` 与 `aria-label`，让组本身可聚焦和滚动。
+
+### 通过颜色以外的方式传达含义 [#meaning-beyond-color]
+
+`error` 状态使用危险语义颜色。请同时在 `AttachmentDescription` 中说明错误原因，避免仅通过颜色传达状态。
+
+## API 参考 [#api-reference]
+
+### Attachment [#attachment]
+
+根附件容器
+
+| 属性 |类型 |默认 |描述 |
+| ------------- | ---------------------------------------------------------------------------------- | -------------- | ------------------------------------------------- |
+| `state` | `"idle" \| "uploading" \| "processing" \| "error" \| "done"` | `"done"` |上传状态。控制状态样式与流光效果 |
+| `size` | `"default" \| "sm" \| "xs"` | `"default"` |附件大小                              |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |将媒体放置在内容旁边或上方        |
+| `className` | `string` | - |应用于根元素的额外类名  |
+
+### AttachmentMedia [#attachmentmedia]
+
+用于图标或图像预览的媒体插槽
+
+| 属性|类型 |默认 |描述 |
+| ----------- | ------------------- | -------- | ---------------------------------------------------------- |
+| `variant` | `"icon" \| "image"` | `"icon"` |媒体是否带有图标或 `<img>` |
+| `className` | `string` | - |应用于媒体槽的额外类名 |
+
+### AttachmentContent [#attachmentcontent]
+
+包含标题和描述
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------ |
+| `className` | `string` | - |应用于内容槽的额外类名 |
+
+### AttachmentTitle [#attachmenttitle]
+
+附件名称。当附件为 `uploading` 或 `processing` 时闪烁
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | -------------------------------------------------- |
+| `className` | `string` | - |应用到标题的额外类名 |
+
+### AttachmentDescription [#attachmentdescription]
+
+辅助元数据，例如文件类型、大小或上传状态
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ----------------------------------------------------------- |
+| `className` | `string` | - |适用于描述的额外类名 |
+
+### AttachmentActions [#attachmentactions]
+
+用于一项或多项操作的容器，与附件的末尾对齐
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------------- |
+| `className` | `string` | - |应用于操作的额外类名 |
+
+### AttachmentAction [#attachmentaction]
+
+操作按钮。它渲染为 [`Button`](/zh-CN/docs/components/button)，并接受 Button 的全部属性
+
+| 属性 |类型 |默认 |描述 |
+| ---------- | -------------------------------------------------- | ----------- | ---------------------------------------------------------------- |
+| `size` | `Button["size"]` | `"icon-xs"` |按钮大小                         |
+| `...props` | `React.ComponentProps<typeof Button>` | - |属性传递到底层 `Button` |
+
+### AttachmentTrigger [#attachmenttrigger]
+
+覆盖整个卡片的附件触发器，默认渲染为 `<button>`
+
+| 属性 |类型 |默认 |描述 |
+| ---------- | -------------------------------- | -------- | ---------------------------------------------------------- |
+| `render` | `ReactElement \| function` | - |呈现为不同的元素，例如链接 |
+| `...props` | `React.ComponentProps<"button">` | - |属性传递到触发元素           |
+
+### AttachmentGroup [#attachmentgroup]
+
+将多个附件排列在支持水平滚动与滚动吸附的行中
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | -------------------------------------------------- |
+| `className` | `string` | - |应用到组容器的额外类名 |

@@ -1,0 +1,108 @@
+---
+title: Command
+description: "用于搜索和快速操作的命令菜单"
+base: base
+component: true
+links:
+  doc: https://github.com/dip/cmdk
+---
+
+<ComponentPreview name="command-demo" align="start" previewClassName="h-[24.5rem]" />
+
+## 关于 [#about]
+
+`<Command />` 组件使用 [Dip](https://www.dip.org/) 的 [`cmdk`](https://github.com/dip/cmdk) 组件。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/command
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "@workspace/ui/components/command"
+```
+
+```tsx showLineNumbers
+<Command className="max-w-sm rounded-lg border">
+  <CommandInput placeholder="Type a command or search..." />
+  <CommandList>
+    <CommandEmpty>No results found.</CommandEmpty>
+    <CommandGroup heading="Suggestions">
+      <CommandItem>Calendar</CommandItem>
+      <CommandItem>Search Emoji</CommandItem>
+      <CommandItem>Calculator</CommandItem>
+    </CommandGroup>
+    <CommandSeparator />
+    <CommandGroup heading="Settings">
+      <CommandItem>Profile</CommandItem>
+      <CommandItem>Billing</CommandItem>
+      <CommandItem>Settings</CommandItem>
+    </CommandGroup>
+  </CommandList>
+</Command>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Command`：
+
+```text
+Command
+├── CommandInput
+└── CommandList
+    ├── CommandEmpty
+    ├── CommandGroup
+    │   ├── CommandItem
+    │   └── CommandItem
+    ├── CommandSeparator
+    └── CommandGroup
+        ├── CommandItem
+        └── CommandItem
+```
+
+## 基本用法 [#basic]
+
+对话框中的简单命令菜单。
+
+<ComponentPreview name="command-basic" />
+
+## 快捷键 [#shortcuts]
+
+<ComponentPreview name="command-shortcuts" />
+
+## 分组 [#groups]
+
+带有组、图标和分隔符的命令菜单。
+
+<ComponentPreview name="command-groups" />
+
+## 可滚动区域 [#scrollable]
+
+具有多个项目的可滚动命令菜单。
+
+<ComponentPreview name="command-scrollable" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="command-rtl" align="start" previewClassName="h-[24.5rem]" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+有关更多信息，请参阅 [cmdk](https://github.com/dip/cmdk) 文档。

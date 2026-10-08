@@ -1,0 +1,96 @@
+---
+title: Kbd
+description: "用于显示来自键盘的文本用户输入"
+base: base
+component: true
+---
+
+<ComponentPreview name="kbd-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/kbd
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Kbd } from "@workspace/ui/components/kbd"
+```
+
+```tsx
+<Kbd>Ctrl</Kbd>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Kbd` 和 `KbdGroup`：
+
+```text
+Kbd
+KbdGroup
+├── Kbd
+└── Kbd
+```
+
+## 组合 [#group]
+
+使用 `KbdGroup` 组件将键盘按键组合在一起。
+
+<ComponentPreview name="kbd-group" />
+
+## 按钮组合 [#button]
+
+在 `Button` 组件内使用 `Kbd` 组件可在按钮内显示键盘按键。
+
+<ComponentPreview name="kbd-button" />
+
+## 提示框组合 [#tooltip]
+
+您可以在 `Tooltip` 组件内使用 `Kbd` 组件来通过键盘按键显示工具提示。
+
+<ComponentPreview name="kbd-tooltip" />
+
+## 输入框组 [#input-group]
+
+您可以在 `InputGroupAddon` 组件内使用 `Kbd` 组件来显示输入组内的键盘键。
+
+<ComponentPreview name="kbd-input-group" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="kbd-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### 快捷键组合 [#kbd]
+
+使用 `Kbd` 组件显示键盘按键
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | `` |
+
+```tsx
+<Kbd>Ctrl</Kbd>
+```
+
+### KbdGroup [#kbdgroup]
+
+使用 `KbdGroup` 组件将 `Kbd` 组件组合在一起
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | `` |
+
+```tsx
+<KbdGroup>
+  <Kbd>Ctrl</Kbd>
+  <Kbd>B</Kbd>
+</KbdGroup>
+```

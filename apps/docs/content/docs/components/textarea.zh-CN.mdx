@@ -1,0 +1,56 @@
+---
+title: Textarea
+description: "显示表单文本区域或看起来像文本区域的组件"
+base: base
+component: true
+---
+
+<ComponentPreview name="textarea-demo" previewClassName="*:max-w-xs" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/textarea
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Textarea } from "@workspace/ui/components/textarea"
+```
+
+```tsx
+<Textarea />
+```
+
+## Field [#field]
+
+使用 `Field`、`FieldLabel` 和 `FieldDescription` 创建带有标签和说明的文本区域。
+
+<ComponentPreview name="textarea-field" previewClassName="*:max-w-xs" />
+
+## 禁用状态 [#disabled]
+
+使用 `disabled` 属性禁用文本区域。要设置禁用状态的样式，请将 `data-disabled` 属性添加到 `Field` 组件。
+
+<ComponentPreview name="textarea-disabled" previewClassName="*:max-w-xs" />
+
+## 无效状态 [#invalid]
+
+使用 `aria-invalid` 属性将文本区域标记为无效。要设置无效状态的样式，请将 `data-invalid` 属性添加到 `Field` 组件。
+
+<ComponentPreview name="textarea-invalid" previewClassName="*:max-w-xs" />
+
+## 按钮组合 [#button]
+
+与 `Button` 配合使用，创建带有提交按钮的文本区域。
+
+<ComponentPreview name="textarea-button" previewClassName="*:max-w-xs" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="textarea-rtl" direction="rtl" />

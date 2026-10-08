@@ -1,0 +1,85 @@
+---
+title: Loader
+description: Eighteen loading animations with accessible labels, adjustable speed, and reduced motion support.
+component: true
+---
+
+<ComponentPreview name="loader-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/loader
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { Loader } from "@workspace/ui/components/loader";
+```
+
+## Usage
+
+```tsx
+<Loader variant="dots" label="Loading messages" />
+```
+
+`Loader` provides eighteen distinct loading animations, all using the current text color. The root exposes `role="status"` and a loading label while decorative visuals remain hidden from assistive technology. Reduced motion changes stop CSS animations and character timers immediately, leaving a static indicator. Timers and media listeners are cleaned up on unmount. Server rendering uses static character frames to avoid hydration differences.
+
+## Variants
+
+| Variant | Animation |
+| --- | --- |
+| `spinner` | Rotating arc over a circular track |
+| `dash-ring` | Stretching arc that travels smoothly around a rotating ring |
+| `dots` | Three staggered bouncing dots |
+| `bars` | Four staggered scaling bars |
+| `dot-matrix` | A rippling 3 × 3 dot matrix |
+| `dither` | A patterned 4 × 4 blinking square matrix |
+| `ascii` | Rotating character frames |
+| `ascii-line` | Rotating line character frames |
+| `ascii-braille` | Braille ring character frames |
+| `ascii-blocks` | Rising and falling block characters |
+| `ascii-bounce` | Bouncing dot character frames |
+| `morph` | Rotating circle, square, triangle, and hexagon morphs |
+| `comet` | Rotating comet with a fading trail |
+| `scramble` | Scrambled characters resolving to LOADING |
+| `metaballs` | Two merging circular blobs |
+| `newton` | Alternating end swings of a Newton cradle |
+| `helix` | Opposing strands of oscillating dots |
+| `percent` | Decorative looping percentage and short bar |
+
+`percent` is a looping loading motif, not measured task progress. Use [Progress](/docs/components/progress) for actual progress.
+
+## Sizes and colors
+
+Use `sm` (16px), `default` (20px), `lg` (28px), or a numeric pixel size. Numeric sizes are clamped to 8–4096px; non-finite values use 20px. Set `className="text-primary"` to use the active theme color.
+
+<ComponentPreview name="loader-size" />
+
+## Animation speed
+
+`speed` controls the base cycle in seconds and defaults to `1`. Smaller values are faster; values are clamped to `0.1`–`86400` and non-finite values fall back to `1`. Character timers have a minimum interval of 10 milliseconds. Complex animations use fixed multiples of the base cycle.
+
+```tsx
+<Loader variant="dots" speed={0.6} label="Loading" />
+<Loader variant="metaballs" speed={2} label="Loading" />
+```
+
+## Button loading state
+
+Render the loader only while work is in progress and disable repeated submissions. This example simulates a local save and cleans up its timer on unmount.
+
+<ComponentPreview name="loader-button" />
+
+## API
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `variant` | `LoaderVariant`, see all eighteen variants above | `"spinner"` |
+| `size` | `"sm" \| "default" \| "lg" \| number` | `"default"` |
+| `speed` | `number`, base cycle in seconds | `1` |
+| `label` | `string` | `"Loading"` |
+| `render` | React element or render function | `span` |
+
+Standard `span` props, refs, styles, and `className` are supported. The root exposes `data-slot="loader"` and `data-variant`. Labels describe actual activity; the percentage motif is decorative and does not expose progress values to assistive technology. See [Base UI composition](https://base-ui.com/react/handbook/composition) for `render` and ref behavior.

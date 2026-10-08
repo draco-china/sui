@@ -1,0 +1,46 @@
+---
+title: LongText
+description: 文本溢出时截断，并支持查看完整内容。
+component: true
+---
+
+<ComponentPreview name="long-text-demo" />
+
+## 安装
+
+```bash
+bunx --bun shadcn@latest add @sui/long-text
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { LongText } from "@workspace/ui/components/long-text"
+```
+
+## 使用
+
+```tsx
+<LongText className="max-w-48" label="显示完整资源名称">
+  production-api-gateway.asia-east-1.example.com
+</LongText>
+```
+
+给组件设置宽度限制。溢出文本会成为可键盘聚焦的触发器；鼠标悬停或聚焦显示 SUI Tooltip，触屏点击显示 SUI Popover。短文本保持普通文本。内容、布局、字体及指针能力变化时重新检测溢出。
+
+## 表格单元格
+
+使用固定表格布局或限制单元格宽度，为省略号提供边界。
+
+<ComponentPreview name="long-text-table" />
+
+## API
+
+| 属性 | 说明 |
+| --- | --- |
+| `children` | 显示内容，同时用于全文浮层；使用文本或无交互的行内内容。 |
+| `className` | 外层容器的宽度和布局类名。 |
+| `contentClassName` | 全文浮层的布局类名。 |
+| `label` | 可选的触发器可访问名称，默认使用显示文本。 |
+
+参考 [shadcn-admin LongText](https://github.com/satnaing/shadcn-admin/blob/main/src/components/long-text.tsx)，适配 SUI Base UI 组合，并随尺寸变化检测溢出。

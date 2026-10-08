@@ -1,0 +1,89 @@
+---
+title: Checkbox
+description: A control that allows the user to toggle between checked and not checked.
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/checkbox
+  api: https://base-ui.com/react/components/checkbox#api-reference
+---
+
+<ComponentPreview name="checkbox-demo" previewClassName="h-80" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/checkbox
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { Checkbox } from "@workspace/ui/components/checkbox"
+```
+
+```tsx
+<Checkbox />
+```
+
+## Checked State
+
+Use `defaultChecked` for uncontrolled checkboxes, or `checked` and
+`onCheckedChange` to control the state.
+
+```tsx showLineNumbers
+import * as React from "react"
+
+export function Example() {
+  const [checked, setChecked] = React.useState(false)
+
+  return <Checkbox checked={checked} onCheckedChange={setChecked} />
+}
+```
+
+## Invalid State
+
+Set `aria-invalid` on the checkbox and `data-invalid` on the field wrapper to
+show the invalid styles.
+
+<ComponentPreview name="checkbox-invalid" />
+
+## Basic
+
+Pair the checkbox with `Field` and `FieldLabel` for proper layout and labeling.
+
+<ComponentPreview name="checkbox-basic" />
+
+## Description
+
+Use `FieldContent` and `FieldDescription` for helper text.
+
+<ComponentPreview name="checkbox-description" />
+
+## Disabled
+
+Use the `disabled` prop to prevent interaction and add the `data-disabled` attribute to the `<Field>` component for disabled styles.
+
+<ComponentPreview name="checkbox-disabled" />
+
+## Group
+
+Use multiple fields to create a checkbox list.
+
+<ComponentPreview name="checkbox-group" />
+
+## Table
+
+<ComponentPreview name="checkbox-table" previewClassName="p-4 md:p-8" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="checkbox-rtl" previewClassName="h-80" direction="rtl" />
+
+## API Reference
+
+See the [Base UI](https://base-ui.com/react/components/checkbox#api-reference) documentation for more information.

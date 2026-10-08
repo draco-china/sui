@@ -1,0 +1,353 @@
+---
+title: Field
+description: "组合标签、控件和帮助文本以组成可访问的表单字段和分组输入"
+base: base
+component: true
+---
+
+<ComponentPreview name="field-demo" previewClassName="h-[800px] p-6 md:h-[850px]" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/field
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from "@workspace/ui/components/field"
+```
+
+```tsx showLineNumbers
+<FieldSet>
+  <FieldLegend>Profile</FieldLegend>
+  <FieldDescription>This appears on invoices and emails.</FieldDescription>
+  <FieldGroup>
+    <Field>
+      <FieldLabel htmlFor="name">Full name</FieldLabel>
+      <Input id="name" autoComplete="off" placeholder="Evil Rabbit" />
+      <FieldDescription>This appears on invoices and emails.</FieldDescription>
+    </Field>
+    <Field>
+      <FieldLabel htmlFor="username">Username</FieldLabel>
+      <Input id="username" autoComplete="off" aria-invalid />
+      <FieldError>Choose another username.</FieldError>
+    </Field>
+    <Field orientation="horizontal">
+      <Switch id="newsletter" />
+      <FieldLabel htmlFor="newsletter">Subscribe to the newsletter</FieldLabel>
+    </Field>
+  </FieldGroup>
+</FieldSet>
+```
+
+## 组合结构 [#composition]
+
+### Field [#field]
+带有标签、帮助文本和验证的单个控件。
+
+```text
+Field
+├── FieldLabel
+├── Input / Textarea / Switch / Select
+├── FieldDescription
+└── FieldError
+```
+
+### FieldGroup [#fieldgroup]
+
+一组中的相关领域。需要时在各部分之间使用 `FieldSeparator`。
+
+```text
+FieldGroup
+├── Field
+│   ├── FieldLabel
+│   ├── Input / Textarea / Switch / Select
+│   ├── FieldDescription
+│   └── FieldError
+├── FieldSeparator
+└── Field
+    ├── FieldLabel
+    └── Input / Textarea / Switch / Select
+```
+
+### FieldSet [#fieldset]
+
+带有图例和描述的语义分组，通常包含 `FieldGroup`。
+
+```text
+FieldSet
+├── FieldLegend
+├── FieldDescription
+└── FieldGroup
+    ├── Field
+    │   ├── FieldLabel
+    │   ├── Input / Textarea / Switch / Select
+    │   ├── FieldDescription
+    │   └── FieldError
+    └── Field
+        ├── FieldLabel
+        └── Input / Textarea / Switch / Select
+```
+
+## 结构说明 [#anatomy]
+
+`Field` 系列专为构建可访问的表单而设计。典型的字段结构如下：
+
+```tsx showLineNumbers
+<Field>
+  <FieldLabel htmlFor="input-id">Label</FieldLabel>
+  {/* Input, Select, Switch, etc. */}
+  <FieldDescription>Optional helper text.</FieldDescription>
+  <FieldError>Validation message.</FieldError>
+</Field>
+```
+
+- `Field` 是单个字段的核心包装器。
+- `FieldContent` 是一个将标签和描述分组的弹性列。如果您没有描述，则不需要。
+- 用`FieldGroup`包裹相关字段，用`FieldSet`和`FieldLegend`进行语义分组。
+
+## 表单 [#form]
+
+请参阅 [Form](https://ui.shadcn.com/docs/forms) 文档，了解如何使用 `Field` 组件和 [React Hook Form](https://ui.shadcn.com/docs/forms/react-hook-form)、[Tanstack Form](https://ui.shadcn.com/docs/forms/tanstack-form) 或 [Formisch](https://ui.shadcn.com/docs/forms/formisch)] 构建表单。
+
+## 输入框组合 [#input]
+
+<ComponentPreview name="field-input" />
+
+## 多行输入框组合 [#textarea]
+
+<ComponentPreview name="field-textarea" />
+
+## 选择器组合 [#select]
+
+<ComponentPreview name="field-select" />
+
+## 滑块组合 [#slider]
+
+<ComponentPreview name="field-slider" />
+
+## 字段集 [#fieldset-1]
+
+<ComponentPreview name="field-fieldset" />
+
+## 复选框组合 [#checkbox]
+
+<ComponentPreview name="field-checkbox" previewClassName="h-[32rem]" />
+
+## 单选项 [#radio]
+
+<ComponentPreview name="field-radio" />
+
+## 开关组合 [#switch]
+
+<ComponentPreview name="field-switch" />
+
+## 选择卡片 [#choice-card]
+
+将 `Field` 组件包裹在 `FieldLabel` 内以创建可选择的字段组。这适用于 `RadioItem`、`Checkbox` 和 `Switch` 组件。
+
+<ComponentPreview name="field-choice-card" />
+
+## 字段组 [#field-group]
+
+将 `Field` 组件与 `FieldGroup` 堆叠。添加 `FieldSeparator` 将它们分开。
+
+<ComponentPreview name="field-group" previewClassName="h-96" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="field-rtl" previewClassName="h-auto p-6" direction="rtl" />
+
+## 响应式布局 [#responsive-layout]
+
+- **垂直字段：** 默认方向堆叠标签、控件和帮助文本 - 非常适合移动优先布局。
+- **水平字段：** 在 `Field` 上设置 `orientation="horizontal"` 以并排对齐标签和控件。与 `FieldContent` 配对以保持描述一致。
+- **响应字段：** 设置 `orientation="responsive"` 以便在容器感知父项内自动进行列布局。在 `FieldGroup` 上应用 `@container/field-group` 类以在特定断点处切换方向。
+
+<ComponentPreview name="field-responsive" previewClassName="h-[650px] p-6 md:h-[500px] md:p-10" />
+
+## 校验与错误 [#validation-and-errors]
+
+- 将`data-invalid`添加到`Field`，将整个块切换到错误状态。
+- 在输入本身上添加 `aria-invalid` 以实现辅助技术。
+-  在控件之后或在 `FieldContent` 内立即渲染 `FieldError`，以保持错误消息与字段对齐。
+
+```tsx showLineNumbers /data-invalid/ /aria-invalid/
+<Field data-invalid>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
+  <Input id="email" type="email" aria-invalid />
+  <FieldError>Enter a valid email address.</FieldError>
+</Field>
+```
+
+## 无障碍 [#accessibility]
+
+- `FieldSet` 与 `FieldLegend` 将相关控件组织成语义化组，便于键盘用户和辅助技术识别。
+- `Field` 输出 `role="group"`，因此嵌套控件在组合时继承 `FieldLabel` 和 `FieldLegend` 的标签。
+-  合理使用 `FieldSeparator`，让屏幕阅读器能够识别清晰的分区边界。
+
+## API 参考 [#api-reference]
+
+### FieldSet [#fieldset-2]
+
+使用间距预设呈现语义 `fieldset` 的容器
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldSet>
+  <FieldLegend>Delivery</FieldLegend>
+  <FieldGroup>{/* Fields */}</FieldGroup>
+</FieldSet>
+```
+
+### FieldLegend [#fieldlegend]
+
+`FieldSet` 的图例元素。切换到 `label` 变体以与标签尺寸保持一致
+
+| 属性 |类型 |默认 |
+| ----------- | -------------------- | ---------- |
+| `variant` | `"legend" \| "label"` | `"legend"` |
+| `className` | `string` |            |
+
+```tsx
+<FieldLegend variant="label">Notification Preferences</FieldLegend>
+```
+
+`FieldLegend` 有两种变体：`legend` 和 `label`。 `label` 变体应用标签尺寸和对齐方式。如果您嵌套了 `FieldSet`，这会很方便。
+
+### FieldGroup [#fieldgroup-1]
+
+布局包装器，用于堆叠 `Field` 组件并启用容器查询以实现响应式方向
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldGroup className="@container/field-group flex flex-col gap-6">
+  <Field>{/* ... */}</Field>
+  <Field>{/* ... */}</Field>
+</FieldGroup>
+```
+
+### Field [#field-1]
+单个字段的核心包装器。提供方向控制、无效状态样式和间距
+
+| 属性|类型 |默认|
+| -------------- | ------------------------------------------------------------------ | ------------ |
+| `orientation` | `"vertical" \| "horizontal" \| "responsive"` | `"vertical"` |
+| `className` | `string` |              |
+| `data-invalid` | `boolean` |              |
+
+```tsx
+<Field orientation="horizontal">
+  <FieldLabel htmlFor="remember">Remember me</FieldLabel>
+  <Switch id="remember" />
+</Field>
+```
+
+### FieldContent [#fieldcontent]
+
+当标签位于控件旁边时，可对控件和说明进行分组的 Flex 列。如果您没有描述，则不需要
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<Field>
+  <Checkbox id="notifications" />
+  <FieldContent>
+    <FieldLabel htmlFor="notifications">Notifications</FieldLabel>
+    <FieldDescription>Email, SMS, and push options.</FieldDescription>
+  </FieldContent>
+</Field>
+```
+
+### FieldLabel [#fieldlabel]
+
+标签样式适用于直接输入和嵌套 `Field` 子项
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldLabel htmlFor="email">Email</FieldLabel>
+```
+
+### FieldTitle [#fieldtitle]
+
+在 `FieldContent` 内呈现带有标签样式的标题
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldContent>
+  <FieldTitle>Enable Touch ID</FieldTitle>
+  <FieldDescription>Unlock your device faster.</FieldDescription>
+</FieldContent>
+```
+
+### FieldDescription [#fielddescription]
+
+自动平衡水平布局中的长行的辅助文本槽
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldDescription>We never share your email with anyone.</FieldDescription>
+```
+
+### FieldSeparator [#fieldseparator]
+
+用于分隔 `FieldGroup` 内部各个部分的视觉分隔线。接受可选的内联内容
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<FieldSeparator>Or continue with</FieldSeparator>
+```
+
+### FieldError [#fielderror]
+
+接受子项或 `errors` 数组（例如，来自 `react-hook-form`）的可访问错误容器
+
+| 属性 |类型 |默认 |
+| ----------- | ------------------------------------------------------ | -------- |
+| `errors` | `Array<{ message?: string } \| undefined>` |         |
+| `className` | `string` |         |
+
+```tsx
+<FieldError errors={errors.username} />
+```
+
+当`errors`数组包含多条消息时，组件会自动呈现一个列表。
+
+`FieldError` 还接受任何实现 [Standard Schema](https://standardschema.dev/)] 的验证器产生的问题，包括 Zod、Valibot 和 ArkType。直接从架构结果传递 `issues` 数组，以跨库呈现统一的错误列表。

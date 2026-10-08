@@ -1,0 +1,228 @@
+---
+title: Input Group
+description: "为输入框添加附加内容、按钮和辅助信息"
+base: base
+component: true
+---
+
+<ComponentPreview name="input-group-demo" previewClassName="h-[26rem]" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/input-group
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
+} from "@workspace/ui/components/input-group"
+```
+
+```tsx showLineNumbers
+<InputGroup>
+  <InputGroupInput placeholder="Search..." />
+  <InputGroupAddon>
+    <SearchIcon />
+  </InputGroupAddon>
+</InputGroup>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `InputGroup`：
+
+```text
+InputGroup
+├── InputGroupInput or InputGroupTextarea
+├── InputGroupAddon
+├── InputGroupButton
+└── InputGroupText
+```
+
+## 对齐 [#align]
+
+使用 `InputGroupAddon` 上的 `align` 属性来相对于输入定位插件。
+
+<Callout>
+  为了正确的焦点管理，`InputGroupAddon` 应始终放置在
+  DOM 中的 `InputGroupInput` 或 `InputGroupTextarea`。使用 `align` 属性
+  直观地定位插件。
+</Callout>
+
+### inline-start [#inline-start]
+
+使用 `align="inline-start"` 将插件定位在输入的开头。这是默认设置。
+
+<ComponentPreview name="input-group-inline-start" previewClassName="h-48" />
+
+### inline-end [#inline-end]
+
+使用 `align="inline-end"` 将插件定位在输入的末尾。
+
+<ComponentPreview name="input-group-inline-end" previewClassName="h-48" />
+
+### block-start [#block-start]
+
+使用 `align="block-start"` 将插件放置在输入上方。
+
+<ComponentPreview name="input-group-block-start" previewClassName="h-96" />
+
+### block-end [#block-end]
+
+使用 `align="block-end"` 将插件放置在输入下方。
+
+<ComponentPreview name="input-group-block-end" previewClassName="h-[26rem]" />
+
+## 图标 [#icon]
+
+<ComponentPreview name="input-group-icon" previewClassName="h-80" />
+
+## 文字 [#text]
+
+<ComponentPreview name="input-group-text" previewClassName="h-80" />
+
+## 按钮组合 [#button]
+
+<ComponentPreview name="input-group-button" previewClassName="h-72" />
+
+## 快捷键组合 [#kbd]
+
+<ComponentPreview name="input-group-kbd" previewClassName="h-40" />
+
+## 下拉菜单 [#dropdown]
+
+<ComponentPreview name="input-group-dropdown" previewClassName="h-56" />
+
+## 加载状态 [#loader]
+
+<ComponentPreview name="input-group-loading" previewClassName="h-80" />
+
+## 多行输入框组合 [#textarea]
+
+<ComponentPreview name="input-group-textarea" previewClassName="h-96" />
+
+## 自定义输入控件 [#custom-input]
+
+将 `data-slot="input-group-control"` 属性添加到自定义输入以进行自动焦点状态处理。
+
+下面是来自第三方库的自定义可调整大小的文本区域的示例。
+
+<ComponentPreview name="input-group-custom" previewClassName="h-56" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="input-group-rtl" previewClassName="h-[30rem]" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### InputGroup [#inputgroup]
+包装输入和插件的主要组件
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<InputGroup>
+  <InputGroupInput />
+  <InputGroupAddon />
+</InputGroup>
+```
+
+### InputGroupAddon [#inputgroupaddon]
+
+在输入旁边显示图标、文本、按钮或其他内容。
+
+<Callout title="Focus Navigation">
+  为了正确进行焦点导航，应放置 `InputGroupAddon` 组件
+  输入后。设置 `align` 属性来定位插件。
+</Callout>
+
+| 属性|类型 |默认 |
+| ----------- | ---------------------------------------------------------------- | ---------------- |
+| `align` | `"inline-start" \| "inline-end" \| "block-start" \| "block-end"` | `"inline-start"` |
+| `className` | `string` |                  |
+
+```tsx
+<InputGroupAddon align="inline-end">
+  <SearchIcon />
+</InputGroupAddon>
+```
+
+**对于 `<InputGroupInput />`，请使用 `inline-start` 或 `inline-end` 对齐。对于 `<InputGroupTextarea />`，请使用 `block-start` 或 `block-end` 对齐。**
+
+`InputGroupAddon` 组件可以有多个 `InputGroupButton` 组件和图标。
+
+```tsx
+<InputGroupAddon>
+  <InputGroupButton>Button</InputGroupButton>
+  <InputGroupButton>Button</InputGroupButton>
+</InputGroupAddon>
+```
+
+### InputGroupButton [#inputgroupbutton]
+
+显示输入组内的按钮
+
+| 属性|类型 |默认 |
+| ----------- | -------------------------------------------------------------------------------------------------- | --------- |
+| `size` | `"xs" \| "icon-xs" \| "sm" \| "icon-sm"` | `"xs"` |
+| `variant` | `"default" \| "destructive" \| "outline" \| "secondary" \| "ghost" \| "link"` | `"ghost"` |
+| `className` | `string` |           |
+
+```tsx
+<InputGroupButton>Button</InputGroupButton>
+<InputGroupButton size="icon-xs" aria-label="Copy">
+  <CopyIcon />
+</InputGroupButton>
+```
+
+### InputGroupInput [#inputgroupinput]
+
+构建输入组时替换 `<Input />`。该组件预先应用了输入组样式，并使用统一的 `data-slot="input-group-control"` 进行焦点状态处理
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+所有其他 props 都会传递到底层 `<Input />` 组件。
+
+```tsx
+<InputGroup>
+  <InputGroupInput placeholder="Enter text..." />
+  <InputGroupAddon>
+    <SearchIcon />
+  </InputGroupAddon>
+</InputGroup>
+```
+
+### InputGroupTextarea [#inputgrouptextarea]
+
+构建输入组时替换 `<Textarea />`。该组件预先应用了文本区域组样式，并使用统一的 `data-slot="input-group-control"` 进行焦点状态处理
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+所有其他 props 都会传递到底层 `<Textarea />` 组件。
+
+```tsx
+<InputGroup>
+  <InputGroupTextarea placeholder="Enter message..." />
+  <InputGroupAddon align="block-end">
+    <InputGroupButton>Send</InputGroupButton>
+  </InputGroupAddon>
+</InputGroup>
+```

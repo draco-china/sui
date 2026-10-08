@@ -1,0 +1,59 @@
+---
+title: Toggle
+description: "可以打开或关闭的两种状态按钮"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/toggle
+  api: https://base-ui.com/react/components/toggle#api-reference
+---
+
+<ComponentPreview name="toggle-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/toggle
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Toggle } from "@workspace/ui/components/toggle"
+```
+
+```tsx
+<Toggle>Toggle</Toggle>
+```
+
+## 描边 [#outline]
+
+使用 `variant="outline"` 作为轮廓样式。
+
+<ComponentPreview name="toggle-outline" />
+
+## 带文字 [#with-text]
+
+<ComponentPreview name="toggle-text" />
+
+## 尺寸 [#size]
+
+使用 `size` 属性更改切换的大小。
+
+<ComponentPreview name="toggle-sizes" />
+
+## 禁用状态 [#disabled]
+
+<ComponentPreview name="toggle-disabled" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="toggle-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅 [Base UI Toggle](https://base-ui.com/react/components/toggle#api-reference) 文档。

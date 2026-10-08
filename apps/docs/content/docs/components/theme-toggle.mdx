@@ -1,0 +1,57 @@
+---
+title: Theme Toggle
+description: A controlled light/dark switch with optional view-transition effects.
+---
+
+<ComponentPreview name="theme-toggle-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/theme-toggle
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { ThemeToggle } from "@workspace/ui/components/theme-toggle";
+import { useState } from "react";
+
+export function Appearance() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  return <ThemeToggle theme={theme} onThemeChange={setTheme} />;
+}
+```
+
+## Controlled appearance [#controlled]
+
+`theme` is the current resolved light or dark theme. `onThemeChange` requests the other theme. Apply the new theme to your application in this callback; the component does not set a provider, save preferences, or implement a System preference. The live examples use the documentation’s `next-themes` provider and change the whole site appearance, saving the selected mode while retaining its accent color. The header still offers System mode and accent settings.
+
+For a System setting, resolve it in your application and pass the effective light or dark theme here. Keep your application’s preference controls separate when System must remain selectable.
+
+## Transition variants [#transitions]
+
+Choose `rectangle`, `circle`, `circle-blur`, or `blinds`. The `start` option selects an origin such as the clicked button, a corner, the center, or a bottom-up transition. These effects use the browser View Transition API. Without support, or with reduced motion, the component changes the theme directly.
+
+<ComponentPreview name="theme-toggle-variants" />
+
+## Labels and icons [#labels]
+
+`lightLabel` and `darkLabel` describe the action to switch to each theme and supply the tooltip text. The default ghost button uses a 16px Sun/Moon SVG with 2px strokes and a snappy spring geometry morph. Reduced motion swaps the shape directly. Customize `lightIcon`, `darkIcon`, and `iconClassName` when needed; arbitrary React icons switch directly rather than undergoing a path morph. Native button props, including `disabled`, `ref`, and `render`, are supported. The switch does not submit a surrounding form.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `theme` | `"light" \| "dark"` | Required resolved theme. |
+| `onThemeChange` | `(theme: "light" \| "dark") => void` | Required theme update callback. |
+| `variant` | `"rectangle" \| "circle" \| "circle-blur" \| "blinds"` | `"rectangle"`. |
+| `start` | `"button" \| "top-left" \| "top-right" \| "bottom-left" \| "bottom-right" \| "center" \| "bottom-up"` | `"bottom-up"`. |
+| `lightLabel`, `darkLabel` | `string` | English switch-action labels. |
+| `lightIcon`, `darkIcon` | `ReactNode` | Default theme icons. |
+| `iconClassName` | `string` | Optional icon styling. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `ThemeToggleProps`. See [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) for browser transition behavior.

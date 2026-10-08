@@ -1,0 +1,254 @@
+---
+title: Pagination
+description: 紧凑的数据分页，支持范围摘要、页码导航和每页条数选择
+base: base
+component: true
+---
+
+`Pagination` 将范围摘要与紧凑的导航控件组合在一起，适合数据表格、列表和逐页加载的 API 结果。组件管理分页导航状态，应用负责提供并展示当前页的数据。
+
+<ComponentPreview name="pagination-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/pagination
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+省略 `children` 时，`Pagination` 会自动渲染 `PaginationInfo` 和 `PaginationControls`。提供 `totalCount` 后，默认显示首页、上一页、页码输入框、下一页和末页控件。
+
+```tsx
+import { Pagination } from "@workspace/ui/components/pagination";
+import { useState } from "react";
+
+export function ResultsPagination() {
+  const [page, setPage] = useState(1);
+
+  return (
+    <Pagination
+      page={page}
+      onPageChange={setPage}
+      perPage={10}
+      totalCount={100}
+    />
+  );
+}
+```
+
+页码从 `1` 开始。不传 `page` 时，组件使用初始为 `1` 的内部页码状态，仍会通过 `onPageChange` 通知变更。受控使用时，在 `onPageChange` 中更新 `page`。应用可以根据当前页码和每页条数截取本地数据，或请求对应的服务端结果。
+
+已知总量时，页码输入框在按 Enter 或失焦后提交。整数输入会被限制在有效页码范围内；空值、小数或非数字输入会恢复当前页码。按 Escape 取消编辑。按 Enter 不会提交外层表单。
+
+## 简洁模式 [#simple]
+
+设置 `controls="simple"`，保留范围摘要，仅显示上一页和下一页按钮。首页、末页和页码选择器会隐藏。
+
+<ComponentPreview name="pagination-simple" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={10}
+  totalCount={100}
+  controls="simple"
+/>
+```
+
+## 未知总量 [#unknown-totals]
+
+对于只返回是否还有下一页的 API，省略 `totalCount`，并根据响应设置 `hasNextPage`。总量未知时，即使设置 `controls="full"`，也只显示逐页导航的上一页和下一页，不提供首页、末页或任意页码跳转。
+
+默认摘要显示 `Page N`，可通过 `labels.range` 本地化，也可以在 `PaginationInfo` 中自定义摘要。总量未知时，`from` 和 `to` 仅根据页码及每页条数推算，不代表服务端实际返回的数据条数。
+
+<ComponentPreview name="pagination-unknown-total" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={20}
+  hasNextPage={response.hasNextPage}
+/>
+```
+
+只有 `hasNextPage={true}` 才会启用下一页按钮。当前页不是首页时，仍可返回上一页。
+
+## 状态 [#states]
+
+已知总量时支持中间页和大数据集。`totalCount={0}` 的默认摘要为 `Showing 0–0 of 0`，导航控件全部禁用。根组件的 `disabled` 还会禁用页码选择器、导航按钮及内部的每页条数选择器。
+
+<ComponentPreview name="pagination-states" />
+
+当总量或每页条数变化，使请求的页码超出新范围时，界面会立即显示最近的有效页码，并通过 `onPageChange` 通知这次修正。
+
+## 组合 [#composition]
+
+传入子组件，自行排列摘要、导航控件和每页条数选择器。`PaginationInfo`、`PaginationControls` 和 `PaginationPageSize` 从父级 `Pagination` 读取共享状态。显式设置 `children={null}` 可以不渲染默认内容。
+
+```tsx
+import {
+  Pagination,
+  PaginationControls,
+  PaginationInfo,
+  PaginationPageSize,
+  PaginationSeparator,
+} from "@workspace/ui/components/pagination";
+```
+
+```text
+Pagination
+├── PaginationInfo
+└── div
+    ├── PaginationPageSize
+    ├── PaginationSeparator
+    └── PaginationControls
+```
+
+### 每页条数与自定义摘要 [#page-sizes]
+
+`PaginationPageSize` 独立受控。让它的 `value` 与根组件的 `perPage` 保持一致，并通常在条数变化时回到第 `1` 页。选项默认为 `[10, 20, 50, 100]`；无效或重复选项会被移除，当前值会自动加入选项。
+
+在 `PaginationInfo` 中传入渲染函数，可以自定义摘要。也可以在根组件设置 `labels.range`，统一修改所有默认 `PaginationInfo` 的摘要。
+
+<ComponentPreview name="pagination-custom" />
+
+```tsx
+<Pagination
+  page={page}
+  onPageChange={setPage}
+  perPage={perPage}
+  totalCount={205}
+>
+  <PaginationInfo>
+    {({ page, pageCount, perPage }) =>
+      `第 ${page} 页／共 ${pageCount} 页，每页 ${perPage} 条`
+    }
+  </PaginationInfo>
+  <div className="flex flex-wrap items-center gap-3">
+    <PaginationPageSize
+      value={perPage}
+      onValueChange={(size) => {
+        setPerPage(size);
+        setPage(1);
+      }}
+      options={[10, 20, 50]}
+      label="每页条数"
+    />
+    <PaginationSeparator />
+    <PaginationControls />
+  </div>
+</Pagination>
+```
+
+### 下拉页码选择器 [#dropdown]
+
+在 `PaginationControls` 上设置 `pageSelector="dropdown"`，通过菜单选择页码。此功能用于已知总量的完整控件。页数超过 200 时会自动回退为页码输入框，避免创建过大的菜单。
+
+<ComponentPreview name="pagination-dropdown" />
+
+```tsx
+<Pagination page={page} onPageChange={setPage} perPage={25} totalCount={500}>
+  <PaginationInfo />
+  <PaginationControls pageSelector="dropdown" />
+</Pagination>
+```
+
+## 仅图标导航 [#icons-only]
+
+将简洁导航与每页条数选择器组合，构建紧凑的表格页脚。导航按钮使用图标，并提供可访问名称。
+
+<ComponentPreview name="pagination-icons-only" />
+
+## 传统数字链接 [#numbered-links]
+
+原有的 `PaginationContent`、`PaginationItem`、`PaginationLink`、`PaginationPrevious`、`PaginationNext` 和 `PaginationEllipsis` 仍可用于基于 URL 的导航。它们不会自动更新根组件页码状态或生成页码列表，需要应用提供链接、当前页及边界禁用状态。
+
+`PaginationLink` 渲染原生链接，`isActive` 会设置 `aria-current="page"`。禁用的链接没有 `href`，不会进入 Tab 顺序，也不会调用点击处理函数。示例提供有意义的 `?page=N` 地址，并在本地处理导航，确保预览停留在当前文档页面。
+
+<ComponentPreview name="pagination-links" />
+
+```tsx
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@workspace/ui/components/pagination";
+```
+
+```tsx
+<Pagination>
+  <PaginationContent>
+    <PaginationItem>
+      <PaginationPrevious href="?page=1" text="上一页" />
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="?page=1">1</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="?page=2" isActive>2</PaginationLink>
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationEllipsis />
+    </PaginationItem>
+    <PaginationItem>
+      <PaginationNext href="?page=3" text="下一页" />
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
+```
+
+## 从右到左 [#rtl]
+
+使用共享的 `DirectionProvider` 包裹从右到左的界面，并在对应容器设置 `dir="rtl"`，导航图标会自动镜像。另行传入翻译后的 `labels` 和本地化 `range` 格式化函数；布局方向不会自动选择语言。
+
+<ComponentPreview name="pagination-rtl" direction="rtl" />
+
+## 无障碍与本地化 [#accessibility]
+
+根组件是带可访问名称的 `nav`。所有图标按钮和选择器从 `labels` 读取可访问名称；`PaginationInfo` 会以礼貌模式通知摘要变化。数据分页导航按钮都使用 `type="button"`。
+
+页码输入框支持键盘编辑、按 Enter 提交，以及按 Escape 恢复当前页码。下拉选择器复用共享的 [Select](/zh-CN/docs/components/select) 组件及其键盘交互。
+
+本地化时，翻译 `navigation`、`firstPage`、`previousPage`、`nextPage`、`lastPage`、`pageNumber`、`pageSize` 和 `range`。传统链接还需要翻译 `PaginationPrevious` 和 `PaginationNext` 的可见 `text`，并为数字链接提供清晰的名称。请显式设置 `PaginationPageSize` 的可见 `label` 文案。
+
+## API 参考 [#api-reference]
+
+### Pagination [#pagination-api]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `page` | `number` | 内部状态，初始为 `1` | 受控页码，从 1 开始 |
+| `onPageChange` | `(page: number) => void` | — | 通知导航和范围变化后的页码修正 |
+| `perPage` | `number` | `10` | 每页条数 |
+| `totalCount` | `number` | — | 总条数；未知总量时省略 |
+| `hasNextPage` | `boolean` | — | 总量未知时，控制是否能前往下一页 |
+| `controls` | `"full" \| "simple"` | `"full"` | 默认控件模式 |
+| `disabled` | `boolean` | `false` | 禁用内部导航与选择器 |
+| `labels` | `PaginationLabels` | 英文文案 | 可访问名称和摘要格式化函数 |
+| `children` | `ReactNode` | 摘要与导航控件 | 自定义组合；`null` 不渲染默认布局 |
+
+其他原生 `nav` 属性，包括 `className`、`aria-label` 和 `ref`，会透传到根节点。
+
+### 子组件 [#parts-api]
+
+| 组件 | 额外属性 | 行为 |
+| --- | --- | --- |
+| `PaginationInfo` | `children?: ReactNode \| ((info: PaginationRangeInfo) => ReactNode)` | 自定义内容或摘要渲染函数 |
+| `PaginationControls` | `controls?: "full" \| "simple"`、`pageSelector?: "input" \| "dropdown"` | 继承根组件模式；选择器默认为 `"input"` |
+| `PaginationPageSize` | `value: number`、`onValueChange: (value: number) => void`、`options?: readonly number[]`、`label?: ReactNode`、`disabled?: boolean` | 受控条数选择器；可见标签默认为 `"Rows per page"`，`label={null}` 隐藏标签 |
+| `PaginationSeparator` | [Separator 属性](/zh-CN/docs/components/separator) | 默认垂直分隔 |
+| `PaginationLink` | `isActive?: boolean`、`disabled?: boolean`、`size` | 原生链接属性，以及当前页和禁用状态 |
+| `PaginationPrevious`、`PaginationNext` | Link 属性、`text?: string` | 上一页和下一页链接；可见文字默认为 `"Previous"`／`"Next"` |
+
+`PaginationInfo`、`PaginationControls` 和 `PaginationPageSize` 透传原生 `div` 属性。`PaginationRangeInfo` 包含 `page`、`perPage`、`from`、`to`，以及可选的 `totalCount` 和 `pageCount`。已知总量为空时，`from=0`、`to=0`、`pageCount=1`。
+
+范围、文案和组件属性类型均从 `@workspace/ui/components/pagination` 导出。组合中的选择器使用共享 Select 封装，底层行为见 [Base UI Select API](https://base-ui.com/react/components/select)。

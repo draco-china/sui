@@ -1,0 +1,82 @@
+---
+title: Sheet
+description: "扩展 Dialog 组件以显示补充屏幕主要内容的内容"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/dialog
+  api: https://base-ui.com/react/components/dialog#api-reference
+---
+
+<ComponentPreview name="sheet-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/sheet
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@workspace/ui/components/sheet"
+```
+
+```tsx showLineNumbers
+<Sheet>
+  <SheetTrigger>Open</SheetTrigger>
+  <SheetContent>
+    <SheetHeader>
+      <SheetTitle>Are you absolutely sure?</SheetTitle>
+      <SheetDescription>This action cannot be undone.</SheetDescription>
+    </SheetHeader>
+  </SheetContent>
+</Sheet>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Sheet`：
+
+```text
+Sheet
+├── SheetTrigger
+└── SheetContent
+    ├── SheetHeader
+    │   ├── SheetTitle
+    │   └── SheetDescription
+    └── SheetFooter
+```
+
+## 方向 [#side]
+
+使用 `SheetContent` 上的 `side` 属性设置工作表出现的屏幕边缘。值为 `top`、`right`、`bottom` 或 `left`。
+
+<ComponentPreview name="sheet-side" />
+
+## 隐藏关闭按钮 [#no-close-button]
+
+在`SheetContent`上使用`showCloseButton={false}`隐藏关闭按钮。
+
+<ComponentPreview name="sheet-no-close-button" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="sheet-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI Dialog](https://base-ui.com/react/components/dialog#api-reference) 文档。

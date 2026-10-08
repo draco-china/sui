@@ -1,0 +1,48 @@
+---
+title: LLMs
+description: 以纯文本读取 SUI 文档和完整示例
+---
+
+通过 LLM 接口向助手提供当前 SUI API 和示例。这些接口用于读取文档；安装组件源码时使用 [MCP](/zh-CN/docs/mcp) 或 [CLI](/zh-CN/docs/cli)。
+
+## 文档入口 [#endpoints]
+
+| 内容 | English | 简体中文 |
+| --- | --- | --- |
+| 页面索引 | [`/llms.txt`](/llms.txt) | [`/zh-CN/llms.txt`](/zh-CN/llms.txt) |
+| 完整文档 | [`/llms-full.txt`](/llms-full.txt) | [`/zh-CN/llms-full.txt`](/zh-CN/llms-full.txt) |
+| 单个组件 | [Button Markdown](/api/llms-markdown?locale=en-US&slug=components/button) | [Button Markdown](/api/llms-markdown?locale=zh-CN&slug=components/button) |
+
+这些路径属于当前文档站的访问地址。GitHub raw 托管 [registry](/zh-CN/docs/registry) JSON，LLM 接口则由文档站提供。
+
+索引按指南、组件、Blocks 和工具整理页面，并链接到对应 Markdown。建议先读取索引，再读取任务相关页面。完整文档包含所有页面，通常比单次请求所需的上下文更大。
+
+## 读取单个页面 [#read-one-page]
+
+`/api/llms-markdown` 接受 `locale` 和 `slug`：
+
+| 参数 | 可选值 | 默认值 |
+| --- | --- | --- |
+| `locale` | `en-US`、`zh-CN` | `en-US` |
+| `slug` | 不含 `/docs/` 的文档路径，如 `components/button`、`blocks/data-table` 或 `theming` | 省略时返回简介 |
+
+无效语言和不存在的文档返回 `404`。显式访问 `/en-US/llms.txt` 或 `/en-US/llms-full.txt` 时，会重定向到没有语言前缀的英文地址。
+
+[读取 Sensitive Input Markdown](/api/llms-markdown?locale=zh-CN&slug=components/sensitive-input)
+
+结果包含标题、描述、页面地址、API 说明，以及该页面共享示例的完整源码。预览和代码展示读取同一份示例文件，纯文本内容也与可运行文档保持一致。
+
+## 从页面复制 [#copy-from-a-document]
+
+页面头部提供**复制 Markdown**和**打开**。复制 Markdown 获取原始 MDX 文档；打开菜单可将展开后的 LLM Markdown 提供给助手。程序读取时，`/api/markdown` 返回原始文档，`/api/llms-markdown` 会将共享示例展开为代码块。
+
+## 请求示例 [#example-request]
+
+```text
+读取 SUI 的 llms.txt，再阅读 Field 和 Sensitive Input 文档。
+组合一个带标签的敏感输入框，校验信息由应用提供。
+验证逻辑和翻译文案保留在应用中。
+安装源码后，使用我的 components.json 中配置的导入别名。
+```
+
+文档示例使用 `@workspace/ui/components/button` 等工作区路径。安装源码后使用应用自身的别名，映射方式见[安装指南](/zh-CN/docs/installation#import-installed-source)。读取文档不会安装文件或配置 MCP 客户端。

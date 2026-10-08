@@ -1,0 +1,208 @@
+---
+title: Marker
+description: "显示对话中的内联状态、系统注释、边框行或带标签的分隔符"
+base: base
+component: true
+---
+
+<ComponentPreview name="marker-demo" previewClassName="h-auto theme-blue" />
+
+`Marker` 组件显示内联对话标记，例如状态更新、系统注释、带边框的行和带标签的分隔符。在对话线程中将其与 [`Message`](/zh-CN/docs/components/message) 组合。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/marker
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/marker"
+```
+
+```tsx showLineNumbers
+<Marker>
+  <MarkerIcon>
+    <CheckIcon />
+  </MarkerIcon>
+  <MarkerContent>Explored 4 files</MarkerContent>
+</Marker>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建标记：
+
+```text
+Marker
+├── MarkerIcon
+└── MarkerContent
+```
+
+## 特性 [#features]
+
+- 内联标记、边框行和带标签的分隔符变体
+- 辅助技术隐藏的装饰图标槽
+-  通过 `render` 的多态根用于链接和按钮标记
+- 与[`shimmer`](https://ui.shadcn.com/docs/utils/shimmer)工具类配对，用于流式传输状态文本
+-  通过每个部分的 `className` 属性可定制样式
+
+## 变体 [#variants]
+
+使用 `variant` 在内联标记、边框行和带标签的分隔符之间切换。
+
+<ComponentPreview name="marker-variants" previewClassName="h-auto theme-blue" />
+
+| 变体 |描述 |
+| ----------- | ---------------------------------------------------------------- |
+| `default` |状态、注释和操作的内嵌标记     |
+| `border` |行下方带有底部边框的默认标记 |
+| `separator` |居中标签，每侧都有分隔线    |
+
+## 状态 [#status]
+
+设置 `role="status"` 并包含 [`Loader`](/zh-CN/docs/components/loader) 用于流式传输或正在进行的标记，以便播报更新。
+
+<ComponentPreview name="marker-status" previewClassName="h-auto theme-blue" />
+
+## 流光动画 [#shimmer]
+
+将 [`shimmer`](https://ui.shadcn.com/docs/utils/shimmer) 工具类添加到 `MarkerContent` 以获得动画流式文本效果。该工具类随 `shadcn` 软件包一起提供 - 请参阅 shimmer 文档进行安装。
+
+<ComponentPreview name="marker-shimmer" previewClassName="h-auto theme-blue" />
+
+## 分隔线 [#separator]
+
+使用 `separator` 变体作为对话中标记的分隔符，例如日期或分节符。
+
+<ComponentPreview name="marker-separator" previewClassName="h-auto theme-blue" />
+
+## 边框 [#border]
+
+对状态行使用 `border` 变体，在分隔下一行时应保持默认标记对齐。
+
+<ComponentPreview name="marker-border" previewClassName="h-auto theme-blue" />
+
+## 带图标 [#with-icon]
+
+使用 `MarkerIcon` 在内容旁边呈现图标。使用`flex-col`将图标堆叠在内容上方。
+
+<ComponentPreview name="marker-icon" previewClassName="h-auto theme-blue" />
+
+## 链接与按钮 [#links-and-buttons]
+
+使用 `Marker` 上的 `render` 属性将标记变成链接或按钮。
+
+<ComponentPreview name="marker-link-button" previewClassName="h-auto theme-blue" />
+
+```tsx showLineNumbers
+import { Marker, MarkerContent } from "@workspace/ui/components/marker"
+
+export function MarkerLinkDemo() {
+  return (
+    <Marker render={<a href="#" />}>
+      <MarkerContent>View the pull request</MarkerContent>
+    </Marker>
+  )
+}
+```
+
+## 无障碍 [#accessibility]
+
+`Marker` 默认仅提供展示样式。应根据实际用途选择语义角色，而不是依赖统一的默认角色。
+
+### 状态与进度 [#status-and-progress]
+
+对于“思考中”或工具执行中等状态标记，设置 `role="status"`，让辅助技术在状态变化时播报。`Marker` 会将 `role` 传递到底层元素。
+
+```tsx showLineNumbers
+<Marker role="status">
+  <MarkerIcon>
+    <Loader size="sm" />
+  </MarkerIcon>
+  <MarkerContent>Compacting conversation</MarkerContent>
+</Marker>
+```
+
+### 带标签的分隔线 [#labeled-separators]
+
+包含日期或分区标签的分隔线不需要设置角色。线条是装饰性的 CSS 伪元素，标签文字作为普通内容播报。
+
+```tsx showLineNumbers
+<Marker variant="separator">
+  <MarkerContent>Today</MarkerContent>
+</Marker>
+```
+
+<Callout>
+  **注意：** 不要为带标签的分隔线设置 `role="separator"`。这种角色的无障碍名称来自 `aria-label`，而不是可见文字；其内部内容被视为展示性内容，因此标签不会被播报。只有不包含有意义文字的分隔线才应使用 `role="separator"`。
+</Callout>
+
+### 带边框的标记 [#bordered-markers]
+
+带边框的标记与默认标记具有相同语义，底部边框仅用于装饰。应根据用途选择 `role="status"`、通过 `render` 使用交互元素，或不设置角色。
+
+```tsx showLineNumbers
+<Marker variant="border">
+  <MarkerIcon>
+    <FileTextIcon />
+  </MarkerIcon>
+  <MarkerContent>Opened implementation notes</MarkerContent>
+</Marker>
+```
+
+### 装饰图标 [#decorative-icons]
+
+`MarkerIcon` 是装饰性图标，通过 `aria-hidden` 对辅助技术隐藏，含义由相邻的 `MarkerContent` 传达。如果标记只显示图标，请提供 `aria-label` 或可见文字，避免无障碍名称为空。
+
+```tsx showLineNumbers
+<Marker aria-label="Synced">
+  <MarkerIcon>
+    <CheckIcon />
+  </MarkerIcon>
+</Marker>
+```
+
+### 交互式标记 [#interactive-markers]
+
+标记作为链接或触发操作时，通过 `render` 渲染为真实的 `<a>` 或 `<button>`，让它可聚焦并具有正确语义。无障碍名称来自标记文字。
+
+```tsx showLineNumbers
+<Marker render={<a href="/files" />}>
+  <MarkerIcon>
+    <FileTextIcon />
+  </MarkerIcon>
+  <MarkerContent>Explored 4 files</MarkerContent>
+</Marker>
+```
+
+## API 参考 [#api-reference]
+
+### Marker [#marker]
+
+根标记元素。该文件还导出 `markerVariants` 以将标记样式组合到自定义组件中
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------------------------------------------------- | ----------- | ------------------------------------------------ |
+| `variant` | `"default" \| "border" \| "separator"` | `"default"` |标记布局                               |
+| `render` | `ReactElement \| function` | - |呈现为不同的元素，例如链接   |
+| `className` | `string` | - |应用于根元素的额外类名 |
+
+### MarkerIcon [#markericon]
+
+装饰性图标槽。使用 `aria-hidden` 隐藏辅助技术
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------------------------ |
+| `className` | `string` | - |应用于图标槽的额外类名 |
+
+### MarkerContent [#markercontent]
+
+标记文本内容
+
+| 属性|类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------ |
+| `className` | `string` | - |应用于内容槽的额外类名 |

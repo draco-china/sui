@@ -1,0 +1,97 @@
+---
+title: Code Viewer
+description: 支持语法高亮、折叠、行高亮、复制和流式反馈的代码查看器
+---
+
+<ComponentPreview name="code-viewer-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/code-viewer
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { CodeViewer } from "@workspace/ui/components/code-viewer";
+
+<CodeViewer code={'const theme = "bamboo";'} lang="typescript" title="theme.ts" />;
+```
+
+## 行号、折叠与布局 [#lines]
+
+默认显示行号，`highlightLines` 使用从 1 开始的行号。以 `{`、`[` 或 `(` 结尾并跟随缩进内容的代码块，可以通过行号旁的控件折叠；`code` 变化会重置折叠状态。这是基于缩进的查看方式，不是语法感知的代码编辑器。
+
+使用 `wrap` 换行显示长行，或用 `maxHeight` 限制滚动区域高度。紧凑片段可设置 `showLineNumbers={false}`。滚动区可以通过 Tab 聚焦，显示主题色焦点环，并支持键盘滚动。
+
+## 流式内容 [#streaming]
+
+追加代码时传入 `status="streaming"`，完成后改为 `"complete"`。查看器显示状态反馈，并在接近底部时跟随新内容。读者向上滚动、离底部超过 32px 后暂停跟随，返回底部后恢复；开始新一轮流式内容时默认恢复跟随。示例在本地重放内容序列，并在卸载时清理计时器。
+
+<ComponentPreview name="code-viewer-streaming" />
+
+## 复制与主题 [#copy]
+
+复制操作写入完整原始代码，包括被折叠的行，并显示成功或失败反馈。`copyable={false}` 移除复制操作。高亮异步加载，等待时显示固定范围的骨架，流式更新期间继续展示新文字；等待时仍可复制完整源码，辅助技术也可读取；失败时仍可阅读纯文本代码。空字符串显示空状态文案。
+
+未设置 `theme` 时，查看器跟随周围的明暗主题。通过 `labels` 翻译复制、加载、空内容、折叠、正在编写、就绪及复制结果文案。
+
+## 简洁外观与高亮配置 [#plain]
+
+`variant="plain"` 去掉外框和标题栏，保留代码与复制操作，适合嵌入现有表面。通过 CSS 变量 `--code-highlight-bg` 定制高亮行背景。
+
+可选的 `ShikiProvider` 为内部查看器和编辑器共享高亮配置。`themes` 提供浅色和深色主题，`languages` 按需预加载语言。没有 Provider 也可正常高亮；识别的语言和别名按需加载，未知语言回退为纯文本。
+
+<ComponentPreview name="code-viewer-plain" />
+
+```tsx
+import { CodeViewer, ShikiProvider } from "@workspace/ui/components/code-viewer";
+
+<ShikiProvider
+  themes={{ light: "github-light", dark: "github-dark" }}
+  languages={["python", "sql"]}
+>
+  <CodeViewer
+    code={code}
+    lang="python"
+    variant="plain"
+    highlightLines={[2]}
+    className="[--code-highlight-bg:var(--accent)]"
+  />
+</ShikiProvider>;
+```
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `variant` | `"default" \| "plain"` | `"default"` |
+| `code` | `string` | 必填源码 |
+| `lang` | `string` | `"typescript"` |
+| `theme` | `"light" \| "dark"` | 跟随周围主题 |
+| `title` | `ReactNode` | 可选的标题 |
+| `status` | `"streaming" \| "complete"` | `"complete"` |
+| `showLineNumbers` | `boolean` | `true` |
+| `highlightLines` | `number[]` | `[]`；行号从 1 开始 |
+| `maxHeight` | `number` | `280` 像素 |
+| `wrap` | `boolean` | `false` |
+| `copyable` | `boolean` | `true` |
+| `labels` | `Partial<CodeViewerLabels>` | 英文文案 |
+| `glass` | `boolean` | `false` |
+
+模块导出 `CodeViewerProps` 和 `CodeViewerLabels`。语法高亮使用 [Shiki](https://shiki.style/guide/)。需要编辑内容时使用 [Editor](/zh-CN/docs/components/editor)。
+
+`ShikiProviderProps` 同样从此模块导出，主题名称使用 Shiki 内置主题。
+
+### ShikiProvider [#shiki-provider-api]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `themes` | `{ light: BundledTheme; dark: BundledTheme }` | `one-light` 和 `one-dark-pro` |
+| `languages` | `readonly string[]` | 可选的预加载语言列表 |
+| `onError` | `(error: unknown) => void` | 通知预加载失败，不影响纯文本回退 |
+
+建议将固定的 `themes` 和 `languages` 放在组件外部，避免重复触发预加载。

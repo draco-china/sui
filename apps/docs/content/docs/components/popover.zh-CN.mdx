@@ -1,0 +1,84 @@
+---
+title: Popover
+description: "通过按钮触发，在Portal 容器中显示富内容"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/popover
+  api: https://base-ui.com/react/components/popover#api-reference
+---
+
+<ComponentPreview name="popover-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/popover
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
+```
+
+```tsx showLineNumbers
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>
+    Open Popover
+  </PopoverTrigger>
+  <PopoverContent>
+    <PopoverHeader>
+      <PopoverTitle>Title</PopoverTitle>
+      <PopoverDescription>Description text here.</PopoverDescription>
+    </PopoverHeader>
+  </PopoverContent>
+</Popover>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Popover`：
+
+```text
+Popover
+├── PopoverTrigger
+└── PopoverContent
+```
+
+## 基本用法 [#basic]
+
+一个简单的弹出窗口，包含标题、标题和说明。
+
+<ComponentPreview name="popover-basic" />
+
+## 对齐 [#align]
+
+使用 `PopoverContent` 上的 `align` 属性来控制水平对齐。
+
+<ComponentPreview name="popover-alignments" />
+
+## 带表单 [#with-form]
+
+内部有表单字段的弹出窗口。
+
+<ComponentPreview name="popover-form" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="popover-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅 [Base UI Popover](https://base-ui.com/react/components/popover#api-reference) 文档。

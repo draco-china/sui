@@ -1,0 +1,317 @@
+---
+title: Calendar
+description: "允许用户选择日期或日期范围的日历组件"
+base: base
+component: true
+links:
+  doc: https://react-day-picker.js.org
+---
+
+<ComponentPreview name="calendar-demo" previewClassName="h-96" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/calendar
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Calendar } from "@workspace/ui/components/calendar"
+```
+
+```tsx showLineNumbers
+const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+return (
+  <Calendar
+    mode="single"
+    selected={date}
+    onSelect={setDate}
+    className="rounded-lg border"
+  />
+)
+```
+
+有关更多信息，请参阅 [React DayPicker](https://react-day-picker.js.org) 文档。
+
+## 关于 [#about]
+
+`Calendar` 组件构建在 [React DayPicker](https://react-day-picker.js.org) 之上。
+
+## 日期选择器 [#date-picker]
+
+您可以使用 `<Calendar>` 组件构建日期选择器。有关更多信息，请参阅[日期选择器](https://ui.shadcn.com/docs/components/base/date-picker) 页面。
+
+## 波斯历、回历与贾拉里历 [#persian--hijri--jalali-calendar]
+
+要使用波斯日历，请编辑 `packages/ui/src/components/calendar.tsx` 并将 `react-day-picker` 替换为 `@daypicker/persian`。
+
+```diff
+- import { DayPicker } from "react-day-picker"
++ import { DayPicker } from "@daypicker/persian"
+```
+
+上游示例名为 Hijri，但实际使用波斯历／贾拉里历。React DayPicker v10 使用 `@daypicker/persian` 扩展包。
+
+<ComponentPreview name="calendar-hijri" previewClassName="h-[400px]" />
+
+## 选中日期与时区 [#selected-date-with-timezone]
+
+日历组件接受 `timeZone` 属性，以确保在用户的本地时区中显示和选择日期。
+
+```tsx showLineNumbers
+export function CalendarWithTimezone() {
+  const [date, setDate] = React.useState<Date | undefined>(undefined)
+  const [timeZone, setTimeZone] = React.useState<string | undefined>(undefined)
+
+  React.useEffect(() => {
+    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  }, [])
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      timeZone={timeZone}
+    />
+  )
+}
+```
+
+**注意：** 如果您注意到选定的日期偏移（例如，选择 20 日会突出显示 19 日），请确保将 `timeZone` 属性设置为用户的本地时区。
+
+**为什么是客户端？** 使用 `useEffect` 内的 `Intl.DateTimeFormat().resolvedOptions().timeZone` 检测时区，以确保与服务器端渲染的兼容性。在渲染期间检测时区会导致水合不匹配，因为服务器和客户端可能位于不同的时区。
+
+## 基本用法 [#basic]
+
+一个基本的日历组件。我们使用 `className="rounded-lg border"` 来设计日历。
+
+<ComponentPreview name="calendar-basic" previewClassName="h-96" />
+
+## 日期范围 [#range-calendar]
+
+使用 `mode="range"` 属性启用范围选择。
+
+<ComponentPreview name="calendar-range" previewClassName="h-[36rem] md:h-96" />
+
+## 月份和年份选择器 [#month-and-year-selector]
+
+使用 `captionLayout="dropdown"` 显示月份和年份下拉列表。
+
+<ComponentPreview name="calendar-caption" previewClassName="h-96" />
+
+## 预设 [#presets]
+
+<ComponentPreview name="calendar-presets" previewClassName="h-[650px]" />
+
+## 日期时间选择器 [#date-and-time-picker]
+
+<ComponentPreview name="calendar-time" previewClassName="h-[600px]" />
+
+## 已预订日期 [#booked-dates]
+
+<ComponentPreview name="calendar-booked-dates" previewClassName="h-96" />
+
+## 自定义单元格尺寸 [#custom-cell-size]
+
+<ComponentPreview name="calendar-custom-days" />
+
+您可以使用 `--cell-size` CSS 变量自定义日历单元格的大小。您还可以通过使用断点特定值使其响应：
+
+```tsx showLineNumbers
+<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  className="rounded-lg border [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
+/>
+```
+
+或者使用固定值：
+
+```tsx showLineNumbers
+<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  className="rounded-lg border [--cell-size:2.75rem] md:[--cell-size:3rem]"
+/>
+```
+
+## 周数 [#week-numbers]
+
+使用 `showWeekNumber` 显示周数。
+
+<ComponentPreview name="calendar-week-numbers" previewClassName="h-96" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+波斯历、回历与贾拉里历的使用方式另见 [Hijri 指南](#persian--hijri--jalali-calendar)。
+
+<ComponentPreview name="calendar-rtl" previewClassName="h-96" direction="rtl" />
+
+使用 RTL 时，从 `react-day-picker/locale` 导入语言区域对象，并向 Calendar 同时传入 `locale` 与 `dir`：
+
+```tsx showLineNumbers
+import { arSA } from "react-day-picker/locale"
+
+;<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  locale={arSA}
+  dir="rtl"
+/>
+```
+
+## API 参考 [#api-reference]
+
+有关 `Calendar` 组件的更多信息，请参阅 [React DayPicker](https://react-day-picker.js.org) 文档。
+
+## 更新记录 [#changelog]
+
+### RTL 支持 [#rtl-support]
+
+从旧版 `Calendar` 升级时，需要应用以下变更，以支持 locale：
+
+<Steps>
+
+<Step>导入 `Locale` 类型。</Step>
+
+从 `react-day-picker` 导入 `Locale`：
+
+```diff
+  import {
+    DayPicker,
+    getDefaultClassNames,
+    type DayButton,
++   type Locale,
+  } from "react-day-picker"
+```
+
+<Step>为 Calendar 添加 `locale` 属性。</Step>
+
+在组件属性中添加 `locale`：
+
+```diff
+  function Calendar({
+    className,
+    classNames,
+    showOutsideDays = true,
+    captionLayout = "label",
+    buttonVariant = "ghost",
++   locale,
+    formatters,
+    components,
+    ...props
+  }: React.ComponentProps<typeof DayPicker> & {
+    buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  }) {
+```
+
+<Step>将 `locale` 传给 DayPicker。</Step>
+
+将 `locale` 属性传给 `DayPicker`：
+
+```diff
+    <DayPicker
+      showOutsideDays={showOutsideDays}
+      className={cn(...)}
+      captionLayout={captionLayout}
++     locale={locale}
+      formatters={{
+        formatMonthDropdown: (date) =>
+-         date.toLocaleString("default", { month: "short" }),
++         date.toLocaleString(locale?.code, { month: "short" }),
+        ...formatters,
+      }}
+```
+
+<Step>让 CalendarDayButton 接受 locale。</Step>
+
+更新 `CalendarDayButton` 的类型签名，并传入 `locale`：
+
+```diff
+  function CalendarDayButton({
+    className,
+    day,
+    modifiers,
++   locale,
+    ...props
+- }: React.ComponentProps<typeof DayButton>) {
++ }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
+```
+
+<Step>更新 CalendarDayButton 的日期格式化方式。</Step>
+
+格式化日期时使用 `locale?.code`：
+
+```diff
+    <Button
+      variant="ghost"
+      size="icon"
+-     data-day={day.date.toLocaleDateString()}
++     data-day={day.date.toLocaleDateString(locale?.code)}
+      ...
+    />
+```
+
+<Step>将 locale 传给 DayButton。</Step>
+
+更新 `DayButton` 的使用方式，将 `locale` 传入：
+
+```diff
+      components={{
+        ...
+-       DayButton: CalendarDayButton,
++       DayButton: ({ ...props }) => (
++         <CalendarDayButton locale={locale} {...props} />
++       ),
+        ...
+      }}
+```
+
+<Step>更新支持 RTL 的 CSS 类名。</Step>
+
+将固定方向的类名替换为逻辑方向属性，以更好地支持 RTL：
+
+```diff
+  // In the day classNames:
+- [&:last-child[data-selected=true]_button]:rounded-r-(--cell-radius)
++ [&:last-child[data-selected=true]_button]:rounded-e-(--cell-radius)
+- [&:nth-child(2)[data-selected=true]_button]:rounded-l-(--cell-radius)
++ [&:nth-child(2)[data-selected=true]_button]:rounded-s-(--cell-radius)
+- [&:first-child[data-selected=true]_button]:rounded-l-(--cell-radius)
++ [&:first-child[data-selected=true]_button]:rounded-s-(--cell-radius)
+
+  // In range_start classNames:
+- rounded-l-(--cell-radius) ... after:right-0
++ rounded-s-(--cell-radius) ... after:end-0
+
+  // In range_end classNames:
+- rounded-r-(--cell-radius) ... after:left-0
++ rounded-e-(--cell-radius) ... after:start-0
+
+  // In CalendarDayButton className:
+- data-[range-end=true]:rounded-r-(--cell-radius)
++ data-[range-end=true]:rounded-e-(--cell-radius)
+- data-[range-start=true]:rounded-l-(--cell-radius)
++ data-[range-start=true]:rounded-s-(--cell-radius)
+```
+
+</Steps>
+
+应用这些变更后，即可通过 `locale` 提供对应语言的格式化方式：
+
+```tsx
+import { enUS } from "react-day-picker/locale"
+
+;<Calendar mode="single" selected={date} onSelect={setDate} locale={enUS} />
+```

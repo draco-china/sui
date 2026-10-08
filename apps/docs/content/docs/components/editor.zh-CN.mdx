@@ -1,0 +1,86 @@
+---
+title: Editor
+description: 按需加载的代码编辑器，支持内容预览、工具栏操作与全屏模式
+---
+
+<ComponentPreview name="editor-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/editor
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { Editor } from "@workspace/ui/components/editor";
+import { useState } from "react";
+
+export function NotesEditor() {
+  const [value, setValue] = useState("# Project notes");
+  return <Editor value={value} onChange={setValue} language="markdown" height={320} />;
+}
+```
+
+## 编辑与内容状态 [#value]
+
+使用 `value` 和 `onChange` 控制内容。需要内部状态时，省略 `value` 并传入 `defaultValue`；编辑后仍会调用 `onChange`。`disabled` 将编辑区设为只读。编辑器在客户端加载，SSR 和水合阶段显示加载占位；切换语言时重建编辑器桥接实例并释放旧模型，当前文档值保持不变。语言服务和 Worker 按需加载。Worker 在编辑器实例之间共享，最后一个编辑器卸载且模型全部释放后终止；再次打开时重新创建。编辑不会执行输入的代码。
+
+## 语言选择 [#language]
+
+同时传入 `language` 和 `onLanguageChange` 后，工具栏显示共享 Select 语言选择器。`languages` 可配置候选项，默认包含常用语言；当前值不在列表时仍会显示。语言由调用方控制，选择不会改写文档内容。`toolbarLanguage={false}` 隐藏选择器；省略回调时不显示选择器，`disabled` 禁用选择。语言 ID 会去除首尾空格并转为小写，`ts`、`js`、`md` 和 `text` 分别规范为 `typescript`、`javascript`、`markdown` 和 `plaintext`。
+
+页首示例可在 Markdown、HTML、TypeScript、TSX 和 JSON 之间切换；HTML 和 Markdown 提供内置预览，其他语言保持编辑模式。
+
+## 预览模式 [#preview]
+
+Markdown 和 HTML 自带预览，初始为 `edit` 模式。工具栏可以切换 `edit`、`preview` 和 `split`。内置 HTML 预览用 `sandbox="allow-same-origin"` 禁用脚本，并使用隔离的 [Html Viewer](/zh-CN/docs/components/html-viewer)，Markdown 使用 [Markdown Viewer](/zh-CN/docs/components/markdown-viewer)。
+
+传入 `preview.component` 可使用其他渲染器，组件会收到 `content`、`language`、`scrollContainerRef` 和 `onScroll`。使用 `preview.defaultMode` 设置初始模式，或通过 `preview.mode` 和 `preview.onModeChange` 控制模式。自定义预览默认以并排模式开始。
+
+### 滚动同步 [#scroll-sync]
+
+并排模式下，滚动任一区域会根据相对滚动进度同步另一区域，不按源码行位置映射。自定义预览需要把 `scrollContainerRef` 和 `onScroll` 绑定到实际滚动的 div。内置 Markdown 预览使用外层滚动容器；内置 HTML 预览允许同源 DOM 读取，但继续禁用脚本；父级在每次 iframe 加载后同步其文档滚动容器，并在文档替换或卸载时移除监听。
+
+示例提供长文档、自定义滚动预览、受控预览模式和浏览器全屏。
+
+<ComponentPreview name="editor-preview" />
+
+## 工具栏与只读编辑 [#toolbar]
+
+`toolbarTitle` 和 `toolbar` 接受 React 节点或渲染函数。函数收到 `EditorToolbarActionContext`，包含当前内容、语言、主题、禁用状态、Monaco 实例，以及 `format()`、`setMode()` 和 `setFullscreen()`。`toolbar={false}` 隐藏整个工具栏。
+
+自定义图标操作可使用 `EditorToolbarButton`。示例添加了格式化和恢复内容操作，并支持切换是否允许编辑。格式化依赖当前语言已注册的格式化器。
+
+<ComponentPreview name="editor-toolbar" />
+
+## 全屏与本地化 [#fullscreen]
+
+全屏默认使用固定定位的视口覆盖层。设置 `fullscreen={{ mode: "screen" }}` 使用浏览器全屏 API，或用 `fullscreen={false}` 隐藏操作。全屏选项中的 `value`、`defaultValue` 和 `onChange` 支持受控或非受控状态。浏览器全屏依赖 API 支持与权限，请求失败时恢复为非全屏状态。固定覆盖层支持 Escape，限制键盘焦点范围，并在退出时恢复焦点。可访问的同源 iframe 控件按 DOM 顺序参与焦点循环，内置 HTML 预览中的 Escape 同样退出全屏；iframe 加载和预览模式切换会更新键盘绑定。跨域或 opaque 的自定义 iframe 作为一个焦点入口，父级无法拦截其内部键盘事件，请保留外部退出控件。
+
+通过 `labels` 翻译预览、并排、复制、全屏、加载和失败反馈。示例把内容保存在本地组件状态中；组件不会代为保存文档或偏好。Monaco 在同一页面中的主题设置共享，请让各 Editor 使用一致的主题配置，不依赖各编辑器之间的明暗隔离。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `value` / `defaultValue` | `string` | 受控内容／内部状态初始内容 |
+| `onChange` | `(value: string) => void` | 通知内容变化 |
+| `language` | `string` | `"plaintext"` |
+| `onLanguageChange` | `(language: string) => void` | 请求切换语言；调用方更新 `language` |
+| `languages` | `readonly EditorLanguageOption[]` | 常用语言候选项；每项包含 `value` 和 `label` |
+| `toolbarLanguage` | `boolean` | `true`；有语言回调时显示选择器 |
+| `height` | `string \| number` | 控制编辑区高度；数字为像素 |
+| `disabled` | `boolean` | `false`；只读编辑 |
+| `toolbar`、`toolbarTitle` | `ReactNode \| 渲染函数` | 自定义操作与标题；toolbar 还接受 `false` |
+| `toolbarMode`、`toolbarCopy` | `boolean` | 均为 `true` |
+| `preview` | 预览选项 | 自定义渲染器、模式与模式变更回调 |
+| `fullscreen` | `false \| object` | 默认固定定位覆盖层 |
+| `size` | Button 尺寸 | 工具栏操作默认为 `"icon-sm"` |
+| `labels` | `Partial<EditorLabels>` | 英文反馈和操作名称 |
+| `glass` | `boolean` | `false`；启用玻璃表面 |
+
+导出 `EditorProps`、`EditorLanguageOption`、`EditorLabels`、`EditorViewMode`、`EditorFullscreenMode` 和 `EditorToolbarActionContext`。底层使用 Monaco，完整能力见 [Monaco API](https://microsoft.github.io/monaco-editor/docs.html)。玻璃效果配置见 [Glass](/zh-CN/docs/components/glass)。

@@ -1,0 +1,240 @@
+---
+title: Input OTP
+description: 支持字符过滤与异步验证反馈的独立验证码输入框
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/otp-field
+---
+
+<ComponentPreview name="input-otp-demo" />
+
+Input OTP 使用真实的单字符输入框，支持粘贴、自动填充、键盘导航与验证反馈。页首示例将 `123456` 视为验证成功，并保持显示勾号；其他六位数字显示失败效果，随后反向展开为可编辑的输入框，保留已经输入的内容。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/input-otp
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。 底层使用 Base UI OTP Field。
+
+## 使用 [#usage]
+
+```tsx
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/field";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@workspace/ui/components/input-otp";
+import { useId } from "react";
+
+function VerificationCode() {
+  const id = useId();
+
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>验证码</FieldLabel>
+      <InputOTP id={id} length={6} aria-describedby={`${id}-description`}>
+        <InputOTPGroup>
+          <InputOTPSlot />
+          <InputOTPSlot />
+          <InputOTPSlot />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot />
+          <InputOTPSlot />
+          <InputOTPSlot />
+        </InputOTPGroup>
+      </InputOTP>
+      <FieldDescription id={`${id}-description`}>
+        输入收到的六位验证码
+      </FieldDescription>
+    </Field>
+  );
+}
+```
+
+按 `length` 渲染对应数量的 `InputOTPSlot`。槽位按 DOM 顺序注册，分组不会改变该顺序。`InputOTPGroup` 负责布局，`InputOTPSeparator` 提供视觉分隔，二者都不占用字符位置。
+
+## 值与输入完成 [#controlled]
+
+使用 `value` 和 `onValueChange` 控制内容，或通过 `defaultValue` 使用内部状态。`onValueComplete` 通知应用验证码已经填满，由应用进行验证。填满只表示字符已经输入，不代表验证码正确，也不会自动显示成功反馈。
+
+```tsx
+const [value, setValue] = useState("");
+
+<InputOTP
+  length={6}
+  value={value}
+  onValueChange={setValue}
+  onValueComplete={(code) => verifyCode(code)}
+>
+  <InputOTPGroup>
+    {[0, 1, 2, 3, 4, 5].map((position) => (
+      <InputOTPSlot key={position} />
+    ))}
+  </InputOTPGroup>
+</InputOTP>;
+```
+
+标准的变更与完成回调接收当前值和 Base UI 事件详情。再次粘贴完整验证码也可以触发完成回调，方便重试验证。
+
+<ComponentPreview name="input-otp-controlled" />
+
+## 验证反馈 [#verification]
+
+应用控制 `status` 并管理验证请求：
+
+| 状态 | 行为 |
+| --- | --- |
+| `idle` | 可以编辑；填满不会自动表示验证成功 |
+| `loading` | 输入暂时只读，槽位收拢为旋转指示器，等待验证结果 |
+| `success` | 指示器变为勾号，显示光晕与粒子；勾号保持显示，输入保持收拢 |
+| `error` | 指示器变为 X，随后淡出，槽位反向展开回原位 |
+
+请求返回后设置 `success` 或 `error`。成功状态会持续显示，直到业务显式设置 `status="idle"`，例如用户选择重新输入时。
+
+失败时，X 显示 `feedbackDuration` 指定的时长，随后淡出，槽位在约 `380` 毫秒内反向移动、展开回原位。展开期间仍保持只读；展开结束后恢复编辑与符合条件的焦点，不改变真实值或掩码设置。只有失败恢复后才通过 `onStatusChange` 请求 `idle`，将它连接到状态 setter，使重试操作同时恢复可用。
+
+```tsx
+const id = useId();
+const [status, setStatus] = useState<InputOTPStatus>("idle");
+const feedback = {
+  idle: "输入验证码",
+  loading: "正在验证",
+  success: "验证成功",
+  error: "验证失败，请重试",
+};
+
+<Field>
+  <FieldLabel htmlFor={id}>验证码</FieldLabel>
+  <InputOTP
+    id={id}
+    length={6}
+    value={value}
+    onValueChange={setValue}
+    status={status}
+    onStatusChange={setStatus}
+    onValueComplete={async (code) => {
+      setStatus("loading");
+      try {
+        const valid = await verifyCode(code);
+        setStatus(valid ? "success" : "error");
+      } catch {
+        setStatus("error");
+      }
+    }}
+  >
+    {slots}
+  </InputOTP>
+  <FieldDescription role="status" aria-live="polite">
+    {feedback[status]}
+  </FieldDescription>
+</Field>;
+```
+
+`InputOTPStatus` 从同一个组件模块导入。请求取消与过期响应由应用处理；可运行示例会在卸载时清理本地计时器，并忽略已经失效的请求。
+
+`feedbackDuration` 默认是 `1250` 毫秒，用于失败结果停留，不会为 `loading` 设置超时。失败在停留结束后反向展开，成功则继续保留勾号，直到业务重置状态。
+
+减少动态效果时关闭位移与粒子，仍保留结果停留时间；失败随后直接恢复输入，成功仍保持勾号。动画样式不可用时由计时器完成闭环，时长为零时跳过结果停留。恢复后仍遵循显式设置的 `disabled` 与 `readOnly`。若失败反馈前焦点属于该字段，且用户没有主动移到其他控件，恢复时会聚焦第一个槽位。
+
+## 字符过滤 [#pattern]
+
+`validationType` 控制允许的字符。默认 `numeric` 接受数字，`alpha` 接受 ASCII 字母，`alphanumeric` 接受 ASCII 字母与数字，`none` 用于自定义规则。空白会被移除，最终内容限制在 `length` 范围内。
+
+使用 `normalizeValue` 转换内容，例如转为大写。它在内置过滤后执行，返回结果还会再次过滤，函数应保持幂等。配合 `validationType="none"` 可以提供自定义过滤规则。`onValueInvalid` 通知被拒绝的输入或粘贴字符；`inputMode` 只提供键盘提示，不表示验证结果。
+
+```tsx
+<InputOTP
+  length={6}
+  validationType="alphanumeric"
+  normalizeValue={(value) => value.toUpperCase()}
+>
+  {slots}
+</InputOTP>;
+```
+
+<ComponentPreview name="input-otp-pattern" />
+
+## 分组与分隔 [#separator]
+
+分组可提高长验证码的可读性，总槽位数量仍应与 `length` 一致。
+
+<ComponentPreview name="input-otp-separator" />
+
+## 禁用与只读 [#disabled]
+
+`disabled` 禁用交互。`readOnly` 保留当前值并禁止编辑。等待与结果反馈期间，字段保持只读，不会清空输入值。成功后保持收拢，直到业务显式重置状态。
+
+<ComponentPreview name="input-otp-disabled" />
+
+## 无效字段 [#invalid]
+
+通过槽位上的 `aria-invalid` 与共享 `Field` 的 `data-invalid` 显示持续的无效样式。共享 `Field` 负责布局与标签组合；如果需要 Base UI 的表单验证上下文，使用其底层 Field API。`status="error"` 控制临时验证反馈，不会替代表单的无效状态。
+
+<ComponentPreview name="input-otp-invalid" />
+
+## 四位数字 [#four-digits]
+
+设置 `length={4}` 并渲染四个槽位，可以输入数字 PIN。
+
+<ComponentPreview name="input-otp-four-digits" />
+
+## 字母与数字 [#alphanumeric]
+
+通过 `validationType="alphanumeric"` 接受同时包含字母和数字的验证码。
+
+<ComponentPreview name="input-otp-alphanumeric" />
+
+## 掩码输入 [#masked]
+
+设置 `mask` 后，Base UI 使用原生密码输入样式隐藏显示的字符；受控值、回调和表单提交仍保留真实验证码。掩码只是显示隐藏，不是密码学加密。
+
+掩码示例使用相同的验证流程：成功后保持勾号，失败后恢复的输入框保留真实值，字符仍按掩码显示。
+
+<ComponentPreview name="input-otp-masked" />
+
+## 表单 [#form]
+
+`name` 通过 Base UI 的隐藏验证输入框提交完整验证码，`required` 用于必填验证。`autoSubmit` 默认是 `false`；开启后会在输入完成时请求提交所属表单，与服务端验证是否成功是两个独立步骤。
+
+<ComponentPreview name="input-otp-form" previewClassName="h-[30rem]" />
+
+## 标签、引用与方向 [#rtl]
+
+`InputOTP` 渲染 `div`，它的 `ref` 指向根容器。每个 `InputOTPSlot` 都是真实的 `input`，支持 `HTMLInputElement` 引用、原生输入属性与 Base UI 状态样式。需要聚焦或读取单字符输入框时，使用槽位引用。
+
+使用共享的 `Field`、`FieldLabel` 和 `useId` 组合可见标签，如上方示例。也可以从 `@workspace/ui/components/label` 导入 `Label`，将 `htmlFor` 关联到 `InputOTP` 的 `id`。共享 `Field` 是布局与标签组合，不等同于 Base UI Field 的验证上下文。槽位保留 Base UI 的位置语义与原生 ARIA 属性，组件不生成标签或状态文字。加载时设置 `aria-busy`，其他状态文案由业务层通过 `FieldDescription`、`FieldError` 或 `role="status"` 展示与播报，如验证示例。
+
+从 `@workspace/ui/components/direction` 导入共享的 `DirectionProvider`，通过 `direction="rtl"` 提供从右到左的导航与布局。
+
+<ComponentPreview name="input-otp-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### InputOTP
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `length` | `number` | `6`；验证码字符数量 |
+| `value`、`defaultValue` | `string` | 受控内容或内部状态初始内容 |
+| `onValueChange` | `(value, details) => void` | Base UI 值变更回调 |
+| `onValueComplete` | `(value, details) => void` | 通知输入完成，不负责验证 |
+| `status` | `InputOTPStatus` | `"idle"`；受控验证反馈 |
+| `onStatusChange` | `(status: InputOTPStatus) => void` | 失败恢复后请求 `"idle"` |
+| `feedbackDuration` | `number` | `1250` 毫秒；失败反向展开前的结果停留时间 |
+| `mask` | `boolean` | `false`；隐藏字符显示，不改变真实值 |
+| `glass` | `boolean` | `false`；为槽位启用共享玻璃材质 |
+
+`InputOTPGroup` 接受 div 属性，`InputOTPSeparator` 接受 Base UI 分隔符属性。`InputOTPSlot` 接受 Base UI OTP 输入属性与 `HTMLInputElement` 引用，位置由槽位顺序决定。
+
+模块导出 `InputOTPProps` 和 `InputOTPStatus`。字符过滤、表单选项、原生输入属性、状态样式与事件详情类型遵循 [Base UI OTP Field API](https://base-ui.com/react/components/otp-field#api-reference)。

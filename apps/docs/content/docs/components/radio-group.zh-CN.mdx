@@ -1,0 +1,91 @@
+---
+title: Radio Group
+description: "一组可检查按钮（称为单选按钮），一次只能检查一个按钮"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/radio-group
+  api: https://base-ui.com/react/components/radio-group#api-reference
+---
+
+<ComponentPreview name="radio-group-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/radio-group
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Label } from "@workspace/ui/components/label"
+import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group"
+```
+
+```tsx showLineNumbers
+<RadioGroup defaultValue="option-one">
+  <div className="flex items-center gap-3">
+    <RadioGroupItem value="option-one" id="option-one" />
+    <Label htmlFor="option-one">Option One</Label>
+  </div>
+  <div className="flex items-center gap-3">
+    <RadioGroupItem value="option-two" id="option-two" />
+    <Label htmlFor="option-two">Option Two</Label>
+  </div>
+</RadioGroup>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `RadioGroup`：
+
+```text
+RadioGroup
+├── RadioGroupItem
+└── RadioGroupItem
+```
+
+## 说明 [#description]
+
+使用 `Field` 组件进行带有说明的单选组项目。
+
+<ComponentPreview name="radio-group-description" />
+
+## 选择卡片 [#choice-card]
+
+使用 `FieldLabel` 包裹整个 `Field` 以获得可点击的卡片式选择。
+
+<ComponentPreview name="radio-group-choice-card" />
+
+## 字段集 [#fieldset]
+
+使用 `FieldSet` 和 `FieldLegend` 通过标签和说明对单选项目进行分组。
+
+<ComponentPreview name="radio-group-fieldset" />
+
+## 禁用状态 [#disabled]
+
+使用 `RadioGroup` 上的 `disabled` 属性禁用所有项目。
+
+<ComponentPreview name="radio-group-disabled" />
+
+## 无效状态 [#invalid]
+
+在 `RadioGroupItem` 上使用 `aria-invalid`，在 `Field` 上使用 `data-invalid` 以显示验证错误。
+
+<ComponentPreview name="radio-group-invalid" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="radio-group-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅 [Base UI Radio Group](https://base-ui.com/react/components/radio-group#api-reference) 文档。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/radio-group#api-reference)。

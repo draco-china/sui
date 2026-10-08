@@ -1,0 +1,48 @@
+---
+title: NavigationProgress
+description: 通过受控状态显示延迟出现、完成收尾的页面加载进度条。
+component: true
+---
+
+<ComponentPreview name="navigation-progress-demo" />
+
+## 安装
+
+```bash
+bunx --bun shadcn@latest add @sui/navigation-progress
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { NavigationProgress } from "@workspace/ui/components/navigation-progress"
+```
+
+## 路由接入
+
+共享组件从任意路由接收加载状态。文档应用通过 TanStack Router 接入：
+
+```tsx
+import { useRouterState } from "@tanstack/react-router"
+import { NavigationProgress } from "@workspace/ui/components/navigation-progress"
+
+function RouterProgress() {
+  const active = useRouterState({ select: (state) => state.status === "pending" })
+  return <NavigationProgress active={active} label="正在加载页面" />
+}
+```
+
+进度条延迟出现，以估算进度逐步推进并保持上限；`active` 变为 false 时填满，然后隐藏。在 `delay` 之前完成的短暂导航不会闪烁。长度为估算值，加载时的可访问状态保持不确定进度。减少动态效果偏好会禁用过渡动画。
+
+## API
+
+| 属性 | 默认值 | 说明 |
+| --- | --- | --- |
+| `active` | 必填 | 页面切换是否进行中。 |
+| `delay` | `120` | 显示前延迟，单位毫秒。 |
+| `finishDelay` | `180` | 完成后到隐藏的时间。 |
+| `position` | `fixed` | `fixed` 固定于页面顶部，`absolute` 位于有定位的容器内。 |
+| `label` | `Loading page` | 可访问进度名称。 |
+| `className` | — | 位置和布局类名。 |
+
+参考 [shadcn-admin NavigationProgress](https://github.com/satnaing/shadcn-admin/blob/main/src/components/navigation-progress.tsx)。使用已有 Base UI 依赖、SUI 语义色和 React 定时器，共享 UI 包不引入 `react-top-loading-bar` 或路由依赖。

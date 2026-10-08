@@ -1,0 +1,188 @@
+---
+title: Empty
+description: "使用 Empty 组件显示空状态"
+base: base
+component: true
+---
+
+<ComponentPreview name="empty-demo" previewClassName="h-96 p-0" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/empty
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty"
+```
+
+```tsx
+<Empty>
+  <EmptyHeader>
+    <EmptyMedia variant="icon">
+      <Icon />
+    </EmptyMedia>
+    <EmptyTitle>No data</EmptyTitle>
+    <EmptyDescription>No data found</EmptyDescription>
+  </EmptyHeader>
+  <EmptyContent>
+    <Button>Add data</Button>
+  </EmptyContent>
+</Empty>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合构建 `Empty` 状态：
+
+```text
+Empty
+├── EmptyHeader
+│   ├── EmptyMedia
+│   ├── EmptyTitle
+│   └── EmptyDescription
+└── EmptyContent
+```
+
+## 描边 [#outline]
+
+使用 `border` 工具类创建描边空状态。
+
+<ComponentPreview name="empty-outline" previewClassName="h-96 p-6 md:p-10" />
+
+## 背景 [#background]
+
+使用 `bg-*` 和 `bg-gradient-*` 工具类将背景添加到空状态。
+
+<ComponentPreview name="empty-background" previewClassName="h-96 p-0" />
+
+## 头像组合 [#avatar]
+
+使用`EmptyMedia`组件显示空状态下的头像。
+
+<ComponentPreview name="empty-avatar" previewClassName="h-96 p-0" />
+
+## 头像组 [#avatar-group]
+
+使用`EmptyMedia`组件显示空状态下的头像组。
+
+<ComponentPreview name="empty-avatar-group" previewClassName="h-96 p-0" />
+
+## InputGroup [#inputgroup]
+
+您可以将 `InputGroup` 组件添加到 `EmptyContent` 组件。
+
+<ComponentPreview name="empty-input-group" previewClassName="h-96 p-0" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="empty-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### Empty [#empty]
+
+主要成分为空态。包裹 `EmptyHeader` 和 `EmptyContent` 组件
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<Empty>
+  <EmptyHeader />
+  <EmptyContent />
+</Empty>
+```
+
+### EmptyHeader [#emptyheader]
+
+`EmptyHeader` 组件包装空媒体、标题和描述
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<EmptyHeader>
+  <EmptyMedia />
+  <EmptyTitle />
+  <EmptyDescription />
+</EmptyHeader>
+```
+
+### EmptyMedia [#emptymedia]
+
+使用`EmptyMedia`组件显示空状态的媒体，例如图标或图像。您还可以使用它来显示其他组件，例如头像
+
+| 属性 |类型 |默认 |
+| ----------- | -------------------- | --------- |
+| `variant` | `"default" \| "icon"` | `default` |
+| `className` | `string` |           |
+
+```tsx
+<EmptyMedia variant="icon">
+  <Icon />
+</EmptyMedia>
+```
+
+```tsx
+<EmptyMedia>
+  <Avatar>
+    <AvatarImage src="..." />
+    <AvatarFallback>CN</AvatarFallback>
+  </Avatar>
+</EmptyMedia>
+```
+
+### EmptyTitle [#emptytitle]
+
+使用`EmptyTitle`组件显示空状态的标题
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<EmptyTitle>No data</EmptyTitle>
+```
+
+### EmptyDescription [#emptydescription]
+
+使用`EmptyDescription`组件显示空状态的描述
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<EmptyDescription>You do not have any notifications.</EmptyDescription>
+```
+
+### EmptyContent [#emptycontent]
+
+使用`EmptyContent`组件显示空状态的内容，例如按钮、输入或链接
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` |         |
+
+```tsx
+<EmptyContent>
+  <Button>Add Project</Button>
+</EmptyContent>
+```

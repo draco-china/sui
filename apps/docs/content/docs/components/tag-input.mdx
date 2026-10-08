@@ -1,0 +1,83 @@
+---
+title: Tag Input
+description: A multi-value input with custom tags, suggestions, and keyboard-accessible chips.
+links:
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
+---
+
+<ComponentPreview name="tag-input-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/tag-input
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { TagInput } from "@workspace/ui/components/tag-input";
+
+<TagInput aria-label="Project tags" defaultValue={["design"]} />;
+```
+
+Type a tag and press Enter, comma, or Tab. Tags are trimmed; empty values and exact duplicates are ignored. Comparison is case-sensitive. Pasting comma-separated values or multiple lines adds them in order.
+
+The component uses Base UI Combobox's multi-select chips for keyboard navigation and removal. During IME composition, Enter and comma stay with the input method and do not create a tag. With an empty draft, Backspace removes the last tag; arrow keys navigate suggestions and chips.
+
+## Suggestions and controlled values
+
+Supply `suggestions` to offer existing values. Users may still create their own tags by default; set `allowCustom={false}` to restrict new values to the suggestions. A highlighted suggestion is selected with Enter.
+
+Use `value` and `onValueChange` to control the selected array, or `defaultValue` for an uncontrolled input. The draft can also be controlled independently with `inputValue` and `onInputValueChange`.
+
+<ComponentPreview name="tag-input-suggestions" />
+
+## Validation and disabled state
+
+`maxValues` limits the number of tags. `validateValue` checks each new value and receives the values already accepted. Existing tags can always be removed, even when the limit has been reached.
+
+Rejected input remains in the draft and its error is announced. Tab still moves focus out of the input when validation fails; Shift+Tab moves backward without committing the draft. In a batch paste, valid tags before the first rejected value are added, while the remaining values stay in the draft.
+
+`disabled` and `readOnly` prevent changes and disable removal controls.
+
+<ComponentPreview name="tag-input-validation" />
+
+## Composition and forms
+
+Tag Input composes Combobox's root, chips, input, list, and items. Use the standard `Field` components for labels and descriptions. `className` styles the chips container, `inputClassName` styles the draft input, and `ref` points to the native draft input.
+
+Pass `name` to submit each selected tag as a separate form value with the same name. Draft text is not submitted. `required` validates the selected tags, so an existing tag satisfies the requirement even when the draft is empty. Disabled tags are omitted from form data.
+
+Native form reset restores `defaultValue` and `defaultInputValue` in uncontrolled mode. Canceling the reset with `event.preventDefault()` preserves the selected tags and draft. Controlled values remain owned by the application.
+
+<ComponentPreview name="tag-input-form" />
+
+## Accessibility
+
+Associate `FieldLabel` with the input's `id`, or provide `aria-label`. Without an `id` or a custom name, the default input name is “Add tag”. Removal buttons have names that include their tag. Validation messages use a status region and are associated with the input.
+
+Localize `labels.input`, `labels.removeValue`, `labels.createValue`, `labels.empty`, `labels.invalidValue`, and `labels.maxValuesReached`. Prefer the same input name as the visible field label.
+
+## API Reference
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string[]` | — | Controlled selected tags. |
+| `defaultValue` | `string[]` | `[]` | Initial uncontrolled tags. |
+| `onValueChange` | `(values: string[]) => void` | — | Called when selected tags change. |
+| `suggestions` | `readonly string[]` | `[]` | Suggested tags. |
+| `allowCustom` | `boolean` | `true` | Allow new values outside suggestions. |
+| `maxValues` | `number` | — | Maximum tag count. |
+| `validateValue` | `(value: string, values: string[]) => boolean` | — | Validate a new tag. |
+| `inputValue` | `string` | — | Controlled draft text. |
+| `defaultInputValue` | `string` | `""` | Initial uncontrolled draft text. |
+| `onInputValueChange` | `(value: string) => void` | — | Called when the draft changes. |
+| `labels` | `TagInputLabels` | English labels | Input, action, and validation text. |
+| `inputClassName` | `string` | — | Additional draft input classes. |
+| `...props` | Native input props, excluding `value`, `defaultValue`, `type`, and `size` | — | Includes `id`, `ref`, `name`, `form`, `required`, `disabled`, and `readOnly`. |
+
+Keyboard and chip behavior follow the [Base UI Combobox API](https://base-ui.com/react/components/combobox#api-reference).

@@ -1,0 +1,49 @@
+---
+title: CLI
+description: 使用 shadcn 搜索、查看、安装和更新 SUI 源码
+---
+
+SUI 使用 shadcn CLI。在消费应用中完成 [registry 配置](/zh-CN/docs/installation#prepare-the-consuming-application)，然后在该应用目录运行命令。
+
+## 搜索与查看 [#search-and-inspect]
+
+```bash
+bunx --bun shadcn@latest search @sui -q input
+bunx --bun shadcn@latest view @sui/sensitive-input
+```
+
+搜索匹配条目名称与描述。查看命令可在安装前检查文件和依赖。[Registry 指南](/zh-CN/docs/registry)介绍索引和条目的格式。
+
+## 安装源码 [#install-source]
+
+```bash
+bunx --bun shadcn@latest add @sui/button @sui/sensitive-input
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+CLI 将所需源码复制到配置的 `ui`、`components`、`lib` 和 `hooks` 目录，安装包依赖，并将 SUI 样式合并到 `components.json` 指定的 CSS 文件。安装后的文件属于应用，可以直接修改。
+
+每个条目包含完整的本地依赖，安装单个组件时无需先安装整个组件库。`@sui/sui` 安装完整集合，`@sui/sui-style` 安装共享 CSS，`@sui/sui-theme` 安装主题工具与样式。
+
+Editor 和完整集合需要本地 Monaco worker 支持，详见[兼容性说明](/zh-CN/docs/compatibility#editor-workers)。
+
+## 检查更新 [#review-an-update]
+
+```bash
+bunx --bun shadcn@latest add @sui/button --dry-run
+bunx --bun shadcn@latest add @sui/button --diff
+```
+
+更新可能同时影响共享依赖和 CSS。覆盖文件前先对比本地修改。安装属于源码复制，文件不会自动跟随 SUI 仓库的后续变更。
+
+## 常见问题 [#common-issues]
+
+| 现象 | 检查项 |
+| --- | --- |
+| 找不到 `@sui` registry | 在消费应用目录执行，检查该应用的 `components.json` |
+| GitHub 返回 `404` | 检查配置的地址，以及 registry 是否包含所需条目 |
+| 导入路径与文档示例不同 | 使用配置的别名替换工作区路径，见[导入映射](/zh-CN/docs/installation#import-installed-source) |
+| 缺少动画或主题样式 | 确认应用已加载配置的 CSS 文件 |
+| Monaco worker 导入失败 | 使用兼容的 `?worker` 加载器，并包含安装的类型声明 |
+
+通过助手安装时参阅 [MCP](/zh-CN/docs/mcp)，读取 API 和示例文本时参阅 [LLMs](/zh-CN/docs/llms-txt)。

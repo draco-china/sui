@@ -1,0 +1,83 @@
+---
+title: 安装
+description: 通过 shadcn registry 安装 SUI 源码
+---
+
+通过 shadcn registry 将 SUI 源码安装到应用中，组件、样式和依赖根据应用配置接入。
+
+## 通过 registry 安装 [#install-through-the-registry]
+
+### 准备消费应用 [#prepare-the-consuming-application]
+
+使用 React 19、Tailwind CSS 4，以及配置为 Base UI 的 shadcn 项目。如果现有应用尚未初始化 shadcn，运行：
+
+```bash
+bunx --bun shadcn@latest init --base base
+```
+
+将以下条目合并到应用现有的 `components.json`，保留其 CSS 路径与别名：
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+目录索引地址为 `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`，单个条目也位于该目录。
+
+### 搜索、查看与安装 [#search-inspect-and-install]
+
+在消费应用目录运行：
+
+```bash
+bunx --bun shadcn@latest search @sui -q button
+bunx --bun shadcn@latest view @sui/button
+bunx --bun shadcn@latest add @sui/button @sui/editor
+```
+
+按 registry 名称安装业务区块：
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+```
+
+安装完整集合，包括所有组件与业务区块：
+
+```bash
+bunx --bun shadcn@latest add @sui/sui
+```
+
+每个条目包含所需的本地组件依赖、hooks、工具、类型、包依赖，以及 SUI CSS 和主题 token。CLI 将源码安装到别名配置的目录，并将样式合并到配置的 Tailwind CSS 文件。独立条目 `@sui/sui-style` 和 `@sui/sui-theme` 提供共享样式与主题工具。
+
+如果应用已有同名组件或自定义主题值，安装后检查生成的文件与 CSS。更新前可先预览：
+
+```bash
+bunx --bun shadcn@latest add @sui/button --dry-run
+bunx --bun shadcn@latest add @sui/button --diff
+```
+
+Editor 使用本地打包的 Monaco workers，需要兼容 Vite 的 `?worker` 加载器。将安装的 `worker.d.ts` 保留在 TypeScript 的 include 范围内。安装完整集合时同样需要满足此条件。
+
+Blocks 默认使用英文。通过应用语言配置传入文案，可定制界面文本，参见 [Data Table](/zh-CN/docs/blocks/data-table)、[Delete Resource](/zh-CN/docs/blocks/delete-resource) 和 [TanStack Form](/zh-CN/docs/blocks/tanstack-form) 文档。
+
+### 导入安装后的源码 [#import-installed-source]
+
+使用默认 shadcn 别名时，从应用自身目录导入：
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+export function SaveButton() {
+  return <Button>Save changes</Button>;
+}
+```
+
+如果 `components.json` 中的别名不同，请使用实际配置。本文档的示例使用 `@workspace/ui/components/button` 等工作区路径。通过 registry 安装时，将 `@workspace/ui/components/*` 替换为 `ui` 别名，将 `@workspace/ui/blocks/*` 替换为 `components` 别名加 `/blocks/*`，将 hook 或工具导入替换为 `hooks` 或 `lib` 别名。例如，默认别名使用 `@/components/ui/button`、`@/components/blocks/data-table` 和 `@/hooks/use-mobile`。CLI 会自动适配安装文件内部的导入路径。
+
+## 连接 shadcn MCP 服务 [#connect-the-shadcn-mcp-server]
+
+[MCP 指南](/zh-CN/docs/mcp)介绍客户端配置、项目工作目录、请求示例和常见问题。MCP 复用应用的 `@sui` registry 配置。读取 API 文档和完整示例文本时使用 [LLMs](/zh-CN/docs/llms-txt)。
+
+CSS 变量与颜色调整方式见[主题指南](/zh-CN/docs/theming)，运行环境要求见[兼容性](/zh-CN/docs/compatibility)。

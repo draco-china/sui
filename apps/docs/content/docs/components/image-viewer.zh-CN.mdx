@@ -1,0 +1,87 @@
+---
+title: Image Viewer
+description: 支持切换、缩放、旋转和平移的图片查看对话框
+---
+
+<ComponentPreview name="image-viewer-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/image-viewer
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { ImageViewer } from "@workspace/ui/components/image-viewer";
+import { useState } from "react";
+
+const images = ["/photos/first.jpg", "/photos/second.jpg"];
+
+export function Gallery() {
+  const [open, setOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+  return (
+    <>
+      {images.map((src, index) => (
+        <Button
+          key={src}
+          type="button"
+          variant="ghost"
+          className="h-auto overflow-hidden rounded-xl p-0"
+          onClick={() => {
+            setInitialIndex(index);
+            setOpen(true);
+          }}
+        >
+          <img src={src} alt={`Photo ${index + 1}`} />
+        </Button>
+      ))}
+      <ImageViewer
+        images={images}
+        initialIndex={initialIndex}
+        open={open}
+        onClose={() => setOpen(false)}
+        alt="Photo gallery"
+      />
+    </>
+  );
+}
+```
+
+## 打开与切换 [#opening]
+
+通过 `open` 和 `onClose` 控制打开与关闭，传入单张图片 URL 或数组。多图时可通过导航控件和缩略图切换图片。查看器内部提供缩放、旋转、重置、平移操作。空图片数组不渲染内容。滚轮与双指手势支持缩放，拖动可平移；方向键切换图片，`+`／`-` 缩放，`0` 重置。加载失败时提供重试操作。将示例中的图片路径替换为应用的实际资源。
+
+## 受控图片索引 [#index]
+
+`initialIndex` 设置非受控模式的初始图片，索引从 0 开始。需要外部选择时传入 `index`，并在 `onIndexChange` 中更新。切换图片会重置其变换。重置按钮仅在缩放、旋转或平移改变图片后启用。示例可以打开指定图片，并显示当前从 0 开始的索引。非受控模式每次打开时会恢复到 `initialIndex`；打开期间修改 `initialIndex` 也会更新所选图片。
+
+<ComponentPreview name="image-viewer-controlled" />
+
+## 文案、焦点与 Portal 容器 [#accessibility]
+
+查看器使用共享的 [Dialog](/zh-CN/docs/components/dialog) 管理模态焦点和关闭行为。`alt` 描述图片，`labels` 可定制对话框、导航、缩放、旋转、缩略图和位置提示。函数形式的文案收到从 1 开始的图片位置，而 `index` 和 `onIndexChange` 使用从 0 开始的索引。
+
+在局部主题区域嵌入查看器时，可以用 `container` 指定 Portal 容器。玻璃效果作用于外层对话框表面，图片本身保持清晰。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `images` | `string \| string[]` | 必填图片地址 |
+| `open` | `boolean` | 必填的受控对话框状态 |
+| `onClose` | `() => void` | 必填关闭回调 |
+| `index` | `number` | 受控图片索引，从 0 开始 |
+| `initialIndex` | `number` | `0`；非受控初始图片 |
+| `onIndexChange` | `(index: number) => void` | 通知选中的索引，从 0 开始 |
+| `alt` | `string` | `labels.defaultAlt` 或 `"Image"` |
+| `container` | `HTMLElement \| ShadowRoot \| RefObject<HTMLElement \| ShadowRoot \| null> \| null` | 可选 Portal 容器 |
+| `labels` | `Partial<ImageViewerLabels>` | 英文操作和图片文案 |
+| `glass` | `boolean` | `false` |
+
+模块导出 `ImageViewerProps` 和 `ImageViewerLabels`。底层模态交互见 [Base UI Dialog API](https://base-ui.com/react/components/dialog)。

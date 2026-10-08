@@ -1,0 +1,136 @@
+---
+title: Native Select
+description: "具有一致设计系统集成的样式化原生 HTML 选择元素"
+base: base
+component: true
+---
+
+<ComponentPreview name="native-select-demo" />
+
+<Callout variant="info">
+  对于带样式的选择组件，请参阅 [Select](/zh-CN/docs/components/select)
+  组件。
+</Callout>
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/native-select
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  NativeSelect,
+  NativeSelectOptGroup,
+  NativeSelectOption,
+} from "@workspace/ui/components/native-select"
+```
+
+```tsx showLineNumbers
+<NativeSelect>
+  <NativeSelectOption value="">Select a fruit</NativeSelectOption>
+  <NativeSelectOption value="apple">Apple</NativeSelectOption>
+  <NativeSelectOption value="banana">Banana</NativeSelectOption>
+  <NativeSelectOption value="blueberry">Blueberry</NativeSelectOption>
+  <NativeSelectOption value="pineapple">Pineapple</NativeSelectOption>
+</NativeSelect>
+```
+
+## 组合结构 [#composition]
+
+### 简单结构 [#simple]
+
+选项直接放置在 `NativeSelect` 下（无 `NativeSelectOptGroup`）。
+
+```text
+NativeSelect
+├── NativeSelectOption
+├── NativeSelectOption
+├── NativeSelectOption
+└── NativeSelectOption
+```
+
+### 带分组 [#with-groups]
+
+使用 `NativeSelectOptGroup` 将选项组织到类别中。
+
+```text
+NativeSelect
+├── NativeSelectOptGroup
+│   ├── NativeSelectOption
+│   └── NativeSelectOption
+└── NativeSelectOptGroup
+    ├── NativeSelectOption
+    └── NativeSelectOption
+```
+
+## 分组 [#groups]
+
+使用 `NativeSelectOptGroup` 将选项组织到类别中。
+
+<ComponentPreview name="native-select-groups" />
+
+## 禁用状态 [#disabled]
+
+将 `disabled` 属性添加到 `NativeSelect` 组件以禁用选择。
+
+<ComponentPreview name="native-select-disabled" />
+
+## 无效状态 [#invalid]
+
+使用 `aria-invalid` 显示验证错误，并使用 `Field` 组件的 `data-invalid` 属性进行样式设置。
+
+<ComponentPreview name="native-select-invalid" />
+
+## Native Select 与 Select [#native-select-vs-select]
+
+-  使用 `NativeSelect` 实现原生浏览器行为、更好的性能或移动优化的下拉菜单。
+- 使用 `Select` 进行自定义样式、动画或复杂交互。
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="native-select-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### NativeSelect [#nativeselect]
+
+包装原生 HTML 选择元素的主要选择组件。
+
+```tsx
+<NativeSelect>
+  <NativeSelectOption value="option1">Option 1</NativeSelectOption>
+  <NativeSelectOption value="option2">Option 2</NativeSelectOption>
+</NativeSelect>
+```
+
+### NativeSelectOption [#nativeselectoption]
+
+代表选择中的单个选项
+
+| 属性|类型 |默认 |
+| ---------- | --------- | -------- |
+| `value` | `string` |         |
+| `disabled` | `boolean` | `false` |
+
+### NativeSelectOptGroup [#nativeselectoptgroup]
+
+将相关选项分组在一起以便更好地组织
+
+| 属性|类型 |默认 |
+| ---------- | --------- | -------- |
+| `label` | `string` |         |
+| `disabled` | `boolean` | `false` |
+
+```tsx
+<NativeSelectOptGroup label="Fruits">
+  <NativeSelectOption value="apple">Apple</NativeSelectOption>
+  <NativeSelectOption value="banana">Banana</NativeSelectOption>
+</NativeSelectOptGroup>
+```

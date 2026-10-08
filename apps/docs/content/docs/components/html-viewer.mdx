@@ -1,0 +1,55 @@
+---
+title: HTML Viewer
+description: An isolated iframe preview for HTML content.
+---
+
+<ComponentPreview name="html-viewer-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/html-viewer
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { HtmlViewer } from "@workspace/ui/components/html-viewer";
+
+<HtmlViewer
+  content="<h2>Hello</h2><p>Isolated HTML content.</p>"
+  title="HTML content preview"
+  className="h-64 w-full rounded-xl border"
+/>;
+```
+
+## Iframe isolation [#isolation]
+
+The component writes `content` to the iframe `srcDoc`. Styles inside the HTML document do not affect the surrounding application, and the application theme is not automatically injected into the document. Include the document styles you want to preview. Give the iframe a descriptive `title`, or translate `labels.preview`.
+
+The default sandbox is `"allow-scripts"`, permitting scripts inside an opaque-origin frame without granting `allow-same-origin`. The first example demonstrates a button that changes only the iframe content.
+
+## Restricting scripts [#sandbox]
+
+Set `sandbox=""` for a static preview without script execution. Pass other native iframe attributes, such as `allow`, `loading`, and `ref`, when needed. Changing sandbox permissions changes the capabilities of the content; keep permissions limited to what your preview requires.
+
+<ComponentPreview name="html-viewer-sandbox" />
+
+## Layout and glass [#layout]
+
+The iframe defaults to filling its container. Set an explicit height on the component or its parent. `glass` styles the outer surface; it does not refract, capture, or theme the separate iframe document. Glass background snapshots cannot reliably include iframe contents.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `content` | `string` | Required HTML source; mapped to `srcDoc`. |
+| `sandbox` | Native iframe sandbox | `"allow-scripts"`. |
+| `title` | `string` | `labels.preview` or `"HTML preview"`. |
+| `labels` | `{ preview?: string }` | Fallback accessible title. |
+| `glass` | `boolean` | `false`. |
+| Other props | Native iframe props | Forwarded, including `className`, `ref`, and `loading`. |
+
+The module exports `HtmlViewerProps`. See the [iframe element documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe) for sandbox permissions. For source editing with preview, use [Editor](/docs/components/editor).

@@ -1,0 +1,128 @@
+---
+title: Button
+description: "显示按钮或看起来像按钮的组件"
+featured: true
+base: base
+component: true
+---
+
+<ComponentPreview name="button-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/button
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Button } from "@workspace/ui/components/button"
+```
+
+```tsx
+<Button variant="outline">Button</Button>
+```
+
+## 鼠标指针 [#cursor]
+
+Tailwind v4 将按钮的默认鼠标指针[从 `cursor: pointer` 改为 `cursor: default`](https://tailwindcss.com/docs/upgrade-guide#buttons-use-the-default-cursor)。
+
+如果您想保留 `cursor: pointer` 行为，请将以下代码添加到 CSS 文件中：
+
+也可在配置 shadcn/ui 项目时使用 `npx shadcn@latest init --pointer` 启用该行为。
+
+```css showLineNumbers title="globals.css"
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+```
+
+## 尺寸 [#size]
+
+使用 `size` 属性更改按钮的大小。
+
+<ComponentPreview name="button-size" />
+
+## 默认样式 [#default]
+
+<ComponentPreview name="button-default" />
+
+## 描边 [#outline]
+
+<ComponentPreview name="button-outline" />
+
+## 次级样式 [#secondary]
+
+<ComponentPreview name="button-secondary" />
+
+## 透明 [#ghost]
+
+<ComponentPreview name="button-ghost" />
+
+## 危险操作 [#destructive]
+
+<ComponentPreview name="button-destructive" />
+
+## 链接 [#link]
+
+<ComponentPreview name="button-link" />
+
+## 图标 [#icon]
+
+<ComponentPreview name="button-icon" />
+
+## 带图标 [#with-icon]
+
+请记住将 `data-icon="inline-start"` 或 `data-icon="inline-end"` 属性添加到图标以获得正确的间距。
+
+<ComponentPreview name="button-with-icon" />
+
+## 圆角 [#rounded]
+
+使用 `rounded-full` 类使按钮变圆。
+
+<ComponentPreview name="button-rounded" />
+
+## 加载状态 [#loader]
+
+在按钮内渲染 `<Loader size="sm" />` 组件以显示加载状态。请记住将 `data-icon="inline-start"` 或 `data-icon="inline-end"` 属性添加到Loader以获得正确的间距。
+
+<ComponentPreview name="button-loading" />
+
+## 按钮组 [#button-group]
+
+要创建按钮组，请使用 `ButtonGroup` 组件。有关更多详细信息，请参阅[按钮组](/zh-CN/docs/components/button-group) 文档。
+
+<ComponentPreview name="button-group-demo" />
+
+## 作为链接 [#as-link]
+
+使用 `buttonVariants` 辅助函数为链接应用按钮样式。
+
+**请勿将 `<Button render={<a />} nativeButton={false} />` 用于链接。** Base UI `Button` 组件始终应用 `role="button"`，它会覆盖 `<a>` 元素上的语义链接角色。请改用带有普通 `<a>` 标签的 `buttonVariants`。
+
+<ComponentPreview name="button-render" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="button-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### Button [#button]
+`Button` 组件是 `button` 元素的包装器，添加了各种样式和功能
+
+| 属性 |类型 |默认 |
+| --------- | ------------------------------------------------------------------------------------------------ | ----------- |
+| `variant` | `"default" \| "outline" \| "ghost" \| "destructive" \| "secondary" \| "link"` | `"default"` |
+| `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"default"` |
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/button#api-reference)。

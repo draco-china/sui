@@ -1,0 +1,60 @@
+---
+title: Locale Toggle
+description: 受控语言切换按钮或选择器，不预设路由与持久化方式
+---
+
+<ComponentPreview name="locale-toggle-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/locale-toggle
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { LocaleToggle } from "@workspace/ui/components/locale-toggle";
+import { useState } from "react";
+
+const options = [
+  { value: "en-US", label: "English" },
+  { value: "zh-CN", label: "简体中文" },
+];
+
+export function Language() {
+  const [value, setValue] = useState("en-US");
+  return <LocaleToggle value={value} onValueChange={setValue} options={options} />;
+}
+```
+
+## 按钮与选择器模式 [#modes]
+
+`auto` 模式下，不超过两个不同选项时使用按钮循环切换语言，更多选项时使用共享 Select。可以显式设置 `mode="toggle"` 或 `mode="select"`。不同选项少于两个时，切换按钮禁用。重复的选项值会被去除。
+
+<ComponentPreview name="locale-toggle-select" />
+
+## 接入路由与内容 [#routing]
+
+`onValueChange` 在标记变形到目标形状后返回语言值，应用负责更新正文、路由状态及需要持久化的偏好。控件立即锁定，在图标动画和回调返回的 Promise 完成前保持 `aria-busy`，重复点击复用当前请求。减少动态效果或页面隐藏时直接完成形状切换。请求拒绝后解除等待并恢复受控语言标记，错误提示由应用回调处理；动画结束前卸载会取消回调。当前选中语言仍由 `value` 控制。组件不要求特定路由、翻译 Provider 或存储 API。示例仅保存本地选择，不导航文档。
+
+本文档的语言路由切换会保留页面路径、查询参数和锚点；此行为由应用的路由集成实现，不是共享切换组件的内置能力。
+
+## 选项标记与文案 [#labels]
+
+每个选项提供完整的语言 `value` 和可读的 `label`。默认 ghost 按钮提供 Tooltip，使用 16px、2px 描边的 SVG 标记。ZH 和 EN 采用紧凑字母路径，以 snappy 弹簧进行几何变形；常见语言前缀有内置标记，减少动态效果时直接切换形状。`indicatorPath` 可覆盖 SVG 路径，未知前缀使用通用语言图标。请翻译控件的 `label`，并提供清晰的选项名称。支持 `disabled`、`ref` 和 `render` 等按钮属性。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `value` | `string` | 必填的当前语言 |
+| `onValueChange` | `(value: string) => void \| Promise<void>` | 必填选择回调 |
+| `options` | `readonly LocaleOption[]` | 必填选项，包含 `value`、`label` 和可选 `indicatorPath` |
+| `mode` | `"auto" \| "toggle" \| "select"` | `"auto"` |
+| `label` | `string` | `"Change language"` |
+| `glass` | `boolean` | `false` |
+
+模块导出 `LocaleToggleProps` 和 `LocaleOption`。多语言选择器使用 [Base UI Select API](https://base-ui.com/react/components/select)。

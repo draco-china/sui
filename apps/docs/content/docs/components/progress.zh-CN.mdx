@@ -1,0 +1,78 @@
+---
+title: Progress
+description: "显示任务完成进度的指示器，通常显示为进度条"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/progress
+  api: https://base-ui.com/react/components/progress#api-reference
+---
+
+<ComponentPreview name="progress-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/progress
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Progress } from "@workspace/ui/components/progress"
+```
+
+```tsx showLineNumbers
+<Progress value={33} />
+```
+
+## 组合结构 [#composition]
+
+### 带标签与数值 [#with-label-and-value]
+
+使用`ProgressLabel`和`ProgressValue`添加标签和值显示。
+
+```tsx showLineNumbers
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/progress"
+
+;<Progress value={56} className="w-full max-w-sm">
+  <ProgressLabel>Upload progress</ProgressLabel>
+  <ProgressValue />
+</Progress>
+```
+
+```text
+Progress
+├── ProgressLabel
+├── ProgressValue
+└── ProgressTrack
+    └── ProgressIndicator
+```
+
+## 标签 [#label]
+
+使用`ProgressLabel`和`ProgressValue`添加标签和值显示。
+
+<ComponentPreview name="progress-label" />
+
+## 受控模式 [#controlled]
+
+可以通过滑块控制的进度条。
+
+<ComponentPreview name="progress-controlled" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="progress-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅 [Base UI Progress](https://base-ui.com/react/components/progress#api-reference) 文档。

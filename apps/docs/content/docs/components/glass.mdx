@@ -1,0 +1,112 @@
+---
+title: Glass
+description: SVG highlights and CSS frosted surfaces, progressively enhanced with WebGPU refraction.
+---
+
+## CSS + SVG [#css-svg]
+
+CSS Gaussian backdrop blur and SVG edge highlights, without initializing WebGPU or capturing the background. Clear and frosted surfaces use the current theme background, while text keeps its semantic color. Switch the site appearance to compare light and dark modes.
+
+<ComponentPreview name="glass-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/glass
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { GlassProvider, GlassSurface } from "@workspace/ui/components/glass";
+import { useRef } from "react";
+
+export function GlassPanel() {
+  const sceneRef = useRef<HTMLDivElement>(null);
+  return (
+    <GlassProvider mode="css" material="frosted" captureTarget={sceneRef}>
+      <div ref={sceneRef} className="relative rounded-2xl bg-muted p-6">
+        <GlassSurface className="rounded-2xl bg-background p-6">
+          A glass surface
+        </GlassSurface>
+      </div>
+    </GlassProvider>
+  );
+}
+```
+
+## How the surface is rendered [#rendering]
+
+Glass starts with directional SVG edge highlights and a CSS backdrop blur. This base appearance is available without a GPU renderer. Server rendering does not depend on a GPU, and the component keeps its ordinary DOM structure and refs.
+
+The provider defaults to `mode="css"`: it does not request a GPU or capture the document. Opt into `mode="auto"` to attempt WebGPU enhancement. When `navigator.gpu` is available and device initialization and background capture both succeed, WebGPU adds real refraction from a DOM snapshot. The presence of `navigator.gpu` alone does not guarantee enhancement. If initialization, sampling, or rendering fails, the SVG and CSS appearance remains in place.
+
+The default treatment adds no border or decorative outer ring: the soft SVG edge defines the outline. Interactive controls retain their keyboard focus rings.
+
+Glass is opt-in: ordinary components keep `glass={false}` by default. `GlassSurface` itself defaults to `glass={true}` and can be disabled for a direct comparison.
+
+The provider shares background capture and rendering settings across its descendants. `captureTarget` can be an element or an element ref; scope it to the visual region you need instead of capturing an unnecessarily large document. In auto mode, instances with the same actual capture target, scene revision, and occlusion set share one background snapshot and one uploaded GPU texture. Each surface uses its own sampling coordinates and rounded outline. Moving a surface updates coordinates without recapturing an unchanged background. Background changes invalidate the snapshot. Portal overlays require another snapshot only when their background or occlusion set differs. Capture uses `html-to-image`; enhancement uses native WebGPU. The Glass runtime uses a static import; the capture dependency and WebGPU renderer load only when enhancement needs them.
+
+CSS, fallback, and enhanced modes share one continuous SVG edge-lighting layer. The GPU handles background refraction and blur without adding a second rim. New frames replace the previous frame only after image decoding completes.
+
+## WebGPU enhancement [#webgpu]
+
+The CSS backdrop responds to the underlying page directly. When WebGPU enhancement is active, text changes, ordinary images, grids, resizing, and scrolling can update its background snapshot. Ordinary captures are capped at 5Hz and scrolling captures at 10Hz, with captures serialized through a shared queue, so there is a short delay between a background change and its refracted appearance. This is not a live video feed. Use the provider ref’s `refresh()` when your application needs to request another snapshot.
+
+This demonstration is separate from the CSS + SVG example above. Its status reports the actual rendering mode. The example enables `mode="auto"`, changes background text, and provides refraction, blur, and edge-highlight sliders. Its two independent surfaces share a scene. Scroll the exposed background around the surfaces. Setting strength to `0` lets you compare the captured background with its refracted version when enhancement is active; an unsupported device continues to show the CSS and SVG material.
+
+<ComponentPreview name="glass-dynamic" />
+
+## Inputs, viewers, overlays [#composition]
+
+Pass `glass` to supported shared components rather than replacing their native controls. Inputs retain their original DOM node, ref, form behavior, and focus ring. Independent buttons, inputs, choice controls, and toolbar actions inherit glass inside a glass container. Layout wrappers, content, and the native input inside an InputGroup reuse their owning surface. An explicit `glass={false}` disables a control or scope. The example uses an ordinary parent surface with independent glass controls, avoiding nested material sampling.
+
+The example combines an editable input, a popover, a dialog, Editor, and Code Viewer. Ordinary content avoids repeated material layers. The dialog input is an independent interactive control and inherits glass, demonstrating nested glass while retaining its native focus ring. Keyboard, focus, copy, and editing behavior remains available.
+
+<ComponentPreview name="glass-composition" />
+
+[TabBar](/docs/components/tab-bar) provides independent application navigation with a moving glass lens. It shares the same provider and material foundation while keeping routing under application control.
+
+## Materials [#materials]
+
+Choose `material="clear"` for a more transparent surface or `material="frosted"` for stronger frosting and a denser tint. Clear uses a `6px` blur and a `0.60` CSS tint opacity; frosted uses `8px` and `0.78`. The provider defaults to `frosted`; `GlassSurface` can override the inherited material for one surface. An explicit `options.blur` overrides the material blur. The default demonstration uses CSS and SVG only, with ordinary, clear, and frosted surfaces side by side.
+
+## Themes and fallback [#themes]
+
+The default tint comes from the current surface background token. It follows light, dark, and accent themes while preserving primary and danger colors. Adjust `strength`, `blur`, `tint`, `tintOpacity`, and `highlight` on the provider for a shared treatment. Soft SVG highlights are confined to the surface edge; `highlight` controls their intensity. The default SVG and CSS appearance retains these edge-light details; both `highlight` and `blur` continue to apply without WebGPU.
+
+When WebGPU or background capture is unavailable, the default frosted surface remains visible. Controls remain usable. The glass effect should improve a surface visually without being required to understand it.
+
+Glass strengthens neutral secondary text and placeholders locally, while preserving the theme's primary, destructive, and focus colors. Check text against the actual background when choosing clear glass or overriding tint opacity; transparency alone cannot guarantee readable contrast over every background. Use a denser tint or an ordinary surface when the underlying content makes text difficult to read.
+
+WebGPU enhancement checks the actual colors of text and input placeholders belonging to the surface, including their alpha, and adjusts the captured background toward a shared tint that supports at least 4.5:1 contrast. Independently painted children and nested glass surfaces handle their own backgrounds. If the collected colors cannot share a readable background, enhancement falls back to CSS and SVG. CSS fallback, generated or SVG text, custom blending, filters, and outer opacity still require checking against the rendered scene.
+
+## Snapshot limitations [#limits]
+
+The WebGPU enhancement uses DOM capture, which is not a browser compositor screenshot. Cross-origin images need suitable CORS permission; cross-origin iframes cannot be read. Embedded iframe documents, video frames, tainted canvases, and other browser-managed surfaces may be absent or inaccurate in the snapshot. Canvas and other GPU-rendered content are not guaranteed to be captured.
+
+Rapid animation can outpace the capture limit. Use ordinary surfaces or the frosted fallback when accurate live media is important, and keep the capture area modest on mobile devices.
+
+Positive horizontal and vertical scaling preserves the original layout while mapping the snapshot and corner radii to the viewport. Rotation, skew, perspective, and mirrored transforms use the CSS + SVG fallback instead of displaying a misaligned snapshot.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| Provider `mode` | `"css" \| "auto"` | `"css"`; `"auto"` attempts WebGPU refraction. |
+| Provider `material` | `"clear" \| "frosted"` | `"frosted"`; shared material. |
+| Provider `options` | `GlassOptions` | Shared rendering settings. |
+| Provider `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | Optional scoped DOM capture target. |
+| Provider `ref` | `Ref<GlassHandle>` | `refresh(): void` requests a snapshot. |
+| Options `strength` | `number` | `22`; WebGPU refraction strength. |
+| Options `blur` | `number` | Material default; an explicit value overrides CSS and enhanced blur. |
+| Options `tint` | `string` | Current surface background color. |
+| Options `tintOpacity` | `number` | CSS and enhancement share the material default; an explicit value overrides both. |
+| Options `highlight` | `number` | `0.3`. |
+| Surface `glass` | `boolean` | `true`; ordinary component props default to `false`. |
+| Surface `material` | `"clear" \| "frosted"` | Inherits the provider material. |
+| Surface other props | Native div props | Includes `className`, `style`, and `ref`. |
+
+The module exports `GlassProvider`, `GlassSurface`, `GlassOptions`, `GlassCaptureTarget`, `GlassProviderProps`, `GlassMode`, `GlassMaterial`, and `GlassHandle`. SVG and CSS provide the default surface; the optional enhancement uses [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API). The public SUI props above govern component integration.

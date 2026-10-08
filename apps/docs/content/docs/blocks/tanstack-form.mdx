@@ -1,0 +1,62 @@
+---
+title: TanStack Form
+description: Validated report and profile forms composed from SUI fields and TanStack Form.
+---
+
+These shared blocks follow the [shadcn TanStack Form guide](https://ui.shadcn.com/docs/forms/tanstack-form), using SUI FieldGroup, Field, Input, Select, Checkbox, and Zod schemas. Validation runs on blur and submit. Invalid controls expose `aria-invalid` and associate errors with their fields.
+
+## Bug report
+
+Try submitting an empty report, then enter a title of 5–80 characters and a description of 20–500 characters. Successful submission displays feedback. Reset restores the initial values.
+
+<ComponentPreview name="block-form-report" />
+
+## Profile, select, and checkbox
+
+This composition adds email validation, a role selector, and notification preferences. Toggle the failure simulation to check retry behavior.
+
+<ComponentPreview name="block-form-profile" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/tanstack-form
+```
+
+Install this Block with the shadcn CLI command above. Follow the [installation guide](/docs/installation) for registry, dependency, and style setup. The examples below use workspace imports; registry-installed source uses the aliases configured in the consuming application's `components.json`.
+
+## Usage
+
+```tsx
+import { BugReportForm, ProfileForm } from "@workspace/ui/blocks/tanstack-form"
+
+<BugReportForm onSubmit={async (values) => { await saveReport(values) }} />
+<ProfileForm
+  initialValues={{ name: "Alex", email: "alex@example.com", role: "developer" }}
+  onSubmit={async (values) => { await saveProfile(values) }}
+/>
+```
+
+The blocks keep English defaults and do not select a language. Your application can resolve translations with its own i18n system and pass them through `labels`:
+
+```tsx
+<BugReportForm
+  labels={{ formTitle: t("report.title"), submit: t("report.submit"), titleMinLength: t("report.titleMinLength") }}
+  onSubmit={saveReport}
+/>
+```
+
+## API
+
+| Prop | Description |
+| --- | --- |
+| `onSubmit` | Required callback; accepts validated values and can return a promise. Throw an error to show failure feedback and allow retry. |
+| `initialValues` | Initial field values; Reset restores them. |
+| `labels` | Partial `BugReportFormLabels` or `ProfileFormLabels`. Defaults to English; provide translations from your application. |
+| `className` | Card layout classes. |
+
+`BugReportValues` contains `title` and `description`. `ProfileValues` contains `name`, `email`, `role`, and `notifications`. Buttons and controls are disabled during submission. Both forms generate independent IDs, so multiple copies can share a page.
+
+Both label types include `formTitle`, `formDescription`, `submit`, `submitting`, `reset`, `failed`, `saved`, `savedDescription`, and `submitError` (fallback for non-Error submission failures). Error messages thrown by your callback are displayed directly, so translate them in your application too.
+
+`BugReportFormLabels` also includes `title`, `titlePlaceholder`, `description`, `descriptionHint`, `titleMinLength`, `titleMaxLength`, `descriptionMinLength`, and `descriptionMaxLength`. `ProfileFormLabels` also includes `name`, `email`, `role`, `rolePlaceholder`, `designerRole`, `developerRole`, `managerRole`, `notifications`, `nameMinLength`, `nameMaxLength`, `invalidEmail`, and `invalidRole`. Provide all keys for a fully translated form, or override individual keys while keeping the remaining English defaults.

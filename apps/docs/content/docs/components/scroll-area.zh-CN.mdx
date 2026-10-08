@@ -1,0 +1,56 @@
+---
+title: Scroll Area
+description: "增强了自定义跨浏览器样式的原生滚动功能"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/scroll-area
+  api: https://base-ui.com/react/components/scroll-area#api-reference
+---
+
+<ComponentPreview name="scroll-area-demo" previewClassName="h-96" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/scroll-area
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area"
+```
+
+```tsx showLineNumbers
+<ScrollArea className="h-[200px] w-[350px] rounded-md border p-4">
+  Your scrollable content here.
+</ScrollArea>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `ScrollArea`：
+
+```text
+ScrollArea
+└── ScrollBar
+```
+
+## 水平布局 [#horizontal]
+
+使用 `ScrollBar` 和 `orientation="horizontal"` 进行水平滚动。
+
+<ComponentPreview name="scroll-area-horizontal-demo" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="scroll-area-rtl" previewClassName="h-auto" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 滚动区域](https://base-ui.com/react/components/scroll-area#api-reference) 文档。

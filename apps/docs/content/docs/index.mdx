@@ -1,0 +1,51 @@
+---
+title: Introduction
+description: Start with a component. Build an interface that feels like yours.
+---
+
+SUI is a collection of composable React components built with Base UI and Tailwind CSS 4. It brings form controls, navigation, feedback, and content viewers into one visual language. The source lives in `packages/ui`, where you can read it, change it, and compose it for your application.
+
+## Start here
+
+1. **Connect your application.** Follow [Installation](/docs/installation) to add the workspace dependency, load the shared styles, and configure Tailwind to scan the component source.
+2. **Try a component.** Browse the [component directory](/docs/components). Each page pairs an interactive preview with the complete example source.
+3. **Make it your own.** Use [Theming](/docs/theming) for colors and CSS tokens, and [Design guidelines](/docs/design-guidelines) for typography, spacing, surfaces, and motion.
+
+SUI currently uses the private `@workspace/ui` package inside this Bun workspace. There is no published SUI registry or standalone install command. Start with the installation guide before copying an example.
+
+## Your first component
+
+Once your application is connected, import components from their individual modules:
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+export function SaveButton() {
+  return <Button>Save changes</Button>;
+}
+```
+
+The previews and your application use the same shared package. The code tab shows the full example file, including imports and composition; English and Chinese pages share the same examples.
+
+## Find the right pieces
+
+| What you are building | Start with |
+| --- | --- |
+| Forms and settings | [Field](/docs/components/field), [Input](/docs/components/input), [Select](/docs/components/select), [Switch](/docs/components/switch) |
+| Navigation and feedback | [Tabs](/docs/components/tabs), [Dialog](/docs/components/dialog), [Toast](/docs/components/toast) |
+| Content and conversations | [Message](/docs/components/message), [Markdown Viewer](/docs/components/markdown-viewer), [Code Viewer](/docs/components/code-viewer) |
+| Optional glass surfaces | [Glass](/docs/components/glass) |
+
+## Compose with intent
+
+Components expose named parts. A dialog combines a trigger, content, title, description, and actions. A field combines a label, control, description, and error. Keep related parts together to preserve their behavior and give each interaction a clear purpose.
+
+Base UI primitives provide keyboard interactions, focus management, and ARIA semantics. Your application still supplies meaningful labels, useful descriptions, and understandable feedback. Test custom compositions with a keyboard and assistive technology.
+
+## Work with the source
+
+- `packages/ui` contains components, shared hooks, CSS tokens, and accent themes.
+- `apps/docs` contains the bilingual reference site and runnable examples.
+- [CSS utilities](/docs/utils) cover shared effects such as Scroll Fade and Shimmer.
+
+For coding assistants, [llms.txt](/llms.txt) provides the documentation index and [llms-full.txt](/llms-full.txt) includes the full reference and example source. Individual pages also offer Markdown through the page actions.

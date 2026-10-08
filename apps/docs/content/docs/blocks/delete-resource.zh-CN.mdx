@@ -1,0 +1,65 @@
+---
+title: Delete Resource
+description: 通过资源名称确认删除，支持异步状态和失败重试
+---
+
+参考 [Kumo Delete Resource](https://kumo-ui.com/blocks/delete-resource/)，组合 SUI AlertDialog、Field、Input 和 Button。用户必须输入资源名称，才能调用删除回调。
+
+## 名称确认
+
+打开弹窗并输入 `sui-preview`。输入匹配时才启用删除按钮；回调执行期间禁用相关控件。确认提示中的资源名称支持行内复制，复制不会填写确认输入或提交表单，删除进行中禁用复制。
+
+<ComponentPreview name="block-delete-resource" />
+
+## 失败和重试
+
+此示例首次删除失败。弹窗保留确认输入，显示错误并允许第二次尝试。重新打开时清空上次的确认与错误。
+
+<ComponentPreview name="block-delete-resource-error" />
+
+## 忽略大小写
+
+需要忽略字母大小写时，设置 `caseSensitive={false}`。
+
+<ComponentPreview name="block-delete-resource-insensitive" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/delete-resource
+```
+
+使用上方 shadcn CLI 命令安装此 Block。按照[安装指南](/zh-CN/docs/installation)配置 registry、依赖和样式。下方示例使用工作区导入路径；registry 安装的源码使用消费应用 `components.json` 配置的别名。
+
+## 使用
+
+```tsx
+import { DeleteResource } from "@workspace/ui/blocks/delete-resource"
+
+<DeleteResource
+  open={open}
+  onOpenChange={setOpen}
+  resourceType="项目"
+  resourceName="sui-preview"
+  onDelete={async () => { await deleteProject("sui-preview") }}
+  labels={{ confirmation: "项目名称", hint: "输入 sui-preview 确认删除。", cancel: "取消" }}
+/>
+```
+
+Block 只保留英文默认文案。应用负责解析翻译并通过 `labels` 传入；回调抛出的错误消息也由应用翻译。上例只覆盖部分文案，完整中文界面需提供所有 labels。
+
+## API
+
+| 属性 | 默认值 | 说明 |
+| --- | --- | --- |
+| `open`、`onOpenChange` | 必填 | 受控显示状态 |
+| `resourceType`、`resourceName` | 必填 | 资源类型及名称，空名称无法通过确认 |
+| `onDelete` | 必填 | 同步或异步删除回调，成功时完成，失败时抛出错误 |
+| `caseSensitive` | `true` | 是否区分大小写，空白字符需完全匹配 |
+| `isDeleting` | `false` | 可选的外部进行中状态，与内部提交状态共同生效 |
+| `errorMessage` | — | 可选的业务错误 |
+| `description` | 自动生成 | 自定义说明内容 |
+| `labels` | 英文 | 覆盖 title、description、confirmation、hint、cancel、delete、deleting、failed、copy、copying、copied、copyFailed 文案 |
+| `className` | — | 弹窗布局类名 |
+
+成功后调用 `onOpenChange(false)`，失败时保持打开。删除期间阻止重复提交和关闭。实际删除逻辑由应用管理，文档预览仅模拟操作。

@@ -1,0 +1,363 @@
+---
+title: Message Scroller
+description: "聊天滚动容器：锚定对话轮次、恢复已保存的记录、跟随流式回复、稳定加载历史消息，并跳转至指定消息"
+base: base
+component: true
+---
+
+<ComponentPreview name="message-scroller-demo" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+## 流式聊天体验的关键 [#what-makes-a-great-streaming-chat-experience]
+
+过去，构建聊天界面相对简单：一个倒序列表加上一个输入框。输入消息后将其追加到底部；收到回复时，列表增长并随之滚动。
+
+流式输出改变了这个模式。当用户正在阅读、滚动，或查看其他地方时，消息仍会分块到达。
+
+挑战在于：对话不断变化，用户的阅读位置却应保持稳定。处理不好，界面就会让人紧张——用户被拉到底部、失去上下文，还得重新寻找刚才的位置。
+
+这最终是一个滚动问题：什么时候跟随、什么时候保持位置，以及什么时候交给用户决定。好的流式聊天体验应当：
+
+1. **只有用户希望移动时才移动。**用户正在阅读时，不要将其拉到别处。自动滚动不应成为默认行为。
+2. **只在用户正在跟随最新内容时继续跟随。**如果用户位于最新内容的位置，就保持流式内容可见；用户滚开后，应保留其当前位置。
+3. **将每次交互视为信号。**不只是滚动，选择文字、使用键盘、打开链接和搜索，都应阻止界面擅自移动。
+4. **在视口顶部附近开始新的轮次。**让用户能够从头阅读新的内容。
+5. **再向下填充回答。**回答应逐渐延伸到屏幕中，而不是立即把所有内容推走。
+6. **保留上一轮的部分内容作为上下文。**问题与回答应保持视觉关联，上一轮也应留有足够内容，帮助用户判断位置。
+7. **允许新内容在屏幕之外到达。**对话可以继续输出，不必改变用户当前看到的内容。
+8. **提示视野之外正在发生的事情。**清楚表明回答仍在输出，或有新消息到达。
+9. **让返回最新回答足够简单。**“跳到最新”操作应让用户返回最新内容并继续跟随。
+10. **允许跳转到对话中的任何位置。**长对话需要消息链接、搜索、未读标记与直接导航。
+11. **从用户上次停下的位置重新打开。**已保存的对话应定位到最后一个有意义的轮次，通常是最后一条用户消息，而不是列表最底部。
+12. **布局变化时保持阅读位置。**图片加载、Markdown 展开、代码块渲染和顶部加载历史消息，都不应让用户丢失位置。
+13. **处理中断时避免抢占位置。**停止、重试、重新生成、分支或错误，都不应意外移动对话。
+14. **长对话也保持流畅。**流式文字、Markdown、代码、图片与长历史记录仍应快速响应。
+15. **保持无障碍。**让对话记录便于导航，保留键盘焦点，并以合适的频率播报重要事件。
+
+**不要违背用户的阅读意图。**
+
+## MessageScroller [#messagescroller]
+
+MessageScroller 是为上述行为构建的聊天记录滚动容器。`MessageScrollerProvider` 管理滚动状态与记录行的行为，包括打开位置、流式输出、新轮次锚定、向前加载历史、可见性与滚动控件。`MessageScroller` 则是渲染在 Provider 内部的样式框架。
+
+MessageScroller 只管理滚动视口，不接管消息、AI 状态、传输、持久化、分支或模型状态。产品代码仍然负责组合消息、标记、工具、附件和输入框。
+
+它提供聊天所需的滚动行为，同时保留你对其他界面的控制。即使对话很长、Markdown 内容丰富，也能保持流畅。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/message-scroller
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Message } from "@workspace/ui/components/message"
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@workspace/ui/components/message-scroller"
+```
+
+```tsx
+<MessageScrollerProvider>
+  <MessageScroller>
+    <MessageScrollerViewport>
+      <MessageScrollerContent>
+        {messages.map((message) => (
+          <MessageScrollerItem
+            key={message.id}
+            messageId={message.id}
+            scrollAnchor={message.role === "user"}
+          >
+            <Message />
+          </MessageScrollerItem>
+        ))}
+      </MessageScrollerContent>
+    </MessageScrollerViewport>
+    <MessageScrollerButton />
+  </MessageScroller>
+</MessageScrollerProvider>
+```
+
+`MessageScroller` 会填满父容器，因此请将它放在高度受限的容器中。
+
+```tsx
+<div className="flex h-screen flex-col">
+  <MessageScrollerProvider>
+    <MessageScroller className="flex-1">{/* transcript */}</MessageScroller>
+  </MessageScrollerProvider>
+</div>
+```
+
+## 组合结构 [#composition]
+
+```tsx
+<MessageScrollerProvider>
+  <MessageScroller>
+    <MessageScrollerViewport>
+      <MessageScrollerContent>
+        <MessageScrollerItem>
+          {/* a message, marker, or row */}
+        </MessageScrollerItem>
+        <MessageScrollerItem />
+        <MessageScrollerItem />
+      </MessageScrollerContent>
+    </MessageScrollerViewport>
+    <MessageScrollerButton />
+  </MessageScroller>
+</MessageScrollerProvider>
+```
+
+- **`MessageScrollerProvider`** — 无样式的根组件，管理滚动状态，以及初始位置、自动滚动、锚定、滚动命令和可见性跟踪。
+- **`MessageScroller`** — 带样式的容器，在 Provider 内组织视口、内容和控件。
+- **`MessageScrollerViewport`** — 实际的滚动元素，接收原生滚动事件，并在顶部加载旧消息时保留可见行的位置。
+- **`MessageScrollerContent`** — 对话记录容器，承载消息行，并为新消息提供默认的实时播报区域设置。
+- **`MessageScrollerItem`** — 对话记录中的行容器。请将内容区域的每个直接子元素包裹在其中，以便测量、锚定、保留位置、跟踪可见性与跳转。它可以是一条消息、标记、输入中指示器、分隔线、加入或离开事件，也可以是“加载更早消息”的操作行。
+- **`MessageScrollerButton`** — 滚动控件，跳转到记录的开始或末尾；对应方向没有内容时会设为 `inert`。
+
+## 核心概念 [#core-concepts]
+
+### 固定对话轮次 [#anchoring-turns]
+
+一个轮次是对话中发起一次新交流的部分。在简单的 AI 聊天中，它通常包含用户消息及随后的助手回复。
+
+锚点是视口应该视为本轮起点的消息行。用 `scrollAnchor` 标记这一行；追加新锚点时，视口会将它移到顶部附近，并在上方保留上一项的一部分，让新轮次仍与上下文相连。
+
+```tsx
+// This tells the scroller to anchor the user's message for the next turn.
+<MessageScrollerItem
+  messageId={message.id}
+  scrollAnchor={message.role === "user"}
+/>
+```
+
+滚动锚点与消息角色无关。用户消息、系统标记、交接事件，或任何开启新轮次的行，都可以成为锚点。`MessageScroller` 只需要知道视口应定位到哪一行。
+
+下面的示例将用户消息设为锚点。发送新消息时，视口将其定位到顶部附近，再把助手回复追加到下方。可以改为锚定助手消息，观察两者的区别。
+
+<ComponentPreview name="message-scroller-anchoring" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+### 群聊 [#group-chat]
+
+在群聊中，轮次边界并不总是用户消息。它可能是要求模型回复的消息，也可能是“Marcus 加入聊天”这样的标记。输入中指示器与历史记录操作通常不应成为锚点。
+
+锚定不依赖消息角色，因此可以像锚定消息一样锚定标记。
+
+```tsx
+<MessageScrollerItem messageId="marcus-joined" scrollAnchor>
+  <Marker variant="separator">
+    <MarkerContent>Marcus joined the chat</MarkerContent>
+  </Marker>
+</MessageScrollerItem>
+```
+
+<ComponentPreview name="message-scroller-group-chat" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+### 保持上下文可见 [#keeping-context-visible]
+
+新轮次开始时，仍应让人感觉它属于同一段连续对话。`scrollPreviousItemPeek` 在锚点上方保留上一项的一部分，帮助用户保留上下文，而不是觉得对话在空白页上重新开始。
+
+```tsx
+// Keep 64px of the previous turn visible above the newly anchored row.
+<MessageScrollerProvider scrollPreviousItemPeek={64}>
+  <MessageScroller>{/* anchored turns */}</MessageScroller>
+</MessageScrollerProvider>
+```
+
+调整下方示例保留的上一项高度，观察它对对话呈现的影响。
+
+<ComponentPreview name="message-scroller-previous-context" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+### 跟随最新消息 [#following-the-live-edge]
+
+当用户停留在最新消息的位置，或主动返回该位置时，`autoScroll` 会跟随逐渐增长的流式回复。通过滚轮、触摸、键盘或拖动滚动条离开最新消息后，自动跟随便会停止；显式跳转到其他消息也会停止跟随。之后到达的新片段不会移动用户的阅读位置。
+
+`autoScroll` 可与轮次锚定配合使用。新轮次定位到顶部附近后，视图先保持不动，让回复逐渐填入下方空间。回复填满视口、用户再次处于最新消息的位置时，自动跟随会接替锚定行为。
+
+```tsx
+<MessageScrollerProvider autoScroll>
+  <MessageScroller>{/* streamed turns */}</MessageScroller>
+</MessageScrollerProvider>
+```
+
+<ComponentPreview name="message-scroller-streaming" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+启用 `autoScroll` 时，调用 `scrollToEnd` 或点击 `MessageScrollerButton`，会恢复自动跟随，让离开的用户回到最新内容并继续阅读。程序化滚动到最新消息的过程中，根组件与视口会带有 `data-autoscrolling`，便于为过渡过程应用样式。
+
+### 打开已保存的对话 [#opening-saved-threads]
+
+重新打开已保存的对话时，直接定位到记录最底部看似合理，却可能让用户缺少上下文。更好的默认值是 `"last-anchor"`：显示最后一个有意义的轮次，例如用户的最新消息以及下方的回复。
+
+这样用户能立即找到自己在对话中的位置，看见刚才的问题、回答的起点，并从那里继续阅读，无需从最底部反向拼凑上下文。
+
+```tsx
+<MessageScrollerProvider defaultScrollPosition="last-anchor">
+  <MessageScroller>{/* transcript */}</MessageScroller>
+</MessageScrollerProvider>
+```
+
+<ComponentPreview name="message-scroller-opening-position" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+`"last-anchor"` 依据 `scrollAnchor` 定位，与消息角色无关。若没有锚点，或最后一个锚定轮次已经完整位于视口中，则回退到 `"end"`。
+
+希望从对话开头恢复时，使用 `"start"`；希望直接查看最新消息时，使用 `"end"`。
+
+### 避免重新加载时闪烁 [#avoiding-a-flash-on-reload]
+
+滚动容器最初位于顶部。HTML 无法设置 `scrollTop`，因此服务端渲染的对话记录会先显示最早的消息；JavaScript 执行后，`defaultScrollPosition` 再移动视图，造成可见的跳动。
+
+当 `defaultScrollPosition` 为 `"end"` 或 `"last-anchor"` 时，视口会保留 `data-pending-scroll`，直到目标位置应用完成。该属性存在时，带样式的视口保持隐藏，让用户先看到容器而不是跳动。`"start"` 不需要这一步。
+
+希望 `"end"` 在首次绘制时就可见，可在视口之后添加内联脚本：为视口设置 `id`，将它滚动到底部，再移除 `data-pending-scroll`。
+
+```tsx
+const scrollToEndScript = `(function () {
+  var viewport = document.getElementById("messages")
+  if (!viewport) {
+    return
+  }
+  viewport.scrollTop = viewport.scrollHeight
+  viewport.removeAttribute("data-pending-scroll")
+})()`
+
+<MessageScroller>
+  <MessageScrollerViewport id="messages" suppressHydrationWarning>
+    <MessageScrollerContent>{/* transcript */}</MessageScrollerContent>
+  </MessageScrollerViewport>
+  <script dangerouslySetInnerHTML={{ __html: scrollToEndScript }} />
+  <MessageScrollerButton />
+</MessageScroller>
+```
+
+脚本应放在页面中，而不是滚动组件内部。它仅适用于 `"end"`，并要求消息已经包含在 HTML 中。请为视口添加 `suppressHydrationWarning`；若使用内容安全策略，还应传入 `nonce`。
+
+不要将该脚本用于 `"last-anchor"`。如果消息在客户端加载，也应跳过它。
+
+### 加载更早的消息 [#loading-earlier-messages]
+
+加载更早的消息不应改变用户正在阅读的位置。将旧消息追加到当前记录上方时，`MessageScrollerViewport` 会保留可见行的位置，让历史记录在上方加载，而用户留在原处。
+
+这项行为由 `preserveScrollOnPrepend` 控制，默认启用。
+
+<ComponentPreview name="message-scroller-load-history" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+为消息行提供稳定的 `messageId`，让滚动组件能够保留具体的行，而不是仅依据视口边缘的像素位置猜测。
+
+### 新消息动画 [#animating-new-messages]
+
+可以直接为 `MessageScrollerItem` 添加动画。创建它的 motion 版本，保留 `messageId` 与 `scrollAnchor`，并通过 transform 和 opacity 实现入场效果。
+
+常见做法是给刚发送的用户消息添加入场动画，而助手回复在其下方的普通消息行中继续流式输出。让用户消息从最终位置下方开始，形成从视口底部升起的感觉。
+
+```tsx
+const MotionMessageScrollerItem = motion.create(MessageScrollerItem)
+```
+
+<ComponentPreview name="message-scroller-animation" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+入场动画应避免改变高度、外边距或内边距，这些变化可能干扰滚动定位。若用户偏好减少动态效果，则跳过入场动画，并保持相同的滚动行为。
+
+### 跳转至指定消息 [#jumping-to-messages]
+
+搜索结果、永久链接、目录项与工具栏按钮，经常需要从消息列表外部控制对话记录。可为这些控件使用 `useMessageScroller`。Hook 读取 `MessageScrollerProvider` 的上下文，因此 Provider 内的任意组件都能使用它，包括位于 `MessageScroller` 容器外部的控件。
+
+```tsx
+import { useMessageScroller } from "@workspace/ui/components/message-scroller"
+```
+
+```tsx
+const { scrollToMessage, scrollToEnd, scrollToStart } = useMessageScroller()
+```
+
+<ComponentPreview name="message-scroller-commands" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+`scrollToMessage` 根据 `MessageScrollerItem` 的 `messageId` 定位，因此需要支持跳转的行应具有稳定 ID。目标尚未挂载且无法排队时，返回 `false`。
+
+`scrollToMessage` 可以在消息行出现前将目标加入队列，适用于对话挂载期间在客户端解析的永久链接。消息行挂载完成后，若目标 ID 不存在，会返回 `false`，而不是盲目重试。返回 `true` 表示滚动已经执行或排队，不代表目标已经进入视口。
+
+### 跟踪阅读位置 [#tracking-the-readers-position]
+
+使用 `useMessageScrollerVisibility` 跟踪用户在对话中的阅读位置。例如，目录或跳转菜单可以用它高亮当前锚定的轮次。
+
+```tsx
+import { useMessageScrollerVisibility } from "@workspace/ui/components/message-scroller"
+```
+
+```tsx
+const { currentAnchorId, visibleMessageIds } = useMessageScrollerVisibility()
+```
+
+<ComponentPreview name="message-scroller-visibility" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+`currentAnchorId` 返回当前锚定轮次，回答“我在哪里”；即使该锚点滚动到视口上方，值仍会保留。`visibleMessageIds` 按文档顺序列出可见消息，回答“屏幕上有什么”。
+
+可见性跟踪按需启用：只有存在 `useMessageScrollerVisibility` 订阅者时才运行，参与跟踪的行需要 `messageId`。
+
+### 读取滚动状态 [#reading-scroll-state]
+
+需要在 JavaScript 中读取滚动状态时，例如实现状态指示器或自定义“跳到最新”控件，可使用 `useMessageScrollerScrollable`。它报告视口还可以向哪些边缘滚动：`!start`、`!end` 分别表示已到达起点或终点，`start || end` 表示仍可滚动。仅调整滚动容器样式时，优先使用 `data-scrollable` 属性。
+
+```tsx
+import { useMessageScrollerScrollable } from "@workspace/ui/components/message-scroller"
+```
+
+```tsx
+const { start, end } = useMessageScrollerScrollable()
+```
+
+<ComponentPreview name="message-scroller-scrollable" previewClassName="h-auto theme-blue bg-surface dark:bg-background p-4 min-[480px]:p-8 min-[560px]:p-10 sm:px-10 sm:py-16" />
+
+## 性能 [#performance]
+
+`MessageScroller` 的基准测试使用包含 Markdown 与组合消息行的大型对话记录。
+
+性能目标是让高频滚动逻辑不依赖 React 状态：消息行无需随滚动重新渲染，每次滚动不强制触发布局，并尽量减少视口之外的绘制工作。
+
+滚动位置、锚定与自动跟随通过命令式逻辑跟踪，并以 `data-*` 属性同步到根组件和视口。因此滚动与流式输出不会重新渲染消息行。
+
+`MessageScrollerItem` 的样式使用 `content-visibility: auto` 与 `contain-intrinsic-size`。消息行保留在 DOM 中，以支持文字选择、复制、页内查找、SSR 与辅助技术，同时允许浏览器跳过远离视口的行的渲染工作。
+
+可见性跟踪按需运行。在订阅 `useMessageScrollerVisibility` 之前，跳转菜单与当前轮次指示器不会产生这项跟踪开销。
+
+这适合预期的聊天记录规模：数百到数千个轮次，包括带有 Markdown 和组合组件的消息。
+
+## 虚拟化 [#virtualization]
+
+底层组件有意不内置虚拟化。`MessageScroller` 渲染真实的 DOM 行，在数千个轮次下仍能保持流畅（见[性能](#performance)），因此大多数对话记录不需要虚拟化。
+
+如果记录规模确实需要虚拟化，使用 `MessageScrollerViewport` 作为滚动元素，并让虚拟化组件负责消息行。
+
+[查看完整的上游示例（包含此集成需要的辅助代码与可选依赖）](https://github.com/shadcn-ui/ui/blob/f56bbd7282f0116a925a601cb6d7e0c3fede448b/apps/v4/content/docs/components/base/message-scroller.mdx)
+
+## 无障碍 [#accessibility]
+
+`MessageScroller` 保持滚动容器可通过键盘访问，并支持播报对话记录，而不强制使用某一种消息 UI。
+
+`MessageScrollerViewport` 默认是有名称、可聚焦的滚动区域，使用 `role="region"`、`aria-label="Messages"` 与 `tabIndex={0}`，让键盘用户可以聚焦记录并直接滚动。
+
+`MessageScrollerContent` 使用 `role="log"` 与 `aria-relevant="additions"`，将对话记录标记为实时播报区域。新消息行可以被播报，而流式文字的每次变化不必逐片段播报。
+
+```tsx
+<MessageScrollerContent aria-busy={status === "streaming"}>
+  {/* messages */}
+</MessageScrollerContent>
+```
+
+如果希望在一个轮次完成后再播报，可为消息行设置 `aria-busy`。
+
+`MessageScrollerButton` 渲染真实按钮。对应方向没有可滚动内容时，会设置 `inert`、`tabIndex={-1}` 与 `data-active="false"`，让不可用的滚动控件不占据额外的键盘焦点位置。
+
+## 无样式版本 [#unstyled]
+
+`MessageScroller` 的交互行为来自 `@shadcn/react`。若要直接使用底层组件并提供自己的结构与样式，参阅 [Message Scroller 文档](https://ui.shadcn.com/docs/react/message-scroller)。
+
+## API 参考 [#api-reference]
+
+各个子组件的属性、数据属性与 Hook 见 [@shadcn/react Message Scroller API](https://ui.shadcn.com/docs/react/message-scroller#api-reference)。带样式的组件与对应无样式组件使用相同的 API。

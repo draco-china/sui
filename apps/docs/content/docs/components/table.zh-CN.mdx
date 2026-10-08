@@ -1,0 +1,101 @@
+---
+title: Table
+description: "响应式表格组件"
+base: base
+component: true
+---
+
+<ComponentPreview name="table-demo" previewClassName="h-[30rem]" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/table
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/table"
+```
+
+```tsx showLineNumbers
+<Table>
+  <TableCaption>A list of your recent invoices.</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead className="w-[100px]">Invoice</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead>Method</TableHead>
+      <TableHead className="text-right">Amount</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell className="font-medium">INV001</TableCell>
+      <TableCell>Paid</TableCell>
+      <TableCell>Credit Card</TableCell>
+      <TableCell className="text-right">$250.00</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Table`：
+
+```text
+Table
+├── TableCaption
+├── TableHeader
+│   └── TableRow
+│       ├── TableHead
+│       ├── TableHead
+│       ├── TableHead
+│       └── TableHead
+├── TableBody
+│   ├── TableRow
+│   │   ├── TableCell
+│   │   ├── TableCell
+│   │   ├── TableCell
+│   │   └── TableCell
+│   └── TableRow
+│       ├── TableCell
+│       ├── TableCell
+│       ├── TableCell
+│       └── TableCell
+└── TableFooter
+```
+
+## 页脚 [#footer]
+
+使用 `<TableFooter />` 组件向表格添加页脚。
+
+<ComponentPreview name="table-footer" />
+
+## 操作 [#actions]
+
+显示使用 `<DropdownMenu />` 组件对每行执行的操作的表格。
+
+<ComponentPreview name="table-actions" />
+
+## 数据表 [#data-table]
+
+需要搜索、筛选、排序、分页、选择、批量操作和拖拽排序时，使用共享[数据表组合](/zh-CN/docs/blocks/data-table)，通过 `@workspace/ui/blocks/data-table` 导入。
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="table-rtl" previewClassName="h-auto" direction="rtl" />

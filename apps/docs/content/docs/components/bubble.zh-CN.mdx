@@ -1,0 +1,234 @@
+---
+title: Bubble
+description: "在消息气泡中显示对话内容。支持变体、对齐、分组、回应和可折叠内容"
+base: base
+component: true
+---
+
+<ComponentPreview name="bubble-demo" previewClassName="h-auto theme-blue" />
+
+`Bubble` 组件显示带样式的对话内容。将其用于聊天文本、简短的结构化输出、引用的回复、建议和回应。
+
+完整聊天界面应使用 [`Message`](/zh-CN/docs/components/message)。`Bubble` 仅负责气泡本身；头像、名称、时间戳、元数据和消息级操作放在 Message 中。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/bubble
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Bubble, BubbleContent, BubbleReactions } from "@workspace/ui/components/bubble"
+```
+
+```tsx showLineNumbers
+<Bubble>
+  <BubbleContent>
+    I checked the registry output and removed the stale route.
+  </BubbleContent>
+  <BubbleReactions>
+    <span>👍</span>
+  </BubbleReactions>
+</Bubble>
+```
+
+## 组合结构 [#composition]
+
+使用下列结构组合气泡：
+
+```text
+Bubble
+├── BubbleContent
+└── BubbleReactions
+```
+
+使用 `BubbleGroup` 对来自同一发送者的连续气泡进行分组：
+
+```text
+BubbleGroup
+├── Bubble
+│   └── BubbleContent
+└── Bubble
+    └── BubbleContent
+```
+
+## 特性 [#features]
+
+- 七种视觉变体，从强调主色的气泡到无边框的 `ghost` 内容
+- 通过起始侧与结束侧对齐区分发送者和接收者
+- 回应可定位到气泡边缘，并配置方向与对齐方式
+- 气泡宽度随内容调整，最大为容器宽度的 80%
+- 通过 `render` 将内容渲染为链接或按钮
+- 每个子组件都可通过 `className` 自定义样式
+
+## 变体 [#variants]
+
+通过 `variant` 调整气泡的视觉样式。
+
+<ComponentPreview name="bubble-variants" previewClassName="h-auto theme-blue" />
+
+| 变体 |描述 |
+| ------------- | ------------------------------------------------------------------ |
+| `default` |强烈的主气泡，通常针对当前用户 |
+| `secondary` |对话内容的标准中性气泡  |
+| `muted` |较低强调的气泡，用于安静的辅助内容  |
+| `tinted` |微妙的原色气泡                        |
+| `outline` |次级内容或富内容的带边框气泡       |
+| `ghost` |助手文本或富内容的无框内容   |
+| `destructive` |错误或操作失败的危险气泡      |
+
+气泡宽度随内容调整，最大为容器宽度的 80%。`ghost` 变体移除最大宽度限制，允许助手文本与富内容占满整行。
+
+## 对齐 [#alignment]
+
+在 `Bubble` 上使用 `align` 将气泡与对话的开始或结束对齐。
+
+<ComponentPreview name="bubble-alignment" previewClassName="h-auto theme-blue" />
+
+| 对齐 |描述 |
+| -------- | -------------------------------------------------- |
+| `start` |将气泡与对话的开头对齐 |
+| `end` |将气泡与对话末尾对齐   |
+
+**注意：** 构建聊天界面时，通常应在 `Message` 上设置 `align`，由消息布局统一控制气泡与头像的对齐，而不是逐个设置 Bubble。
+
+## 气泡组 [#bubble-group]
+
+使用 `BubbleGroup` 对来自同一发件人的连续气泡进行分组。请注意，`align` 属性应设置在 `Bubble` 组件本身，而不是 `BubbleGroup` 组件上。
+
+```text
+BubbleGroup
+├── Bubble
+│   └── BubbleContent
+└── Bubble
+    └── BubbleContent
+```
+
+<ComponentPreview name="bubble-group-demo" previewClassName="h-auto theme-blue" />
+
+## 链接与按钮 [#links-and-buttons]
+
+您可以使用 `BubbleContent` 上的 `render` 属性将气泡变成链接或按钮。
+
+<ComponentPreview name="bubble-link-button" previewClassName="h-auto theme-blue" />
+
+```tsx showLineNumbers
+import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
+
+export function BubbleLinkDemo() {
+  return (
+    <Bubble variant="muted">
+      <BubbleContent render={<button />}>Click here</BubbleContent>
+    </Bubble>
+  )
+}
+```
+
+## 回应 [#reactions]
+
+使用 `BubbleReactions` 显示表情回应或快捷操作按钮。通过 `side` 和 `align` 定位；`side="top"` 将其放在顶部边缘。回应会与气泡边缘重叠，因此消息行之间应留出足够的垂直间距。下方示例为此使用了更大的 `gap`。
+
+<ComponentPreview name="bubble-reactions" previewClassName="h-auto theme-blue" />
+
+## 显示更多与折叠 [#show-more--collapsible]
+
+长内容可与 [`Collapsible`](/zh-CN/docs/components/collapsible) 组合，提供“显示更多”和“收起”操作。使用 `CollapsibleTrigger` 触发展开与折叠。
+
+<ComponentPreview name="bubble-collapsible" previewClassName="h-auto theme-blue" />
+
+## 提示框组合 [#tooltip]
+
+用 [`Tooltip`](/zh-CN/docs/components/tooltip) 包裹气泡，即可在悬停时显示元数据，例如消息的已读时间。
+
+<ComponentPreview name="bubble-tooltip" previewClassName="h-auto theme-blue" />
+
+## 弹出层组合 [#popover]
+
+将气泡与 [`Popover`](/zh-CN/docs/components/popover) 配对，可按需显示更多信息，例如失败操作的完整错误消息。
+
+<ComponentPreview name="bubble-popover" previewClassName="h-auto theme-blue" />
+
+## 无障碍 [#accessibility]
+
+`Bubble` 只提供消息气泡的展示样式。对话级语义应设置在外层容器上，并遵循以下要求。
+
+### 为回应提供标签 [#labeling-reactions]
+
+表情回应通常排列成一行。缺少上下文时，屏幕阅读器会逐个朗读表情，而 `+8` 会被读成“加八”。使用 `role="img"` 和描述性的 `aria-label`，将整行表示为一个图像并一次播报。`role="img"` 也会向辅助技术隐藏内部表情，因此无需额外设置 `aria-hidden`。
+
+```tsx showLineNumbers
+<BubbleReactions role="img" aria-label="Reactions: thumbs up, fire, and 8 more">
+  <span>👍</span>
+  <span>🔥</span>
+  <span>+8</span>
+</BubbleReactions>
+```
+
+如果回应可以点击，应改用按钮，并为纯图标按钮提供 `aria-label`。
+
+```tsx showLineNumbers
+<BubbleReactions>
+  <Button aria-label="Thumbs up" variant="secondary" size="icon-xs">
+    <ThumbsUpIcon />
+  </Button>
+</BubbleReactions>
+```
+
+### 交互式气泡 [#interactive-bubbles]
+
+气泡可以点击时，通过 `render` 将其渲染为真实的 `<button>` 或 `<a>`，使其能够聚焦并提供正确语义。`BubbleContent` 会为交互元素提供可见的焦点环，气泡文字即为其无障碍名称，无需重复添加标签。
+
+```tsx showLineNumbers
+<Bubble variant="muted" align="end">
+  <BubbleContent render={<button type="button" onClick={onReply} />}>
+    I forgot my password
+  </BubbleContent>
+</Bubble>
+```
+
+### 通过颜色以外的方式传达含义 [#meaning-beyond-color]
+
+气泡变体通过颜色表达角色和语气，还应配合文字、对齐方式或图标传达含义。使用 `destructive` 时，请在消息文字中说明错误，不要仅依赖颜色。
+
+## API 参考 [#api-reference]
+
+### Bubble [#bubble]
+
+气泡的根容器
+
+| 属性|类型 |默认 |描述 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ | ----------- | ------------------------------------------------ |
+| `variant` | `"default" \| "secondary" \| "muted" \| "tinted" \| "outline" \| "ghost" \| "destructive"` | `"default"` |气泡视觉处理                     |
+| `align` | `"start" \| "end"` | `"start"` |气泡的内联对齐              |
+| `className` | `string` | - |应用于根元素的额外类名 |
+
+### BubbleContent [#bubblecontent]
+
+气泡内容的容器
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------------------------- | -------- | ------------------------------------------------------------------ |
+| `render` | `ReactElement \| function` | - |将内容呈现为不同的元素，例如链接 |
+| `className` | `string` | - |应用于内容元素的额外类名       |
+
+### BubbleReactions [#bubblereactions]
+
+显示气泡的重叠回应
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | ------------------- | ---------- | ------------------------------------------------ |
+| `side` | `"top" \| "bottom"` | `"bottom"` |气泡的一侧用于锚定回应  |
+| `align` | `"start" \| "end"` | `"end"` |回应的内联对齐           |
+| `className` | `string` | - |应用于回应行的额外类名 |
+
+### BubbleGroup [#bubblegroup]
+
+对来自同一发件人的连续气泡进行分组
+
+| 属性|类型 |默认 |描述 |
+| ----------- | -------- | -------- | ---------------------------------------------------------- |
+| `className` | `string` | - |应用于组根的额外类名 |

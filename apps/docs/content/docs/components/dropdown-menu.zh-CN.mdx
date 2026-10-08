@@ -1,0 +1,165 @@
+---
+title: Dropdown Menu
+description: "向用户显示由按钮触发的菜单，例如一组操作或功能"
+featured: true
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/menu
+  api: https://base-ui.com/react/components/menu#api-reference
+---
+
+<ComponentPreview name="dropdown-menu-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/dropdown-menu
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Button } from "@workspace/ui/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
+```
+
+```tsx showLineNumbers
+<DropdownMenu>
+  <DropdownMenuTrigger render={<Button variant="outline" />}>
+    Open
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuGroup>
+      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+      <DropdownMenuItem>Profile</DropdownMenuItem>
+      <DropdownMenuItem>Billing</DropdownMenuItem>
+    </DropdownMenuGroup>
+    <DropdownMenuSeparator />
+    <DropdownMenuGroup>
+      <DropdownMenuItem>Team</DropdownMenuItem>
+      <DropdownMenuItem>Subscription</DropdownMenuItem>
+    </DropdownMenuGroup>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `DropdownMenu`：
+
+```text
+DropdownMenu
+├── DropdownMenuTrigger
+└── DropdownMenuContent
+    ├── DropdownMenuGroup
+    │   ├── DropdownMenuLabel
+    │   ├── DropdownMenuItem
+    │   └── DropdownMenuItem
+    ├── DropdownMenuSeparator
+    ├── DropdownMenuGroup
+    │   ├── DropdownMenuLabel
+    │   ├── DropdownMenuCheckboxItem
+    │   └── DropdownMenuCheckboxItem
+    ├── DropdownMenuSeparator
+    ├── DropdownMenuGroup
+    │   ├── DropdownMenuLabel
+    │   └── DropdownMenuRadioGroup
+    │       ├── DropdownMenuRadioItem
+    │       └── DropdownMenuRadioItem
+    └── DropdownMenuSub
+        ├── DropdownMenuSubTrigger
+        └── DropdownMenuSubContent
+            └── DropdownMenuGroup
+                ├── DropdownMenuLabel
+                ├── DropdownMenuItem
+                └── DropdownMenuItem
+```
+
+## 基本用法 [#basic]
+
+带有标签和分隔符的基本下拉菜单。
+
+<ComponentPreview name="dropdown-menu-basic" />
+
+## 子菜单 [#submenu]
+
+使用 `DropdownMenuSub` 嵌套辅助操作。
+
+<ComponentPreview name="dropdown-menu-submenu" />
+
+## 快捷键 [#shortcuts]
+
+添加 `DropdownMenuShortcut` 显示键盘提示。
+
+<ComponentPreview name="dropdown-menu-shortcuts" />
+
+## 图标 [#icons]
+
+将图标与标签结合起来以进行快速扫描。
+
+<ComponentPreview name="dropdown-menu-icons" />
+
+## 复选项 [#checkboxes]
+
+使用 `DropdownMenuCheckboxItem` 进行切换。
+
+<ComponentPreview name="dropdown-menu-checkboxes" />
+
+## 复选项图标 [#checkboxes-icons]
+
+将图标添加到复选框项目。
+
+<ComponentPreview name="dropdown-menu-checkboxes-icons" />
+
+## 单选组 [#radio-group]
+
+使用`DropdownMenuRadioGroup`进行独家选择。
+
+<ComponentPreview name="dropdown-menu-radio-group" />
+
+## 单选项图标 [#radio-icons]
+
+用图标显示单选选项。
+
+<ComponentPreview name="dropdown-menu-radio-icons" />
+
+## 危险操作 [#destructive]
+
+使用 `variant="destructive"` 进行不可逆转的操作。
+
+<ComponentPreview name="dropdown-menu-destructive" />
+
+## 头像组合 [#avatar]
+
+由头像触发的帐户切换下拉菜单。
+
+<ComponentPreview name="dropdown-menu-avatar" />
+
+## 复杂菜单 [#complex]
+
+结合了组、图标和子菜单的更丰富的示例。
+
+<ComponentPreview name="dropdown-menu-complex" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="dropdown-menu-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+有关完整的 API 参考，请参阅[Base UI 文档](https://base-ui.com/react/components/menu)。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/menu#api-reference)。

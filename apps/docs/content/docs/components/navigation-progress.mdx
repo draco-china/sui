@@ -1,0 +1,48 @@
+---
+title: NavigationProgress
+description: A controlled navigation loading bar with delayed start and completion feedback.
+component: true
+---
+
+<ComponentPreview name="navigation-progress-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/navigation-progress
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { NavigationProgress } from "@workspace/ui/components/navigation-progress"
+```
+
+## Router integration
+
+The shared UI component accepts loading state from any router. The documentation application connects it to TanStack Router:
+
+```tsx
+import { useRouterState } from "@tanstack/react-router"
+import { NavigationProgress } from "@workspace/ui/components/navigation-progress"
+
+function RouterProgress() {
+  const active = useRouterState({ select: (state) => state.status === "pending" })
+  return <NavigationProgress active={active} />
+}
+```
+
+The bar waits before appearing, advances toward a capped estimate, completes when `active` becomes false, then hides. Quick transitions that finish before `delay` produce no flash. The displayed length is an estimate; the accessible progress state remains indeterminate during loading. Reduced-motion preferences disable transition animation.
+
+## API
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `active` | Required | Whether navigation is pending. |
+| `delay` | `120` | Delay before showing the bar, in milliseconds. |
+| `finishDelay` | `180` | Time to show completion before hiding. |
+| `position` | `fixed` | `fixed` for the page top, `absolute` within a positioned container. |
+| `label` | `Loading page` | Accessible progress name. |
+| `className` | — | Placement and layout classes. |
+
+Inspired by [shadcn-admin NavigationProgress](https://github.com/satnaing/shadcn-admin/blob/main/src/components/navigation-progress.tsx). This implementation uses the existing Base UI dependency, SUI semantic tokens, and React timers, with no `react-top-loading-bar` or router dependency in the UI package.

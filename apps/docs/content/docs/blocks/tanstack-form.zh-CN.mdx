@@ -1,0 +1,64 @@
+---
+title: TanStack Form
+description: 使用 SUI 字段和 TanStack Form 组合的报告与资料表单。
+---
+
+共享表单参考 [shadcn TanStack Form 指南](https://ui.shadcn.com/docs/forms/tanstack-form)，使用 SUI FieldGroup、Field、Input、Select、Checkbox 和 Zod schema。失焦和提交时触发校验，无效控件使用 `aria-invalid`，错误提示与字段关联。
+
+## 问题报告
+
+尝试提交空表单，再输入 5–80 个字符的标题和 20–500 个字符的描述。提交成功后显示反馈；重置恢复初始值。
+
+<ComponentPreview name="block-form-report" />
+
+## 资料、选择器和复选框
+
+此组合包含邮箱校验、角色选择和通知偏好。开启失败模拟，可验证错误提示和重试行为。
+
+<ComponentPreview name="block-form-profile" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tanstack-form
+```
+
+使用上方 shadcn CLI 命令安装此 Block。按照[安装指南](/zh-CN/docs/installation)配置 registry、依赖和样式。下方示例使用工作区导入路径；registry 安装的源码使用消费应用 `components.json` 配置的别名。
+
+## 使用
+
+```tsx
+import { BugReportForm, ProfileForm } from "@workspace/ui/blocks/tanstack-form"
+import { reportLabels, profileLabels } from "./form-labels"
+
+<BugReportForm labels={reportLabels} onSubmit={async (values) => { await saveReport(values) }} />
+<ProfileForm
+  labels={profileLabels}
+  initialValues={{ name: "Alex", email: "alex@example.com", role: "developer" }}
+  onSubmit={async (values) => { await saveProfile(values) }}
+/>
+```
+
+Blocks 内只保留英文默认文案，不判断语言。上例中的 `form-labels` 是应用自行维护的翻译配置，也可通过应用自己的国际化系统解析后传入：
+
+```tsx
+<BugReportForm
+  labels={{ formTitle: t("report.title"), submit: t("report.submit"), titleMinLength: t("report.titleMinLength") }}
+  onSubmit={saveReport}
+/>
+```
+
+## API
+
+| 属性 | 说明 |
+| --- | --- |
+| `onSubmit` | 必填，接收校验后的值，可返回 Promise。抛出错误可显示失败反馈并允许重试。 |
+| `initialValues` | 初始字段值，重置恢复这些值。 |
+| `labels` | `BugReportFormLabels` 或 `ProfileFormLabels` 的部分覆盖。默认英文，由应用传入翻译。 |
+| `className` | Card 布局类名。 |
+
+`BugReportValues` 包含 `title`、`description`；`ProfileValues` 包含 `name`、`email`、`role`、`notifications`。提交期间禁用按钮和控件。两种表单均生成独立 ID，可在同一页放置多个实例。
+
+两种 labels 均包含 `formTitle`、`formDescription`、`submit`、`submitting`、`reset`、`failed`、`saved`、`savedDescription`、`submitError`（提交抛出非 Error 值时的兜底文案）。回调抛出的 Error 消息直接显示，因此也由应用负责翻译。
+
+`BugReportFormLabels` 还包含 `title`、`titlePlaceholder`、`description`、`descriptionHint`、`titleMinLength`、`titleMaxLength`、`descriptionMinLength`、`descriptionMaxLength`。`ProfileFormLabels` 还包含 `name`、`email`、`role`、`rolePlaceholder`、`designerRole`、`developerRole`、`managerRole`、`notifications`、`nameMinLength`、`nameMaxLength`、`invalidEmail`、`invalidRole`。完整翻译需提供所有键；也可只覆盖部分键，其余使用英文默认值。

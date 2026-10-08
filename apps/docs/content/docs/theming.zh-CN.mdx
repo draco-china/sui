@@ -1,0 +1,197 @@
+---
+title: 主题
+description: 语义颜色、明暗表面与可复用配色
+---
+
+SUI 的颜色描述元素的用途。卡片使用 `card` 与 `card-foreground`，主要操作使用 `primary` 与 `primary-foreground`。切换配色或外观时，同一组件会随之适配。
+
+共享 CSS 颜色变量统一使用 OKLCH，七套预设和自定义配色也输出 OKLCH；这是原颜色的等价转换，不改变配色。自定义输入和预设种子仍使用 HEX，对比度仍按 sRGB 相对亮度计算。共享包只提供通用语义变量，文档应用直接使用 `accent-foreground` 和 `ring` 表达链接与焦点。
+
+## 语义颜色的使用 [#semantic-usage]
+
+先按用途选择变量，再将表面与对应的前景色配对使用。如果组件的内置变体已经表达该用途，优先使用变体。
+
+**推荐**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="rounded-xl border border-border bg-card p-4 text-card-foreground">
+  <p className="text-muted-foreground">修改已准备就绪。</p>
+  <Button>保存修改</Button>
+</div>;
+```
+
+**产品界面中应避免**
+
+```tsx
+<div className="rounded-xl border border-gray-300 bg-white p-4 text-black">
+  <p className="text-gray-500">修改已准备就绪。</p>
+  <button className="bg-blue-600 text-white">保存修改</button>
+</div>;
+```
+
+插画或外部品牌素材可以使用固定颜色。产品表面、控件与正文应使用语义变量，使不同主题保持一致。SUI 没有添加禁止基础颜色的 lint 规则。
+
+## 表面层次 [#surface-hierarchy]
+
+从页面画布开始，根据内容用途选择表面。默认主题采用 Apple 风格的灰色画布、白色表面与蓝色操作；深色模式使用深灰表面与更明亮的蓝色。字体继续使用 Inter
+
+| 用途 | 表面 | 对应正文 | 常见场景 |
+| --- | --- | --- | --- |
+| 页面 | `bg-background` | `text-foreground` | 应用画布 |
+| 卡片 | `bg-card` | `text-card-foreground` | 分组内容 |
+| 浮层 | `bg-popover` | `text-popover-foreground` | 菜单与浮层 |
+| 次要 | `bg-secondary` | `text-secondary-foreground` | 次要控件 |
+| 低强调 | `bg-muted` | `text-muted-foreground` | 辅助内容 |
+| 选中 | `bg-accent` | `text-accent-foreground` | 选中与悬停 |
+
+表面名称表达用途，而非固定的亮度顺序。`card` 和 `popover` 可以拥有相同颜色，同时保留各自的语义。
+
+## 主色与状态 [#primary-and-status]
+
+主要操作使用 `primary`，其文字使用 `primary-foreground`。选中或悬停项使用 `accent`。链接使用 `accent-foreground`；为了满足中性表面上的文字对比度，它可以与主色种子不同。
+
+Toggle 与 ToggleGroup 的按下状态、Command 高亮、当前导航链接、选中的选项和菜单项、表格选中行、选项卡片以及日历范围都使用选中配色。Tabs、分页当前页、复选框和单选框等实色选中态使用 `primary` 与 `primary-foreground`。焦点指示器使用 `ring`。
+
+危险操作和无效输入使用 `destructive`，该颜色独立于当前强调色。SUI 未定义单独的成功、警告或信息颜色变量；用明确的文字与图标表达状态，或由应用定义相应的语义变量。
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button variant="destructive">删除工作区</Button>;
+```
+
+## 正文 [#text]
+
+将前景变量与相应表面配对。`foreground` 是默认正文颜色，`muted-foreground` 用于说明与次要标签。不要仅靠浅色表达禁用、无效或选中状态，还应保留可访问标签和控件的状态属性。
+
+## 边框与焦点 [#borders-and-focus]
+
+`border` 分隔表面。现有 Input 使用 `bg-input/50` 填充。`ring` 标识键盘焦点。自定义交互元素时，应保留清晰的焦点轮廓。
+
+```tsx
+<a
+  href="#token-reference"
+  className="rounded-md text-accent-foreground underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
+>
+  查看颜色
+</a>;
+```
+
+## 图表 [#charts]
+
+数据系列使用 `chart-1` 至 `chart-5`。每套预设提供五个协调的颜色。这些颜色用于区分系列，请搭配图例、标签或图案，不要只靠色相区分数据。图表颜色不应替代正文或状态变量。
+
+## 变量目录 [#token-reference]
+
+按用途浏览真实的默认变量。每一行展示工具类、明暗值，并提供复制变量、工具类或值的按钮。目录直接读取 `globals.css`，不维护另一份颜色表。
+
+<ComponentPreview name="theming-semantic-colors" />
+
+## 外观模式 [#appearance]
+
+在父节点添加 `dark` 即可使用深色变量，否则使用浅色变量。模式与配色是独立的选择：`dark` 控制外观，`data-color` 选择配色。
+
+```html
+<html data-color="pine" class="dark">
+```
+
+下面两块面板使用相同的 SUI 组件，分别隔离默认明暗变量。可以编辑输入框、切换开关或保存设置，体验控件的表现。
+
+<ComponentPreview name="theming-mode-comparison" />
+
+要改变整个文档站，在外观面板选择**浅色**、**深色**或**跟随系统**。跟随系统是默认选项，会同步设备偏好。
+
+## 预设配色 [#preset-palettes]
+
+选择**默认**或七套预设：竹青 Bamboo、烟紫 Mauve、雾蓝 Mist、沙金 Sand、松绿 Pine、绯红 Rose 和青柠 Lime。默认配色使用 `globals.css` 中的基础变量。每套预设都有完整的五色 palette，按顺序映射到 `chart-1` 至 `chart-5`；主色种子独立控制 `primary`，不必是第一个图表颜色。
+
+下面为每套主题提供独立的完整卡片，展示五色 palette、可复制的颜色值和相同的交互组件预览。统一的明暗切换可在相同外观下比较各套配色，默认主题也有自己的完整卡片。
+
+切换强调色时，表面、正文与危险颜色保持各自的用途。主要操作、选中态、焦点环、侧栏强调与图表跟随当前配色。为保持对比度，可访问的前景与焦点颜色可能不同于种子色。这些预览仅作用于局部，不会改变整站主题或浏览器存储。
+
+<ComponentPreview name="theming-palette-playground" />
+
+青柠 Lime 使用明亮的 `#D5F267` 主色与黑色文字。浅色模式的链接与焦点环使用更深的橄榄绿色，深色模式则保留明亮青柠色与中性深色表面的对比。在主题面板选择**青柠 Lime**，或设置 `data-color="lime"` 即可启用。
+
+## 自定义 HEX [#custom-hex]
+
+预览和整站主题面板接受三位或六位 HEX，可以包含或省略 `#`。简写会展开为六位。无效输入显示错误，并保留当前有效主题。
+
+主色种子保持原值。共享计算函数选择黑色或白色的主色文字，并针对明暗表面调整链接、选中态文字和焦点颜色。普通文字按 4.5:1、焦点颜色按 3:1 检查对比度。请使用对应的前景变量，不要假定白色文字适合每一种主色。
+
+<ComponentPreview name="theming-custom-color" />
+
+## 共享主题文件 [#shared-theme-files]
+
+导入 UI 样式即可包含默认变量、组件样式和全部七套预设：
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+七个文件位于 `packages/ui/src/styles/themes`：`bamboo.css`、`mauve.css`、`mist.css`、`sand.css`、`pine.css`、`rose.css` 和 `lime.css`。已经加载 SUI 基础变量的应用可以只导入所需预设：
+
+```css
+@import "@workspace/ui/themes/pine.css";
+```
+
+通过根节点或容器上的 `data-color="pine"` 选择配色。深色祖先节点会启用深色配色。重置根节点时，使用 `data-color="default"` 或移除该属性，并清理自定义行内变量。默认变量直接来自 `globals.css`，没有单独的默认主题文件。不含自身覆盖变量的嵌套容器会继承父节点的颜色。
+
+## 自定义应用主题 [#custom-application-themes]
+
+自定义输入使用共享辅助函数。先校验，再清理旧的行内强调色变量，仅为自定义种子计算覆盖值：
+
+```tsx
+import {
+  createThemeTokens,
+  getThemeId,
+  normalizeHex,
+  themeTokenNames,
+} from "@workspace/ui/lib/theme/theme";
+
+function applyTheme(input: string | null, dark: boolean) {
+  const seed = input === null ? null : normalizeHex(input);
+  if (input !== null && seed === null) return;
+  const root = document.documentElement;
+  root.classList.toggle("dark", dark);
+  root.dataset.color = getThemeId(seed);
+  for (const name of themeTokenNames) root.style.removeProperty(name);
+  if (root.dataset.color === "custom") {
+    for (const [name, value] of Object.entries(createThemeTokens(seed, dark))) {
+      root.style.setProperty(name, value);
+    }
+  }
+}
+```
+
+传入 `null` 恢复默认配色。外观变化时重新计算自定义覆盖变量。共享包负责配色和计算；模式选择、持久化与首次恢复由应用管理。可访问的链接使用 `text-accent-foreground`，焦点使用 `outline-ring`。文档样式将 Fumadocs 的 `--color-fd-*` 变量映射为共享语义变量；这些框架别名不属于共享主题文件或 `createThemeTokens` 的输出。
+
+## 创建配色 [#creating-a-theme]
+
+要添加可复用预设，在 `packages/ui/src/lib/theme/theme.ts` 的 `themePresets` 中加入稳定 ID、中英文名称、种子色与五个图表颜色。生成器会将该定义与 `globals.css` 当前的基础语义变量合并。
+
+```sh
+bun run --cwd packages/ui themes:generate
+```
+
+将生成的单个文件导入 `globals.css`，再通过 `data-color` 使用该 ID。更改预设或基础变量后重新生成。采用新配色前，检查明暗模式、对应前景色、键盘焦点和图表图例。
+
+## 设置恢复 [#persistence]
+
+顶栏的“外观模式”和“强调色”是两个独立入口：前者选择浅色、深色或跟随系统，后者选择预设配色或自定义颜色。更改模式不会重置强调色。
+
+文档站将选定的模式与强调色保存在浏览器中，首次绘制前恢复；跟随系统模式会实时响应设备变化。存储不可用时使用跟随系统与默认配色。本页交互示例不会写入这些设置。
+
+## 从右到左的界面 [#right-to-left-interfaces]
+
+使用 `DirectionProvider` 包裹相关组件树，并优先使用逻辑方向间距工具类：
+
+```tsx
+import { DirectionProvider } from "@workspace/ui/components/direction";
+
+<DirectionProvider direction="rtl">
+  <YourApplication />
+</DirectionProvider>;
+```

@@ -1,0 +1,84 @@
+---
+title: Tag Input
+description: 多值标签输入框，支持自由输入、建议选项与键盘操作
+links:
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
+---
+
+<ComponentPreview name="tag-input-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tag-input
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { TagInput } from "@workspace/ui/components/tag-input";
+
+<TagInput aria-label="项目标签" defaultValue={["design"]} />;
+```
+
+输入标签后按 Enter、逗号或 Tab 添加。首尾空白会被去除，空值与完全重复的标签会被忽略，比较区分大小写。粘贴逗号分隔或多行文字时，会按顺序添加标签。
+
+组件复用 Base UI Combobox 多选标签的键盘导航与移除行为。中文等输入法仍在组合输入时，Enter 和逗号交给输入法处理，不会误创建标签。草稿为空时，Backspace 移除最后一个标签；方向键用于导航建议与标签。
+
+## 建议选项与受控值 [#suggestions-and-controlled-values]
+
+通过 `suggestions` 提供已有选项。默认仍可创建自定义标签；设置 `allowCustom={false}`，即可将新增值限制在建议选项中。建议被高亮时，按 Enter 选择该项。
+
+使用 `value` 与 `onValueChange` 控制已选标签数组，或通过 `defaultValue` 使用非受控模式。草稿也可用 `inputValue` 与 `onInputValueChange` 独立控制。
+
+<ComponentPreview name="tag-input-suggestions" />
+
+## 校验与禁用状态 [#validation-and-disabled-state]
+
+`maxValues` 限制标签数量。`validateValue` 检查每个新值，同时接收已经接受的标签数组。达到数量上限后，仍可移除已有标签。
+
+被拒绝的内容保留在草稿中，并播报错误信息。即使校验失败，Tab 仍允许焦点离开输入框；Shift+Tab 向前移动焦点，不提交草稿。批量粘贴时，首个错误之前的有效标签会被添加，剩余内容保留在草稿中。
+
+`disabled` 与 `readOnly` 阻止修改，并禁用移除按钮。
+
+<ComponentPreview name="tag-input-validation" />
+
+## 组合与表单 [#composition-and-forms]
+
+Tag Input 组合了 Combobox 的根组件、标签、输入框、列表与选项。使用常规 `Field` 组件提供标签及说明。`className` 调整标签容器样式，`inputClassName` 调整草稿输入框样式；`ref` 指向原生草稿输入框。
+
+传入 `name` 后，每个已选标签都会作为同名表单值单独提交，草稿文字不会提交。`required` 校验已选标签，只要已有标签，即使草稿为空也满足要求。禁用状态的标签不进入表单数据。
+
+原生表单重置会在非受控模式下恢复 `defaultValue` 与 `defaultInputValue`。使用 `event.preventDefault()` 取消重置时，已选标签与草稿保持不变。受控值仍由应用管理。
+
+
+<ComponentPreview name="tag-input-form" />
+
+## 无障碍 [#accessibility]
+
+用输入框的 `id` 关联 `FieldLabel`，或提供 `aria-label`。没有 `id` 或自定义名称时，默认输入名称为 “Add tag”。移除按钮的名称包含对应标签。校验错误通过状态区域播报，并与输入框关联。
+
+可通过 `labels.input`、`labels.removeValue`、`labels.createValue`、`labels.empty`、`labels.invalidValue` 和 `labels.maxValuesReached` 本地化文案。输入框的无障碍名称应与可见字段标签保持一致。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `value` | `string[]` | — | 受控标签数组 |
+| `defaultValue` | `string[]` | `[]` | 非受控模式的初始标签 |
+| `onValueChange` | `(values: string[]) => void` | — | 已选标签变化时调用 |
+| `suggestions` | `readonly string[]` | `[]` | 建议标签 |
+| `allowCustom` | `boolean` | `true` | 允许建议选项之外的新值 |
+| `maxValues` | `number` | — | 标签数量上限 |
+| `validateValue` | `(value: string, values: string[]) => boolean` | — | 校验新增标签 |
+| `inputValue` | `string` | — | 受控草稿 |
+| `defaultInputValue` | `string` | `""` | 非受控模式的初始草稿 |
+| `onInputValueChange` | `(value: string) => void` | — | 草稿变化时调用 |
+| `labels` | `TagInputLabels` | 英文标签 | 输入、操作与校验文案 |
+| `inputClassName` | `string` | — | 草稿输入框的额外类名 |
+| `...props` | 除 `value`、`defaultValue`、`type` 与 `size` 外的原生输入框属性 | — | 包括 `id`、`ref`、`name`、`form`、`required`、`disabled` 与 `readOnly` |
+
+键盘与标签交互遵循 [Base UI Combobox API](https://base-ui.com/react/components/combobox#api-reference)。

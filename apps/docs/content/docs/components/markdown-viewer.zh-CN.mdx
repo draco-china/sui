@@ -1,0 +1,50 @@
+---
+title: Markdown Viewer
+description: 支持表格、任务列表、提示块、代码高亮和 HTML 清理的 Markdown 查看器
+---
+
+<ComponentPreview name="markdown-viewer-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/markdown-viewer
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+
+<MarkdownViewer content="# Release notes\n\nA **Markdown** document." />;
+```
+
+## 支持的格式 [#formatting]
+
+支持标题、链接、表格、任务列表、删除线、换行和围栏代码块。围栏代码块（包括未指定语言的代码块）与缩进代码均使用 [Code Viewer](/zh-CN/docs/components/code-viewer)，保留复制操作与换行；行内代码仍在正文内呈现。GitHub 风格的 `[!NOTE]`、`[!TIP]`、`[!IMPORTANT]`、`[!WARNING]` 和 `[!CAUTION]` 提示块具有对应的语义样式。
+
+标题锚点限制在各查看器实例内。Contents、Table of Contents 或 TOC 标题可生成目录。组件解析数学语法，但不会加载独立的数学排版引擎。
+
+## HTML 与可编辑内容 [#html]
+
+嵌入的 HTML 在渲染前会解析并清理。`details`、`summary` 等常见安全格式会保留，脚本和事件处理属性会移除。示例可编辑含有展开详情和脚本的 Markdown，其中脚本不会执行。与 [Html Viewer](/zh-CN/docs/components/html-viewer) 不同，此组件不执行 HTML 脚本。
+
+<ComponentPreview name="markdown-viewer-sanitized" />
+
+## 主题与本地化 [#theme]
+
+未设置 `theme` 时，内容跟随周围主题。通过 `className` 调整容器布局。`labels.empty` 定制空状态，`note`、`tip`、`important`、`warning` 和 `caution` 翻译提示块标题。`labels.code` 接受 [CodeViewer 的反馈文案](/zh-CN/docs/components/code-viewer#api-reference)，用于翻译内嵌代码块的复制、加载与失败反馈。Markdown 正文由应用提供，不会自动翻译。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `content` | `string` | 必填 Markdown 源码 |
+| `theme` | `"light" \| "dark"` | 跟随周围主题 |
+| `className` | `string` | 容器布局类 |
+| `labels` | `Partial<MarkdownViewerLabels>` | 空状态与提示块标题；`code` 翻译内嵌 CodeViewer 的反馈，默认英文 |
+| `glass` | `boolean` | `false` |
+
+模块导出 `MarkdownViewerProps` 和 `MarkdownViewerLabels`。渲染基于 [react-markdown](https://github.com/remarkjs/react-markdown)。

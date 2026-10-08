@@ -1,0 +1,54 @@
+---
+title: Direction
+description: "为您的应用程序设置文本方向的提供程序组件"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/utils/direction-provider
+  api: https://base-ui.com/react/utils/direction-provider#api-reference
+---
+
+<ComponentPreview name="card-rtl" previewClassName="h-auto" direction="rtl" />
+
+`DirectionProvider` 组件用于设置应用程序的文本方向（`ltr` 或 `rtl`）。这对于支持从右到左的语言（例如阿拉伯语、希伯来语和波斯语）至关重要。
+
+以下是 RTL 模式下组件的预览。使用语言选择器切换语言。要查看更多示例，请查找组件页面上的 RTL 部分。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/direction
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { DirectionProvider } from "@workspace/ui/components/direction"
+```
+
+```tsx showLineNumbers
+<html dir="rtl">
+  <body>
+    <DirectionProvider direction="rtl">
+      {/* Your app content */}
+    </DirectionProvider>
+  </body>
+</html>
+```
+
+## useDirection [#usedirection]
+
+`useDirection` Hook用于获取应用程序的当前方向。
+
+```tsx showLineNumbers
+import { useDirection } from "@workspace/ui/components/direction"
+
+function MyComponent() {
+  const direction = useDirection()
+  return <div>Current direction: {direction}</div>
+}
+```
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/utils/direction-provider#api-reference)。

@@ -1,0 +1,77 @@
+---
+title: QRCode
+description: 支持主题适配、加载反馈和可选揭示动画的二维码组件
+---
+
+<ComponentPreview name="qr-code-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/qr-code
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { QRCode } from "@workspace/ui/components/qr-code";
+
+<QRCode value="https://example.com/" label="Example website QR code" size={220} />;
+```
+
+## 加载与空状态 [#states]
+
+生成能力在客户端按需加载，服务端渲染稳定的加载占位。`value` 变化会生成新二维码，并丢弃旧请求结果。`loading` 会保持显示加载占位，即使生成已经完成。未传入内容或内容为空时保持占位，不生成无效二维码。
+
+默认码面使用中性的 `--card` 实体背景与 `--foreground` 前景，跟随浅色、深色模式，不使用主题主色。切换主题只更新现有码面的颜色，不重新编码。基础版图片加载后直接显示；加载和空值状态使用独立明暗变化的点阵骨架，带约 800ms 的模糊入场，不显示提示文字。加载点阵、错误图标和标记底色都跟随同一套中性主题。生成失败时显示错误图标，中心标记仅在就绪后显示。
+
+<ComponentPreview name="qr-code-states" />
+
+## 可选动画 [#animation]
+
+设置 `animated` 启用约 750ms 的逐行揭示动画。点阵骨架在两种模式下都可用；减少动态效果偏好会停用点阵动画并跳过揭示。默认基础版直接显示生成结果。
+
+<ComponentPreview name="qr-code-animated" />
+
+## 留白与定位点 [#margin]
+
+`margin` 控制码面四周的留白，以 `size` 对应的 CSS 像素计，默认 `16`。设为 `0` 可移除内置留白，由应用提供纯色外围空间；容器缩小时留白按比例缩小。负数归零，过大的值限制为 `size / 2 - 4`，非有限值使用默认值。
+
+定位点使用圆角外环与圆角实心中心。外缘、内缘和中心的圆角半径分别为 `2.5`、`1.5` 和 `0.5` 个模块，随边缘向内移动而缩小，保持圆角圆心一致。留白过小、尺寸过小或复杂背景会影响识别，请在实际使用尺寸下验证扫码。
+
+<ComponentPreview name="qr-code-margin" />
+
+## 标记与扫码可靠性 [#logo]
+
+`logo` 在中心覆盖一个小型 React 节点。生成器使用高纠错等级，并保留周围的留白区。请让标记保持小尺寸，保留留白区，并在实际尺寸和背景下测试扫码。即使有纠错，覆盖标记仍可能降低扫码成功率。
+
+`QRCode` 只提供二维码本身。需要布局或说明文字时，由应用自行组合现有容器；码面始终保持清晰，中性前景与默认实体背景跟随主题；请使用应用实际支持的扫码器验证浅色和深色模式。
+
+<ComponentPreview name="qr-code-logo" />
+
+## 玻璃模式 [#glass]
+
+设置 `glass` 让整个背景使用共享玻璃材质，通过 `GlassProvider` 调整材质和渲染模式。码面铺满表面，不再单独留出外缘或叠加内部实体底板；`--foreground` 前景仍是清晰的 SVG 内容，码面背景透明，只有中心标记保留小块实体底色。主题和玻璃材质变化不会改变编码内容。`glassMaterial` 可覆盖该实例的材质。
+
+玻璃后面的背景会改变码面和留白的实际对比度。请在最终显示尺寸、实际背景以及明暗模式下验证扫码；玻璃模式不保证默认实体底板的对比度。
+
+<ComponentPreview name="qr-code-glass" />
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `value` | `string` | 编码内容；空值保持占位 |
+| `loading` | `boolean` | `false` |
+| `animated` | `boolean` | `false`；可选揭示动画 |
+| `size` | `number` | `256`；目标宽度，限制为 64–1024 像素；窄容器内自动缩小 |
+| `label` | `string` | `"QR code"`；可访问描述 |
+| `margin` | `number` | `16`；四周留白，按目标尺寸的 CSS 像素计 |
+| `glass` | `boolean` | 默认关闭；让码面背景整体使用玻璃材质 |
+| `glassMaterial` | `"clear" \| "frosted"` | 覆盖 Provider 材质 |
+| `logo` | `ReactNode` | 可选中心覆盖内容 |
+| `render`、`ref`、其他属性 | div／useRender 属性 | 透传到根节点 |
+
+模块导出 `QRCode`、`QRCodeProps` 和 `qrCodeVariants`。生成基于 [qr-code-styling](https://github.com/kozakdenys/qr-code-styling)。

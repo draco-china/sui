@@ -1,0 +1,87 @@
+---
+title: Image Viewer
+description: A dialog image viewer with navigation, zoom, rotation, and panning.
+---
+
+<ComponentPreview name="image-viewer-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/image-viewer
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { ImageViewer } from "@workspace/ui/components/image-viewer";
+import { useState } from "react";
+
+const images = ["/photos/first.jpg", "/photos/second.jpg"];
+
+export function Gallery() {
+  const [open, setOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+  return (
+    <>
+      {images.map((src, index) => (
+        <Button
+          key={src}
+          type="button"
+          variant="ghost"
+          className="h-auto overflow-hidden rounded-xl p-0"
+          onClick={() => {
+            setInitialIndex(index);
+            setOpen(true);
+          }}
+        >
+          <img src={src} alt={`Photo ${index + 1}`} />
+        </Button>
+      ))}
+      <ImageViewer
+        images={images}
+        initialIndex={initialIndex}
+        open={open}
+        onClose={() => setOpen(false)}
+        alt="Photo gallery"
+      />
+    </>
+  );
+}
+```
+
+## Opening and navigation [#opening]
+
+Opening is controlled through `open` and `onClose`. Supply one image URL or an array. With multiple images, navigation controls and thumbnails let the reader switch images. Zoom, rotation, reset, and panning actions are available inside the viewer. Empty image arrays render nothing. Wheel and pinch gestures zoom, and dragging pans. Arrow keys navigate, `+`/`-` zoom, and `0` resets the transform. Loading failures provide a retry action. Replace the image paths in the snippet with your own assets.
+
+## Controlled image index [#index]
+
+`initialIndex` sets the initial uncontrolled image, using zero-based indexes. For external selection, pass `index` and update it in `onIndexChange`. Selecting another image resets its transform. Reset is enabled only after zooming, rotating, or panning changes the image. The example opens a specific image and displays the selected zero-based index. Opening an uncontrolled viewer restores `initialIndex`; changing `initialIndex` while open also updates the selection.
+
+<ComponentPreview name="image-viewer-controlled" />
+
+## Labels, focus, and portal container [#accessibility]
+
+The viewer uses the shared [Dialog](/docs/components/dialog) for modal focus management and dismissal. `alt` describes the images, and `labels` customizes dialog, navigation, zoom, rotation, thumbnail, and position announcements. Function labels receive one-based image positions, while `index` and `onIndexChange` use zero-based indexes.
+
+Use `container` to choose a Portal container when embedding the viewer in a local themed region. The glass effect applies to its surrounding dialog surface; the image itself remains clear.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `images` | `string \| string[]` | Required image URL(s). |
+| `open` | `boolean` | Required controlled dialog state. |
+| `onClose` | `() => void` | Required close callback. |
+| `index` | `number` | Controlled zero-based image index. |
+| `initialIndex` | `number` | `0`; initial uncontrolled image. |
+| `onIndexChange` | `(index: number) => void` | Reports selected zero-based index. |
+| `alt` | `string` | `labels.defaultAlt` or `"Image"`. |
+| `container` | `HTMLElement \| ShadowRoot \| RefObject<HTMLElement \| ShadowRoot \| null> \| null` | Optional Portal container. |
+| `labels` | `Partial<ImageViewerLabels>` | English action and image labels. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `ImageViewerProps` and `ImageViewerLabels`. The underlying modal behavior is documented in the [Base UI Dialog API](https://base-ui.com/react/components/dialog).

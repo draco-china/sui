@@ -1,0 +1,92 @@
+---
+title: Autocomplete
+description: 根据输入提供匹配建议，同时允许用户输入自定义文本
+---
+
+Autocomplete 将文本输入框与建议列表组合在一起。组件的值始终是输入文本，用户可以采用建议，也可以输入自己的答案。如果选择必须限制在现有选项中，请使用 [Combobox](/zh-CN/docs/components/combobox)。
+
+<ComponentPreview name="autocomplete-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/autocomplete
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Autocomplete,
+  AutocompleteContent,
+  AutocompleteEmpty,
+  AutocompleteInput,
+  AutocompleteInputGroup,
+  AutocompleteItem,
+  AutocompleteList,
+} from "@workspace/ui/components/autocomplete"
+import { Field, FieldLabel } from "@workspace/ui/components/field"
+
+const languages = ["TypeScript", "JavaScript", "Rust"]
+
+<Field>
+  <FieldLabel>Project language</FieldLabel>
+  <Autocomplete items={languages} openOnInputClick>
+    <AutocompleteInputGroup>
+      <AutocompleteInput aria-label="Project language" placeholder="Choose or type a language" />
+    </AutocompleteInputGroup>
+    <AutocompleteContent>
+      <AutocompleteEmpty>No suggestions found.</AutocompleteEmpty>
+      <AutocompleteList>
+        {(language: string) => (
+          <AutocompleteItem key={language} value={language}>
+            {language}
+          </AutocompleteItem>
+        )}
+      </AutocompleteList>
+    </AutocompleteContent>
+  </Autocomplete>
+</Field>
+```
+
+## 建议与清空 [#suggestions-and-clearing]
+
+通过 `AutocompleteInputGroup` 将整个输入区域作为弹层的定位锚点。如果需要显式操作按钮，将 `AutocompleteTrigger` 和 `AutocompleteClear` 放在 `InputGroupAddon` 中，并为图标按钮设置无障碍标签。
+
+向 `Autocomplete` 传入 `value` 和 `onValueChange` 可以控制输入文本。`openOnInputClick` 允许点击输入框时显示建议；`autoHighlight` 会在输入后高亮第一个匹配项；`mode="both"` 同时启用过滤和行内补全。
+
+## 分组建议 [#grouped-suggestions]
+
+传入包含 `items` 数组的分组，在 `AutocompleteList` 内渲染各组，通过 `AutocompleteCollection` 渲染组内选项。对象选项通过 `itemToStringValue` 指定填入输入框的文本。
+
+<ComponentPreview name="autocomplete-grouped" />
+
+## 禁用控件与选项 [#disabled-controls-and-items]
+
+在 `Autocomplete` 上设置 `disabled` 可以禁用输入框及其操作控件。在单个 `AutocompleteItem` 上设置 `disabled` 则会保留显示，同时禁止交互。使用下方开关启用输入框，Go 选项仍不可用。
+
+<ComponentPreview name="autocomplete-disabled" />
+
+## 无障碍与键盘 [#accessibility-and-keyboard]
+
+通过可见的 `FieldLabel` 或 `aria-label` 为输入框命名。显式连接标签和输入框时，请使用 React `useId()`，确保重复渲染的字段各自拥有独立 ID。
+
+输入文本以过滤建议，方向键移动高亮项，Enter 采用建议，Escape 关闭弹层。禁用的建议不能被采用。自定义文本不会因为不在建议列表中而无效；需要限制输入时，在应用中添加对应验证。
+
+## API 参考 [#api-reference]
+
+| 部件 | 用途 |
+| --- | --- |
+| `Autocomplete` | 管理选项、过滤、输入 `value`、`onValueChange`、`mode`、弹层开关与禁用状态 |
+| `AutocompleteInputGroup`、`AutocompleteInput` | 组合带样式的输入区域及定位锚点，保留标准输入属性与 React 19 `ref` |
+| `AutocompleteTrigger`、`AutocompleteClear` | 打开建议弹层或清空文本，均支持 `render` 组合 |
+| `AutocompleteContent` | 组合 Portal 与定位，默认 bottom/start、`sideOffset=6`，支持方向、对齐、偏移和 `anchor` |
+| `AutocompleteList`、`AutocompleteItem` | 渲染过滤后的建议，支持键盘高亮与单项 `disabled` |
+| `AutocompleteGroup`、`AutocompleteGroupLabel`、`AutocompleteCollection` | 渲染分组标题及过滤后的组内选项 |
+| `AutocompleteEmpty`、`AutocompleteStatus`、`AutocompleteSeparator` | 展示空结果、无障碍状态及视觉分隔 |
+| `AutocompleteValue` | 通过子渲染函数展示当前输入文本 |
+| `useAutocompleteFilter`、`useAutocompleteFilteredItems` | 为自定义匹配或外部过滤复用过滤辅助函数 |
+
+原语属性和事件详情见 [Base UI Autocomplete API](https://base-ui.com/react/components/autocomplete#api-reference)。

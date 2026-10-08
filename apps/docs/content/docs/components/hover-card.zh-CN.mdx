@@ -1,0 +1,95 @@
+---
+title: Hover Card
+description: "供视力正常的用户预览链接后面可用的内容"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/hover-card
+  api: https://base-ui.com/react/components/hover-card#api-reference
+---
+
+<ComponentPreview name="hover-card-demo" previewClassName="h-80" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/hover-card
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@workspace/ui/components/hover-card"
+```
+
+```tsx showLineNumbers
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent>
+    The React Framework – created and maintained by @vercel.
+  </HoverCardContent>
+</HoverCard>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `HoverCard`：
+
+```text
+HoverCard
+├── HoverCardTrigger
+└── HoverCardContent
+```
+
+## 触发延迟 [#trigger-delays]
+
+使用触发器上的`delay`和`closeDelay`来控制卡何时打开和
+关闭。
+
+```tsx showLineNumbers
+<HoverCard>
+  <HoverCardTrigger delay={100} closeDelay={200}>
+    Hover
+  </HoverCardTrigger>
+  <HoverCardContent>Content</HoverCardContent>
+</HoverCard>
+```
+
+## 定位 [#positioning]
+
+使用 `HoverCardContent` 上的 `side` 和 `align` 属性来控制放置。
+
+```tsx showLineNumbers
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent side="top" align="start">
+    Content
+  </HoverCardContent>
+</HoverCard>
+```
+
+## 基本用法 [#basic]
+
+<ComponentPreview name="hover-card-demo" />
+
+## 弹出方向 [#sides]
+
+<ComponentPreview name="hover-card-sides" previewClassName="h-[22rem]" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="hover-card-rtl" previewClassName="h-80" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+有关更多信息，请参阅[Base UI](https://base-ui.com/react/components/hover-card#api-reference) 文档。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/preview-card#api-reference)。

@@ -1,0 +1,55 @@
+---
+title: HTML Viewer
+description: 使用独立 iframe 展示 HTML 内容的查看器
+---
+
+<ComponentPreview name="html-viewer-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/html-viewer
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { HtmlViewer } from "@workspace/ui/components/html-viewer";
+
+<HtmlViewer
+  content="<h2>Hello</h2><p>Isolated HTML content.</p>"
+  title="HTML content preview"
+  className="h-64 w-full rounded-xl border"
+/>;
+```
+
+## iframe 隔离 [#isolation]
+
+组件将 `content` 写入 iframe 的 `srcDoc`。HTML 文档内部的样式不会影响外层应用，应用主题也不会自动注入文档。请在内容中提供需要预览的样式。为 iframe 设置清晰的 `title`，或翻译 `labels.preview`。
+
+默认沙箱为 `"allow-scripts"`，允许脚本在不具有同源权限的独立来源框架内运行，没有授予 `allow-same-origin`。第一个示例的按钮仅修改 iframe 内部内容。
+
+## 限制脚本 [#sandbox]
+
+使用 `sandbox=""` 显示不执行脚本的静态预览。按需传入 `allow`、`loading`、`ref` 等原生 iframe 属性。修改沙箱权限会改变内容具备的能力，请仅授予预览实际需要的权限。
+
+<ComponentPreview name="html-viewer-sandbox" />
+
+## 布局与玻璃效果 [#layout]
+
+iframe 默认填满容器，请为组件或父容器设置明确高度。`glass` 只处理外层表面，不会折射、捕获或主题化独立的 iframe 文档。玻璃背景快照无法可靠包含 iframe 内部内容。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `content` | `string` | 必填 HTML 源码；写入 `srcDoc` |
+| `sandbox` | 原生 iframe sandbox | `"allow-scripts"` |
+| `title` | `string` | `labels.preview` 或 `"HTML preview"` |
+| `labels` | `{ preview?: string }` | 备用可访问标题 |
+| `glass` | `boolean` | `false` |
+| 其他属性 | 原生 iframe 属性 | 透传，包括 `className`、`ref` 和 `loading` |
+
+模块导出 `HtmlViewerProps`。沙箱权限见 [iframe 元素文档](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)。需要编辑源码并预览时使用 [Editor](/zh-CN/docs/components/editor)。

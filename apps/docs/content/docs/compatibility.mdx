@@ -1,0 +1,40 @@
+---
+title: Compatibility
+description: Application responsibilities, SSR, worker loading, and browser capabilities.
+---
+
+SUI targets React 19 and Tailwind CSS 4 with Base UI primitives. Source installation uses your application's aliases and CSS entrypoint; see [installation](/docs/installation). Modern CSS features, including OKLCH colors and backdrop filters, are part of the visual system.
+
+## SSR and application state [#ssr-and-application-state]
+
+The documentation site uses TanStack Start and SSR. Browser-dependent viewers and the editor initialize after mounting, with base content or skeletons while loading. In an application with server and client component boundaries, keep interactive components on the client side and preserve installed `use client` directives.
+
+Theme persistence, language routing, validation, and business requests belong to the application. ThemeToggle and LocaleToggle receive controlled values and callbacks. Blocks provide English defaults and accept `labels`; pass translations from your application's locale system. Use [Field](/docs/components/field) to compose labels, descriptions, and validation messages.
+
+## Editor workers [#editor-workers]
+
+[Editor](/docs/components/editor) loads Monaco and its workers locally. Its installed source uses Vite-compatible `?worker` imports. A different bundler requires an equivalent worker integration; installing source does not configure that bundler automatically. Include the installed `worker.d.ts` in TypeScript's source paths.
+
+CodeViewer and DiffViewer can still show and copy raw content if syntax highlighting fails. The editor and viewers share the Shiki-based highlighting infrastructure.
+
+## Browser features [#browser-features]
+
+| Feature | Application consideration |
+| --- | --- |
+| Clipboard | Browser permissions and a secure context determine availability; the components provide failure feedback. |
+| Fullscreen | Browser fullscreen is optional; permission or platform restrictions can prevent entry. |
+| Glass | CSS + SVG is the default. Optional WebGPU enhancement falls back when capabilities or capture fail. |
+| Theme transitions | The toggle respects reduced motion and can apply the theme without a view transition. |
+| HTML preview | HtmlViewer defaults to a sandbox with scripts allowed and without same-origin permission. Editor's built-in HTML preview disables scripts. |
+
+See [Glass limitations](/docs/components/glass#limits) for cross-origin images, frames, video, Canvas, and capture cadence. A transparent surface needs to remain readable over its actual background; use an ordinary or denser surface when needed.
+
+## Accessibility and direction [#accessibility-and-direction]
+
+Compose visible labels or accessible names for icon-only actions. Keep titles in dialogs, provide image descriptions, and use externally supplied labels for loading and feedback. Keyboard and focus behavior come from the underlying primitives; replacing native controls with custom markup can change those behaviors.
+
+Use [Direction](/docs/components/direction) for RTL context and keep the application's `dir` attribute consistent. Loader and theme transitions honor reduced-motion preferences; custom animations added by the application need the same consideration.
+
+## Verification [#verification]
+
+After installation, run the consuming application's type checks and production build. Test its keyboard flow, forms, overlays, copy feedback, themes, and translated labels. The SUI documentation examples exercise components locally; they do not verify your application's routing, persistence, API requests, or deployment.

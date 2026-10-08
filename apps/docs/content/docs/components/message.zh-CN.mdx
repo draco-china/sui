@@ -1,0 +1,191 @@
+---
+title: Message
+description: "显示对话中的消息，带有可选的头像、页眉、页脚和对齐方式"
+base: base
+component: true
+---
+
+<ComponentPreview name="message-demo" previewClassName="h-auto theme-blue" />
+
+`Message` 组件在对话中布置一条消息。它处理消息表面周围的头像、对齐方式、页眉和页脚。
+
+对于 AI 应用程序，您可以使用 `Message` 组件渲染推理步骤、工具调用和助理消息。
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/message
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar"
+import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
+import { Message, MessageAvatar, MessageContent } from "@workspace/ui/components/message"
+```
+
+```tsx showLineNumbers
+<Message>
+  <MessageAvatar>
+    <Avatar>
+      <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+      <AvatarFallback>CN</AvatarFallback>
+    </Avatar>
+  </MessageAvatar>
+  <MessageContent>
+    <Bubble>
+      <BubbleContent>How can I help you today?</BubbleContent>
+    </Bubble>
+  </MessageContent>
+</Message>
+```
+
+**注意：** `Message` 负责消息行的布局，包括头像、对齐、页头和页脚。消息的气泡样式由 [`Bubble`](/zh-CN/docs/components/bubble) 提供；对话的滚动区域使用 [`MessageScroller`](/zh-CN/docs/components/message-scroller)。
+
+## 组合结构 [#composition]
+
+使用以下组合来构建消息：
+
+```text
+Message
+├── MessageAvatar
+└── MessageContent
+    ├── MessageHeader
+    ├── Bubble
+    └── MessageFooter
+```
+
+使用 `MessageGroup` 堆叠来自同一发送者的连续消息：
+
+```text
+MessageGroup
+├── Message
+└── Message
+```
+
+## 特性 [#features]
+
+- 使用 `align` 将发送者或接收者的消息行对齐到起始侧或结束侧
+- 头像区域对齐到消息底部，并避开页脚
+- 页头与页脚可放置发送者名称、状态和操作
+- 页脚与消息内容保持关联，在 `align="end"` 时操作也会保持对齐
+- 通过组容器堆叠同一发送者的连续消息
+- 每个子组件都可通过 `className` 自定义样式
+
+## 头像组合 [#avatar]
+
+使用 `MessageAvatar` 在消息旁边渲染头像。在消息上设置 `align="end"` 以使头像与消息末尾对齐。
+
+<ComponentPreview name="message-avatar" previewClassName="h-auto theme-blue" />
+
+| 对齐 |描述 |
+| -------- | --------------------------------------------------- |
+| `start` |将消息与对话的开头对齐 |
+| `end` |将消息与对话的结尾对齐   |
+
+## 组合 [#group]
+
+使用 `MessageGroup` 堆叠来自同一发送者的连续消息。在较早的消息上渲染一个空的 `MessageAvatar`，以使它们与最后一条消息上的头像对齐。
+
+<ComponentPreview name="message-group" previewClassName="h-auto theme-blue" />
+
+## 页头与页脚 [#header-and-footer]
+
+用 `MessageHeader` 显示发送者名称，用 `MessageFooter` 显示送达状态或已读状态等元数据。
+
+<ComponentPreview name="message-header-footer" previewClassName="h-auto theme-blue" />
+
+## 操作 [#actions]
+
+将消息级操作放置在 `MessageFooter` 中，例如复制、重试或反馈按钮。
+
+<ComponentPreview name="message-actions" previewClassName="h-auto theme-blue" />
+
+## 附件组合 [#attachment]
+
+<ComponentPreview name="message-attachment" previewClassName="h-auto theme-blue" />
+
+## 无障碍 [#accessibility]
+
+`Message` 是消息布局容器。无障碍语义由放入其中的内容提供。
+
+### 为纯图标操作提供标签 [#label-icon-only-actions]
+
+`MessageFooter` 中的操作按钮通常只显示图标，请为每个按钮提供 `aria-label`。
+
+```tsx showLineNumbers
+<MessageFooter>
+  <Button variant="ghost" size="icon" aria-label="Copy">
+    <CopyIcon />
+  </Button>
+</MessageFooter>
+```
+
+### 状态更新 [#status-updates]
+
+消息仍在处理中时，使用带有 `role="status"` 的 [`Marker`](/zh-CN/docs/components/marker)，让辅助技术及时播报状态更新。
+
+```tsx showLineNumbers
+<Message>
+  <Marker role="status">
+    <MarkerIcon>
+      <Loader size="sm" />
+    </MarkerIcon>
+    <MarkerContent>Checking the logs...</MarkerContent>
+  </Marker>
+</Message>
+```
+
+## API 参考 [#api-reference]
+
+### Message [#message]
+
+消息行包装器
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | ------------------ | --------- | ------------------------------------------------- |
+| `align` | `"start" \| "end"` | `"start"` |对话中消息的对齐方式 |
+| `className` | `string` | - |应用于该行的额外类名           |
+
+### MessageGroup [#messagegroup]
+
+对来自同一发件人的连续消息进行分组
+
+| 属性|类型 |默认 |描述 |
+| ----------- | -------- | -------- | ---------------------------------------------------------- |
+| `className` | `string` | - |应用于组根的额外类名 |
+
+### MessageAvatar [#messageavatar]
+
+头像槽，与消息底部对齐。当消息具有 `MessageFooter` 时，头像会向上移动以与消息表面而不是页脚保持对齐
+
+| 属性|类型 |默认 |描述 |
+| ----------- | -------- | -------- | ----------------------------------------------------------- |
+| `className` | `string` | - |应用于头像槽的额外类名 |
+
+### MessageContent [#messagecontent]
+
+包装页眉、消息表面和页脚
+
+| 属性|类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------ |
+| `className` | `string` | - |应用于内容槽的额外类名 |
+
+### MessageHeader [#messageheader]
+
+在消息上方显示内容，例如发件人姓名。无论 `align` 如何，都保持与起点对齐
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------------ |
+| `className` | `string` | - |应用于标头的额外类名 |
+
+### MessageFooter [#messagefooter]
+
+在消息下方显示内容，例如状态或操作。与消息侧对齐
+
+| 属性 |类型 |默认 |描述 |
+| ----------- | -------- | -------- | ------------------------------------------------------ |
+| `className` | `string` | - |应用于页脚的额外类名 |

@@ -1,0 +1,80 @@
+---
+title: TabBar
+description: 支持受控应用导航、长按滑动选择和可选玻璃材质的 TabBar
+---
+
+TabBar 用文字和可选图标展示应用的主要目的地。选中指示器沿用现有 UI 外观，传入 `glass` 后为外层增加玻璃材质，选中背景仅使用 CSS 高斯模糊，内容与路由由应用控制。
+
+<ComponentPreview name="tab-bar-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tab-bar
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { TabBar } from "@workspace/ui/components/tab-bar";
+import { useState } from "react";
+
+export function ApplicationNavigation() {
+  const [value, setValue] = useState("home");
+  return (
+    <TabBar
+      aria-label="应用导航"
+      value={value}
+      onValueChange={setValue}
+      items={[
+        { value: "home", label: "首页" },
+        { value: "search", label: "搜索" },
+        { value: "activity", label: "动态" },
+      ]}
+    />
+  );
+}
+```
+
+## 导航与选中状态 [#navigation]
+
+`value` 标识当前目的地，`onValueChange` 通知应用选择另一目的地。应用可以据此更新路由、保留查询参数或锚点，或者展示自己的视图。各项的值必须唯一，禁用项不可选中。
+
+标签栏渲染导航 landmark，以按钮呈现目的地，并通过 `aria-current` 标识当前项。请为导航提供 `aria-label`，并为各项提供明确的文字标签；装饰性图标可选。标签栏不渲染内容面板，在页面内切换面板时使用 [Tabs](/zh-CN/docs/components/tabs)。
+
+## 键盘与布局 [#keyboard]
+
+方向键按照标签栏方向在可用目的地之间移动，Home 和 End 聚焦第一个、最后一个可用项。移动焦点不会改变当前目的地，Enter 或空格激活聚焦按钮。当前项参与 Tab 焦点顺序，键盘激活与指针操作使用同一变更回调。横向布局跟随文档文字方向，支持 RTL。
+
+目的地超出可用宽度时，标签栏可以滚动。设置 `orientation="vertical"` 可改为纵向排列。选中背景在布局、尺寸和滚动变化后跟随选中按钮的实际边界。用户开启减少动态效果时，选中背景停止动画移动，选中状态仍保持可见。
+
+## 材质 [#material]
+
+TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass` 后仅外层启用共享玻璃材质，并继承 [GlassProvider](/zh-CN/docs/components/glass) 的渲染模式和材质设置。两种模式的选中背景均使用主题色衬底，玻璃模式额外使用约 `7px` 的 CSS 高斯模糊，选中图标和文字使用主题色。长按时才出现悬浮玻璃镜片，复用共享材质及背景取样。
+
+保持外层容器为普通表面，避免玻璃嵌套。示例使用同一受控目的地列表与背景对比默认、玻璃两种模式。
+
+## 长按与滑动 [#long-press]
+
+按住可用项 250ms 或拖动超过 6px 后，选中背景向外扩展为悬浮镜片，图标与文字轻微放大。玻璃模式下镜片采用透明玻璃材质，底色覆盖很弱，模糊约为 `0.6px`，其他模式保持主题选中背景。保持按住并滑动，镜片连续跟随指针，原选中背景暂时隐藏，当前项的主题色及 `aria-current` 保持不变；松手时才确认新项并触发选择回调。移出标签栏后松手、取消指针操作或窗口失去焦点时恢复原选择。短按与键盘操作仍按正常方式激活，禁用项不可选中。减少动态效果设置关闭背景的放大与移动动画。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `items` | `readonly TabBarItem[]` | 目的地列表 |
+| Item `value` | `string` | 唯一目的地标识 |
+| Item `label` | `string` | 可见的目的地标签 |
+| Item `icon` | `ReactNode` | 可选装饰性图标 |
+| Item `disabled` | `boolean` | 禁止选中 |
+| `value` | `string` | 受控的当前目的地 |
+| `onValueChange` | `(value: string) => void` | 选择可用目的地时触发 |
+| `glass` | `boolean` | `false`；可选玻璃材质 |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` |
+| `onItemActivate` | `(value: string) => void` | 可选的激活通知 |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
+| 其他属性 | 原生 nav 属性 | 包含 `aria-label`、`className`、`style` 和 `ref` |
+
+模块导出 `TabBar` 及其公共属性和条目类型，应用路由仍由应用管理。

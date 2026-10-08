@@ -1,0 +1,176 @@
+---
+title: Avatar
+description: "具有代表用户的备用图像元素"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/avatar
+  api: https://base-ui.com/react/components/avatar#api-reference
+---
+
+<ComponentPreview name="avatar-demo" previewClassName="h-72" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/avatar
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar"
+```
+
+```tsx showLineNumbers
+<Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Avatar`：
+
+```text
+Avatar
+├── AvatarImage
+├── AvatarFallback
+└── AvatarBadge
+```
+
+使用以下组合来构建 `AvatarGroup`：
+
+```text
+AvatarGroup
+├── Avatar
+│   ├── AvatarImage
+│   ├── AvatarFallback
+│   └── AvatarBadge
+├── Avatar
+│   ├── AvatarImage
+│   ├── AvatarFallback
+│   └── AvatarBadge
+└── AvatarGroupCount
+```
+
+## 基本用法 [#basic]
+
+带有图像和后备的基本头像组件。
+
+<ComponentPreview name="avatar-basic" />
+
+## 徽标 [#badge]
+
+使用`AvatarBadge`组件为头像添加徽章。徽章位于头像的右下角。
+
+<ComponentPreview name="avatar-badge" />
+
+使用 `className` 属性向徽章添加自定义样式，例如自定义颜色、尺寸等。
+
+```tsx showLineNumbers
+<Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+  <AvatarFallback>CN</AvatarFallback>
+  <AvatarBadge className="bg-green-600 dark:bg-green-800" />
+</Avatar>
+```
+
+## 带图标的徽标 [#badge-with-icon]
+
+您还可以使用 `<AvatarBadge>` 内的图标。
+
+<ComponentPreview name="avatar-badge-icon" />
+
+## 头像组 [#avatar-group]
+
+使用`AvatarGroup`组件添加一组头像。
+
+<ComponentPreview name="avatar-group" />
+
+## 头像组计数 [#avatar-group-count]
+
+使用 `<AvatarGroupCount>` 将计数添加到组中。
+
+<ComponentPreview name="avatar-group-count" />
+
+## 带图标的头像组 [#avatar-group-with-icon]
+
+您还可以使用 `<AvatarGroupCount>` 内部的图标。
+
+<ComponentPreview name="avatar-group-count-icon" />
+
+## 尺寸 [#sizes]
+
+使用 `size` 属性来更改头像的大小。
+
+<ComponentPreview name="avatar-size" />
+
+## 下拉菜单 [#dropdown]
+
+您可以使用 `Avatar` 组件作为下拉菜单的触发器。
+
+<ComponentPreview name="avatar-dropdown" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="avatar-rtl" previewClassName="h-72" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### 头像组合 [#avatar]
+`Avatar` 组件是包装头像图像和后备的根组件
+
+| 属性 |类型 |默认 |
+| ----------- | --------------------------------------- | ----------- |
+| `size` | `"default" \| "sm" \| "lg"` | `"default"` |
+| `className` | `string` | - |
+
+### AvatarImage [#avatarimage]
+
+`AvatarImage`组件显示头像图像。它接受所有 Base UI Avatar Image 属性
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `src` | `string` | - |
+| `alt` | `string` | - |
+| `className` | `string` | - |
+
+### AvatarFallback [#avatarfallback]
+
+当图像加载失败时，`AvatarFallback` 组件会显示回退。它接受所有 Base UI Avatar Fallback 属性
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### AvatarBadge [#avatarbadge]
+
+`AvatarBadge` 组件在头像上显示徽章指示器，通常位于右下角
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### AvatarGroup [#avatargroup]
+
+`AvatarGroup` 组件显示一组具有重叠样式的头像
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### AvatarGroupCount [#avatargroupcount]
+
+`AvatarGroupCount` 组件在头像组中显示计数指示器，通常显示附加头像的数量
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+有关 Base UI Avatar 属性的更多信息，请参阅 [Base UI 文档](https://base-ui.com/react/components/avatar#api-reference).

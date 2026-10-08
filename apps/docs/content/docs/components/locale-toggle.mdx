@@ -1,0 +1,60 @@
+---
+title: Locale Toggle
+description: A controlled language button or selector without routing or persistence assumptions.
+---
+
+<ComponentPreview name="locale-toggle-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/locale-toggle
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { LocaleToggle } from "@workspace/ui/components/locale-toggle";
+import { useState } from "react";
+
+const options = [
+  { value: "en-US", label: "English" },
+  { value: "zh-CN", label: "简体中文" },
+];
+
+export function Language() {
+  const [value, setValue] = useState("en-US");
+  return <LocaleToggle value={value} onValueChange={setValue} options={options} />;
+}
+```
+
+## Toggle and select modes [#modes]
+
+In `auto` mode, up to two distinct options use a button that cycles to the next language; more options use the shared Select. Set `mode="toggle"` or `mode="select"` to choose explicitly. A button with fewer than two distinct options is disabled. Duplicate option values are removed.
+
+<ComponentPreview name="locale-toggle-select" />
+
+## Integrating routing and content [#routing]
+
+`onValueChange` reports a locale value after the indicator reaches its new shape. Your application updates content, router state, and any persisted preference. The control locks immediately and keeps `aria-busy` during the morph and any promise returned by the callback. Repeated clicks share the pending request. Reduced motion or a hidden page completes the shape immediately. Rejection releases the pending state and restores the controlled locale indicator; the application callback handles error reporting. Unmounting before the animation ends cancels the callback. The selected locale remains controlled by `value`. No router, translation provider, or storage API is required by the component. The examples keep the selection local and do not navigate the documentation.
+
+For this documentation’s language routes, switching preserves the page path, query, and hash. That behavior belongs to the application’s route integration, not to the shared toggle component.
+
+## Option indicators and labels [#labels]
+
+Every option has a full locale `value` and readable `label`. The ghost button has a tooltip and a 16px SVG indicator with 2px strokes. ZH and EN use compact stroke lettering with a snappy spring path morph. Common language prefixes have built-in indicators; reduced motion swaps the shape directly. `indicatorPath` overrides its SVG path, while unknown prefixes use the generic language icon. Translate the control `label` and use readable option names. Native button props include `disabled`, `ref`, and `render`.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `value` | `string` | Required selected locale. |
+| `onValueChange` | `(value: string) => void \| Promise<void>` | Required selection callback. |
+| `options` | `readonly LocaleOption[]` | Required options: `value`, `label`, optional `indicatorPath`. |
+| `mode` | `"auto" \| "toggle" \| "select"` | `"auto"`. |
+| `label` | `string` | `"Change language"`. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `LocaleToggleProps` and `LocaleOption`. The multi-language selector uses the [Base UI Select API](https://base-ui.com/react/components/select).

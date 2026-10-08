@@ -1,0 +1,64 @@
+---
+title: Diff Viewer
+description: A line-based code comparison with split and unified views.
+---
+
+<ComponentPreview name="diff-viewer-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/diff-viewer
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { DiffViewer } from "@workspace/ui/components/diff-viewer";
+
+<DiffViewer
+  oldCode={'const enabled = false;'}
+  newCode={'const enabled = true;'}
+  filename="settings.ts"
+  lang="typescript"
+/>;
+```
+
+## Split and unified views [#views]
+
+The viewer starts with old and new code in side-by-side panes. Its view controls switch to a unified list. Added and removed lines retain distinct colors and line numbers. `oldTitle`, `newTitle`, and `filename` customize the headings. The comparison operates on lines rather than individual character changes.
+
+Old and new sources are highlighted independently so multiline strings and comments keep each version's own syntax context. Unified unchanged lines use the new source context; split columns retain their respective source context.
+
+Split headings stay on one line and truncate long titles, with the full text available on hover, so unequal headings cannot shift code rows. The first example pairs a long and short heading for narrow-screen comparison.
+
+Use `maxHeight` to limit the scrolling viewport. The viewport is reachable with Tab and supports keyboard scrolling with a visible theme-colored focus ring.
+
+## Streaming revisions [#streaming]
+
+Use `status="streaming"` while `newCode` is being assembled and `"complete"` when it finishes. It follows content near the bottom, pauses after you scroll away, and resumes when you return. The example appends a local JSON revision. Copying is disabled in this example with `copyable={false}`.
+
+<ComponentPreview name="diff-viewer-streaming" />
+
+## Copying and localization [#copy]
+
+The copy action copies `newCode`, not a patch or the old version. Highlighting is asynchronous and falls back to plain readable lines when it fails. The surrounding theme is used unless `theme` is provided. Translate `labels` for the two versions, view controls, status, and copy feedback.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `oldCode`, `newCode` | `string` | Required source versions. |
+| `oldTitle`, `newTitle` | `string` | Optional version headings. |
+| `filename` | `ReactNode` | Optional file heading. |
+| `lang` | `string` | `"typescript"`. |
+| `theme` | `"light" \| "dark"` | Follows surrounding theme. |
+| `status` | `"streaming" \| "complete"` | `"complete"`. |
+| `maxHeight` | `number` | `280` pixels. |
+| `copyable` | `boolean` | `true`; copies new code. |
+| `labels` | `Partial<DiffViewerLabels>` | English labels. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `DiffViewerProps` and `DiffViewerLabels`. The line comparison uses [jsdiff](https://github.com/kpdecker/jsdiff).

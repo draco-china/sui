@@ -1,0 +1,129 @@
+---
+title: Menubar
+description: "桌面应用程序中常见的视觉持久菜单，可提供对一组一致命令的快速访问"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/menubar
+  api: https://base-ui.com/react/components/menubar#api-reference
+---
+
+<ComponentPreview name="menubar-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/menubar
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Menubar,
+  MenubarContent,
+  MenubarGroup,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@workspace/ui/components/menubar"
+```
+
+```tsx showLineNumbers
+<Menubar>
+  <MenubarMenu>
+    <MenubarTrigger>File</MenubarTrigger>
+    <MenubarContent>
+      <MenubarGroup>
+        <MenubarItem>
+          New Tab <MenubarShortcut>⌘T</MenubarShortcut>
+        </MenubarItem>
+        <MenubarItem>New Window</MenubarItem>
+      </MenubarGroup>
+      <MenubarSeparator />
+      <MenubarGroup>
+        <MenubarItem>Share</MenubarItem>
+        <MenubarItem>Print</MenubarItem>
+      </MenubarGroup>
+    </MenubarContent>
+  </MenubarMenu>
+</Menubar>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Menubar`：
+
+```text
+Menubar
+├── MenubarMenu
+│   ├── MenubarTrigger
+│   └── MenubarContent
+│       ├── MenubarGroup
+│       │   ├── MenubarLabel
+│       │   ├── MenubarItem
+│       │   └── MenubarItem
+│       ├── MenubarSeparator
+│       ├── MenubarGroup
+│       │   ├── MenubarLabel
+│       │   ├── MenubarCheckboxItem
+│       │   └── MenubarCheckboxItem
+│       ├── MenubarSeparator
+│       ├── MenubarGroup
+│       │   ├── MenubarLabel
+│       │   └── MenubarRadioGroup
+│       │       ├── MenubarRadioItem
+│       │       └── MenubarRadioItem
+│       └── MenubarSub
+│           ├── MenubarSubTrigger
+│           └── MenubarSubContent
+│               └── MenubarGroup
+│                   ├── MenubarLabel
+│                   ├── MenubarItem
+│                   └── MenubarItem
+└── MenubarMenu
+    ├── MenubarTrigger
+    └── MenubarContent
+        └── MenubarGroup
+            ├── MenubarLabel
+            ├── MenubarItem
+            └── MenubarItem
+```
+
+## 复选框组合 [#checkbox]
+
+使用 `MenubarCheckboxItem` 可切换选项。
+
+<ComponentPreview name="menubar-checkbox" />
+
+## 单选项 [#radio]
+
+使用 `MenubarRadioGroup` 和 `MenubarRadioItem` 进行单选选项。
+
+<ComponentPreview name="menubar-radio" />
+
+## 子菜单 [#submenu]
+
+将 `MenubarSub`、`MenubarSubTrigger` 和 `MenubarSubContent` 用于嵌套菜单。
+
+<ComponentPreview name="menubar-submenu" />
+
+## 带图标 [#with-icons]
+
+<ComponentPreview name="menubar-icons" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="menubar-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 菜单栏](https://base-ui.com/react/components/menubar#api-reference) 文档。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/menu#api-reference)。

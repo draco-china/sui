@@ -1,0 +1,127 @@
+---
+title: Button
+description: Displays a button or a component that looks like a button.
+featured: true
+base: base
+component: true
+---
+
+<ComponentPreview name="button-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/button
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { Button } from "@workspace/ui/components/button"
+```
+
+```tsx
+<Button variant="outline">Button</Button>
+```
+
+## Cursor
+
+Tailwind v4 [switched](https://tailwindcss.com/docs/upgrade-guide#buttons-use-the-default-cursor) from `cursor: pointer` to `cursor: default` for the button component.
+
+If you want to keep the `cursor: pointer` behavior, add the following code to your CSS file:
+
+You can also enable this during project setup with `npx shadcn@latest init --pointer`.
+
+```css showLineNumbers title="globals.css"
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+```
+
+## Size
+
+Use the `size` prop to change the size of the button.
+
+<ComponentPreview name="button-size" />
+
+## Default
+
+<ComponentPreview name="button-default" />
+
+## Outline
+
+<ComponentPreview name="button-outline" />
+
+## Secondary
+
+<ComponentPreview name="button-secondary" />
+
+## Ghost
+
+<ComponentPreview name="button-ghost" />
+
+## Destructive
+
+<ComponentPreview name="button-destructive" />
+
+## Link
+
+<ComponentPreview name="button-link" />
+
+## Icon
+
+<ComponentPreview name="button-icon" />
+
+## With Icon
+
+Remember to add the `data-icon="inline-start"` or `data-icon="inline-end"` attribute to the icon for the correct spacing.
+
+<ComponentPreview name="button-with-icon" />
+
+## Rounded
+
+Use the `rounded-full` class to make the button rounded.
+
+<ComponentPreview name="button-rounded" />
+
+## Loader
+
+Render a `<Loader size="sm" />` component inside the button to show a loading state. Remember to add the `data-icon="inline-start"` or `data-icon="inline-end"` attribute to the spinner for the correct spacing.
+
+<ComponentPreview name="button-loading" />
+
+## Button Group
+
+To create a button group, use the `ButtonGroup` component. See the [Button Group](/docs/components/button-group) documentation for more details.
+
+<ComponentPreview name="button-group-demo" />
+
+## As Link
+
+You can use the `buttonVariants` helper to make a link look like a button.
+
+**Do not use `<Button render={<a />} nativeButton={false} />` for links.** The Base UI `Button` component always applies `role="button"`, which overrides the semantic link role on `<a>` elements. Use `buttonVariants` with a plain `<a>` tag instead.
+
+<ComponentPreview name="button-render" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="button-rtl" direction="rtl" />
+
+## API Reference
+
+### Button
+
+The `Button` component is a wrapper around the `button` element that adds a variety of styles and functionality.
+
+| Prop      | Type                                                                                 | Default     |
+| --------- | ------------------------------------------------------------------------------------ | ----------- |
+| `variant` | `"default" \| "outline" \| "ghost" \| "destructive" \| "secondary" \| "link"`        | `"default"` |
+| `size`    | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"default"` |

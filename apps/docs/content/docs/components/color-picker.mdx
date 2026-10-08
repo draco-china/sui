@@ -1,0 +1,74 @@
+---
+title: ColorPicker
+description: Choose colors using a saturation area, hue and opacity sliders, editable values and preset swatches.
+---
+
+<ComponentPreview name="color-picker-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/color-picker
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { ColorPicker } from "@workspace/ui/components/color-picker";
+import { useState } from "react";
+
+export function AccentColor() {
+  const [color, setColor] = useState("#007AFF");
+  return <ColorPicker value={color} onValueChange={setColor} />;
+}
+```
+
+`value` and `onValueChange` make the picker controlled. Use `defaultValue` for local state. Values accept HEX with three or six digits, with or without `#`. With `alpha`, four and eight digits also encode opacity. Changes return normalized uppercase six-digit HEX, or eight digits with alpha enabled. Invalid input remains editable and shows feedback without changing the selected color.
+
+## Editing formats [#formats]
+
+The format selector offers HEX, RGB, HSL, HSB and OKLCH. RGB accepts `rgb(0 122 255)`; HSL and HSB use percentages, for example `hsl(211 100% 50%)`. With opacity enabled, use `/ 0.5` or `/ 50%`. Changing the editing format preserves the color; output values remain HEX.
+
+OKLCH accepts values such as `oklch(62.8% 0.2577 29.23 / 50%)`. Lightness accepts percentages or 0–1; chroma accepts numbers or percentages (100% equals 0.4); hue accepts unitless degrees, `deg`, `rad`, `grad`, or `turn`. Output remains sRGB HEX. Colors outside sRGB are mapped by reducing chroma while preserving lightness and hue, then quantized to eight-bit channels; the original wide-gamut value is not retained. Inputs require explicit numbers, without `none`, `calc()`, or relative color syntax. Lightness and opacity must be in range, and chroma must be nonnegative
+
+## Opacity and inline controls [#opacity]
+
+`inline` renders the controls directly. The checkerboard distinguishes transparency from white and black. Opacity changes return an eight-digit HEX value. The color picker does not change your application theme or persist a preference.
+
+<ComponentPreview name="color-picker-alpha" />
+
+## Swatches and glass [#swatches]
+
+Provide `swatches` as HEX values. Invalid and duplicate normalized colors are excluded. `glass` applies to the popup surface; the saturation field and sliders keep their color encoding, and individual swatches do not create nested glass surfaces.
+
+<ComponentPreview name="color-picker-swatches" />
+
+## Keyboard and screen color [#accessibility]
+
+Focus the saturation area: Left/Right change saturation, Up/Down change brightness, and Shift increases the step. Home/End set saturation to its minimum/maximum. Hue and opacity sliders use the shared Slider keyboard interactions. Tab moves between controls; Escape closes the popup and returns focus to its trigger. Every button uses `type="button"` and does not submit its surrounding form.
+
+The optional screen eyedropper appears only in secure contexts with browser support. Cancelling keeps the current value, and an active request is cancelled when the picker unmounts. Set `eyeDropper={false}` to hide it. Translate `labels` for your interface. Trigger props such as `id`, `aria-describedby`, `ref`, `size` and `variant` are forwarded to the native trigger button. `inline` has no trigger and therefore does not use these trigger props.
+
+## Composition [#composition]
+
+The same module exports `ColorPickerArea`, `ColorPickerSlider` and `ColorPickerSwatches`. Area and Slider receive `color: HSVColor` and `onColorChange(color)`; Slider adds `channel="hue" | "alpha"`. Swatches receive `value`, `swatches` and `onValueChange(value)`. Share one HSV state between these controls. Pure conversions are available from `@workspace/ui/lib/color/model`: `parseHexColor`, `colorToHex`, `parseColor`, `formatColor` and `colorToCSS`.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `value` | `string` | Controlled HEX color |
+| `defaultValue` | `string` | `"#0088FF"` |
+| `onValueChange` | `(value: string) => void` | Called when the normalized color changes |
+| `alpha` | `boolean` | `false`; enables opacity and eight-digit output |
+| `swatches` | `readonly string[]` | `[]` |
+| `disabled` | `boolean` | Disables all interactions |
+| `inline` | `boolean` | `false`; renders controls without popup |
+| `glass` | `boolean` | `false`; popup material |
+| `eyeDropper` | `boolean` | `true`; depends on browser support |
+| `labels` | `Partial<ColorPickerLabels>` | Accessible labels and feedback |
+| `contentClassName` | `string` | Popup classes |
+
+The module also exports prop types for the picker and its controls. Popup and sliders use the [Base UI Popover](https://base-ui.com/react/components/popover) and [Slider](https://base-ui.com/react/components/slider) APIs.

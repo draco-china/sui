@@ -1,0 +1,197 @@
+---
+title: Theming
+description: Semantic colors, light and dark surfaces, and reusable palettes.
+---
+
+SUI colors describe the role of an element. A card uses `card` and `card-foreground`; a primary action uses `primary` and `primary-foreground`. The same component adapts when its palette or appearance changes.
+
+Shared CSS color variables use OKLCH, including the seven presets and custom palette output. These values preserve the existing colors. Custom input and preset seeds remain HEX, and contrast is measured using sRGB relative luminance. The shared package provides general semantic variables; this documentation app uses `accent-foreground` for links and `ring` for focus directly.
+
+## Semantic usage
+
+Choose a token by purpose, then keep the surface and its matching foreground together. Use the component's built-in variant when it already expresses that purpose.
+
+**Recommended**
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<div className="rounded-xl border border-border bg-card p-4 text-card-foreground">
+  <p className="text-muted-foreground">Your changes are ready.</p>
+  <Button>Save changes</Button>
+</div>;
+```
+
+**Avoid for product UI**
+
+```tsx
+<div className="rounded-xl border border-gray-300 bg-white p-4 text-black">
+  <p className="text-gray-500">Your changes are ready.</p>
+  <button className="bg-blue-600 text-white">Save changes</button>
+</div>;
+```
+
+Fixed colors can be appropriate for illustrations or external brand assets. Product surfaces, controls, and text should follow semantic tokens so they stay consistent across themes. SUI does not add a lint rule that forbids primitive colors.
+
+## Surface hierarchy
+
+Start with the page canvas and layer content using the surface that matches its role. The default theme uses an Apple-inspired gray canvas, white surfaces, and blue actions; dark mode uses deep gray surfaces and brighter blue accents. Inter remains the font.
+
+| Role | Surface | Matching text | Typical use |
+| --- | --- | --- | --- |
+| Page | `bg-background` | `text-foreground` | Application canvas |
+| Card | `bg-card` | `text-card-foreground` | Grouped content |
+| Floating | `bg-popover` | `text-popover-foreground` | Menus and popovers |
+| Secondary | `bg-secondary` | `text-secondary-foreground` | Secondary controls |
+| Quiet | `bg-muted` | `text-muted-foreground` | Supporting content |
+| Selected | `bg-accent` | `text-accent-foreground` | Selection and hover |
+
+Surfaces express purpose rather than a fixed brightness ladder. `card` and `popover` may share a value while preserving different roles.
+
+## Primary and status
+
+Use `primary` for the main action and `primary-foreground` for its text. Use `accent` for selected or hovered items. Links use `accent-foreground`, which can differ from the primary seed to maintain text contrast on neutral surfaces.
+
+Selection colors also apply to pressed Toggle and ToggleGroup items, Command highlights, current navigation links, selected options and menu items, selected table rows, choice cards, and calendar ranges. Filled selections, including Tabs, current pagination links, checkboxes, and radio buttons, use `primary` with `primary-foreground`. Focus indicators use `ring`.
+
+Use `destructive` for destructive actions and invalid input. Its color remains independent of the selected accent. SUI does not define separate success, warning, or information color tokens; express those states with clear text and icons, or define application-specific semantic tokens.
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+
+<Button variant="destructive">Delete workspace</Button>;
+```
+
+## Text
+
+Pair foreground tokens with their intended surfaces. `foreground` is the default body color; `muted-foreground` supports descriptions and secondary labels. A lighter shade alone should not communicate disabled, invalid, or selected state: retain accessible labels and the control's state attributes.
+
+## Borders and focus
+
+`border` separates surfaces. Existing Input uses `bg-input/50` for its fill. `ring` marks keyboard focus. Keep the outline visible when customizing interactive elements.
+
+```tsx
+<a
+  href="#token-reference"
+  className="rounded-md text-accent-foreground underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
+>
+  Explore colors
+</a>;
+```
+
+## Charts
+
+Use `chart-1` through `chart-5` for data series. Every preset supplies five coordinated colors. These colors distinguish series; add legends, labels, or patterns instead of relying only on hue. Chart colors are not substitutes for text or status tokens.
+
+## Token reference
+
+Browse the actual default tokens by role. Each row shows its utility, its light and dark value, and buttons to copy the variable, utility, or value. The catalog reads `globals.css`; it does not maintain a separate color table.
+
+<ComponentPreview name="theming-semantic-colors" />
+
+## Appearance
+
+Set `dark` on a parent to use dark tokens. Without that class, the application uses light tokens. Mode and palette are separate choices: `dark` controls appearance, while `data-color` selects a palette.
+
+```html
+<html data-color="pine" class="dark">
+```
+
+The following two panels use the same SUI components with isolated default light and dark variables. Edit the field, toggle the switch, or save changes to try the controls.
+
+<ComponentPreview name="theming-mode-comparison" />
+
+For the whole documentation site, open the appearance panel and choose **Light**, **Dark**, or **System**. System is the default and follows the device preference.
+
+## Preset palettes
+
+Choose **Default** or one of seven presets: Bamboo, Mauve, Mist, Sand, Pine, Rose, and Lime. Default uses the base tokens in `globals.css`. Each preset has a complete five-color palette, with the colors mapped in order to `chart-1` through `chart-5`. Its primary seed controls `primary` independently; it does not have to be the first chart color.
+
+The cards below show the full five-color palette, copyable color values, and the same interactive component preview for every theme. Use the shared light/dark control to compare them under the same appearance. The default theme has its own complete card.
+
+Surfaces, body text, and destructive colors keep their roles when the accent changes. Primary actions, selected states, focus rings, sidebar accents, and charts follow the palette. Accessible foreground and focus colors can differ from the seed to maintain contrast. These previews stay local and do not change the site theme or browser storage.
+
+<ComponentPreview name="theming-palette-playground" />
+
+Lime uses a bright `#D5F267` primary with black text. Accessible links and focus rings use deeper olive shades in light mode; dark mode keeps the lime accents bright against neutral dark surfaces. Choose **Lime** in the theme panel or set `data-color="lime"`.
+
+## Custom HEX
+
+The preview and the site theme panel accept three- or six-digit HEX values, with or without `#`. Shorthand expands to six digits. Invalid input displays an error and preserves the current valid theme.
+
+The primary seed stays unchanged. The shared calculation chooses black or white primary text and adjusts links, selected text, and focus colors against the light and dark surfaces. It checks ordinary text at 4.5:1 and focus colors at 3:1. Use the matching foreground token rather than assuming white text works on every primary color.
+
+<ComponentPreview name="theming-custom-color" />
+
+## Shared theme files
+
+Import the UI stylesheet to include the default tokens, component styles, and all seven presets:
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+The seven files live in `packages/ui/src/styles/themes`: `bamboo.css`, `mauve.css`, `mist.css`, `sand.css`, `pine.css`, `rose.css`, and `lime.css`. A setup that already loads SUI base tokens can import an individual preset:
+
+```css
+@import "@workspace/ui/themes/pine.css";
+```
+
+Select it on the root or a container with `data-color="pine"`. A dark ancestor enables its dark palette. To reset the root, use `data-color="default"` or remove the attribute and clear custom inline tokens. The default comes directly from `globals.css`; it has no separate theme file. A nested container without its own overrides inherits its parent's colors.
+
+## Custom application themes
+
+Use the shared helpers for custom input. Validate first, clear previous inline accent tokens, and calculate overrides only for a custom seed:
+
+```tsx
+import {
+  createThemeTokens,
+  getThemeId,
+  normalizeHex,
+  themeTokenNames,
+} from "@workspace/ui/lib/theme/theme";
+
+function applyTheme(input: string | null, dark: boolean) {
+  const seed = input === null ? null : normalizeHex(input);
+  if (input !== null && seed === null) return;
+  const root = document.documentElement;
+  root.classList.toggle("dark", dark);
+  root.dataset.color = getThemeId(seed);
+  for (const name of themeTokenNames) root.style.removeProperty(name);
+  if (root.dataset.color === "custom") {
+    for (const [name, value] of Object.entries(createThemeTokens(seed, dark))) {
+      root.style.setProperty(name, value);
+    }
+  }
+}
+```
+
+Pass `null` to restore Default. Recalculate custom overrides when appearance changes. The shared package supplies colors and calculation; your application owns mode selection, persistence, and initial restoration. Use `text-accent-foreground` for accessible links and `outline-ring` for focus. The documentation stylesheet maps Fumadocs's `--color-fd-*` variables to the shared semantic tokens; these framework aliases are not part of the shared theme files or `createThemeTokens` output.
+
+## Creating a theme
+
+For a reusable preset, add its stable ID, bilingual name, seed, and five chart colors to `themePresets` in `packages/ui/src/lib/theme/theme.ts`. The generator combines that definition with the current base semantic tokens in `globals.css`.
+
+```sh
+bun run --cwd packages/ui themes:generate
+```
+
+Import the resulting individual file in `globals.css`, then use its ID with `data-color`. Regenerate after changing a preset or the base tokens. Review both modes, matching foregrounds, keyboard focus, and chart legends before adopting a palette.
+
+## Persistence
+
+The header provides separate Appearance and Accent color controls. Appearance selects Light, Dark, or System; Accent color selects a preset palette or custom color. Changing the mode preserves the accent.
+
+The documentation site saves its selected mode and accent in browser storage, restores them before the first paint, and responds to device changes while System is active. When storage is unavailable, it uses System and Default. The interactive examples on this page do not write those preferences.
+
+## Right-to-left interfaces
+
+Wrap the relevant subtree in `DirectionProvider` and prefer logical spacing utilities:
+
+```tsx
+import { DirectionProvider } from "@workspace/ui/components/direction";
+
+<DirectionProvider direction="rtl">
+  <YourApplication />
+</DirectionProvider>;
+```

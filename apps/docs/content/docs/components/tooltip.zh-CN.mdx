@@ -1,0 +1,74 @@
+---
+title: Tooltip
+description: "当元素接收键盘焦点或鼠标悬停在其上时显示与该元素相关的信息的弹出窗口"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/tooltip
+  api: https://base-ui.com/react/components/tooltip#api-reference
+---
+
+<ComponentPreview name="tooltip-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tooltip
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip"
+```
+
+```tsx showLineNumbers
+<Tooltip>
+  <TooltipTrigger>Hover</TooltipTrigger>
+  <TooltipContent>
+    <p>Add to library</p>
+  </TooltipContent>
+</Tooltip>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Tooltip`：
+
+```text
+Tooltip
+├── TooltipTrigger
+└── TooltipContent
+```
+
+## 方向 [#side]
+
+使用 `side` 属性更改工具提示的位置。
+
+<ComponentPreview name="tooltip-sides" />
+
+## 带键盘快捷键 [#with-keyboard-shortcut]
+
+<ComponentPreview name="tooltip-keyboard" />
+
+## 禁用按钮 [#disabled-button]
+
+使用 `<span>` 包裹已禁用的按钮，即可为其显示提示框。
+
+<ComponentPreview name="tooltip-disabled" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="tooltip-rtl" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 工具提示](https://base-ui.com/react/components/tooltip#api-reference) 文档。

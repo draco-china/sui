@@ -1,0 +1,22 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "installation",
+    "theming",
+    "design-guidelines",
+    "compatibility",
+    "---Resources---",
+    "cli",
+    "registry",
+    "mcp",
+    "llms-txt",
+    "---Components---",
+    "...components",
+    "---Blocks---",
+    "...blocks",
+    "---Utils---",
+    "...utils"
+  ]
+}

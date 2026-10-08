@@ -1,0 +1,86 @@
+---
+title: Editor
+description: A client-loaded code editor with preview, toolbar actions, and fullscreen modes.
+---
+
+<ComponentPreview name="editor-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/editor
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { Editor } from "@workspace/ui/components/editor";
+import { useState } from "react";
+
+export function NotesEditor() {
+  const [value, setValue] = useState("# Project notes");
+  return <Editor value={value} onChange={setValue} language="markdown" height={320} />;
+}
+```
+
+## Editing and value state [#value]
+
+Use `value` and `onChange` for controlled editing. For internal state, omit `value` and supply `defaultValue`; `onChange` still reports edits. `disabled` makes the editor read-only. The editor is loaded in the client, with a loading placeholder during SSR and hydration. Switching language recreates the editor bridge and releases its previous model while retaining the current document value. Language services and workers load as needed. Workers are shared between mounted editors, stop after the last editor and all models are released, and are recreated when editing resumes. Editing does not execute the supplied code.
+
+## Language selection [#language]
+
+Supply `language` and `onLanguageChange` to show the shared Select language picker in the toolbar. Customize the candidates with `languages`, or use the common languages provided by default; the current value stays visible even when absent from that list. The caller controls the selected language, and selection preserves the document content. Set `toolbarLanguage={false}` to hide the picker. Without a callback it is hidden, and `disabled` disables selection. Language IDs are trimmed and lowercased; `ts`, `js`, `md`, and `text` normalize to `typescript`, `javascript`, `markdown`, and `plaintext`.
+
+The first example switches between Markdown, HTML, TypeScript, TSX, and JSON. HTML and Markdown have built-in previews; the other languages retain editing mode.
+
+## Preview modes [#preview]
+
+Markdown and HTML have built-in previews and start in `edit` mode. Toolbar actions switch between `edit`, `preview`, and `split`. The built-in HTML preview disables scripts with `sandbox="allow-same-origin"` and uses the isolated [Html Viewer](/docs/components/html-viewer), while Markdown uses [Markdown Viewer](/docs/components/markdown-viewer).
+
+Provide `preview.component` for another renderer. It receives `content`, `language`, `scrollContainerRef`, and `onScroll`. Use `preview.defaultMode` for the initial mode, or `preview.mode` and `preview.onModeChange` for controlled mode selection. Custom previews default to split mode.
+
+### Scroll synchronization [#scroll-sync]
+
+In split mode, scrolling either pane synchronizes the other by relative scroll progress, rather than source-line positions. Custom previews must attach `scrollContainerRef` and `onScroll` to the actual scrolling div. The built-in Markdown preview uses its outer scrolling container. The built-in HTML preview permits same-origin DOM access while keeping scripts disabled; the parent synchronizes its document scrolling container after each frame load and removes listeners on replacement or unmount.
+
+The example supplies a long document, a custom scrolling preview, controlled preview mode, and browser fullscreen.
+
+<ComponentPreview name="editor-preview" />
+
+## Toolbar and read-only editing [#toolbar]
+
+`toolbarTitle` and `toolbar` accept a React node or a render function. The render function receives `EditorToolbarActionContext`, including the current value, language, theme, disabled state, Monaco instance, `format()`, `setMode()`, and `setFullscreen()`. `toolbar={false}` hides the entire toolbar.
+
+`EditorToolbarButton` is available for custom icon actions. The example adds formatting and reset actions, and lets you enable or disable editing. Formatting depends on the formatter registered for the current language.
+
+<ComponentPreview name="editor-toolbar" />
+
+## Fullscreen and localization [#fullscreen]
+
+Fullscreen defaults to a fixed viewport overlay. Use `fullscreen={{ mode: "screen" }}` for the browser Fullscreen API, or `fullscreen={false}` to hide the action. `value`, `defaultValue`, and `onChange` inside the fullscreen options support controlled or uncontrolled fullscreen state. Browser fullscreen requires API support and permission; a failed request returns to the non-fullscreen state. The fixed overlay supports Escape, contains keyboard focus, and restores focus on exit. Accessible same-origin iframe controls participate in the focus cycle in DOM order; Escape inside the built-in HTML preview also exits. Frame loading and preview-mode changes refresh keyboard bindings. A cross-origin or opaque custom iframe is treated as one focus entry: the parent cannot intercept keys inside its inaccessible document, so retain an outer exit control.
+
+Translate the `labels` for preview, split view, copy, fullscreen, loading, and failure messages. The examples keep user content in local component state; the component does not save documents or preferences for you. Monaco theme settings are shared within a page; keep multiple Editors on a consistent theme rather than relying on isolated light and dark instances.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `value` / `defaultValue` | `string` | Controlled / initial internal content. |
+| `onChange` | `(value: string) => void` | Reports content changes. |
+| `language` | `string` | `"plaintext"`. |
+| `onLanguageChange` | `(language: string) => void` | Requests selection; the caller updates `language`. |
+| `languages` | `readonly EditorLanguageOption[]` | Common languages; each item has `value` and `label`. |
+| `toolbarLanguage` | `boolean` | `true`; shows the picker when a callback is supplied. |
+| `height` | `string \| number` | Controls editing area height; numbers are pixels. |
+| `disabled` | `boolean` | `false`; read-only editing. |
+| `toolbar`, `toolbarTitle` | `ReactNode \| render function` | Custom actions and heading; toolbar also accepts `false`. |
+| `toolbarMode`, `toolbarCopy` | `boolean` | Both `true`. |
+| `preview` | Preview options | Custom renderer, mode and mode-change callback. |
+| `fullscreen` | `false \| object` | Fixed overlay by default. |
+| `size` | Button size | `"icon-sm"` for toolbar actions. |
+| `labels` | `Partial<EditorLabels>` | English feedback and action names. |
+| `glass` | `boolean` | `false`; opt-in glass surface. |
+
+`EditorProps`, `EditorLanguageOption`, `EditorLabels`, `EditorViewMode`, `EditorFullscreenMode`, and `EditorToolbarActionContext` are exported. The editor uses Monaco; see the [Monaco API](https://microsoft.github.io/monaco-editor/docs.html). For glass setup, see [Glass](/docs/components/glass).

@@ -1,0 +1,97 @@
+---
+title: Tabs
+description: A set of layered sections of content—known as tab panels—that are displayed one at a time.
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/tabs
+  api: https://base-ui.com/react/components/tabs#api-reference
+---
+
+<ComponentPreview name="tabs-demo" previewClassName="h-96" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/tabs
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx showLineNumbers
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
+```
+
+```tsx showLineNumbers
+<Tabs defaultValue="account" className="w-[400px] max-w-full">
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">Make changes to your account here.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
+</Tabs>
+```
+
+## Composition
+
+Use the following composition to build `Tabs`:
+
+```text
+Tabs
+├── TabsList
+│   ├── TabsTrigger
+│   └── TabsTrigger
+├── TabsContent
+└── TabsContent
+```
+
+## Line
+
+Use the `variant="line"` prop on `TabsList` for a line style.
+
+<ComponentPreview name="tabs-line" />
+
+## Segment
+
+Use the `variant="segment"` prop on `TabsList` for a compact segmented control. Use `wrapperClassName="w-full"` to fill the available width.
+
+<ComponentPreview name="tabs-segment" />
+
+## Overflow
+
+Tab lists scroll automatically when they exceed the available space. Arrow controls and faded edges indicate more tabs. Selected and focused tabs scroll into view within the list, including vertical and RTL layouts.
+
+<ComponentPreview name="tabs-overflow" />
+
+## Vertical
+
+Use `orientation="vertical"` for vertical tabs.
+
+<ComponentPreview name="tabs-vertical" />
+
+## Disabled
+
+<ComponentPreview name="tabs-disabled" />
+
+## Icons
+
+<ComponentPreview name="tabs-icons" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="tabs-rtl" direction="rtl" />
+
+## Animation
+
+The selected indicator and panel use the same 250ms easing. Content fades in from an 8px offset on the side of the newly selected tab: left or right for horizontal tabs, up or down for vertical tabs. Base UI derives the direction from the actual tab positions, including RTL. The initial panel appears without an entrance animation; inactive panels leave the layout immediately and cannot receive focus. Reduced motion disables the transition and offset. Selected tabs use the theme's `primary` and `primary-foreground` colors; the line variant uses `primary` for its indicator and selected label.
+
+Use `indicatorClassName` on `TabsList` to customize the indicator and `wrapperClassName` for the outer container's layout. `className`, `ref`, and `render` continue to apply to the Base UI list. `TabsContent` retains Base UI's `keepMounted` behavior.
+
+## API Reference
+
+See the [Base UI Tabs](https://base-ui.com/react/components/tabs#api-reference) documentation.

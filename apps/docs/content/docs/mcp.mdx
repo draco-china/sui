@@ -1,0 +1,143 @@
+---
+title: MCP
+description: Connect AI assistants to the SUI registry.
+---
+
+Use the official [shadcn MCP server](https://ui.shadcn.com/docs/mcp) to browse the SUI registry from your AI assistant. The server runs locally over stdio and reads the consuming application's `components.json`. SUI supplies registry JSON files; the registry URL is an HTTP data source, not an MCP endpoint.
+
+For API guidance and complete usage examples, provide the assistant with [LLMs documentation](/docs/llms-txt). MCP queries and inspects installable source. Its `get_add_command_for_items` tool returns a CLI command; the assistant then runs the command in your application to install the files.
+
+## Configure the application [#configure-the-application]
+
+Prepare the consuming application using [Installation](/docs/installation). Merge this registry entry into its existing `components.json`, preserving the application's aliases and CSS configuration:
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+The catalog is `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`. CLI and MCP share this configuration.
+
+Open the consuming application in your MCP client and start the server from the directory containing its `components.json`. In a monorepo, use the application directory rather than a root directory without that file. The same configuration works with the [CLI](/docs/cli).
+
+## Configure the client [#configure-the-client]
+
+These examples use Bun to launch the official server:
+
+```bash
+bunx --bun shadcn@latest mcp
+```
+
+The MCP client starts this process and communicates over stdin/stdout. Merge the relevant configuration into your project's existing client file, then restart or enable the server. Bun must be available in the client process's environment.
+
+### Claude Code [#claude-code]
+
+Use the project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "bunx",
+      "args": ["--bun", "shadcn@latest", "mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Code and use `/mcp` to check the connection.
+
+### Cursor [#cursor]
+
+Use the project's `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "bunx",
+      "args": ["--bun", "shadcn@latest", "mcp"]
+    }
+  }
+}
+```
+
+Enable the shadcn server in Cursor's MCP settings and check that its tools are listed.
+
+### VS Code [#vs-code]
+
+For GitHub Copilot, use the project's `.vscode/mcp.json`. VS Code uses the `servers` key:
+
+```json
+{
+  "servers": {
+    "shadcn": {
+      "command": "bunx",
+      "args": ["--bun", "shadcn@latest", "mcp"]
+    }
+  }
+}
+```
+
+Open the file and start the server through VS Code's MCP controls. The client file locations and keys follow the [official shadcn configuration guide](https://ui.shadcn.com/docs/mcp#configuration).
+
+### Codex [#codex]
+
+Merge this into the consuming application's `.codex/config.toml`. Replace the placeholder with the application's absolute directory:
+
+```toml
+[mcp_servers.shadcn]
+command = "bunx"
+args = ["--bun", "shadcn@latest", "mcp"]
+cwd = "/absolute/path/to/app"
+```
+
+Codex loads project configuration for trusted projects. Open or restart the project after editing and verify that the server's tools are available. See the official OpenAI documentation for [project configuration](https://learn.chatgpt.com/docs/config-file/config-basic) and [MCP settings](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+## Browse, inspect, and install [#browse-inspect-and-install]
+
+Ask the assistant to use the `@sui` namespace explicitly:
+
+> Search @sui for table components, inspect @sui/data-table and its dependencies, then install it in this application and adapt the documentation example to my aliases.
+
+The server exposes these tools for the workflow:
+
+| Tool | Purpose |
+| --- | --- |
+| `get_project_registries` | Confirm that the application has configured `@sui`. |
+| `list_items_in_registries` | List entries in `@sui`. |
+| `search_items_in_registries` | Search names and descriptions in `@sui`. |
+| `view_items_in_registries` | Inspect an item's manifest and file contents. |
+| `get_add_command_for_items` | Return the CLI command for the selected items. |
+
+For example, search with `registries: ["@sui"]` and `query: "table"`, then inspect `items: ["@sui/data-table"]`. After obtaining the add command, the assistant runs it from the consuming application directory. With Bun, the equivalent command is:
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+Review the installed files, styles, and dependencies. See [CLI](/docs/cli) for previewing changes and [Compatibility](/docs/compatibility) for runtime requirements.
+
+SUI's catalog currently contains installable components, blocks, styles, and helpers, without separate demo or example entries. Use [LLMs documentation](/docs/llms-txt) for complete examples and API guidance rather than expecting MCP's example search to return `@sui/*-demo` items.
+
+## Troubleshooting [#troubleshooting]
+
+| Symptom | Check |
+| --- | --- |
+| GitHub registry returns 404 | Check the configured URL, access to the repository, and whether the requested item exists. |
+| Unknown registry or missing `@sui` | Check the namespace in the consuming application's `components.json`, then call `get_project_registries`. |
+| Server reads a different project | Check its working directory. It must point to the consuming application containing `components.json`; restart after changing it. |
+| `bunx` is not found | Ensure the client process can find Bun in `PATH`, or use the absolute path to the `bunx` executable in its server configuration. |
+| Tools appear but installation does not happen | `get_add_command_for_items` returns a command. The assistant still needs to execute it in the application. |
+
+To isolate registry problems, run these commands from the same application directory as MCP:
+
+```bash
+bunx --bun shadcn@latest search @sui -q button
+bunx --bun shadcn@latest view @sui/button
+```
+
+See [Registry](/docs/registry) for configuration and item contents, and [CLI](/docs/cli) for installation and updates.

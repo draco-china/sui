@@ -1,0 +1,50 @@
+---
+title: Markdown Viewer
+description: Markdown rendering with tables, task lists, alerts, highlighted code, and sanitized HTML.
+---
+
+<ComponentPreview name="markdown-viewer-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/markdown-viewer
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+
+<MarkdownViewer content="# Release notes\n\nA **Markdown** document." />;
+```
+
+## Supported formatting [#formatting]
+
+Supports headings, links, tables, task lists, strikethrough, line breaks, and fenced code. Fenced code, including blocks without a language, and indented code use [Code Viewer](/docs/components/code-viewer). Blocks without a language render as plain text and retain copying and line breaks. Inline code remains inline. GitHub-style `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, and `[!CAUTION]` blocks have semantic visual treatments.
+
+Heading anchors are scoped to each viewer instance. A Contents, Table of Contents, or TOC heading can generate a table of contents. Math syntax is parsed, but this component does not load a dedicated mathematical typesetting engine.
+
+## HTML and editable content [#html]
+
+Embedded HTML is parsed and sanitized before rendering. Common safe formatting, including `details` and `summary`, is retained; scripts and event-handler attributes are removed. The example lets you edit Markdown containing a disclosure and a script that is not executed. Unlike [Html Viewer](/docs/components/html-viewer), this component does not execute HTML scripts.
+
+<ComponentPreview name="markdown-viewer-sanitized" />
+
+## Theme and localization [#theme]
+
+The content follows the surrounding theme unless `theme` is supplied. Use `className` for container layout. `labels.empty` customizes the empty state, while `note`, `tip`, `important`, `warning`, and `caution` translate alert headings. `labels.code` accepts [CodeViewer labels](/docs/components/code-viewer#api-reference) for embedded code blocks, including copy, loading, and failure feedback. Markdown content itself is provided by your application and is not translated automatically.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `content` | `string` | Required Markdown source. |
+| `theme` | `"light" \| "dark"` | Follows surrounding theme. |
+| `className` | `string` | Container layout classes. |
+| `labels` | `Partial<MarkdownViewerLabels>` | Empty and alert labels; `code` translates embedded CodeViewer feedback. Defaults to English. |
+| `glass` | `boolean` | `false`. |
+
+The module exports `MarkdownViewerProps` and `MarkdownViewerLabels`. Rendering uses [react-markdown](https://github.com/remarkjs/react-markdown).

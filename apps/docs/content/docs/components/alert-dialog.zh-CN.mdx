@@ -1,0 +1,122 @@
+---
+title: Alert Dialog
+description: "模式对话框，用重要内容打断用户并期望得到响应"
+featured: true
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/alert-dialog
+  api: https://base-ui.com/react/components/alert-dialog#api-reference
+---
+
+<ComponentPreview name="alert-dialog-demo" previewClassName="h-56" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/alert-dialog
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@workspace/ui/components/alert-dialog"
+```
+
+```tsx showLineNumbers
+<AlertDialog>
+  <AlertDialogTrigger render={<Button variant="outline" />}>
+    Show Dialog
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This action cannot be undone. This will permanently delete your account
+        from our servers.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction>Continue</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `AlertDialog`：
+
+```text
+AlertDialog
+├── AlertDialogTrigger
+└── AlertDialogContent
+    ├── AlertDialogHeader
+    │   ├── AlertDialogMedia
+    │   ├── AlertDialogTitle
+    │   └── AlertDialogDescription
+    └── AlertDialogFooter
+        ├── AlertDialogCancel
+        └── AlertDialogAction
+```
+
+## 基本用法 [#basic]
+
+带有标题、描述以及取消和继续按钮的基本警告对话框。
+
+<ComponentPreview name="alert-dialog-basic" previewClassName="h-56" />
+
+## 小尺寸 [#small]
+
+使用 `size="sm"` 属性使警告对话框更小。
+
+<ComponentPreview name="alert-dialog-small" previewClassName="h-56" />
+
+## 媒体 [#media]
+
+使用 `AlertDialogMedia` 组件将媒体元素（例如图标或图像）添加到警告对话框。
+
+<ComponentPreview name="alert-dialog-media" previewClassName="h-56" />
+
+## 带媒体的小尺寸 [#small-with-media]
+
+使用 `size="sm"` 属性使警告对话框更小，并使用 `AlertDialogMedia` 组件将媒体元素（例如图标或图像）添加到警告对话框。
+
+<ComponentPreview name="alert-dialog-small-media" previewClassName="h-56" />
+
+## 危险操作 [#destructive]
+
+使用 `AlertDialogAction` 组件向警告对话框添加危险操作按钮。
+
+<ComponentPreview name="alert-dialog-destructive" previewClassName="h-56" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="alert-dialog-rtl" previewClassName="h-56" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### size [#size]
+
+使用 `AlertDialogContent` 组件上的 `size` 属性来控制警告对话框的大小。它接受以下值：
+
+| 属性 |类型 |默认 |
+| ------ | ------------------- | ----------- |
+| `size` | `"default" \| "sm"` | `"default"` |
+
+有关其他组件及其 props 的更多信息，请参阅 [Base UI 文档](https://base-ui.com/react/components/alert-dialog#api-reference).

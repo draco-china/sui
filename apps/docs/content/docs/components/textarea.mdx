@@ -1,0 +1,56 @@
+---
+title: Textarea
+description: Displays a form textarea or a component that looks like a textarea.
+base: base
+component: true
+---
+
+<ComponentPreview name="textarea-demo" previewClassName="*:max-w-xs" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/textarea
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { Textarea } from "@workspace/ui/components/textarea"
+```
+
+```tsx
+<Textarea />
+```
+
+## Field
+
+Use `Field`, `FieldLabel`, and `FieldDescription` to create a textarea with a label and description.
+
+<ComponentPreview name="textarea-field" previewClassName="*:max-w-xs" />
+
+## Disabled
+
+Use the `disabled` prop to disable the textarea. To style the disabled state, add the `data-disabled` attribute to the `Field` component.
+
+<ComponentPreview name="textarea-disabled" previewClassName="*:max-w-xs" />
+
+## Invalid
+
+Use the `aria-invalid` prop to mark the textarea as invalid. To style the invalid state, add the `data-invalid` attribute to the `Field` component.
+
+<ComponentPreview name="textarea-invalid" previewClassName="*:max-w-xs" />
+
+## Button
+
+Pair with `Button` to create a textarea with a submit button.
+
+<ComponentPreview name="textarea-button" previewClassName="*:max-w-xs" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="textarea-rtl" direction="rtl" />

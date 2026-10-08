@@ -1,0 +1,137 @@
+---
+title: Sensitive Input
+description: A sensitive-value input with a fixed mask, click-to-reveal interaction, and copy feedback.
+links:
+  doc: https://base-ui.com/react/components/input
+  api: https://base-ui.com/react/components/input#api-reference
+---
+
+<ComponentPreview name="sensitive-input-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/sensitive-input
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { SensitiveInput } from "@workspace/ui/components/sensitive-input";
+
+<SensitiveInput
+  aria-label="Password"
+  autoComplete="current-password"
+  defaultValue="example-password"
+/>;
+```
+
+A nonempty hidden value is covered by a fixed `••••••••` mask, regardless of its length. The native input stays mounted underneath, but editing begins after revealing the value. Hovering or focusing the control shows “Click to reveal” without changing its layout.
+
+Click the mask, or focus its reveal button and press Enter or Space, to reveal the actual input and focus it. The revealed input uses `type="text"`; its eye button hides the value again. Escape returns to the mask and focuses the reveal button. All reveal, hide, and copy actions are `type="button"` controls and do not submit their containing form.
+
+An empty value has no mask and can be edited directly. The first input requests revealing the value. When focus leaves the entire group, a nonempty value is masked again. Moving focus between the input and its internal copy or eye buttons keeps the current state.
+
+## Copying the current value
+
+`copyable` defaults to `true`. The built-in button reads the native input's actual `value` when clicked, including uncontrolled edits and the value restored by a form reset. It does not copy a stale initial value. Copying works while the value is hidden or read-only and does not change visibility.
+
+The copy control is a text tab above the top-right edge, shown on hover or focus within the group. Its width is reserved for pending, copied, and failed feedback so state changes do not shift the layout. The copy button remains available for empty values and can copy an empty string.
+
+The button reports a pending state while the clipboard write is in progress and prevents repeated attempts. It only reports success after the write completes. Successful feedback resets after `resetDelay` milliseconds, with a default of `1500`. A failed attempt provides generic feedback and can be retried; feedback never includes the sensitive value.
+
+`onCopySuccess` receives the successfully written value. `onCopyError` receives an `Error` when writing fails. Use the callbacks for state updates without rendering or logging the sensitive value. For example, compare against the current input through its native ref and display only whether the values match:
+
+```tsx
+import { SensitiveInput } from "@workspace/ui/components/sensitive-input";
+import { useRef, useState } from "react";
+
+export function CopyVerification() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [matches, setMatches] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <>
+      <SensitiveInput
+        ref={inputRef}
+        aria-label="API key"
+        defaultValue="example-api-key"
+        onCopySuccess={(value) => {
+          setFailed(false);
+          setMatches(value === inputRef.current?.value);
+        }}
+        onCopyError={() => {
+          setFailed(true);
+          setMatches(null);
+        }}
+      />
+      <output aria-live="polite">
+        {failed && "Copy failed. Try again."}
+        {!failed && matches === null && "Not copied yet"}
+        {!failed && matches !== null && (
+          matches
+            ? "Copied value matches the current input."
+            : "Copied value does not match the current input."
+        )}
+      </output>
+    </>
+  );
+}
+```
+
+The input's native `onCopy` remains a clipboard event handler for selection-based copying. The built-in button uses `onCopySuccess` for its asynchronous result instead.
+
+## Controlled state
+
+Control the input value with native `value` and `onChange`. Visibility is independent: use `visible` and `onVisibleChange`, or set `defaultVisible` for an uncontrolled input.
+
+Controlled `visible` remains authoritative. Clicks, keyboard actions, first input into an empty field, and leaving the group request changes through `onVisibleChange`; update `visible` in that callback to accept them. Copying always reads the current native value and never requests a visibility change.
+
+This example verifies the copied value through `ref`, exposes the native `onCopy` event count, and keeps all sensitive content out of its feedback.
+
+<ComponentPreview name="sensitive-input-controlled" />
+
+## Read-only and disabled
+
+`readOnly` prevents editing while keeping pointer and keyboard revealing, hiding, and copying available. `disabled` prohibits input, revealing, hiding, and copying. Set `copyable={false}` to remove only the built-in copy button; revealing, editing, and native input events remain available.
+
+The example also includes an empty field: type into it directly, then move focus outside the group to see its nonempty value become masked.
+
+<ComponentPreview name="sensitive-input-states" />
+
+## Composition and forms [#composition]
+
+Sensitive Input composes `InputGroup`, `InputGroupInput`, `InputGroupAddon`, and `InputGroupButton`. Use the normal `Field`, `FieldLabel`, and `FieldDescription` components around it; the visible label should reference the input's `id`.
+
+`className` styles the group; `inputClassName` styles the input. A `ref` points to the native input, and native attributes such as `name`, `form`, `required`, `autoComplete`, and `aria-describedby` pass through to it.
+
+The first example is an uncontrolled form with explicit Submit and Reset actions. Copying and toggling visibility leave its submission count unchanged. Submit verifies `FormData` against the current native input without displaying the value; Reset restores `defaultValue` and clears feedback. After editing and copying, reset and copy again: the separate boolean feedback verifies whether the copied value matches the original default. Neither feedback area displays the value. In controlled mode, reset the application-owned value in your form's `onReset` handler.
+
+## Accessibility
+
+Provide a visible associated label or an `aria-label` for the input. The mask has a native reveal button that can be reached with Tab and activated with Enter or Space. Instructions explain how to reveal the value, and a status message announces when it is hidden. The underlying masked input stays mounted for native refs and form data.
+
+The revealed input accepts normal keyboard editing. Escape returns focus to the reveal button; leaving the group requests masking, while internal focus movement preserves the state. Visibility actions reference the input with `aria-controls`, and the eye icon is decorative. The copy button references the same input and reports its pending state with `aria-busy`; copy feedback is announced through a status region.
+
+Localize the visible reveal hint with `labels.reveal`, its keyboard instructions with `labels.instruction`, and the hidden-state announcement with `labels.hidden`. Use `labels.show` and `labels.hide` for action names, and `labels.copy`, `labels.pending`, `labels.copied`, and `labels.failed` for copy feedback. Failure labels should explain a useful next step without including sensitive data.
+
+## API Reference
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `visible` | `boolean` | — | Controlled visibility. |
+| `defaultVisible` | `boolean` | `false` | Initial uncontrolled visibility. |
+| `onVisibleChange` | `(visible: boolean) => void` | — | Called when pointer, keyboard, first input, or group blur requests a visibility change. |
+| `copyable` | `boolean` | `true` | Include the built-in copy action. |
+| `onCopySuccess` | `(value: string) => void` | — | Called after the current value is successfully written. |
+| `onCopyError` | `(error: Error) => void` | — | Called when the clipboard write fails. |
+| `resetDelay` | `number` | `1500` | Successful copy feedback duration in milliseconds. |
+| `labels` | `{ reveal?: string; instruction?: string; hidden?: string; show?: string; hide?: string; copy?: string; pending?: string; copied?: string; failed?: string }` | English labels | Reveal hint, keyboard instructions, hidden announcement, action names, and copy feedback. |
+| `className` | `string` | — | Additional group classes. |
+| `inputClassName` | `string` | — | Additional input classes. |
+| `...props` | Native input props, excluding `type` | — | Includes `value`, `defaultValue`, `onChange`, native `onCopy`, `ref`, `disabled`, and `readOnly`. |
+
+The underlying input behavior follows the [Base UI Input API](https://base-ui.com/react/components/input#api-reference).

@@ -1,0 +1,46 @@
+---
+title: LongText
+description: Truncated text with a full-text disclosure only when the content overflows.
+component: true
+---
+
+<ComponentPreview name="long-text-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/long-text
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { LongText } from "@workspace/ui/components/long-text"
+```
+
+## Usage
+
+```tsx
+<LongText className="max-w-48" label="Show full resource name">
+  production-api-gateway.asia-east-1.example.com
+</LongText>
+```
+
+Give the component a constrained width. Overflowing text becomes a keyboard-focusable trigger. Pointer devices show SUI Tooltip on hover or focus; coarse pointers show SUI Popover on tap. Short text remains plain text. Measurements update when content, layout, fonts, or pointer capabilities change.
+
+## Table cells
+
+Use a fixed table layout or constrain the cell width so ellipsis has a boundary.
+
+<ComponentPreview name="long-text-table" />
+
+## API
+
+| Prop | Description |
+| --- | --- |
+| `children` | Displayed content, repeated in the disclosure. Use text or noninteractive inline content. |
+| `className` | Width and layout classes on the outer container. |
+| `contentClassName` | Layout classes on the full-text surface. |
+| `label` | Optional accessible trigger name. Defaults to the displayed text. |
+
+The pattern is inspired by [shadcn-admin LongText](https://github.com/satnaing/shadcn-admin/blob/main/src/components/long-text.tsx), with SUI Base UI composition and resize-aware overflow detection.

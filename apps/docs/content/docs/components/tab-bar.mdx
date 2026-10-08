@@ -1,0 +1,80 @@
+---
+title: TabBar
+description: Controlled application navigation with press-and-slide selection and optional glass material.
+---
+
+TabBar presents the primary destinations of an application with labels and optional icons. Its selected indicator follows the current UI style and uses CSS Gaussian blur in `glass` mode, while only the outer bar receives glass material; content and routing remain under application control.
+
+<ComponentPreview name="tab-bar-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tab-bar
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { TabBar } from "@workspace/ui/components/tab-bar";
+import { useState } from "react";
+
+export function ApplicationNavigation() {
+  const [value, setValue] = useState("home");
+  return (
+    <TabBar
+      aria-label="Application navigation"
+      value={value}
+      onValueChange={setValue}
+      items={[
+        { value: "home", label: "Home" },
+        { value: "search", label: "Search" },
+        { value: "activity", label: "Activity" },
+      ]}
+    />
+  );
+}
+```
+
+## Navigation and selection [#navigation]
+
+`value` identifies the current destination. `onValueChange` asks the application to select another destination, so it can update a router, preserve a query or anchor, or display its own view. Items must have unique values. A disabled item cannot be selected.
+
+TabBar renders a navigation landmark with buttons and exposes the current destination through `aria-current`. Give the landmark an `aria-label` and each item a clear text label; decorative icons are optional. It does not render content panels. Use [Tabs](/docs/components/tabs) when selecting among panels within a page.
+
+## Keyboard and layout [#keyboard]
+
+Arrow keys move among enabled destinations in the bar's orientation. Home and End focus the first and last enabled destinations. Moving focus does not change the current destination; Enter or Space activates the focused button. The current destination participates in the Tab sequence; keyboard activation follows the same change callback as pointer activation. Horizontal layout follows the document direction, including RTL.
+
+The bar can scroll when destinations exceed its available space. Set `orientation="vertical"` to arrange destinations vertically. The moving selection background follows the selected button's current bounds after layout, resizing, or scrolling. Reduced-motion preferences disable animated movement while keeping selection visible.
+
+## Material [#material]
+
+TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` to apply shared glass material to the outer bar, inheriting [GlassProvider](/docs/components/glass) rendering and material settings. Both modes use a theme-colored selection background; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the theme primary color. A floating glass lens appears only while holding, reusing the shared material and background capture.
+
+Keep the surrounding container ordinary to avoid nested glass. The example compares both modes using the same controlled destinations and background.
+
+## Press and slide [#long-press]
+
+Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a floating lens and gently enlarge its icon and label. In glass mode the lens uses clear glass with very little tint and approximately `0.6px` blur; otherwise it keeps the theme selection background. Slide while holding to continuously move the lens and position the lens over other enabled items. The resting selection background is hidden while holding. The current item’s theme color and `aria-current` remain unchanged until releasing commits the new selection and restores its background. Releasing outside the bar, cancelling the pointer, or losing window focus restores the original selection. Short clicks and keyboard activation keep their usual behavior, and disabled items remain unavailable. Reduced-motion preferences disable scaling and animated movement.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `items` | `readonly TabBarItem[]` | Destination list. |
+| Item `value` | `string` | Unique destination identifier. |
+| Item `label` | `string` | Visible destination label. |
+| Item `icon` | `ReactNode` | Optional decorative icon. |
+| Item `disabled` | `boolean` | Prevents selection. |
+| `value` | `string` | Controlled current destination. |
+| `onValueChange` | `(value: string) => void` | Called when selecting an enabled destination. |
+| `glass` | `boolean` | `false`; optional glass treatment. |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"`. |
+| `onItemActivate` | `(value: string) => void` | Optional activation notification. |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"`. |
+| Other props | Native nav props | Includes `aria-label`, `className`, `style`, and `ref`. |
+
+The module exports `TabBar` and its public props and item types. Application routing remains outside the component.

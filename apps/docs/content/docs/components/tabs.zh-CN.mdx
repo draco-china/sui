@@ -1,0 +1,97 @@
+---
+title: Tabs
+description: "一组分层的内容部分（称为选项卡面板），一次显示一个"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/tabs
+  api: https://base-ui.com/react/components/tabs#api-reference
+---
+
+<ComponentPreview name="tabs-demo" previewClassName="h-96" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/tabs
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
+```
+
+```tsx showLineNumbers
+<Tabs defaultValue="account" className="w-[400px] max-w-full">
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">Make changes to your account here.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
+</Tabs>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Tabs`：
+
+```text
+Tabs
+├── TabsList
+│   ├── TabsTrigger
+│   └── TabsTrigger
+├── TabsContent
+└── TabsContent
+```
+
+## 线条样式 [#line]
+
+在 `TabsList` 上使用 `variant="line"` 属性来设置线条样式。
+
+<ComponentPreview name="tabs-line" />
+
+## 分段样式 [#segment]
+
+在 `TabsList` 上使用 `variant="segment"` 属性来设置紧凑的分段样式。使用 `wrapperClassName="w-full"` 可填满可用宽度。
+
+<ComponentPreview name="tabs-segment" />
+
+## 溢出滚动 [#overflow]
+
+选项卡列表超出可用空间时会自动滚动，并显示方向箭头和渐隐边缘。选中或聚焦的选项卡会在列表内滚动到可见位置，同时支持垂直布局和从右到左的布局。
+
+<ComponentPreview name="tabs-overflow" />
+
+## 垂直布局 [#vertical]
+
+对于垂直选项卡，请使用 `orientation="vertical"`。
+
+<ComponentPreview name="tabs-vertical" />
+
+## 禁用状态 [#disabled]
+
+<ComponentPreview name="tabs-disabled" />
+
+## 图标 [#icons]
+
+<ComponentPreview name="tabs-icons" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="tabs-rtl" direction="rtl" />
+
+## 动画 [#animation]
+
+选中指示器与内容面板采用相同的 250ms 时长和缓动。内容从新选中标签所在的方向淡入，位移仅 8px：横向选项卡从左侧或右侧进入，纵向选项卡从上方或下方进入。Base UI 根据标签的实际位置判断方向，自动适配 RTL。初始面板直接显示；未选中的面板立即退出布局，不参与焦点导航。启用减少动态效果后，过渡和位移完全关闭。选中态使用主题的 `primary` 和 `primary-foreground` 配色；线条样式的指示器和选中文字使用 `primary`。
+
+在 `TabsList` 上使用 `indicatorClassName` 自定义指示器，使用 `wrapperClassName` 设置外层容器的布局。`className`、`ref` 和 `render` 仍作用于 Base UI 列表。`TabsContent` 保留 Base UI 的 `keepMounted` 行为。
+
+## API 参考 [#api-reference]
+
+请参阅[Base UI 选项卡](https://base-ui.com/react/components/tabs#api-reference) 文档。

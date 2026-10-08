@@ -1,0 +1,161 @@
+---
+title: Breadcrumb
+description: "使用链接层次结构显示当前资源的路径"
+base: base
+component: true
+---
+
+<ComponentPreview name="breadcrumb-demo" previewClassName="p-2" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/breadcrumb
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/breadcrumb"
+```
+
+```tsx showLineNumbers
+<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbLink render={<a href="/components" />}>
+        Components
+      </BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Breadcrumb`：
+
+```text
+Breadcrumb
+└── BreadcrumbList
+    ├── BreadcrumbItem
+    │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
+    ├── BreadcrumbItem
+    │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
+    └── BreadcrumbItem
+        └── BreadcrumbPage
+```
+
+## 基本用法 [#basic]
+
+带有主页链接和组件链接的基本面包屑。
+
+<ComponentPreview name="breadcrumb-basic" />
+
+## 自定义分隔符 [#custom-separator]
+
+使用自定义组件作为 `children` 为 `<BreadcrumbSeparator />` 创建自定义分隔符。
+
+<ComponentPreview name="breadcrumb-separator" />
+
+## 下拉菜单 [#dropdown]
+
+您可以将 `<BreadcrumbItem />` 与 `<DropdownMenu />` 组合起来，以在面包屑中创建下拉菜单。
+
+<ComponentPreview name="breadcrumb-dropdown" />
+
+## 折叠状态 [#collapsed]
+
+我们提供了一个 `<BreadcrumbEllipsis />` 组件，用于在面包屑过长时显示折叠状态。
+
+<ComponentPreview name="breadcrumb-ellipsis" previewClassName="p-2" />
+
+## 链接组件 [#link-component]
+
+要使用路由库中的自定义链接组件，您可以在 `<BreadcrumbLink />` 上使用 `render` 属性。
+
+<ComponentPreview name="breadcrumb-link" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="breadcrumb-rtl" previewClassName="p-2" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+### Breadcrumb [#breadcrumb]
+
+`Breadcrumb` 组件是包装所有面包屑组件的根导航元素
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### BreadcrumbList [#breadcrumblist]
+
+`BreadcrumbList` 组件显示面包屑项目的有序列表
+
+| 属性|类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### BreadcrumbItem [#breadcrumbitem]
+
+`BreadcrumbItem` 组件包装各个面包屑项目
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### BreadcrumbLink [#breadcrumblink]
+
+`BreadcrumbLink` 组件在面包屑中显示可单击的链接
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### BreadcrumbPage [#breadcrumbpage]
+
+`BreadcrumbPage` 组件在面包屑中显示当前页面（不可点击）
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |
+
+### BreadcrumbSeparator [#breadcrumbseparator]
+
+`BreadcrumbSeparator` 组件在面包屑项目之间显示分隔符。您可以传递自定义子项来覆盖默认分隔符图标
+
+| 属性 |类型 |默认 |
+| ----------- | ----------------- | -------- |
+| `children` | `React.ReactNode` | - |
+| `className` | `string` | - |
+
+### BreadcrumbEllipsis [#breadcrumbellipsis]
+
+`BreadcrumbEllipsis` 组件显示折叠面包屑项目的省略号指示符
+
+| 属性 |类型 |默认 |
+| ----------- | -------- | -------- |
+| `className` | `string` | - |

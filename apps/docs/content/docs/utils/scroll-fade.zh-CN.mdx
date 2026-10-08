@@ -1,0 +1,145 @@
+---
+title: Scroll fade
+description: 为滚动容器的边缘添加随滚动位置变化的渐隐效果
+---
+
+<ComponentPreview name="scroll-fade-demo" previewClassName="h-auto" />
+
+## 安装 [#installation]
+
+按照[安装指南](/zh-CN/docs/installation)配置项目。导入 SUI 的全局样式后，即可使用这两套工具类：
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+工具类直接复用 `globals.css` 中已导入的 `shadcn/tailwind.css`，无需额外样式文件或 React 组件。
+
+## 用法 [#usage]
+
+| 类名 | 效果 |
+| --- | --- |
+| `scroll-fade` | 纵向滚动，两侧边缘渐隐，使用 `scroll(self y)` 时间线 |
+| `scroll-fade-y` | 与 `scroll-fade` 相同 |
+| `scroll-fade-x` | 横向滚动，两侧边缘渐隐，使用 `scroll(self inline)` 时间线 |
+| `scroll-fade-t` | 顶部边缘渐隐 |
+| `scroll-fade-b` | 底部边缘渐隐 |
+| `scroll-fade-l` | 物理左侧边缘渐隐 |
+| `scroll-fade-r` | 物理右侧边缘渐隐 |
+| `scroll-fade-s` | 逻辑起始边缘渐隐，在 RTL 中镜像 |
+| `scroll-fade-e` | 逻辑结束边缘渐隐，在 RTL 中镜像 |
+| `scroll-fade-<number>` | `--scroll-fade-size: calc(var(--spacing) * <number>)` |
+| `scroll-fade-[<value>]` | `--scroll-fade-size: <value>` |
+| `scroll-fade-{t,b,s,e}-<number>` | 单个边缘的渐隐深度，使用间距单位 |
+| `scroll-fade-{t,b,s,e}-[<value>]` | 单个边缘的任意渐隐深度 |
+| `scroll-fade-none` | `--scroll-fade-mask: none`，关闭渐隐 |
+
+将 `scroll-fade` 或 `scroll-fade-y` 添加到实际滚动的元素，也就是设置了 `overflow-y-auto` 的容器。
+
+```tsx
+<div className="scroll-fade overflow-y-auto">{/* 内容 */}</div>
+```
+
+渐隐效果会随滚动位置变化：
+
+- 起始位置的顶部保持清晰，底部渐隐，提示下方还有内容。
+- 向下滚动后，顶部开始渐隐；滚动到中段时，两侧边缘均渐隐。
+- 到达末尾后，底部恢复清晰，表示已经看到最后一项。
+
+效果通过 `mask-image` 淡化内容本身，不覆盖背景颜色，因此可适应不同背景。如果滚动区位于卡片内，应将背景和边框放在外层容器，将 `scroll-fade` 放在内层滚动元素上，避免连同卡片边框一起淡化。
+
+[ScrollArea](/zh-CN/docs/components/scroll-area) 和 [MessageScroller](/zh-CN/docs/components/message-scroller) 都可以在各自的滚动视口使用该工具类。
+
+## 没有溢出 [#no-overflow]
+
+在支持滚动驱动动画的浏览器中，内容不溢出时不会出现渐隐，无需手动检测滚动尺寸。下文介绍的静态降级效果仍会淡化指定边缘。
+
+<ComponentPreview name="scroll-fade-overflow" previewClassName="h-auto" />
+
+## 横向滚动 [#horizontal-scrolling]
+
+为设置了 `overflow-x-auto` 的实际横向滚动容器添加 `scroll-fade-x`。
+
+<ComponentPreview name="scroll-fade-horizontal" previewClassName="h-64" />
+
+```tsx
+<div className="flex scroll-fade-x overflow-x-auto">{/* 内容 */}</div>
+```
+
+横向渐隐遵循阅读方向。在 RTL 布局中，清晰边缘和渐隐边缘自动镜像。`scroll-fade-<number>` 和 `scroll-fade-none` 对横向、纵向均适用。
+
+## 单侧边缘 [#edge-fades]
+
+需要仅一侧边缘随滚动变化时，使用对应的边缘工具类。
+
+<ComponentPreview name="scroll-fade-edge" previewClassName="h-auto" />
+
+```tsx
+<div className="scroll-fade-b overflow-y-auto">{/* 内容 */}</div>
+```
+
+起始边缘在离开起点后逐渐淡化，结束边缘在到达终点后逐渐恢复清晰。`t`、`b`、`l`、`r` 表示物理边缘；`s`、`e` 表示逻辑横向边缘，会在 RTL 中镜像。
+
+## 渐隐深度 [#fade-size]
+
+默认深度为容器尺寸的 `12%`，最大为 `40px`，避免较高的容器出现过强效果。使用 `scroll-fade-<number>` 按 Tailwind 间距单位指定深度，与 `scroll-mt-<number>` 的使用方式相同。
+
+<ComponentPreview name="scroll-fade-size" previewClassName="h-auto" />
+
+```tsx
+<div className="scroll-fade overflow-y-auto scroll-fade-24">{/* 内容 */}</div>
+```
+
+也可以使用任意长度或百分比：
+
+```tsx
+<div className="scroll-fade overflow-y-auto scroll-fade-[15%]">{/* 内容 */}</div>
+```
+
+通过 `scroll-fade-t-<number>`、`scroll-fade-b-<number>`、`scroll-fade-s-<number>` 或 `scroll-fade-e-<number>` 分别设置每个边缘的深度。这些类名覆盖对应边缘的通用深度，也支持任意值。
+
+```tsx
+<div className="scroll-fade overflow-y-auto scroll-fade-b-8 scroll-fade-t-2">
+  {/* 内容 */}
+</div>
+```
+
+横向滚动区使用逻辑 `s`、`e`，让深度随 RTL 镜像。
+
+渐隐会在固定的滚动距离内平滑变化。`--scroll-fade-reveal` 默认值为 `96px`，与渐隐深度独立。较小的值让效果更快出现，较大的值让变化更缓慢：
+
+```tsx
+<div className="scroll-fade overflow-y-auto [--scroll-fade-reveal:64px]">
+  {/* 内容 */}
+</div>
+```
+
+## 关闭渐隐 [#disabling-the-fade]
+
+使用 `scroll-fade-none` 关闭效果。该类名与其他类名的先后顺序无关，也可用于响应式或状态切换：
+
+```tsx
+<div className="scroll-fade overflow-y-auto md:scroll-fade-none">
+  {/* 内容 */}
+</div>
+```
+
+<ComponentPreview name="scroll-fade-none" previewClassName="h-auto" />
+
+## 浏览器降级 [#fallback]
+
+效果使用 [CSS 滚动驱动动画](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations)，无需 JavaScript 或滚动监听。浏览器不支持该功能时，`scroll-fade` 在两侧显示静态渐隐，单侧工具类则只淡化指定边缘。
+
+遮罩作用于滚动容器本身，所以原生滚动条也会在边缘被淡化。如果希望隐藏滚动条，可同时使用共享样式提供的 `no-scrollbar`。
+
+## RTL [#rtl]
+
+在容器设置 `dir="rtl"`，或使用 SUI 的 [DirectionProvider](/zh-CN/docs/components/direction)。
+
+`scroll-fade-x` 遵循阅读方向。起始位置的逻辑起始边缘保持清晰，逻辑结束边缘渐隐。RTL 下对应右侧清晰、左侧渐隐，与 LTR 镜像。
+
+<ComponentPreview name="scroll-fade-rtl" direction="rtl" />
+
+## 无障碍 [#accessibility]
+
+将重要控件放在遮罩边缘之外。需要键盘访问的普通滚动容器应设置 `tabIndex={0}` 和可访问名称。工具类只改变视觉遮罩，不会移除无障碍树中的内容，也不会限制焦点移动。背景和外框放在外层容器。

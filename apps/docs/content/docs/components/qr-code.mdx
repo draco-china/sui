@@ -1,0 +1,77 @@
+---
+title: QRCode
+description: A theme-aware QR code with loading feedback and optional reveal animation.
+---
+
+<ComponentPreview name="qr-code-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/qr-code
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { QRCode } from "@workspace/ui/components/qr-code";
+
+<QRCode value="https://example.com/" label="Example website QR code" size={220} />;
+```
+
+## Loading and empty states [#states]
+
+Generation loads on demand in the client. The server renders a stable loading placeholder. Changing `value` generates a fresh code and discards the previous request result. `loading` keeps the placeholder visible even if generation has completed. An absent or empty value keeps the loading placeholder rather than generating an invalid code.
+
+By default, the code uses the neutral `--foreground` color on a solid `--card` surface. It follows light and dark modes without inheriting the accent color. Theme changes recolor the existing code without generating it again. The basic code appears as soon as its image loads. Loading and empty states use independently pulsing dots with a roughly 800ms blur entrance and no visible text. Generation failures show an error icon. The loading dots, error icon, and logo surface follow the same neutral theme. The logo appears only when the code is ready.
+
+<ComponentPreview name="qr-code-states" />
+
+## Optional animation [#animation]
+
+Enable `animated` for a roughly 750ms reveal. Both modes use the dot-matrix skeleton while loading. Reduced motion freezes the dots and skips the reveal. The basic version displays the result directly.
+
+<ComponentPreview name="qr-code-animated" />
+
+## Margin and finder patterns [#margin]
+
+`margin` controls the quiet space around the code in CSS pixels at the requested `size`, defaulting to `16`. Set it to `0` to supply your own solid-color quiet zone. It scales with the code in smaller containers. Negative values become zero, excessive values are limited to `size / 2 - 4`, and non-finite values use the default.
+
+Finder patterns use concentric rounded outer rings and rounded solid centers. Their outer edge, inner edge, and center have corner radii of `2.5`, `1.5`, and `0.5` modules, preserving the same corner centers as each edge moves inward. Insufficient quiet space, small sizes, and busy backgrounds reduce scan reliability. Verify scanning at the actual display size.
+
+<ComponentPreview name="qr-code-margin" />
+
+## Logo and scan reliability [#logo]
+
+`logo` places a small React node over the center. The generator uses high error correction and retains the surrounding quiet zone. Keep the logo small, preserve the quiet zone, and verify scanning at the size and background where the code will be used. A logo can still reduce scan reliability even with error correction.
+
+`QRCode` renders only the code. Compose your own layout or caption when needed. The code stays sharp while its neutral foreground and default solid background follow the theme. Test both light and dark modes with the scanners your application supports.
+
+<ComponentPreview name="qr-code-logo" />
+
+## Glass mode [#glass]
+
+Enable `glass` to use the shared glass material across the entire background, and configure its material and rendering mode with `GlassProvider`. The code fills the surface without a separate rim or solid inner panel. Its `--foreground` modules remain sharp SVG content over the transparent code layer; the small logo surface remains solid. Switching the theme or glass material preserves the encoded content. `glassMaterial` overrides the provider material for this instance.
+
+The background behind the glass changes the visible contrast and quiet zone. Test scanning on the actual background, in both appearance modes and at the final display size. Glass does not guarantee the contrast of the default solid surface.
+
+<ComponentPreview name="qr-code-glass" />
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `value` | `string` | Content to encode; empty keeps placeholder. |
+| `loading` | `boolean` | `false`. |
+| `animated` | `boolean` | `false`; optional reveal animation. |
+| `size` | `number` | `256`; requested width, bounded to 64–1024 pixels and constrained by the container. |
+| `label` | `string` | `"QR code"`; accessible description. |
+| `margin` | `number` | `16`; quiet space in CSS pixels at the requested size. |
+| `glass` | `boolean` | Off by default; uses glass across the code background. |
+| `glassMaterial` | `"clear" \| "frosted"` | Overrides the provider material. |
+| `logo` | `ReactNode` | Optional center overlay. |
+| `render`, `ref`, other props | Div / useRender props | Forwarded to the root. |
+
+The module exports `QRCode`, `QRCodeProps`, and `qrCodeVariants`. Generation uses [qr-code-styling](https://github.com/kozakdenys/qr-code-styling).

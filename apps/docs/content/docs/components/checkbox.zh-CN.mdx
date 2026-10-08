@@ -1,0 +1,89 @@
+---
+title: Checkbox
+description: "允许用户在选中和不选中之间切换的控件"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/checkbox
+  api: https://base-ui.com/react/components/checkbox#api-reference
+---
+
+<ComponentPreview name="checkbox-demo" previewClassName="h-80" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/checkbox
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import { Checkbox } from "@workspace/ui/components/checkbox"
+```
+
+```tsx
+<Checkbox />
+```
+
+## 选中状态 [#checked-state]
+
+对于不受控制的复选框使用 `defaultChecked`，或使用 `checked` 和
+`onCheckedChange`控制状态。
+
+```tsx showLineNumbers
+import * as React from "react"
+
+export function Example() {
+  const [checked, setChecked] = React.useState(false)
+
+  return <Checkbox checked={checked} onCheckedChange={setChecked} />
+}
+```
+
+## 无效状态 [#invalid-state]
+
+将复选框上的 `aria-invalid` 和字段包装器上的 `data-invalid` 设置为
+显示无效样式。
+
+<ComponentPreview name="checkbox-invalid" />
+
+## 基本用法 [#basic]
+
+将该复选框与 `Field` 和 `FieldLabel` 配对，以实现正确的布局和标签。
+
+<ComponentPreview name="checkbox-basic" />
+
+## 说明 [#description]
+
+使用 `FieldContent` 和 `FieldDescription` 作为帮助文本。
+
+<ComponentPreview name="checkbox-description" />
+
+## 禁用状态 [#disabled]
+
+使用 `disabled` 属性来防止交互，并将 `data-disabled` 属性添加到 `<Field>` 组件以禁用样式。
+
+<ComponentPreview name="checkbox-disabled" />
+
+## 组合 [#group]
+
+使用多个字段创建复选框列表。
+
+<ComponentPreview name="checkbox-group" />
+
+## 表格组合 [#table]
+
+<ComponentPreview name="checkbox-table" previewClassName="p-4 md:p-8" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="checkbox-rtl" previewClassName="h-80" direction="rtl" />
+
+## API 参考 [#api-reference]
+
+有关更多信息，请参阅[Base UI](https://base-ui.com/react/components/checkbox#api-reference) 文档。

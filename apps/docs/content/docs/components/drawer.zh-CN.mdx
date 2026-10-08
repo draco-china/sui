@@ -1,0 +1,285 @@
+---
+title: Drawer
+description: "React 的抽屉组件"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/drawer
+  api: https://base-ui.com/react/components/drawer#api-reference
+---
+
+<ComponentPreview name="drawer-demo" />
+
+<Callout>
+  抽屉组件现在使用 [Base
+  UI](https://base-ui.com/react/components/drawer) 而不是 Vaul。如果你
+  安装了以前的版本，请参阅[迁移
+  指南](#migrating-from-vaul)。
+</Callout>
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/drawer
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@workspace/ui/components/drawer"
+```
+
+```tsx showLineNumbers
+<Drawer>
+  <DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>
+  <DrawerContent>
+    <DrawerHeader>
+      <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+      <DrawerDescription>This action cannot be undone.</DrawerDescription>
+    </DrawerHeader>
+    <div className="p-4">{/* Content here */}</div>
+    <DrawerFooter>
+      <Button>Submit</Button>
+      <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+    </DrawerFooter>
+  </DrawerContent>
+</Drawer>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `Drawer`：
+
+```text
+Drawer
+├── DrawerTrigger
+└── DrawerContent
+    ├── DrawerHeader
+    │   ├── DrawerTitle
+    │   └── DrawerDescription
+    └── DrawerFooter
+```
+
+`DrawerContent` 由Base UI 组成Portal 容器、覆盖层、视口和弹出窗口。对于下级控制，还导出`DrawerPortal`、`DrawerOverlay`和`DrawerSwipeHandle`。
+
+## 自定义尺寸 [#custom-sizes]
+
+垂直抽屉根据其内容自行调整大小，默认情况下上限为 `calc(100dvh - 6rem)`。侧抽屉跨越视口宽度的 `75%`，或在较大屏幕上跨越 `24rem`。
+
+要自定义垂直抽屉的高度，请使用 `DrawerContent` 上的 `h-*` 和 `max-h-*` 工具类。
+
+```tsx
+<DrawerContent className="h-[50vh]">
+```
+
+要自定义侧抽屉的宽度，请使用 `DrawerContent` 上的 `w-*` 和 `max-w-*` 工具类。
+
+```tsx
+<DrawerContent className="w-96">
+```
+
+当同一组件在多个方向上渲染时，请使用 `data-[swipe-axis=*]` 变体将覆盖范围限定为一个轴。
+
+```tsx
+<DrawerContent className="data-[swipe-axis=y]:max-h-[50vh] data-[swipe-axis=x]:w-96">
+```
+
+要使抽屉的某个区域可滚动，请将滚动容器设置为弹性项目。避免使用 `h-full`，它无法在内容大小的抽屉内解析。
+
+```tsx
+<DrawerContent>
+  <DrawerHeader>...</DrawerHeader>
+  <div className="flex-1 overflow-y-auto p-4">{/* Scrollable content */}</div>
+  <DrawerFooter>...</DrawerFooter>
+</DrawerContent>
+```
+
+## 样式 [#styling]
+
+抽屉公开 CSS 变量以进行样式级自定义。在 `DrawerContent` 上设置尺寸变量。在 CSS 中设置 `[data-slot=drawer-overlay]` 上的覆盖变量
+
+| 变量 |默认 |描述 |
+| ------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- |
+| `--drawer-inset` | `0px` |从视口边缘浮动抽屉                              |
+| `--drawer-bleed-background` | `var(--color-popover)` |填充滑动超调时抽屉后面的间隙                     |
+| `--drawer-overlay-min-opacity` | `0` |最小覆盖不透明度。当捕捉点处于活动状态时，默认为 `0.5` |
+
+抽屉还设置您可以使用变体作为目标的数据属性，例如 `DrawerContent` 上的 `data-[swipe-direction=down]:` 或其后代上的 `group-data-[swipe-axis=y]/drawer-popup:`
+
+| 属性 |价值观 |设置时间|
+| ------------------------------------- | -------------------------------------- | -------------------------------------------------- |
+| `data-swipe-direction` | `up`、`right`、`down`、`left` |总是                               |
+| `data-swipe-axis` | `x`、`y` |总是                               |
+| `data-snap-points` |现在 |抽屉有卡扣点           |
+| `data-expanded` |现在 |抽屉处于完全卡扣点 |
+| `data-swiping` |现在 |滑动正在进行中               |
+| `data-nested-drawer-open` |现在 |顶部有一个打开的嵌套抽屉       |
+
+## 位置 [#position]
+
+使用 `swipeDirection` 属性设置抽屉的侧面。
+
+可用选项包括 `up`、`right`、`down` 和 `left`。
+
+<ComponentPreview name="drawer-sides" />
+
+## 滑动手柄 [#swipe-handle]
+
+在 `Drawer` 上使用 `showSwipeHandle` 渲染滑动手柄。
+
+<ComponentPreview name="drawer-swipe-handle" />
+
+## 嵌套 [#nested]
+
+从另一个抽屉里面打开抽屉。父抽屉保持安装状态并堆叠在最前面的抽屉后面。
+
+<ComponentPreview name="drawer-nested" />
+
+## 非模态 [#non-modal]
+
+设置 `modal={false}` 以允许在抽屉打开时与页面的其余部分进行交互。与 `disablePointerDismissal` 结合使用，可防止抽屉因外部压力而关闭。使用 `modal="trap-focus"` 将焦点保持在抽屉内，同时使滚动和指针交互不受限制。
+
+<ComponentPreview name="drawer-non-modal" />
+
+## 吸附位置 [#snap-points]
+
+使用 `snapPoints` 将抽屉卡入预设高度。 `0` 和 `1` 之间的数字表示视口的分数。大于 `1` 的数字被视为像素值。字符串值支持 `px` 和 `rem` 单位。捕捉点适用于垂直抽屉。
+
+使用受控的 `snapPoint` 和 `onSnapPointChange` 属性跟踪活动捕捉点。在完全捕捉点，抽屉获得 `data-expanded` 属性，您可以使用 `data-expanded:` 变体进行样式设置。
+
+<ComponentPreview name="drawer-snap-points" />
+
+## 响应式 [#responsive]
+
+您可以组合 `Dialog` 和 `Drawer` 组件来创建响应式对话框。这会在桌面上渲染 `Dialog` 组件，在移动设备上渲染 `Drawer`。
+
+<ComponentPreview name="drawer-dialog" />
+
+## 从 Vaul 迁移 [#migrating-from-vaul]
+
+底座抽屉现在使用 [Base UI](https://base-ui.com/react/components/drawer)
+而不是瓦尔。如果您安装了以前的底座抽屉，请更新您的使用情况
+到Base UI API。
+
+<Steps>
+
+<Step>更新依赖。</Step>
+
+```diff
+- npm install vaul
++ npm install @base-ui/react
+```
+
+<Step>用`swipeDirection`.</Step>替换`direction`
+
+使用 `down` 代替 `bottom`，使用 `up` 代替 `top`。 `left`和`right`
+保持不变。
+
+```diff
+- <Drawer direction="bottom">
++ <Drawer swipeDirection="down">
+```
+
+<Step>用`render`.</Step>替换`asChild`
+
+对于 `DrawerTrigger`，将触发元素传递给 `render` 属性。
+
+```diff
+- <DrawerTrigger asChild>
+-   <Button variant="outline">Open</Button>
+- </DrawerTrigger>
++ <DrawerTrigger render={<Button variant="outline" />}>
++   Open
++ </DrawerTrigger>
+```
+
+对于 `DrawerClose`，将 close 元素传递给 `render` 属性。
+
+```diff
+- <DrawerClose asChild>
+-   <Button variant="outline">Cancel</Button>
+- </DrawerClose>
++ <DrawerClose render={<Button variant="outline" />}>
++   Cancel
++ </DrawerClose>
+```
+
+<Step>更新捕捉点属性。</Step>
+
+如果您使用捕捉点，请重命名受控捕捉点属性和顺序
+捕捉点属性。
+
+```diff
+  <Drawer
+    snapPoints={[0.25, 0.5, 1]}
+-   activeSnapPoint={snapPoint}
+-   setActiveSnapPoint={setSnapPoint}
+-   snapToSequentialPoint
++   snapPoint={snapPoint}
++   onSnapPointChange={setSnapPoint}
++   snapToSequentialPoints
+  >
+```
+
+<Step>更新动画和焦点属性。</Step>
+
+```diff
+- <Drawer onAnimationEnd={(open) => setDone(open)}>
++ <Drawer onOpenChangeComplete={(open) => setDone(open)}>
+```
+
+```diff
+- <DrawerContent onOpenAutoFocus={(event) => event.preventDefault()}>
++ <DrawerContent initialFocus={false}>
+```
+
+<Step>回顾Vau专用属性。</Step>
+
+Vaul 属性如 `handleOnly`、`repositionInputs` 和
+`shouldScaleBackground` 底座抽屉中没有一对一替换件
+API。使用Base UI 属性，例如 `disablePointerDismissal`、`modal`、`snapPoints`、
+或受控 `open` 状态以满足您所需的行为。
+
+```diff
+- <Drawer handleOnly repositionInputs={false} shouldScaleBackground>
++ <Drawer>
+```
+
+```diff
+- <Drawer dismissible={false}>
++ <Drawer disablePointerDismissal>
+```
+
+<Step>更新自定义数据属性选择器。</Step>
+
+将 Vaul 的 `data-vaul-drawer-direction` 选择器替换为 Base UI 的选择器
+`data-swipe-direction` 选择器。
+
+```diff
+- <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[50vh]">
++ <DrawerContent className="data-[swipe-direction=down]:max-h-[50vh]">
+```
+
+Base UI 还公开了 `data-swiping`、`data-starting-style` 等属性
+`data-ending-style` 用于滑动和过渡状态。里面的后裔
+`DrawerContent`可以使用`group-data-[swipe-axis=x]/drawer-popup`和
+`group-data-[swipe-axis=y]/drawer-popup` 用于轴特定样式。
+
+</Steps>
+
+## API 参考 [#api-reference]
+
+有关完整的 API 参考，请参阅[Base UI 文档](https://base-ui.com/react/components/drawer)。
+
+底层交互行为与底层属性请参阅 [Base UI API](https://base-ui.com/react/components/drawer#api-reference)。

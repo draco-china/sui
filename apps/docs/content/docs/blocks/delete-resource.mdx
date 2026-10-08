@@ -1,0 +1,64 @@
+---
+title: Delete Resource
+description: Resource name confirmation with asynchronous deletion, pending state, and retryable errors.
+---
+
+Inspired by [Kumo Delete Resource](https://kumo-ui.com/blocks/delete-resource/), this block composes SUI AlertDialog, Field, Input, and Button. It requires the resource name before invoking the deletion callback.
+
+## Name confirmation
+
+Open the dialog and type `sui-preview`. The destructive action enables only when the input matches. Deletion keeps controls disabled until the callback finishes. The resource name in the confirmation hint has an inline copy action. Copying does not populate the confirmation field or submit the form; it is disabled during deletion.
+
+<ComponentPreview name="block-delete-resource" />
+
+## Failure and retry
+
+The first attempt fails in this example. The dialog preserves the confirmation, displays the error, and allows a second attempt. Reopening clears the previous confirmation and error.
+
+<ComponentPreview name="block-delete-resource-error" />
+
+## Case-insensitive confirmation
+
+Set `caseSensitive={false}` when confirmation should ignore letter case.
+
+<ComponentPreview name="block-delete-resource-insensitive" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/delete-resource
+```
+
+Install this Block with the shadcn CLI command above. Follow the [installation guide](/docs/installation) for registry, dependency, and style setup. The examples below use workspace imports; registry-installed source uses the aliases configured in the consuming application's `components.json`.
+
+## Usage
+
+```tsx
+import { DeleteResource } from "@workspace/ui/blocks/delete-resource"
+
+<DeleteResource
+  open={open}
+  onOpenChange={setOpen}
+  resourceType="project"
+  resourceName="sui-preview"
+  onDelete={async () => { await deleteProject("sui-preview") }}
+/>
+```
+
+The block keeps English defaults. Resolve translations in your application and pass them through `labels`; translate any callback error messages there too.
+
+## API
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `open`, `onOpenChange` | Required | Controlled visibility. |
+| `resourceType`, `resourceName` | Required | Resource identity and confirmation target. Empty names cannot be confirmed. |
+| `onDelete` | Required | Sync or async deletion callback. Resolve on success; throw on failure. |
+| `caseSensitive` | `true` | Whether confirmation distinguishes case. Whitespace must match exactly. |
+| `isDeleting` | `false` | Optional external pending state; combined with internal submission state. |
+| `errorMessage` | — | Optional error from the application. |
+| `description` | Generated | Custom explanatory content. |
+| `labels` | English | Override title, description, confirmation, hint, cancel, delete, deleting, failed, copy, copying, copied, and copyFailed text. |
+| `className` | — | Dialog layout classes. |
+
+On success the block calls `onOpenChange(false)`. On failure it stays open. Duplicate submission and closing are blocked while deletion is pending. The application owns the actual delete operation; these previews only simulate it.

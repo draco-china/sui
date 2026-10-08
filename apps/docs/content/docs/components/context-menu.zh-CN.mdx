@@ -1,0 +1,151 @@
+---
+title: Context Menu
+description: "显示右键单击触发的操作菜单"
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/context-menu
+  api: https://base-ui.com/react/components/context-menu#api-reference
+---
+
+<ComponentPreview name="context-menu-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/context-menu
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@workspace/ui/components/context-menu"
+```
+
+```tsx showLineNumbers
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>Profile</ContextMenuItem>
+    <ContextMenuItem>Billing</ContextMenuItem>
+    <ContextMenuItem>Team</ContextMenuItem>
+    <ContextMenuItem>Subscription</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
+
+## 组合结构 [#composition]
+
+使用以下组合来构建 `ContextMenu`：
+
+```text
+ContextMenu
+├── ContextMenuTrigger
+└── ContextMenuContent
+    ├── ContextMenuGroup
+    │   ├── ContextMenuLabel
+    │   ├── ContextMenuItem
+    │   └── ContextMenuItem
+    ├── ContextMenuSeparator
+    ├── ContextMenuGroup
+    │   ├── ContextMenuLabel
+    │   ├── ContextMenuCheckboxItem
+    │   └── ContextMenuCheckboxItem
+    ├── ContextMenuSeparator
+    ├── ContextMenuGroup
+    │   ├── ContextMenuLabel
+    │   └── ContextMenuRadioGroup
+    │       ├── ContextMenuRadioItem
+    │       └── ContextMenuRadioItem
+    └── ContextMenuSub
+        ├── ContextMenuSubTrigger
+        └── ContextMenuSubContent
+            └── ContextMenuGroup
+                ├── ContextMenuItem
+                └── ContextMenuItem
+```
+
+## 基本用法 [#basic]
+
+一个包含一些操作的简单上下文菜单。
+
+<ComponentPreview name="context-menu-basic" />
+
+## 子菜单 [#submenu]
+
+使用 `ContextMenuSub` 嵌套辅助操作。
+
+<ComponentPreview name="context-menu-submenu" />
+
+## 快捷键 [#shortcuts]
+
+添加 `ContextMenuShortcut` 显示键盘提示。
+
+<ComponentPreview name="context-menu-shortcuts" />
+
+## 分组 [#groups]
+
+将相关操作分组并用分隔线将它们分开。
+
+<ComponentPreview name="context-menu-groups" />
+
+## 图标 [#icons]
+
+将图标与标签结合起来以进行快速扫描。
+
+<ComponentPreview name="context-menu-icons" />
+
+## 复选项 [#checkboxes]
+
+使用 `ContextMenuCheckboxItem` 进行切换。
+
+<ComponentPreview name="context-menu-checkboxes" />
+
+## 单选项 [#radio]
+
+使用`ContextMenuRadioItem`进行独家选择。
+
+<ComponentPreview name="context-menu-radio" />
+
+## 危险操作 [#destructive]
+
+使用 `variant="destructive"` 将菜单项设置为危险的。
+
+<ComponentPreview name="context-menu-destructive" />
+
+## 弹出方向 [#sides]
+
+使用 side 和align 属性控制子菜单的位置。
+
+<ComponentPreview name="context-menu-sides" />
+
+## 从右到左 [#rtl]
+
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
+
+<ComponentPreview name="context-menu-rtl" direction="rtl" />
+
+使用 `side="inline-end"`，将菜单放在触发器的逻辑结束侧。
+
+```tsx showLineNumbers
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent side="inline-end">
+    <ContextMenuItem>Profile</ContextMenuItem>
+    <ContextMenuItem>Billing</ContextMenuItem>
+    <ContextMenuItem>Team</ContextMenuItem>
+    <ContextMenuItem>Subscription</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
+
+## API 参考 [#api-reference]
+
+有关更多信息，请参阅[Base UI](https://base-ui.com/react/components/context-menu#api-reference) 文档。

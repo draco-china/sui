@@ -1,0 +1,92 @@
+---
+title: Autocomplete
+description: Suggests matching options while keeping the input free to accept custom text.
+---
+
+Autocomplete combines a text input with a filtered list of suggestions. Its value is the input text, so users can accept a suggestion or enter their own answer. For a selection that must stay within a list of options, use [Combobox](/docs/components/combobox).
+
+<ComponentPreview name="autocomplete-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/autocomplete
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx showLineNumbers
+import {
+  Autocomplete,
+  AutocompleteContent,
+  AutocompleteEmpty,
+  AutocompleteInput,
+  AutocompleteInputGroup,
+  AutocompleteItem,
+  AutocompleteList,
+} from "@workspace/ui/components/autocomplete"
+import { Field, FieldLabel } from "@workspace/ui/components/field"
+
+const languages = ["TypeScript", "JavaScript", "Rust"]
+
+<Field>
+  <FieldLabel>Project language</FieldLabel>
+  <Autocomplete items={languages} openOnInputClick>
+    <AutocompleteInputGroup>
+      <AutocompleteInput aria-label="Project language" placeholder="Choose or type a language" />
+    </AutocompleteInputGroup>
+    <AutocompleteContent>
+      <AutocompleteEmpty>No suggestions found.</AutocompleteEmpty>
+      <AutocompleteList>
+        {(language: string) => (
+          <AutocompleteItem key={language} value={language}>
+            {language}
+          </AutocompleteItem>
+        )}
+      </AutocompleteList>
+    </AutocompleteContent>
+  </Autocomplete>
+</Field>
+```
+
+## Suggestions and clearing
+
+Use `AutocompleteInputGroup` to anchor the popup to the complete input. Add `AutocompleteTrigger` and `AutocompleteClear` inside an `InputGroupAddon` when the field needs explicit suggestion and clear buttons. Give icon controls accessible labels.
+
+Pass `value` and `onValueChange` to `Autocomplete` for a controlled text input. `openOnInputClick` also shows suggestions when the input is clicked. `autoHighlight` highlights the first match after typing; `mode="both"` enables inline completion alongside filtering.
+
+## Grouped suggestions
+
+Provide groups with an `items` array, render each group inside `AutocompleteList`, and use `AutocompleteCollection` to render its items. For object items, `itemToStringValue` defines the text placed in the input.
+
+<ComponentPreview name="autocomplete-grouped" />
+
+## Disabled controls and items
+
+Set `disabled` on `Autocomplete` to disable the input and its controls. Set `disabled` on a particular `AutocompleteItem` to leave it visible without allowing interaction. Use the switch below to enable the field; the Go suggestion remains unavailable.
+
+<ComponentPreview name="autocomplete-disabled" />
+
+## Accessibility and keyboard
+
+Provide a visible `FieldLabel` or an `aria-label` for the input. When linking a label explicitly, use React `useId()` so examples and repeated fields keep independent IDs.
+
+Type to filter suggestions. Arrow keys move the highlighted suggestion, Enter accepts it, and Escape closes the popup. A disabled suggestion cannot be accepted. Suggestions do not make custom text invalid; add application validation when the field needs it.
+
+## API reference
+
+| Part | Purpose |
+| --- | --- |
+| `Autocomplete` | Owns items, filtering, input `value`, `onValueChange`, `mode`, opening, and disabled state. |
+| `AutocompleteInputGroup`, `AutocompleteInput` | Compose the styled input and its anchor. The input keeps standard input props and a React 19 `ref`. |
+| `AutocompleteTrigger`, `AutocompleteClear` | Open the suggestion popup or clear the input. Both support `render` composition. |
+| `AutocompleteContent` | Composes the portal and positioning. Defaults to bottom/start with a `sideOffset` of `6`; accepts `side`, `align`, offsets, and `anchor`. |
+| `AutocompleteList`, `AutocompleteItem` | Render filtered suggestions with keyboard highlighting and per-item `disabled`. |
+| `AutocompleteGroup`, `AutocompleteGroupLabel`, `AutocompleteCollection` | Render labeled groups and their filtered items. |
+| `AutocompleteEmpty`, `AutocompleteStatus`, `AutocompleteSeparator` | Show empty results, accessible status, and visual separators. |
+| `AutocompleteValue` | Render the current input text with a child render function. |
+| `useAutocompleteFilter`, `useAutocompleteFilteredItems` | Reuse filtering helpers for custom matching or externally filtered lists. |
+
+See the [Base UI Autocomplete API](https://base-ui.com/react/components/autocomplete#api-reference) for the primitive props and event details.

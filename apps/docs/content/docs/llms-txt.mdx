@@ -1,0 +1,48 @@
+---
+title: LLMs
+description: Read SUI documentation and complete examples as plain text.
+---
+
+Use the LLM endpoints to give an assistant the current SUI APIs and examples. These endpoints read documentation. Use [MCP](/docs/mcp) or the [CLI](/docs/cli) when you want to install component source.
+
+## Documentation endpoints [#endpoints]
+
+| Content | English | 简体中文 |
+| --- | --- | --- |
+| Index of pages | [`/llms.txt`](/llms.txt) | [`/zh-CN/llms.txt`](/zh-CN/llms.txt) |
+| Complete reference | [`/llms-full.txt`](/llms-full.txt) | [`/zh-CN/llms-full.txt`](/zh-CN/llms-full.txt) |
+| One component | [Button Markdown](/api/llms-markdown?locale=en-US&slug=components/button) | [Button Markdown](/api/llms-markdown?locale=zh-CN&slug=components/button) |
+
+Use these paths on the current documentation origin. GitHub raw hosts the [registry](/docs/registry) JSON, while the documentation site supplies these text endpoints.
+
+The index groups guides, components, Blocks, and utilities and links to their Markdown. Start with the index and read the relevant pages. The complete reference includes every page and can be much larger than one assistant request needs.
+
+## Read one page [#read-one-page]
+
+`/api/llms-markdown` accepts `locale` and `slug`:
+
+| Parameter | Values | Default |
+| --- | --- | --- |
+| `locale` | `en-US`, `zh-CN` | `en-US` |
+| `slug` | Document path without `/docs/`, such as `components/button`, `blocks/data-table`, or `theming` | Introduction when omitted |
+
+Unknown locales and documents return `404`. An explicit `/en-US/llms.txt` or `/en-US/llms-full.txt` redirects to the corresponding English path without the prefix.
+
+[Read Sensitive Input Markdown](/api/llms-markdown?locale=en-US&slug=components/sensitive-input)
+
+The result includes the title, description, page URL, API text, and complete source for the page's shared examples. Preview and Code read the same example files, so the text reference stays aligned with the runnable documentation.
+
+## Copy from a document [#copy-from-a-document]
+
+The page header provides **Copy Markdown** and **Open**. Copy Markdown returns the original MDX document; Open can supply the expanded LLM Markdown to an assistant. For programmatic use, `/api/markdown` returns the original document and `/api/llms-markdown` expands shared examples into code fences.
+
+## Example request [#example-request]
+
+```text
+Read SUI's llms.txt, then the Field and Sensitive Input pages.
+Compose a labeled secret input with an external validation message.
+Keep validation and translated feedback in my application.
+Use the import aliases from my components.json when installing source.
+```
+
+Examples use workspace imports such as `@workspace/ui/components/button`. After source installation, use your application's configured aliases; the [installation guide](/docs/installation#import-installed-source) explains the mapping. Reading documentation does not install files or configure your MCP client.

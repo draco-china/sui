@@ -1,0 +1,57 @@
+---
+title: Theme Toggle
+description: 支持可选视图过渡效果的受控明暗主题切换按钮
+---
+
+<ComponentPreview name="theme-toggle-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/theme-toggle
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { ThemeToggle } from "@workspace/ui/components/theme-toggle";
+import { useState } from "react";
+
+export function Appearance() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  return <ThemeToggle theme={theme} onThemeChange={setTheme} />;
+}
+```
+
+## 受控外观 [#controlled]
+
+`theme` 表示当前解析后的浅色或深色主题，`onThemeChange` 请求切换为另一种主题。应用在回调中更新主题；组件不设置 Provider、不保存偏好，也不管理跟随系统选项。交互示例接入文档站的 `next-themes` Provider，会切换整站外观并保存模式，同时保留当前配色；顶栏仍可选择跟随系统与调整配色。
+
+如应用支持跟随系统，请在应用中解析实际明暗模式，再传入组件。需要保留跟随系统选择时，另行提供应用偏好控件。
+
+## 过渡变体 [#transitions]
+
+可选择 `rectangle`、`circle`、`circle-blur` 或 `blinds`。`start` 设置过渡起点，例如点击的按钮、角落、中心或从下向上的过渡。这些效果使用浏览器 View Transition API。浏览器不支持或用户偏好减少动态效果时，直接切换主题。
+
+<ComponentPreview name="theme-toggle-variants" />
+
+## 文案与图标 [#labels]
+
+`lightLabel` 和 `darkLabel` 描述切换到对应主题的操作，也是 Tooltip 文案。默认 ghost 按钮使用 16px、2px 描边的太阳／月亮 SVG，以 snappy 弹簧进行几何变形；减少动态效果时直接替换形状。可通过 `lightIcon`、`darkIcon` 和 `iconClassName` 定制图标；任意 React 图标直接切换，不进行路径变形。支持 `disabled`、`ref`、`render` 等按钮属性，切换操作不会提交外层表单。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值／说明 |
+| --- | --- | --- |
+| `theme` | `"light" \| "dark"` | 必填的实际明暗模式 |
+| `onThemeChange` | `(theme: "light" \| "dark") => void` | 必填主题变更回调 |
+| `variant` | `"rectangle" \| "circle" \| "circle-blur" \| "blinds"` | `"rectangle"` |
+| `start` | `"button" \| "top-left" \| "top-right" \| "bottom-left" \| "bottom-right" \| "center" \| "bottom-up"` | `"bottom-up"` |
+| `lightLabel`、`darkLabel` | `string` | 英文切换操作名称 |
+| `lightIcon`、`darkIcon` | `ReactNode` | 默认明暗图标 |
+| `iconClassName` | `string` | 可选图标样式 |
+| `glass` | `boolean` | `false` |
+
+模块导出 `ThemeToggleProps`。浏览器过渡行为见 [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API)。

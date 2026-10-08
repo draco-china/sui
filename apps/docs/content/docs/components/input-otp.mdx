@@ -1,0 +1,240 @@
+---
+title: Input OTP
+description: Individual code inputs with character filtering and asynchronous verification feedback
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/otp-field
+---
+
+<ComponentPreview name="input-otp-demo" />
+
+Input OTP combines real character inputs with paste, autofill, keyboard navigation, and verification feedback. The first example accepts `123456` as a successful verification and keeps the check visible. Other six-digit codes show failure, then unfold back into editable inputs with the entered value preserved.
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/input-otp
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases. The component uses Base UI OTP Field.
+
+## Usage [#usage]
+
+```tsx
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/field";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@workspace/ui/components/input-otp";
+import { useId } from "react";
+
+function VerificationCode() {
+  const id = useId();
+
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>Verification code</FieldLabel>
+      <InputOTP id={id} length={6} aria-describedby={`${id}-description`}>
+        <InputOTPGroup>
+          <InputOTPSlot />
+          <InputOTPSlot />
+          <InputOTPSlot />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot />
+          <InputOTPSlot />
+          <InputOTPSlot />
+        </InputOTPGroup>
+      </InputOTP>
+      <FieldDescription id={`${id}-description`}>
+        Enter the six-digit verification code you received.
+      </FieldDescription>
+    </Field>
+  );
+}
+```
+
+Render one `InputOTPSlot` per character in `length`. Slots register in DOM order, including across groups. `InputOTPGroup` arranges slots and `InputOTPSeparator` provides a visual divider; neither consumes a character.
+
+## Values and completion [#controlled]
+
+Use `value` and `onValueChange` for a controlled value, or `defaultValue` for internal state. `onValueComplete` reports a completed code so the application can verify it. Completion means every character is entered; it does not prove that the code is valid and does not automatically enable success feedback.
+
+```tsx
+const [value, setValue] = useState("");
+
+<InputOTP
+  length={6}
+  value={value}
+  onValueChange={setValue}
+  onValueComplete={(code) => verifyCode(code)}
+>
+  <InputOTPGroup>
+    {[0, 1, 2, 3, 4, 5].map((position) => (
+      <InputOTPSlot key={position} />
+    ))}
+  </InputOTPGroup>
+</InputOTP>;
+```
+
+The standard change and completion callbacks receive the value and Base UI event details. A complete pasted code can trigger completion again, allowing verification to retry.
+
+<ComponentPreview name="input-otp-controlled" />
+
+## Verification feedback [#verification]
+
+The application controls `status` and owns the verification request:
+
+| Status | Behavior |
+| --- | --- |
+| `idle` | Editable inputs; filling them does not mark verification successful |
+| `loading` | Inputs become read-only and collapse into a spinning indicator while the request runs |
+| `success` | The indicator morphs into a check with a halo and particles; the check stays visible and inputs remain collapsed |
+| `error` | The indicator morphs into an X, then fades out as the inputs unfold back to their original positions |
+
+After your request resolves, set `success` or `error`. Success remains displayed until your application explicitly sets `status="idle"`, such as when the user chooses to enter a new code.
+
+Error holds the X for `feedbackDuration`, then fades it out while the slots move back out to their original positions over about `380` milliseconds. The field stays read-only during this reverse transition. Once it finishes, editing and eligible focus are restored without changing the value or mask setting. `onStatusChange` requests `idle` only after error restoration. Connect it to your status setter so retry controls become available too.
+
+```tsx
+const id = useId();
+const [status, setStatus] = useState<InputOTPStatus>("idle");
+const feedback = {
+  idle: "Enter your verification code",
+  loading: "Verifying code",
+  success: "Code verified",
+  error: "Verification failed. Try again",
+};
+
+<Field>
+  <FieldLabel htmlFor={id}>Verification code</FieldLabel>
+  <InputOTP
+    id={id}
+    length={6}
+    value={value}
+    onValueChange={setValue}
+    status={status}
+    onStatusChange={setStatus}
+    onValueComplete={async (code) => {
+      setStatus("loading");
+      try {
+        const valid = await verifyCode(code);
+        setStatus(valid ? "success" : "error");
+      } catch {
+        setStatus("error");
+      }
+    }}
+  >
+    {slots}
+  </InputOTP>
+  <FieldDescription role="status" aria-live="polite">
+    {feedback[status]}
+  </FieldDescription>
+</Field>;
+```
+
+Import `InputOTPStatus` from the same component module. Keep request cancellation and stale-response handling in the application; the live example cancels its local timer on unmount and ignores superseded requests.
+
+`feedbackDuration` defaults to `1250` milliseconds for the error result hold and does not time out `loading`. Error unfolds after that hold; success keeps its check until your application resets the status.
+
+Reduced motion disables movement and particles while preserving the result hold. Error then returns to inputs without the animated transition; success still keeps its check. Timers complete the lifecycle when animation styles are unavailable. Zero duration skips the result hold. Restoration respects explicit `disabled` and `readOnly` settings. After an error, focus returns to the first slot when the field owned focus before feedback and the user has not moved focus elsewhere.
+
+## Character filtering [#pattern]
+
+`validationType` controls accepted characters. `numeric` is the default; use `alpha` for ASCII letters, `alphanumeric` for ASCII letters and digits, or `none` for custom rules. Spaces are removed and the result is limited to `length`.
+
+Use `normalizeValue` for transformations such as uppercasing. It runs after built-in filtering, and the returned result is filtered again. Keep it idempotent. With `validationType="none"`, it can supply the custom filtering rule. `onValueInvalid` reports rejected typed or pasted characters; `inputMode` supplies a keyboard hint, not a verification result.
+
+```tsx
+<InputOTP
+  length={6}
+  validationType="alphanumeric"
+  normalizeValue={(value) => value.toUpperCase()}
+>
+  {slots}
+</InputOTP>;
+```
+
+<ComponentPreview name="input-otp-pattern" />
+
+## Groups and separators [#separator]
+
+Divide a code into readable groups while keeping the same total slot count.
+
+<ComponentPreview name="input-otp-separator" />
+
+## Disabled and read-only [#disabled]
+
+`disabled` blocks interaction. `readOnly` prevents editing while preserving the current value. Loading and result feedback make the field read-only without clearing its value. Success stays collapsed until the application explicitly resets its status.
+
+<ComponentPreview name="input-otp-disabled" />
+
+## Invalid fields [#invalid]
+
+Use `aria-invalid` on the slots and `data-invalid` on the shared `Field` for persistent invalid styling. The shared `Field` handles layout and labels; use the underlying Base UI Field API when you need its form validation context. `status="error"` controls temporary verification feedback and does not replace the form's invalid state.
+
+<ComponentPreview name="input-otp-invalid" />
+
+## Four digits [#four-digits]
+
+Use `length={4}` and four slots for a numeric PIN.
+
+<ComponentPreview name="input-otp-four-digits" />
+
+## Alphanumeric codes [#alphanumeric]
+
+Use `validationType="alphanumeric"` for codes containing letters and digits.
+
+<ComponentPreview name="input-otp-alphanumeric" />
+
+## Masked entry [#masked]
+
+Set `mask` to use Base UI's native password presentation for the character inputs. This hides the displayed characters; the controlled value, callbacks, and submitted form value still contain the real code. Masking does not encrypt it.
+
+The masked example runs the same verification flow. A successful check stays visible; after an error, the restored inputs retain their code and continue displaying masked characters.
+
+<ComponentPreview name="input-otp-masked" />
+
+## Forms [#form]
+
+`name` submits the combined code through Base UI's hidden validation input. Use `required` for required entry. `autoSubmit` defaults to `false`; enabling it requests submission of the owning form on completion, independently of whether server verification succeeds.
+
+<ComponentPreview name="input-otp-form" previewClassName="h-[30rem]" />
+
+## Labels, refs, and direction [#rtl]
+
+`InputOTP` renders a `div`; its `ref` points to that root. Each `InputOTPSlot` renders a real `input` and accepts an `HTMLInputElement` ref, native input attributes, and Base UI input state styling. Use a slot ref to focus or inspect a character input.
+
+Compose a visible label with the shared `Field`, `FieldLabel`, and `useId`, as in the usage example. Alternatively, import `Label` from `@workspace/ui/components/label` and associate its `htmlFor` with the `InputOTP` `id`. The shared `Field` provides layout and label composition; it is distinct from Base UI Field's validation context. Slots preserve Base UI position semantics and native ARIA attributes. The component does not generate labels or status text. Loading sets `aria-busy`; the application displays and announces feedback through `FieldDescription`, `FieldError`, or `role="status"`, as in the verification example.
+
+Use the shared `DirectionProvider` from `@workspace/ui/components/direction` with `direction="rtl"` for right-to-left navigation and layout.
+
+<ComponentPreview name="input-otp-rtl" direction="rtl" />
+
+## API reference [#api-reference]
+
+### InputOTP
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `length` | `number` | `6`; number of character slots |
+| `value`, `defaultValue` | `string` | Controlled value or initial internal value |
+| `onValueChange` | `(value, details) => void` | Base UI value change callback |
+| `onValueComplete` | `(value, details) => void` | Reports completed entry; does not verify it |
+| `status` | `InputOTPStatus` | `"idle"`; controlled verification feedback |
+| `onStatusChange` | `(status: InputOTPStatus) => void` | Requests `"idle"` after error restoration |
+| `feedbackDuration` | `number` | `1250` ms; error result hold before unfolding |
+| `mask` | `boolean` | `false`; hides characters without changing the real value |
+| `glass` | `boolean` | `false`; enables the shared material for slots |
+
+`InputOTPGroup` accepts div props. `InputOTPSeparator` accepts Base UI separator props. `InputOTPSlot` accepts Base UI OTP input props and an `HTMLInputElement` ref. Slot order determines position.
+
+The module exports `InputOTPProps` and `InputOTPStatus`. Character filtering, form options, native input attributes, state styling, and event detail types follow the [Base UI OTP Field API](https://base-ui.com/react/components/otp-field#api-reference).

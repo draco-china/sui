@@ -1,0 +1,164 @@
+---
+title: Shimmer
+description: 为文字添加沿阅读方向移动的微光效果
+---
+
+<ComponentPreview name="shimmer-demo" />
+
+## 安装 [#installation]
+
+按照[安装指南](/zh-CN/docs/installation)配置项目。导入 SUI 的全局样式后，即可使用这两套工具类：
+
+```css
+@import "@workspace/ui/globals.css";
+```
+
+工具类直接复用 `globals.css` 中已导入的 `shadcn/tailwind.css`，无需额外样式文件或 React 组件。
+
+## 用法 [#usage]
+
+| 类名 | 效果 |
+| --- | --- |
+| `shimmer` | 文字背景裁切，使用 `tw-shimmer` 无限循环，默认时长 2 秒 |
+| `shimmer-once` | `animation-iteration-count: 1`，仅播放一次 |
+| `shimmer-reverse` | `animation-direction: reverse`，反向播放 |
+| `shimmer-none` | 关闭背景图并恢复 `currentColor` 文字填充 |
+| `shimmer-color-<color>` | 使用主题颜色设置微光高亮 |
+| `shimmer-color-[<value>]` | 使用任意颜色设置高亮 |
+| `shimmer-color-<color>/<pct>` | 按指定百分比混合颜色与透明色 |
+| `shimmer-duration-<number>` | 单次时长，单位为毫秒 |
+| `shimmer-spread-<number>` | 高亮宽度，使用 Tailwind 间距单位 |
+| `shimmer-spread-[<value>]` | 任意长度或百分比的高亮宽度 |
+| `shimmer-angle-<number>` | 高亮倾角，单位为度 |
+
+为文字元素添加 `shimmer`：
+
+```tsx
+<p className="shimmer text-muted-foreground">正在生成回复…</p>
+```
+
+微光以 `currentColor` 为基础，自适应文字颜色：
+
+- 无需配置，高亮自动从文字颜色生成。
+- 支持 `text-muted-foreground`、主题色及任意文字颜色。
+- 深色模式中，高亮自动提亮以保持可见。
+
+效果完全由 CSS 实现：通过 `background-clip: text` 绘制文字，让高亮在文字范围内连续扫过。
+
+## 与 Marker 组合 [#with-marker]
+
+微光可用于任何渲染文字的组件。例如，在助手处理任务时，用 [Marker](/zh-CN/docs/components/marker) 显示状态：
+
+<ComponentPreview name="shimmer-marker" />
+
+```tsx
+<Marker role="status">
+  <MarkerIcon>
+    <Loader size="sm" label="正在思考" />
+  </MarkerIcon>
+  <MarkerContent className="shimmer">正在思考…</MarkerContent>
+</Marker>
+```
+
+## 颜色 [#color]
+
+使用 `shimmer-color-<color>` 显式设置高亮颜色。支持带可选透明度的主题颜色，以及任意颜色值。
+
+<ComponentPreview name="shimmer-color" />
+
+```tsx
+<p className="shimmer shimmer-color-blue-500/60">正在生成回复…</p>
+<p className="shimmer shimmer-color-[#378ADD]">正在生成回复…</p>
+```
+
+## 时长 [#duration]
+
+使用 `shimmer-duration-<number>` 设置单次扫过的时长，单位为毫秒。默认 `2000`，即 `2s`。
+
+<ComponentPreview name="shimmer-duration" />
+
+```tsx
+<p className="shimmer shimmer-duration-1000">正在生成回复…</p>
+```
+
+## 高亮宽度 [#spread]
+
+使用 `shimmer-spread-<number>` 按间距单位设置高亮带宽度。默认值为 `calc(3ch + 40px)`：固定宽度加上随字体大小变化的 `3ch`。
+
+<ComponentPreview name="shimmer-spread" />
+
+```tsx
+<p className="shimmer shimmer-spread-24">正在生成回复…</p>
+```
+
+也可以使用任意长度或百分比：
+
+```tsx
+<p className="shimmer shimmer-spread-[5rem]">正在生成回复…</p>
+```
+
+## 倾角 [#angle]
+
+使用 `shimmer-angle-<number>` 设置高亮带的倾斜角度。默认值为 `20` 度。
+
+<ComponentPreview name="shimmer-angle" />
+
+```tsx
+<p className="shimmer shimmer-angle-45">正在生成回复…</p>
+```
+
+## 反向播放 [#reverse]
+
+使用 `shimmer-reverse` 反转高亮移动方向。RTL 布局中，默认动画已经遵循阅读方向，详见下方 RTL 说明。
+
+```tsx
+<p className="shimmer shimmer-reverse">正在生成回复…</p>
+```
+
+## 播放一次 [#play-once]
+
+使用 `shimmer-once` 只播放一次，例如在流式回复完成时展示。与 `shimmer-duration-<number>` 一起控制播放时长。
+
+<ComponentPreview name="shimmer-once" />
+
+```tsx
+<p className="shimmer shimmer-duration-1100 shimmer-once">
+  回复已生成。
+</p>
+```
+
+## 关闭微光 [#disabling-the-shimmer]
+
+使用 `shimmer-none` 关闭效果并恢复普通文字。该类名与其他类名的先后顺序无关，也可用于响应式或状态切换：
+
+<ComponentPreview name="shimmer-none" />
+
+```tsx
+<p className="shimmer md:shimmer-none">正在生成回复…</p>
+```
+
+## 浏览器降级 [#fallback]
+
+微光使用现代颜色功能：[相对颜色语法](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_colors/Relative_colors)和 `color-mix()`。当前主流浏览器均支持。旧浏览器不支持时，渐变可能失效，文字可能变为透明。如果需要支持旧浏览器，应通过 `supports-*` 变体有条件地启用：
+
+```tsx
+<p className="supports-[color:oklch(from_white_l_c_h)]:shimmer">
+  正在生成回复…
+</p>
+```
+
+## 减少动态效果 [#reduced-motion]
+
+用户启用减少动态效果后，动画自动停止，文字恢复正常显示，无需额外配置。
+
+## RTL [#rtl]
+
+在容器设置 `dir="rtl"`，或使用 SUI 的 [DirectionProvider](/zh-CN/docs/components/direction)。
+
+高亮遵循阅读方向：LTR 从左向右，RTL 从右向左，无需额外类名。使用 `shimmer-reverse` 可手动反转。
+
+<ComponentPreview name="shimmer-rtl" />
+
+## 无障碍 [#accessibility]
+
+微光仅提供视觉效果，不会自动播报状态。需要播报加载文字时，使用合适的 `role="status"`，避免反复替换可访问名称。确保文字本身可读，任务完成后使用 `shimmer-none` 关闭效果。需要带标签的加载指示器时，可使用 [Loader](/zh-CN/docs/components/loader)。

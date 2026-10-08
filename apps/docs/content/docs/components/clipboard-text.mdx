@@ -1,0 +1,57 @@
+---
+title: Clipboard Text
+description: A selectable text field with a separate copy action and async feedback.
+component: true
+---
+
+<ComponentPreview name="clipboard-text-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/clipboard-text
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { ClipboardText } from "@workspace/ui/components/clipboard-text";
+```
+
+## Usage
+
+```tsx
+<ClipboardText text="bun run dev" />
+```
+
+The displayed text remains selectable. A long value truncates visually; its full value is available on hover and the copy action always copies the complete value.
+
+## Display and copy different values
+
+Use `textToCopy` for a full address while showing a shorter label. `size` accepts `sm`, `default`, and `lg`.
+
+<ComponentPreview name="clipboard-text-display-value" />
+
+## Feedback and disabled state
+
+`onCopy` receives the copied string only after the clipboard write succeeds. Handle `onCopyError` to provide a visible fallback. `labels` localizes the action and screen reader feedback. A pending write disables the copy button; a disabled field cannot start a write.
+
+<ComponentPreview name="clipboard-text-feedback" />
+
+The component uses the browser Clipboard API. If it is unavailable or permission is denied, it announces failure and calls `onCopyError`; users can select the text and copy it manually. It does not request clipboard access while rendering.
+
+## API
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `text` | `string` | Required |
+| `textToCopy` | `string` | `text` |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` |
+| `disabled` | `boolean` | `false` |
+| `resetDelay` | `number`, milliseconds | `1500` |
+| `onCopy` | `(value: string) => void` | — |
+| `onCopyError` | `(error: Error) => void` | — |
+| `labels` | `{ copy?, pending?, copied?, failed? }` | English labels |
+| `render` | React element or render function | `InputGroup` |
+
+Standard root `div` props and refs are supported. Customize the root with `className` or Base UI's `render` composition. The copy control uses SUI [Input Group](/docs/components/input-group) and [Tooltip](/docs/components/tooltip); async state is exposed through `data-copy-status="idle|pending|copied|error"`. See the [Base UI composition API](https://base-ui.com/react/handbook/composition) for render and ref behavior.

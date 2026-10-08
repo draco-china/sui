@@ -1,0 +1,58 @@
+---
+title: Label
+description: Renders an accessible label associated with controls.
+base: base
+component: true
+links:
+  doc: https://base-ui.com/react/components/label
+  api: https://base-ui.com/react/components/label#api-reference
+---
+
+<ComponentPreview name="label-demo" />
+
+<Callout>
+  For form fields, use the [Field](/docs/components/field) component which
+  includes built-in label, description, and error handling.
+</Callout>
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/label
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx
+import { Label } from "@workspace/ui/components/label"
+```
+
+```tsx
+<Label htmlFor="email">Your email address</Label>
+```
+
+## Label in Field
+
+For form fields, use the [Field](/docs/components/field) component which
+includes built-in `FieldLabel`, `FieldDescription`, and `FieldError` components.
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="email">Your email address</FieldLabel>
+  <Input id="email" />
+</Field>
+```
+
+<ComponentPreview name="field-demo" previewClassName="h-[44rem]" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="label-rtl" direction="rtl" />
+
+## API Reference
+
+See the [Base UI Label](https://base-ui.com/react/components/label#api-reference) documentation for more information.

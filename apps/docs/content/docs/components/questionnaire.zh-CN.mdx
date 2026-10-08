@@ -1,0 +1,244 @@
+---
+title: Questionnaire
+description: "多步骤调查问卷，包括单项选择、多项选择、自由形式和可跳过的问题"
+base: base
+component: true
+---
+
+<ComponentPreview name="questionnaire-demo" align="end" previewClassName="min-h-[560px] p-4 sm:p-8" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/questionnaire
+```
+
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用方法 [#usage]
+
+```tsx
+import {
+  Questionnaire,
+  QuestionnaireActions,
+  QuestionnaireChoice,
+  QuestionnaireChoices,
+  QuestionnaireDescription,
+  QuestionnaireError,
+  QuestionnaireInput,
+  QuestionnaireItem,
+  QuestionnaireNext,
+  QuestionnairePrevious,
+  QuestionnaireProgress,
+  QuestionnaireSkip,
+  QuestionnaireSubmit,
+  QuestionnaireTitle,
+} from "@workspace/ui/components/questionnaire"
+```
+
+```tsx
+const items = [
+  {
+    name: "direction",
+    required: true,
+    prompt: "What should we prototype next?",
+    description: "Choose a direction or write your own.",
+    choices: [
+      {
+        value: "delegation",
+        label: "Delegation",
+        description: "Show how work moves to a specialist.",
+      },
+      {
+        value: "questions",
+        label: "Question prompts",
+        description: "Show choices while the interface waits.",
+      },
+      { value: "both", label: "Both together" },
+    ],
+    input: { label: "Another answer", placeholder: "Type another answer…" },
+  },
+  {
+    name: "detail",
+    required: false,
+    prompt: "How much detail should it include?",
+    description: "Skip this if you are not sure yet.",
+    choices: [
+      { value: "focused", label: "Focused" },
+      { value: "complete", label: "Complete flow" },
+    ],
+  },
+] as const
+```
+
+只需定义一次问题集合：将其传给 `Questionnaire`，即可在服务端渲染进度、操作和快捷键；随后遍历集合，组合各个子组件。
+
+```tsx
+<Questionnaire items={items} onSubmit={handleSubmit}>
+  <QuestionnaireProgress />
+  {items.map((question) => (
+    <QuestionnaireItem
+      key={question.name}
+      name={question.name}
+      required={question.required}
+    >
+      <QuestionnaireTitle>{question.prompt}</QuestionnaireTitle>
+      <QuestionnaireDescription>
+        {question.description}
+      </QuestionnaireDescription>
+      <QuestionnaireChoices>
+        {question.choices.map((choice) => (
+          <QuestionnaireChoice key={choice.value} value={choice.value}>
+            <span className="font-medium">{choice.label}</span>
+            {"description" in choice ? (
+              <span className="text-muted-foreground">
+                {choice.description}
+              </span>
+            ) : null}
+          </QuestionnaireChoice>
+        ))}
+        {"input" in question ? (
+          <QuestionnaireInput
+            aria-label={question.input.label}
+            placeholder={question.input.placeholder}
+          />
+        ) : null}
+      </QuestionnaireChoices>
+      <QuestionnaireError />
+    </QuestionnaireItem>
+  ))}
+  <QuestionnaireActions>
+    <QuestionnairePrevious />
+    <QuestionnaireSkip />
+    <QuestionnaireNext />
+    <QuestionnaireSubmit />
+  </QuestionnaireActions>
+</Questionnaire>
+```
+
+```tsx
+function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault()
+  const answers = new FormData(event.currentTarget)
+  // answers.get("direction"), answers.getAll(...) for multiple items.
+}
+```
+
+## 组合结构 [#composition]
+
+```text
+Questionnaire
+├── QuestionnaireProgress
+├── QuestionnaireItem
+│   ├── QuestionnaireTitle
+│   ├── QuestionnaireDescription
+│   ├── QuestionnaireChoices
+│   │   ├── QuestionnaireChoice
+│   │   └── QuestionnaireInput
+│   └── QuestionnaireError
+└── QuestionnaireActions
+    ├── QuestionnairePrevious
+    ├── QuestionnaireSkip
+    ├── QuestionnaireNext
+    └── QuestionnaireSubmit
+```
+
+Questionnaire 管理问题顺序、当前问题、答案状态、校验、进度与导航。承载它的页面、卡片、对话框或抽屉负责关闭、取消、持久化、数据传输与分支逻辑。
+
+## 服务端渲染 [#server-rendering]
+
+传入 `items`，即可在服务端渲染当前问题、进度、操作和答案快捷键。完整行为见[无样式 Questionnaire 文档](https://ui.shadcn.com/docs/react/questionnaire)。
+
+## 多选 [#multiple-selection]
+
+当一个问题允许选择多个预设答案时，使用 `multiple`。
+
+<ComponentPreview name="questionnaire-multiple" align="end" previewClassName="min-h-[420px] p-4 sm:p-8" />
+
+## 自由填写答案 [#freeform-answer]
+
+允许用户填写其他答案时，将 `QuestionnaireInput` 与预设选项组合使用。
+
+<ComponentPreview name="questionnaire-freeform" align="end" previewClassName="min-h-[420px] p-4 sm:p-8" />
+
+## 显式跳过 [#explicit-skip]
+
+对于允许用户主动跳过的非必填问题，添加 `QuestionnaireSkip`。
+
+<ComponentPreview name="questionnaire-skip" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 快捷键 [#shortcuts]
+
+使用 `shortcuts` 为每个答案指定一个字母或数字键。
+
+<ComponentPreview name="questionnaire-shortcuts" align="end" previewClassName="min-h-[480px] p-4 sm:p-8" />
+
+## 自定义校验 [#custom-validation]
+
+将受控导航与 Zod 等外部校验方案结合使用，即可返回校验失败的问题并显示错误。
+
+<ComponentPreview name="questionnaire-validation" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 受控模式 [#controlled]
+
+通过应用状态控制当前问题，例如将用户带回校验失败的步骤。
+
+<ComponentPreview name="questionnaire-controlled" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 恢复进度 [#resume]
+
+恢复已保存的当前问题和默认答案；需要时，也可以将后续修改重置为这份已保存的状态。
+
+<ComponentPreview name="questionnaire-resume" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 条件问题 [#conditional-items]
+
+根据用户之前的答案，禁用不适用的问题。
+
+<ComponentPreview name="questionnaire-conditional" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 导航状态 [#navigation-state]
+
+读取问题状态，按需禁用导航操作或自定义操作按钮的样式。
+
+<ComponentPreview name="questionnaire-navigation-state" align="end" previewClassName="min-h-[480px] p-4 sm:p-8" />
+
+## 自定义进度 [#custom-progress]
+
+利用 Progress 提供的渲染状态，构建自定义进度指示器。
+
+<ComponentPreview name="questionnaire-progress" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 问题切换动画 [#animated-items]
+
+为当前问题添加切换动画，同时保持进度与导航区域的位置不变。
+
+<ComponentPreview name="questionnaire-animated" align="end" previewClassName="min-h-[520px] p-4 sm:p-8" />
+
+## 卡片组合 [#card]
+
+将 Questionnaire 与 Card 的子组件组合使用，同时保留问题标题和说明的正确语义。
+
+<ComponentPreview name="questionnaire-card" align="end" previewClassName="min-h-[560px] p-4 sm:p-8" />
+
+## 对话框组合 [#dialog]
+
+将 Questionnaire 放入 Dialog 中，取消与关闭仍由外部应用控制。
+
+<ComponentPreview name="questionnaire-dialog" align="end" previewClassName="min-h-[320px] p-4 sm:p-8" />
+
+## 无障碍 [#accessibility]
+
+`QuestionnaireItem` 渲染为 `fieldset`，`QuestionnaireTitle` 渲染为它的 `legend`。说明与当前错误信息会关联到对应问题，校验失败的问题及答案控件会带有 `aria-invalid`。
+
+预设选项保留原生单选框和复选框的行为。进度通过有名称的进度条呈现，导航使用真实按钮；非当前问题及不可用操作会被隐藏并设为 `inert`。导航成功后，焦点移动到新问题；校验失败时，焦点移动到可用的答案控件。
+
+始终通过可见标签、`aria-label` 或 `aria-labelledby` 为 `QuestionnaireInput` 提供无障碍名称。占位符不能代替标签。自定义组合的标签要求与完整键盘行为见 [Questionnaire 无障碍指南](https://ui.shadcn.com/docs/react/questionnaire#accessibility)。
+
+## 无样式版本 [#unstyled]
+
+`Questionnaire` 的交互行为来自 `@shadcn/react`。若要直接使用底层组件并提供自己的结构与样式，参阅 [Questionnaire 文档](https://ui.shadcn.com/docs/react/questionnaire)。
+
+## API 参考 [#api-reference]
+
+各个子组件的属性、数据属性与渲染状态见 [@shadcn/react Questionnaire API](https://ui.shadcn.com/docs/react/questionnaire#api-reference)。样式组件继承对应无样式组件的属性。导航组件还接受 Button 的 `size` 与 `variant`；`QuestionnaireActions` 仅提供布局样式。
