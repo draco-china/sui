@@ -63,4 +63,4 @@ jobs:
 
       - name: Validate Cloudflare deployment bundle
         working-directory: apps/docs
-        run: bunx --bun wrangler deploy --dry-run
+        run: bunx wrangler deploy --dry-run
