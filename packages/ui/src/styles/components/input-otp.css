@@ -1,0 +1,211 @@
+@property --otp-focus-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+[data-slot="input-otp-slot"]:where([data-focused][tabindex="0"]):not(
+  [data-glass="true"]
+) {
+  background:
+    linear-gradient(
+      color-mix(in oklch, var(--background), var(--input) 55%) 0 0
+    )
+    padding-box,
+    conic-gradient(
+      from var(--otp-focus-angle),
+      transparent 0% 18%,
+      var(--ring) 30% 48%,
+      transparent 60% 100%
+    )
+    border-box;
+  animation: input-otp-focus 1.8s linear infinite;
+}
+
+[data-slot="input-otp"][data-feedback="active"] [data-slot="input-otp-slot"] {
+  pointer-events: none;
+  animation: input-otp-collapse 380ms cubic-bezier(0.65, 0, 0.35, 1)
+    var(--otp-collapse-delay, 0ms) both;
+}
+
+[data-slot="input-otp-state"] {
+  animation: input-otp-reveal 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 240ms both;
+}
+
+[data-slot="input-otp-state-icon"][data-spinning] {
+  animation: input-otp-spin 750ms linear infinite;
+}
+
+[data-slot="input-otp-halo"] {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 25%, transparent);
+  animation: input-otp-halo 700ms ease-out 100ms both;
+}
+
+[data-slot="input-otp-particles"] > span {
+  position: absolute;
+  width: 4px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  animation: input-otp-particle 850ms cubic-bezier(0.16, 1, 0.3, 1)
+    var(--otp-particle-delay) both;
+}
+
+[data-slot="input-otp-particles"] > span:nth-child(3n + 1) {
+  background: var(--ring);
+}
+[data-slot="input-otp-particles"] > span:nth-child(3n + 2) {
+  background: var(--accent-foreground);
+}
+[data-slot="input-otp-feedback-clock"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  animation: input-otp-feedback var(--otp-feedback-duration, 1250ms) linear both;
+}
+
+[data-slot="input-otp"][data-feedback="restoring"]
+  [data-slot="input-otp-slot"] {
+  pointer-events: none;
+  animation: input-otp-restore 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+[data-slot="input-otp"][data-feedback="restoring"]
+  [data-slot="input-otp-state"] {
+  animation: input-otp-dismiss 180ms ease-in both;
+}
+[data-slot="input-otp"][data-feedback="restoring"]
+  [data-slot="input-otp-feedback-clock"] {
+  animation-name: input-otp-restoration;
+  animation-duration: 380ms;
+}
+
+[data-slot="input-otp"][data-complete][data-feedback="restored"]
+  [data-slot="input-otp-slot"] {
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent);
+}
+
+@keyframes input-otp-focus {
+  to {
+    --otp-focus-angle: 360deg;
+  }
+}
+@keyframes input-otp-collapse {
+  to {
+    transform: translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px))
+      scale(0.86);
+    opacity: 0;
+  }
+}
+@keyframes input-otp-restore {
+  from {
+    transform: translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px))
+      scale(0.86);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes input-otp-dismiss {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.72;
+  }
+}
+@keyframes input-otp-restoration {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes input-otp-reveal {
+  from {
+    scale: 0.72;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+@keyframes input-otp-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes input-otp-halo {
+  0% {
+    scale: 0.96;
+    opacity: 0;
+  }
+  35% {
+    scale: 1.04;
+    opacity: 0.5;
+  }
+  100% {
+    scale: 1.1;
+    opacity: 0;
+  }
+}
+@keyframes input-otp-particle {
+  from {
+    transform: translate(0, 0) scale(0.45);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--otp-particle-x), var(--otp-particle-y))
+      rotate(var(--otp-particle-rotation)) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes input-otp-feedback {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="input-otp-state"],
+  [data-slot="input-otp-state-icon"],
+  [data-slot="input-otp-halo"],
+  [data-slot="input-otp-feedback-clock"] {
+    animation: none;
+  }
+  [data-slot="input-otp-state"] {
+    opacity: 1;
+    scale: 1;
+  }
+  [data-slot="input-otp-slot"]:where([data-focused][tabindex="0"]):not(
+    [data-glass="true"]
+  ),
+  [data-slot="input-otp"][data-feedback="active"] [data-slot="input-otp-slot"],
+  [data-slot="input-otp"][data-feedback="restoring"]
+    [data-slot="input-otp-slot"],
+  [data-slot="input-otp"][data-feedback="restoring"]
+    [data-slot="input-otp-state"],
+  [data-slot="input-otp"][data-feedback="restoring"]
+    [data-slot="input-otp-feedback-clock"] {
+    animation: none;
+  }
+  [data-slot="input-otp"][data-feedback="active"] [data-slot="input-otp-slot"] {
+    opacity: 0;
+  }
+  [data-slot="input-otp-particles"] {
+    display: none;
+  }
+}
