@@ -10,6 +10,13 @@ import type { GlassFrame } from "../../../../packages/ui/src/lib/glass/renderer"
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
+const fontEvents = new window.EventTarget();
+Object.defineProperty(document, "fonts", { value: fontEvents });
+function loadedFont(family: string) {
+  const event = new window.Event("loadingdone");
+  Object.defineProperty(event, "fontfaces", { value: [{ family }] });
+  fontEvents.dispatchEvent(event);
+}
 let nextDecode: Promise<void> | undefined;
 Object.defineProperty(window, "Image", {
   value: class {
@@ -65,10 +72,12 @@ const captures: {
   target: HTMLElement;
   blocked: Set<Element>;
   snapshot: HTMLCanvasElement;
-  parentFrames: Map<Element, string>;
   started: number;
 }[] = [];
 const renders: { source: HTMLCanvasElement; frame: GlassFrame }[] = [];
+let svgAvailable = false;
+let svgRenders = 0;
+let svgFailure = false;
 let rendererCreations = 0;
 let rendererDestructions = 0;
 let captureDelay = 0;
@@ -108,14 +117,6 @@ mock.module("../../../../packages/ui/src/lib/glass/capture", () => ({
       blocked: new Set(blocked),
       snapshot,
       started: performance.now(),
-      parentFrames: new Map(
-        [...target.querySelectorAll<HTMLElement>('[data-glass="true"]')].map(
-          (element) => [
-            element,
-            element.style.getPropertyValue("--glass-frame"),
-          ],
-        ),
-      ),
     });
     await new Promise((resolve) => setTimeout(resolve, captureDelay));
     activeCaptures--;
@@ -151,6 +152,21 @@ mock.module("../../../../packages/ui/src/lib/glass/renderer", () => ({
           return new Blob(["glass frame"]);
         },
         destroy: () => rendererDestructions++,
+      };
+    },
+  },
+}));
+mock.module("../../../../packages/ui/src/lib/glass/svg-renderer", () => ({
+  SvgGlassRenderer: {
+    create: async () => {
+      if (!svgAvailable) throw new Error("SVG unavailable in this fixture");
+      return {
+        render: async () => {
+          svgRenders++;
+          if (svgFailure) throw new Error("SVG rendering failed");
+          return new Blob(["SVG frame"]);
+        },
+        destroy: () => {},
       };
     },
   },
@@ -247,8 +263,13 @@ function latestFrame(element: HTMLElement) {
 }
 
 const target = stage();
+const backgroundText = document.createElement("p");
+backgroundText.style.fontFamily = "BackgroundFont";
+backgroundText.textContent = "Captured background text";
+target.append(backgroundText as unknown as Node);
 const left = surface(target, "left", 20, 30);
 const right = surface(target, "right", 300, 80);
+left.style.fontFamily = "SurfaceOnly";
 paintOrder = [left, right, target];
 const releaseLeft = acquireGlass(configuration("left", target));
 const releaseRight = acquireGlass(configuration("right", target));
@@ -282,7 +303,7 @@ assert.equal(right.dataset.glassState, "ready");
 const frameBeforeLease = left.style.getPropertyValue("--glass-frame");
 const capturesBeforeLease = captures.length;
 const rendersBeforeLease = renders.length;
-const releaseAdditionalLease = acquireGlass({ id: "left" });
+const releaseAdditionalLease = acquireGlass({ id: "left", mode: "auto" });
 assert.equal(
   left.dataset.glassState,
   "ready",
@@ -293,7 +314,6 @@ assert.equal(
   frameBeforeLease,
   "joining an existing scope cannot clear its decoded frame",
 );
-updateGlassConfiguration(configuration("left", target));
 releaseAdditionalLease();
 await settle();
 assert.equal(
@@ -370,6 +390,23 @@ assert.notEqual(
   beforeHighlightEdge,
 );
 
+const beforeFonts = captures.length;
+loadedFont("OutsideFont");
+loadedFont("SurfaceOnly");
+await settle();
+assert.equal(
+  captures.length,
+  beforeFonts,
+  "fonts outside the capture or used only inside excluded glass do not resample",
+);
+loadedFont("BackgroundFont");
+await settle();
+assert.equal(
+  captures.length,
+  beforeFonts + 1,
+  "a font used by ordinary captured text invalidates the snapshot",
+);
+
 async function expectRefresh(change: () => void, reason: string) {
   const before = captures.length;
   const previous = latestFrame(left).source;
@@ -433,10 +470,10 @@ const releaseUpper = acquireGlass(configuration("upper", layers));
 await settle();
 assert.equal(
   captures.length,
-  beforeLayers + 2,
-  "overlapping layers require distinct snapshots",
+  beforeLayers + 1,
+  "all overlapping glass modules share the clean underlying snapshot",
 );
-assert.notEqual(latestFrame(lower).source, latestFrame(upper).source);
+assert.equal(latestFrame(lower).source, latestFrame(upper).source);
 const lowerCapture = [...captures]
   .reverse()
   .find(({ snapshot }) => snapshot === latestFrame(lower).source);
@@ -448,8 +485,8 @@ assert.ok(lowerCapture?.blocked.has(upper));
 assert.ok(upperCapture?.blocked.has(upper));
 assert.equal(
   upperCapture?.blocked.has(lower),
-  false,
-  "the upper layer retains its lower background",
+  true,
+  "the lower glass module is excluded as well",
 );
 releaseLower();
 releaseUpper();
@@ -468,10 +505,10 @@ const releaseIndicator = acquireGlass(configuration("indicator", tabs));
 await settle();
 assert.equal(
   captures.length,
-  beforeTabs + 2,
-  "nested surfaces sample their own background layers",
+  beforeTabs + 1,
+  "nested surfaces share a background with all glass excluded",
 );
-assert.notEqual(latestFrame(track).source, latestFrame(indicator).source);
+assert.equal(latestFrame(track).source, latestFrame(indicator).source);
 assert.equal(
   latestFrame(track).frame.textColors,
   undefined,
@@ -483,13 +520,8 @@ const indicatorCapture = captures.find(
 assert.ok(indicatorCapture?.blocked.has(indicator));
 assert.equal(
   indicatorCapture?.blocked.has(track),
-  false,
-  "a nested surface preserves its parent's glass background",
-);
-assert.equal(
-  indicatorCapture?.parentFrames.get(track),
-  track.style.getPropertyValue("--glass-frame"),
-  "the nested surface refracts the committed parent frame rather than the page behind it",
+  true,
+  "nested glass excludes the parent and all its content",
 );
 assert.deepEqual(latestFrame(indicator).frame.origin, [120, 108]);
 releaseTrack();
@@ -666,25 +698,17 @@ const releaseParent = acquireGlass(configuration("parent", nestedStage));
 const releaseChild = acquireGlass(configuration("child", nestedStage));
 const releasePeer = acquireGlass(configuration("peer", nestedStage));
 await settle();
-assert.equal(captures.length, beforeNested + 2);
+assert.equal(captures.length, beforeNested + 1);
 const oldChildSnapshot = latestFrame(child).source;
 const parentFrame = parent.style.getPropertyValue("--glass-frame");
 updateGlassConfiguration(configuration("parent", nestedStage, 40));
 await settle();
 assert.notEqual(parent.style.getPropertyValue("--glass-frame"), parentFrame);
-assert.notEqual(latestFrame(child).source, oldChildSnapshot);
-const childCapture = [...captures]
-  .reverse()
-  .find(({ snapshot }) => snapshot === latestFrame(child).source);
-assert.equal(
-  childCapture?.parentFrames.get(parent),
-  parent.style.getPropertyValue("--glass-frame"),
-  "a nested background follows the lower material's committed frame",
-);
+assert.equal(latestFrame(child).source, oldChildSnapshot);
 assert.equal(
   captures.length,
-  beforeNested + 3,
-  "only the dependent nested background is recaptured after a material change",
+  beforeNested + 1,
+  "a glass-only material change does not recapture the shared background",
 );
 releaseParent();
 releaseChild();
@@ -725,7 +749,12 @@ for (const attribute of ["aria-pressed", "data-checked"]) {
     finishSemanticDecode = resolve;
   });
   semantic.setAttribute(attribute, "true");
-  await new Promise((resolve) => setTimeout(resolve, 10));
+  const materialDeadline = performance.now() + 1000;
+  while (
+    semantic.style.getPropertyValue("--glass-base") !== "rgb(0, 88, 204)" &&
+    performance.now() < materialDeadline
+  )
+    await new Promise((resolve) => setTimeout(resolve, 10));
   assert.equal(
     semantic.style.getPropertyValue("--glass-base"),
     "rgb(0, 88, 204)",
@@ -1200,6 +1229,41 @@ isolatedStage.remove();
 assert.ok(
   createdUrls.every((url) => revokedUrls.includes(url)),
   "scheduled frames release every committed URL when the last scopes unmount",
+);
+svgAvailable = true;
+const fallbackStage = stage();
+const fallbackOne = surface(fallbackStage, "three-tier", 40, 40);
+const fallbackTwo = surface(fallbackStage, "three-tier", 250, 40);
+paintOrder = [fallbackOne, fallbackTwo, fallbackStage];
+const releaseFallback = acquireGlass(
+  configuration("three-tier", fallbackStage),
+);
+await settle();
+assert.equal(fallbackOne.dataset.glassRenderer, "vgpu");
+const beforeSvgCaptures = captures.length;
+nextRenderFailure = new Error("GPU lost during rendering");
+document.dispatchEvent(new window.Event("input", { bubbles: true }));
+await settle();
+assert.equal(fallbackOne.dataset.glassRenderer, "svg");
+assert.equal(fallbackTwo.dataset.glassRenderer, "svg");
+assert.equal(svgRenders, 2);
+assert.equal(
+  captures.length,
+  beforeSvgCaptures + 1,
+  "GPU fallback reuses the same shared snapshot for SVG",
+);
+svgFailure = true;
+document.dispatchEvent(new window.Event("input", { bubbles: true }));
+await settle();
+assert.equal(fallbackOne.dataset.glassState, "fallback");
+assert.equal(fallbackTwo.dataset.glassState, "fallback");
+assert.equal(fallbackOne.dataset.glassRenderer, undefined);
+assert.equal(fallbackOne.style.getPropertyValue("--glass-frame"), "");
+releaseFallback();
+fallbackStage.remove();
+assert.ok(
+  createdUrls.every((url) => revokedUrls.includes(url)),
+  "all three-tier frames are released",
 );
 await window.happyDOM.close();
 console.log(

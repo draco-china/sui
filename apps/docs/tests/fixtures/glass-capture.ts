@@ -369,6 +369,43 @@ assert.equal(
   parentStyleBeforeCapture,
   "capture cleanup never mutates the live parent glass frame or material",
 );
+decodedParent.dataset.glass = "true";
+const nestedGlass = document.createElement("div");
+nestedGlass.dataset.glass = "true";
+nestedGlass.textContent = "Nested text must never enter the snapshot";
+decodedParent.append(nestedGlass);
+const peerGlass = document.createElement("div");
+peerGlass.id = "automatic-peer";
+peerGlass.dataset.glass = "true";
+peerGlass.style.backgroundImage =
+  'url("blob:http://localhost/uncapturable-peer")';
+peerGlass.textContent = "Peer glass content";
+target.append(peerGlass);
+await captureGlassBackground(target as unknown as HTMLElement, new Set());
+const cleanScene = new window.DOMParser().parseFromString(
+  drawnSource,
+  "image/svg+xml",
+);
+for (const id of ["decoded-glass-parent", "automatic-peer"]) {
+  const clone = cleanScene.querySelector(`#${id}`) as unknown as HTMLElement;
+  assert.ok(clone, "the shared pipeline retains layout placeholders");
+  assert.equal(clone.style.visibility, "hidden");
+  assert.equal(clone.style.backgroundImage, "none");
+  assert.equal(
+    clone.childNodes.length,
+    0,
+    "all content is removed from each glass module, including nested glass",
+  );
+}
+assert.equal(
+  decodedParent.style.cssText,
+  parentStyleBeforeCapture,
+  "the live glass never flashes or loses its frame during capture",
+);
+assert.ok(nestedGlass.isConnected);
+peerGlass.remove();
+delete decodedParent.dataset.glass;
+nestedGlass.remove();
 decodedParent.style.backgroundImage =
   'url("blob:http://localhost/unembedded-parent")';
 await assert.rejects(

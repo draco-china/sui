@@ -1,4 +1,10 @@
 import {
+  failGlassRenderer,
+  glassBaseOnly,
+  prepareGlassRenderer,
+  releaseGlassRenderers,
+} from "./backend";
+import {
   acquireGlassCaptureFonts,
   captureGlassBackground,
   glassLayoutSize,
@@ -14,12 +20,9 @@ import { glassIntensityDefaults } from "./intensity";
 import type { GlassRenderer } from "./renderer";
 
 const managers = new Map<string, GlassManager>();
-let renderer: GlassRenderer | undefined;
-let initialization: AbortController | undefined;
 let queue = Promise.resolve();
 let nextSurface = 0;
 const elementIds = new WeakMap<Element, number>();
-const backgroundVersions = new WeakMap<HTMLElement, number>();
 let sceneRevision = 0;
 let lastSnapshotTime = 0;
 let sharedSnapshots = new WeakMap<
@@ -38,11 +41,6 @@ function idFor(element: Element) {
 
 function invalidateScene() {
   sceneRevision++;
-}
-
-function backgroundChanged(element: HTMLElement) {
-  backgroundVersions.set(element, (backgroundVersions.get(element) ?? 0) + 1);
-  for (const manager of managers.values()) manager.refreshDependency(element);
 }
 
 function overlaps(a: DOMRect, b: DOMRect) {
@@ -347,6 +345,7 @@ function relevantMutation(record: MutationRecord) {
   if (record.type === "attributes") {
     if (
       record.attributeName === "data-glass-state" ||
+      record.attributeName === "data-glass-renderer" ||
       record.attributeName === "data-glass-capture-id"
     )
       return false;
@@ -483,6 +482,10 @@ class GlassManager {
           this.textContrast.invalidate();
           invalidateScene();
           this.scan();
+          // Theme and semantic colors must update immediately, independently of capture throttling.
+          for (const [element, state] of this.surfaces)
+            if (visible(element)) this.updateMaterial(element, state);
+          this.materialsDirty = false;
         } else
           for (const record of relevant) {
             if (record.target instanceof HTMLElement) {
@@ -573,7 +576,50 @@ class GlassManager {
     document.addEventListener("change", update, true);
     document.addEventListener("load", update, true);
     document.addEventListener("visibilitychange", visibility);
-    document.fonts?.addEventListener("loadingdone", update);
+    const fontUpdate = (event: Event) => {
+      const faces = (event as Event & { fontfaces?: FontFace[] }).fontfaces;
+      if (!faces?.length) return update();
+      const families = new Set(
+        faces.map((face) => face.family.replace(/["']/g, "").toLowerCase()),
+      );
+      let target = this.getTarget();
+      if (
+        [...this.surfaces.keys()].some((surface) => !target.contains(surface))
+      )
+        target = document.body;
+      const usesFont = (style: CSSStyleDeclaration) =>
+        style.fontFamily
+          .split(",")
+          .some((family) =>
+            families.has(family.trim().replace(/["']/g, "").toLowerCase()),
+          );
+      for (const element of [
+        target,
+        ...target.querySelectorAll<HTMLElement>("*"),
+      ]) {
+        if (
+          element.closest(
+            '[data-glass="true"],[data-glass-exclude],[data-glass-decoration]',
+          )
+        )
+          continue;
+        const text =
+          [...element.childNodes].some(
+            (node) => node.nodeType === 3 && node.textContent?.trim(),
+          ) || element.matches("input,textarea,select");
+        if (text && usesFont(getComputedStyle(element))) return update();
+        for (const pseudo of ["::before", "::after"]) {
+          const style = getComputedStyle(element, pseudo);
+          if (
+            style.content &&
+            !["none", "normal", '""', "''"].includes(style.content) &&
+            usesFont(style)
+          )
+            return update();
+        }
+      }
+    };
+    document.fonts?.addEventListener("loadingdone", fontUpdate);
     const interaction = (event: Event) => {
       const target = event.target;
       if (
@@ -598,10 +644,7 @@ class GlassManager {
         )
       )
         return;
-      if (
-        event.type === "transitionrun" &&
-        this.configuration.mode === "auto"
-      ) {
+      if (event.type === "transitionrun" && this.configuration.mode !== "css") {
         this.moving.set(target, performance.now() + 3000);
         this.drawMotion();
       } else if (event.type !== "transitionrun") {
@@ -619,7 +662,7 @@ class GlassManager {
       document.removeEventListener("change", update, true);
       document.removeEventListener("load", update, true);
       document.removeEventListener("visibilitychange", visibility);
-      document.fonts?.removeEventListener("loadingdone", update);
+      document.fonts?.removeEventListener("loadingdone", fontUpdate);
       for (const type of ["pointerover", "pointerout", "focusin", "focusout"])
         document.removeEventListener(type, interaction, true);
       appearance?.removeEventListener("change", update);
@@ -635,7 +678,7 @@ class GlassManager {
       this.motionFrame ||
       this.disposed ||
       document.hidden ||
-      this.configuration.mode !== "auto"
+      this.configuration.mode === "css"
     )
       return;
     this.motionFrame = requestAnimationFrame(() => {
@@ -649,7 +692,13 @@ class GlassManager {
     });
   }
 
-  update(configuration: GlassConfiguration) {
+  prepare() {
+    if (!this.disposed) void prepareGlassRenderer(this.configuration.mode);
+  }
+
+  update(configuration: GlassConfiguration, preserveSettings = false) {
+    if (preserveSettings)
+      configuration = { ...this.configuration, ...configuration };
     configuration = { ...configuration, mode: configuration.mode ?? "auto" };
     const previous = this.configuration;
     const same =
@@ -666,42 +715,12 @@ class GlassManager {
     }
     this.configuration = configuration;
     this.options = configuration.options ?? {};
+    this.prepare();
     this.scan();
-    if (configuration.mode !== "auto")
+    if (configuration.mode === "css")
       for (const [element, state] of this.surfaces)
         this.restoreCss(element, state);
     this.schedule();
-  }
-
-  refreshDependency(background: HTMLElement) {
-    if (
-      this.disposed ||
-      this.configuration.mode !== "auto" ||
-      !visible(background)
-    )
-      return;
-    const bounds = background.getBoundingClientRect();
-    for (const [element] of this.surfaces) {
-      if (
-        element === background ||
-        !visible(element) ||
-        !overlaps(bounds, element.getBoundingClientRect())
-      )
-        continue;
-      const target = this.getTarget();
-      const captureTarget = target.contains(element) ? target : document.body;
-      if (!captureTarget.contains(background)) continue;
-      let blocked: Set<Element>;
-      try {
-        blocked = higherLayers(element);
-      } catch {
-        this.schedule();
-        return;
-      }
-      if ([...blocked].some((item) => item.contains(background))) continue;
-      this.schedule();
-      return;
-    }
   }
 
   refresh() {
@@ -763,7 +782,6 @@ class GlassManager {
         this.restoreCss(element, state);
       }
       state.frameMaterial = frameMaterial;
-      backgroundChanged(element);
     }
   }
 
@@ -772,13 +790,12 @@ class GlassManager {
     state: SurfaceState,
     status: "css" | "fallback" = "css",
   ) {
-    const changed = Boolean(state.url || state.frameKey);
     if (state.url) URL.revokeObjectURL(state.url);
     state.url = undefined;
     state.frameKey = undefined;
     element.style.removeProperty("--glass-frame");
     element.dataset.glassState = status;
-    if (changed) backgroundChanged(element);
+    delete element.dataset.glassRenderer;
   }
 
   private updateEdge(element: HTMLElement, state: SurfaceState) {
@@ -870,15 +887,8 @@ class GlassManager {
         if (state.edgeDirty || this.moving.has(element))
           this.updateEdge(element, state);
     }
-    if (
-      this.configuration.mode !== "auto" ||
-      window.matchMedia?.(
-        "(prefers-reduced-transparency: reduce), (forced-colors: active)",
-      ).matches
-    ) {
-      for (const [element, state] of active) {
-        this.restoreCss(element, state);
-      }
+    if (glassBaseOnly(this.configuration.mode)) {
+      for (const [element, state] of active) this.restoreCss(element, state);
       return;
     }
     const current = (element?: HTMLElement, state?: SurfaceState) =>
@@ -892,26 +902,16 @@ class GlassManager {
           element.dataset.glassScope === this.configuration.id &&
           this.surfaces.get(element) === state));
     if (!current()) return;
-    if (!renderer) {
-      const controller = new AbortController();
-      initialization = controller;
-      try {
-        const { GlassRenderer: Renderer } = await import("./renderer");
-        const created = await Renderer.create(controller.signal);
-        if (!managers.size) {
-          created.destroy();
-          return;
-        }
-        renderer = created;
-      } finally {
-        if (initialization === controller) initialization = undefined;
-      }
-    }
+    let backend = await prepareGlassRenderer(this.configuration.mode);
     if (!current()) return;
+    if (!backend) {
+      this.fallback();
+      return;
+    }
     const target = this.getTarget();
     const peers = [
       ...document.querySelectorAll<HTMLElement>('[data-glass="true"]'),
-    ].filter(visible);
+    ];
     for (const [element, state] of active) {
       if (element.dataset.glassFrozen === "true") continue;
       if (!current(element, state)) continue;
@@ -924,21 +924,11 @@ class GlassManager {
         if (!state.url) element.dataset.glassState = "fallback";
         continue;
       }
-      // Disjoint peers cannot contribute to each other's background: omit them in the shared capture.
-      for (const peer of peers) {
-        const peerRect = peer.getBoundingClientRect();
-        if (
-          peer === element ||
-          (!peer.contains(element) &&
-            !element.contains(peer) &&
-            (peerRect.right <= rect.left ||
-              peerRect.left >= rect.right ||
-              peerRect.bottom <= rect.top ||
-              peerRect.top >= rect.bottom))
-        )
-          blocked.add(peer);
-      }
-      const captureTarget = target.contains(element) ? target : document.body;
+      // All glass modules, including their content, are absent from the cloned background.
+      for (const peer of peers) blocked.add(peer);
+      let captureTarget = target.contains(element) ? target : document.body;
+      if (captureTarget.closest('[data-glass="true"]'))
+        captureTarget = document.body;
       const captureDocument = captureTarget.ownerDocument;
       if (!this.captureFonts.has(captureDocument))
         this.captureFonts.set(
@@ -956,23 +946,8 @@ class GlassManager {
         .map(idFor)
         .sort((a, b) => (a ?? 0) - (b ?? 0))
         .join(",");
-      const dependencyKey = () =>
-        peers
-          .filter(
-            (peer) =>
-              captureTarget.contains(peer) &&
-              ![...blocked].some((item) => item.contains(peer)),
-          )
-          .map((peer) => `${idFor(peer)}:${backgroundVersions.get(peer) ?? 0}`)
-          .sort()
-          .join(",");
-      const dependencies = dependencyKey();
       const currentFrame = () => {
-        if (
-          element.dataset.glassFrozen === "true" ||
-          !current(element, state) ||
-          dependencies !== dependencyKey()
-        )
+        if (element.dataset.glassFrozen === "true" || !current(element, state))
           return false;
         const latest = element.getBoundingClientRect();
         if (
@@ -988,7 +963,7 @@ class GlassManager {
         }
         return true;
       };
-      const key = `${exclusions}|${dependencies}`;
+      const key = exclusions;
       let cached = sharedSnapshots.get(captureTarget);
       if (!cached || cached.revision !== sceneRevision) {
         cached = { revision: sceneRevision, frames: new Map() };
@@ -1008,8 +983,7 @@ class GlassManager {
             element.dataset.glassState = "fallback";
           continue;
         }
-        if (!current(element, state) || dependencies !== dependencyKey())
-          return;
+        if (!current(element, state)) return;
         if (cached.frames.size >= 4) cached.frames.clear();
         cached.frames.set(key, snapshot);
       }
@@ -1046,42 +1020,59 @@ class GlassManager {
         minimumContrast:
           element.getAttribute("aria-hidden") === "true" ? 0 : 4.5,
       } satisfies Parameters<GlassRenderer["render"]>[1];
-      const frameKey = `${idFor(snapshot)}:${JSON.stringify(frame)}`;
-      if (state.frameKey === frameKey && state.url) continue;
-      let blob: Blob;
-      try {
-        blob = await renderer.render(snapshot, frame);
-      } catch (error) {
-        if (!(error instanceof GlassContrastError)) throw error;
-        if (currentFrame()) this.restoreCss(element, state, "fallback");
-        continue;
-      }
-      if (!currentFrame()) continue;
-      const url = URL.createObjectURL(blob);
-      const image = new window.Image();
-      this.pendingFrames.set(url, image);
-      image.src = url;
-      try {
-        await image.decode();
-      } catch {
-        if (this.pendingFrames.delete(url)) URL.revokeObjectURL(url);
-        if (currentFrame() && !state.url)
-          element.dataset.glassState = "fallback";
-        continue;
-      }
-      if (!this.pendingFrames.delete(url)) continue;
-      if (!currentFrame()) {
-        URL.revokeObjectURL(url);
-        continue;
-      }
-      const previous = state.url;
-      state.url = url;
-      element.style.setProperty("--glass-frame", `url("${url}")`);
-      element.dataset.glassState = "ready";
-      if (previous) URL.revokeObjectURL(previous);
-      if (state.frameKey !== frameKey) {
-        state.frameKey = frameKey;
-        backgroundChanged(element);
+      // Decode a complete frame before swapping; rendering failures walk down the shared chain.
+      for (;;) {
+        if (!backend) {
+          if (currentFrame()) this.restoreCss(element, state, "fallback");
+          break;
+        }
+        const frameKey = `${backend.kind}:${idFor(snapshot)}:${JSON.stringify(frame)}`;
+        if (state.frameKey === frameKey && state.url) break;
+        let url: string | undefined;
+        try {
+          const blob = await backend.renderer.render(snapshot, frame);
+          if (!currentFrame()) break;
+          url = URL.createObjectURL(blob);
+          const image = new window.Image();
+          this.pendingFrames.set(url, image);
+          image.src = url;
+          let decodeTimer: ReturnType<typeof setTimeout> | undefined;
+          try {
+            await Promise.race([
+              image.decode(),
+              new Promise<never>((_, reject) => {
+                decodeTimer = setTimeout(
+                  () => reject(new Error("Glass frame decoding timed out")),
+                  5000,
+                );
+              }),
+            ]);
+          } finally {
+            if (decodeTimer) clearTimeout(decodeTimer);
+          }
+          if (!this.pendingFrames.delete(url)) break;
+          if (!currentFrame()) {
+            URL.revokeObjectURL(url);
+            break;
+          }
+          const previous = state.url;
+          state.url = url;
+          state.frameKey = frameKey;
+          element.style.setProperty("--glass-frame", `url("${url}")`);
+          element.dataset.glassState = "ready";
+          element.dataset.glassRenderer = backend.kind;
+          if (previous) URL.revokeObjectURL(previous);
+          break;
+        } catch (error) {
+          if (url && this.pendingFrames.delete(url)) URL.revokeObjectURL(url);
+          if (!currentFrame()) break;
+          if (error instanceof GlassContrastError) {
+            this.restoreCss(element, state, "fallback");
+            break;
+          }
+          failGlassRenderer(backend.kind);
+          backend = await prepareGlassRenderer(this.configuration.mode);
+        }
       }
     }
   }
@@ -1100,6 +1091,7 @@ class GlassManager {
     element.style.removeProperty("--glass-opacity");
     element.style.removeProperty("--glass-base");
     delete element.dataset.glassState;
+    delete element.dataset.glassRenderer;
   }
 
   destroy() {
@@ -1136,8 +1128,9 @@ export function acquireGlass(configuration?: GlassConfiguration) {
     "options" in resolved ||
     "captureTarget" in resolved
   )
-    manager.update(resolved);
+    manager.update(resolved, true);
   manager.leases++;
+  manager.prepare();
   let released = false;
   return () => {
     if (released) return;
@@ -1147,9 +1140,7 @@ export function acquireGlass(configuration?: GlassConfiguration) {
     managers.delete(resolved.id);
     if (!managers.size) {
       sharedSnapshots = new WeakMap();
-      initialization?.abort();
-      renderer?.destroy();
-      renderer = undefined;
+      releaseGlassRenderers();
     }
   };
 }

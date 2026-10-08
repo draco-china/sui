@@ -158,8 +158,8 @@ assert.ok(outerScope);
 assert.equal(configurations.get(outerScope)?.mode, "auto");
 assert.equal(
   leases.get(outerScope),
-  2,
-  "outer scope and track are the only resting leases",
+  3,
+  "the provider, outer scope and track share the resting manager",
 );
 assert.equal(leases.size, 1, "inactive lens does not initialize a manager");
 assert.equal(
@@ -277,8 +277,8 @@ assert.equal(track().getAttribute("data-glass-frozen"), "false");
 assert.equal(leases.get(lensScope), 0, "release stops the lens CSS lease");
 assert.equal(
   leases.get(outerScope),
-  2,
-  "release retains the outer scope and track leases",
+  3,
+  "release retains the provider, outer scope and track leases",
 );
 await act(async () => {
   button("Search").dispatchEvent(

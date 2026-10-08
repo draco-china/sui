@@ -384,8 +384,8 @@ const releaseHidden = acquireGlass({ id: "hidden", mode: "auto" });
 await pause();
 assert.equal(
   gpuAttempts,
-  beforeHidden,
-  "hidden surfaces cannot trigger a screenshot or GPU work",
+  beforeHidden + 1,
+  "the scope detects its renderer on initialization even with hidden surfaces",
 );
 hidden.hidden = false;
 await pause();
@@ -753,6 +753,25 @@ for (const finish of transitionFinishes) finish();
 await Promise.resolve();
 await act(async () => exampleRoot.unmount());
 exampleStyle.remove();
+const capabilityHost = document.createElement("div");
+document.body.append(capabilityHost);
+const capabilityRoot = createRoot(capabilityHost as unknown as HTMLElement);
+const beforeProvider = gpuAttempts;
+await act(async () =>
+  capabilityRoot.render(
+    <GlassProvider>
+      <p>No glass mounted yet</p>
+    </GlassProvider>,
+  ),
+);
+await pause();
+assert.equal(
+  gpuAttempts,
+  beforeProvider + 1,
+  "the global provider detects capabilities before any glass module mounts",
+);
+await act(async () => capabilityRoot.unmount());
+capabilityHost.remove();
 await window.happyDOM.close();
 console.log(
   "CSS mode avoids GPU work; native refs/form semantics, false override, auto fallback, shared cleanup, and hidden surfaces passed",

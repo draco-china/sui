@@ -12,7 +12,7 @@ import { acquireGlass, updateGlassConfiguration } from "./runtime";
 
 export type { GlassIntensity } from "./intensity";
 
-export type GlassMode = "css" | "auto";
+export type GlassMode = "css" | "svg" | "auto";
 
 export type GlassOptions = {
   strength?: number;
@@ -65,10 +65,11 @@ export function withGlass<P extends object>(
       context.intensity ??
       configuration?.intensity ??
       "default";
+    const mode = configuration?.mode;
     useLayoutEffect(() => {
       if (!enabled) return;
-      return acquireGlass({ id });
-    }, [enabled, id]);
+      return acquireGlass({ id, mode });
+    }, [enabled, id, mode]);
     useLayoutEffect(() => {
       if (enabled && configuration) updateGlassConfiguration(configuration);
     }, [enabled, configuration]);

@@ -590,7 +590,10 @@ export async function captureGlassBackground(
     throw new Error("Glass background capture still active");
   capturing = true;
   try {
-    return await captureBackground(target, blocked);
+    const exclusions = new Set(blocked);
+    for (const surface of target.querySelectorAll('[data-glass="true"]'))
+      exclusions.add(surface);
+    return await captureBackground(target, exclusions);
   } finally {
     capturing = false;
   }

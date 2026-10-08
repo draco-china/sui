@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-test("glass managers share snapshots without merging distinct occlusion layers", () => {
+test("glass managers share snapshots with all glass modules excluded", () => {
   const result = Bun.spawnSync({
     cmd: [
       process.execPath,

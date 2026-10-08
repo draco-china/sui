@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
-import { useId, useImperativeHandle, useMemo } from "react";
+import { useId, useImperativeHandle, useLayoutEffect, useMemo } from "react";
 import {
   type GlassCaptureTarget,
   GlassContext,
@@ -9,7 +9,11 @@ import {
   type GlassProviderRef,
   withGlass,
 } from "../lib/glass/context";
-import { refreshGlass } from "../lib/glass/runtime";
+import {
+  acquireGlass,
+  refreshGlass,
+  updateGlassConfiguration,
+} from "../lib/glass/runtime";
 
 export type {
   GlassCaptureTarget,
@@ -57,6 +61,14 @@ export function GlassProvider({
       highlight,
       captureTarget,
     ],
+  );
+  useLayoutEffect(() => {
+    if (mode === "css") return;
+    return acquireGlass({ id, mode });
+  }, [id, mode]);
+  useLayoutEffect(
+    () => updateGlassConfiguration(configuration),
+    [configuration],
   );
   useImperativeHandle(
     ref,
