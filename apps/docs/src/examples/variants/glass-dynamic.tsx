@@ -8,6 +8,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
+import { Slider } from "@workspace/ui/components/slider";
 import { useEffect, useId, useRef, useState } from "react";
 import type { ExampleProps } from "../types";
 
@@ -21,39 +22,51 @@ export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const stateLabels = chinese
     ? {
-        ready: "当前渲染：vgpu + WGSL 折射 + SVG 高光",
+        vgpu: "当前渲染：vgpu + WGSL 折射 + SVG 高光",
+        svg: "当前渲染：SVG 折射 + SVG 高光",
         fallback: "当前渲染：CSS + SVG（增强不可用）",
         loading: "当前渲染：CSS + SVG（等待增强）",
       }
     : {
-        ready: "Rendering: vgpu + WGSL refraction + SVG highlights",
+        vgpu: "Rendering: vgpu + WGSL refraction + SVG highlights",
+        svg: "Rendering: SVG refraction + SVG highlights",
         fallback: "Rendering: CSS + SVG (enhancement unavailable)",
         loading: "Rendering: CSS + SVG (awaiting enhancement)",
       };
   const id = useId();
   const scene = useRef<HTMLDivElement>(null);
   const controller = useRef<GlassHandle>(null);
-  const [rendering, setRendering] = useState<"ready" | "fallback" | "loading">(
-    "loading",
-  );
+  const [rendering, setRendering] = useState<
+    "vgpu" | "svg" | "fallback" | "loading"
+  >("loading");
   useEffect(() => {
     const target = scene.current;
     if (!target) return;
     const update = () => {
-      const states = [...target.querySelectorAll('[data-glass="true"]')].map(
-        (element) => element.getAttribute("data-glass-state"),
+      const surfaces = [...target.querySelectorAll('[data-glass="true"]')];
+      const ready = surfaces.filter(
+        (surface) => surface.getAttribute("data-glass-state") === "ready",
       );
-      let next: "ready" | "fallback" | "loading" = "loading";
-      if (states.length && states.every((state) => state === "ready"))
-        next = "ready";
-      else if (states.includes("fallback")) next = "fallback";
+      let next: "vgpu" | "svg" | "fallback" | "loading" = "loading";
+      if (ready.length)
+        next = ready.every(
+          (surface) => surface.getAttribute("data-glass-renderer") === "vgpu",
+        )
+          ? "vgpu"
+          : "svg";
+      else if (
+        surfaces.some(
+          (surface) => surface.getAttribute("data-glass-state") === "fallback",
+        )
+      )
+        next = "fallback";
       setRendering(next);
     };
     const observer = new MutationObserver(update);
     observer.observe(target, {
       subtree: true,
       attributes: true,
-      attributeFilter: ["data-glass-state"],
+      attributeFilter: ["data-glass-state", "data-glass-renderer"],
     });
     update();
     return () => observer.disconnect();
@@ -113,18 +126,19 @@ export default function Example({ locale }: ExampleProps) {
       <div className="grid gap-4 sm:grid-cols-3">
         {controls.map(({ key, label, value, max, step, change }) => (
           <div key={key} className="grid gap-2">
-            <Label htmlFor={`${id}-${key}`}>
+            <Label id={`${id}-${key}-label`} htmlFor={`${id}-${key}`}>
               {label}: <output htmlFor={`${id}-${key}`}>{value}</output>
             </Label>
-            <input
+            <Slider
               id={`${id}-${key}`}
-              type="range"
+              aria-labelledby={`${id}-${key}-label`}
               min={0}
               max={max}
               step={step}
-              value={value}
-              onInput={(event) => change(Number(event.currentTarget.value))}
-              className="w-full accent-primary"
+              value={[value]}
+              onValueChange={(values) =>
+                change(Array.isArray(values) ? values[0] : values)
+              }
             />
           </div>
         ))}

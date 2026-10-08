@@ -342,8 +342,8 @@ export const components: ComponentEntry[] = [
     name: "Glass",
     description: {
       "en-US":
-        "SVG highlights and CSS frosted surfaces, progressively enhanced with WebGPU refraction.",
-      "zh-CN": "以 SVG 高光和 CSS 磨砂为基础，按能力通过 WebGPU 增强真实折射",
+        "Glass surfaces with shared highlights and progressive vgpu, SVG refraction, and CSS fallback.",
+      "zh-CN": "共用边缘高光，按能力通过 vgpu、SVG 折射和 CSS 回退呈现玻璃表面",
     },
     sourceUrl: "https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API",
   },
