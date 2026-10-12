@@ -74,8 +74,10 @@ test("GitHub source installs rewrite aliases for components, blocks and editor h
   };
   for (const name of ["button", "data-table", "editor"]) {
     const item = await loadRegistryItemFromSource(name, reader);
+    let checked = 0;
     for (const file of item.files ?? []) {
-      if (!file.path.endsWith(`/components/${name}.tsx`)) continue;
+      if (!file.path.endsWith(`/${name}.tsx`)) continue;
+      checked += 1;
       const installed = await transform({
         filename: file.path,
         raw: file.content,
@@ -89,6 +91,7 @@ test("GitHub source installs rewrite aliases for components, blocks and editor h
       ).toBe(false);
       expect(installed).not.toContain("@workspace/ui/");
     }
+    expect(checked).toBeGreaterThan(0);
   }
 }, 60_000);
 
