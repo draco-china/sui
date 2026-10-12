@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/draco-china/sui/compare/v1.1.0...v1.2.0) (2026-10-12)
+
+### Features
+
+* **registry:** support GitHub registries ([56cdf08](https://github.com/draco-china/sui/commit/56cdf087bdab6de877426fec9cd314f0214bbf94))
+
 ## [1.1.0](https://github.com/draco-china/sui/compare/v1.0.0...v1.1.0) (2026-10-08)
 
 ### Features
