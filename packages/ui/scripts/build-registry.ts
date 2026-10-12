@@ -16,6 +16,8 @@ const sourceRoot = join(repositoryRoot, "packages/ui/src");
 export const registryOutput = join(repositoryRoot, "apps/docs/public/r");
 export const publishedRegistryOutput = join(repositoryRoot, "registry/r");
 const homepage = "https://github.com/draco-china/sui";
+const githubSourceDirectory = "registry/source";
+const registrySizeLimit = 5 * 1024 * 1024;
 
 type CssObject = { [key: string]: string | CssObject };
 type ModuleReference = { name: string; start: number; end: number };
@@ -471,15 +473,59 @@ function registryPayloads(
   payloads.set("registry.json", `${JSON.stringify(catalog, null, 2)}\n`);
   for (const [name, content] of payloads) {
     // Keep individual raw GitHub payloads below the CLI's registry size limit.
-    if (Buffer.byteLength(content) >= 5 * 1024 * 1024)
+    if (Buffer.byteLength(content) >= registrySizeLimit)
       throw new Error(`Registry payload ${name} must be smaller than 5 MiB`);
   }
   return payloads;
 }
 
+/** GitHub hydrates files from the repository, so publish the normalized source too. */
+export function githubRegistryPayloads(
+  registry: Awaited<ReturnType<typeof createRegistry>>,
+) {
+  const payloads = new Map<string, string>();
+  const manifest = registrySchema.parse({
+    ...registry,
+    homepage: "https://sui.draco.dev",
+    items: registry.items.map((item) => ({
+      ...item,
+      files: item.files?.map(({ content, ...file }) => {
+        if (content === undefined)
+          throw new Error(`Missing GitHub registry source: ${file.path}`);
+        const path = `${githubSourceDirectory}/${file.path.slice("packages/ui/src/".length)}`;
+        const previous = payloads.get(path);
+        if (previous !== undefined && previous !== content)
+          throw new Error(`Conflicting GitHub registry source: ${path}`);
+        payloads.set(path, content);
+        return { ...file, path };
+      }),
+    })),
+  });
+  // A compact manifest keeps complete, self-contained styles below GitHub's
+  // 5 MiB read limit without introducing unpinned cross-item dependencies.
+  payloads.set("registry.json", `${JSON.stringify(manifest)}\n`);
+  for (const [path, content] of payloads) {
+    if (Buffer.byteLength(content) >= registrySizeLimit)
+      throw new Error(
+        `GitHub registry file ${path} must be smaller than 5 MiB`,
+      );
+  }
+  return payloads;
+}
+
+async function githubSourceFiles(root: string) {
+  try {
+    return await filesUnder(join(root, githubSourceDirectory));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    return [];
+  }
+}
+
 export async function buildRegistry(
   output = registryOutput,
   publishedOutput?: string,
+  githubOutput = output === registryOutput ? repositoryRoot : undefined,
 ) {
   const registry = await createRegistry();
   const payloads = registryPayloads(registry);
@@ -495,11 +541,30 @@ export async function buildRegistry(
     for (const [name, content] of payloads)
       await writeFile(join(directory, name), content);
   }
+  if (githubOutput) {
+    const githubPayloads = githubRegistryPayloads(registry);
+    for (const path of await githubSourceFiles(githubOutput)) {
+      if (
+        !githubPayloads.has(relative(githubOutput, path).replaceAll("\\", "/"))
+      )
+        await rm(path);
+    }
+    for (const [name, content] of githubPayloads) {
+      const path = join(githubOutput, name);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, content);
+    }
+  }
   return registry;
 }
 
 /** Read-only publication check: source changes must regenerate committed JSON. */
-export async function checkRegistry(output = publishedRegistryOutput) {
+export async function checkRegistry(
+  output = publishedRegistryOutput,
+  githubOutput = output === publishedRegistryOutput
+    ? repositoryRoot
+    : undefined,
+) {
   const registry = await createRegistry();
   const payloads = registryPayloads(registry);
   const failures: string[] = [];
@@ -521,6 +586,22 @@ export async function checkRegistry(output = publishedRegistryOutput) {
     if (file.endsWith(".json") && !payloads.has(file))
       failures.push(`Unexpected ${file}`);
   }
+  if (githubOutput) {
+    const githubPayloads = githubRegistryPayloads(registry);
+    for (const [name, expected] of githubPayloads) {
+      try {
+        if ((await readFile(join(githubOutput, name), "utf8")) !== expected)
+          failures.push(`Stale ${name}`);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        failures.push(`Missing ${name}`);
+      }
+    }
+    for (const path of await githubSourceFiles(githubOutput)) {
+      const name = relative(githubOutput, path).replaceAll("\\", "/");
+      if (!githubPayloads.has(name)) failures.push(`Unexpected ${name}`);
+    }
+  }
   if (failures.length)
     throw new Error(
       `Published registry differs from source:\n${failures.join("\n")}\nRun bun run registry:build.`,
@@ -532,12 +613,12 @@ if (import.meta.main) {
   if (process.argv.includes("--check")) {
     const registry = await checkRegistry();
     console.log(
-      `Checked ${registry.items.length} published SUI registry items against source.`,
+      `Checked ${registry.items.length} SUI items in the GitHub and published JSON registries against source.`,
     );
   } else {
     const registry = await buildRegistry();
     console.log(
-      `Built ${registry.items.length} SUI registry items in apps/docs/public/r and registry/r.`,
+      `Built ${registry.items.length} SUI items in registry.json, registry/source, apps/docs/public/r and registry/r.`,
     );
   }
 }

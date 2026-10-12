@@ -3,7 +3,18 @@ title: Registry
 description: Understand SUI manifests, shared styles, and GitHub distribution.
 ---
 
-The SUI registry distributes editable component source through the [CLI](/docs/cli) and [MCP](/docs/mcp). Configure the `@sui` namespace as described in [installation](/docs/installation).
+The SUI registry distributes editable component source through the [CLI](/docs/cli) and [MCP](/docs/mcp). Use GitHub addresses as described in [installation](/docs/installation); the existing `@sui` namespace remains supported too.
+
+## GitHub registry [#github-registry]
+
+The root `registry.json` declares every item and references normalized source files in `registry/source/`. The CLI reads these files directly from GitHub without manual namespace configuration. Each item retains its complete dependencies, CSS, and theme tokens.
+
+```bash
+bunx --bun shadcn@latest registry validate draco-china/sui
+bunx --bun shadcn@latest add draco-china/sui/button
+```
+
+`bun run registry:build` generates both the GitHub registry and existing Raw JSON payloads; `bun run registry:check` checks both against source without writing. Edit authored files in `packages/ui/src/` and regenerate instead of editing `registry/source/` or the root manifest. The root manifest uses compact JSON to stay below the GitHub registry 5 MiB per-file limit.
 
 ## GitHub files [#github-files]
 

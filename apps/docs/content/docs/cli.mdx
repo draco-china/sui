@@ -3,13 +3,13 @@ title: CLI
 description: Search, inspect, install, and update SUI source with shadcn.
 ---
 
-SUI uses the shadcn CLI. Complete the [registry configuration](/docs/installation#prepare-the-consuming-application) in the consuming application, then run commands from that application's directory.
+SUI uses the shadcn CLI's GitHub registry support. Prepare the consuming application using [Installation](/docs/installation#prepare-the-consuming-application), then run commands from that application's directory. No registry namespace configuration is required.
 
 ## Search and inspect [#search-and-inspect]
 
 ```bash
-bunx --bun shadcn@latest search @sui -q input
-bunx --bun shadcn@latest view @sui/sensitive-input
+bunx --bun shadcn@latest search draco-china/sui -q input
+bunx --bun shadcn@latest view draco-china/sui/sensitive-input
 ```
 
 Search matches registry names and descriptions. View shows a manifest's files and dependencies before you install it. The [registry guide](/docs/registry) explains the catalog and item formats.
@@ -17,24 +17,33 @@ Search matches registry names and descriptions. View shows a manifest's files an
 ## Install source [#install-source]
 
 ```bash
-bunx --bun shadcn@latest add @sui/button @sui/sensitive-input
-bunx --bun shadcn@latest add @sui/data-table
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/sensitive-input
+bunx --bun shadcn@latest add draco-china/sui/data-table
 ```
 
 The CLI copies required source files into your configured `ui`, `components`, `lib`, and `hooks` directories, installs package dependencies, and merges SUI styles into the CSS file in `components.json`. Files become part of your application and can be edited locally.
 
-Each item carries its local dependency closure. Installing a component does not require first installing the entire library. Use `@sui/sui` for the complete collection, `@sui/sui-style` for shared CSS, or `@sui/sui-theme` for the theme helpers and styles.
+Each item carries its local dependency closure. Installing a component does not require first installing the entire library. Use `draco-china/sui/sui` for the complete collection, `draco-china/sui/sui-style` for shared CSS, or `draco-china/sui/sui-theme` for the theme helpers and styles.
 
 Editor and the complete collection require the local Monaco worker setup described in [compatibility](/docs/compatibility#editor-workers).
 
 ## Review an update [#review-an-update]
 
 ```bash
-bunx --bun shadcn@latest add @sui/button --dry-run
-bunx --bun shadcn@latest add @sui/button --diff
+bunx --bun shadcn@latest add draco-china/sui/button --dry-run
+bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
 An update can affect shared dependencies and CSS as well as the requested component. Compare changes with your local edits before accepting an overwrite. Installation is a source copy; installed files do not automatically follow future changes in the SUI repository.
+
+## Validate and select a version [#validate-and-refs]
+
+```bash
+bunx --bun shadcn@latest registry validate draco-china/sui
+bunx --bun shadcn@latest add draco-china/sui/button#main
+```
+
+`#ref` selects a branch, tag, or commit SHA; omitted refs use the repository default branch. Existing Raw URLs and `@sui` addresses remain supported; see [optional namespace configuration](/docs/installation#optional-namespace) for short addresses.
 
 ## Common issues [#common-issues]
 

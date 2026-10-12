@@ -7,6 +7,8 @@ description: 将 AI 助手连接到 SUI registry
 
 需要 API 说明和完整使用示例时，向助手提供 [LLMs 文档](/zh-CN/docs/llms-txt)。MCP 用于查询和查看可安装源码。其 `get_add_command_for_items` 工具返回 CLI 命令，随后由助手在应用中执行命令安装文件。
 
+GitHub CLI 安装也无需配置命名空间：`bunx --bun shadcn@latest add draco-china/sui/button`。下方 MCP 示例继续使用可选的 `@sui` 配置来发现 registry。
+
 ## 配置应用 [#configure-the-application]
 
 按照[安装指南](/zh-CN/docs/installation)准备消费应用。将以下 registry 条目合并到应用现有的 `components.json`，保留应用的别名和 CSS 配置：

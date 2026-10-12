@@ -1,0 +1,83 @@
+[data-slot="ui-table-scroll-area"] {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+}
+
+/* Standard scrollbar colors override WebKit styling and restore macOS overlay
+   scrollbars, which can stay hidden on hover until the user actually scrolls. */
+@supports selector(::-webkit-scrollbar) {
+  [data-slot="ui-table-scroll-area"] {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-corner {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border: 0;
+      border-radius: 9999px;
+      background: transparent;
+    }
+
+    &:hover,
+    &:focus-within {
+      scrollbar-color: auto;
+    }
+
+    &:hover::-webkit-scrollbar-thumb,
+    &:focus-within::-webkit-scrollbar-thumb {
+      background: color-mix(in oklab, var(--muted-foreground) 45%, transparent);
+    }
+  }
+}
+
+/* Sticky cells must paint the same opaque surface as their row. Transparent
+   hover colors would blend twice and expose scrolling cells underneath them. */
+[data-slot="data-table"] {
+  & thead tr,
+  & thead th {
+    background-color: var(--background);
+  }
+
+  & tbody tr {
+    --data-table-row-background: var(--background);
+    background-color: var(--data-table-row-background);
+  }
+
+  & tbody tr:hover,
+  & tbody tr:has([aria-expanded="true"]) {
+    --data-table-row-background: color-mix(
+      in oklab,
+      var(--muted) 50%,
+      var(--background)
+    );
+  }
+
+  & tbody tr[data-state="selected"] {
+    --data-table-row-background: var(--accent);
+  }
+
+  & tbody td {
+    background-color: var(--data-table-row-background);
+    transition: background-color 150ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="data-table"] tbody td {
+    transition: none;
+  }
+}

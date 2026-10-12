@@ -3,13 +3,13 @@ title: CLI
 description: 使用 shadcn 搜索、查看、安装和更新 SUI 源码
 ---
 
-SUI 使用 shadcn CLI。在消费应用中完成 [registry 配置](/zh-CN/docs/installation#prepare-the-consuming-application)，然后在该应用目录运行命令。
+SUI 使用 shadcn CLI 的 GitHub Registry。先按照[安装指南](/zh-CN/docs/installation#prepare-the-consuming-application)准备消费应用，再从应用目录执行命令。无需配置 registry 命名空间。
 
 ## 搜索与查看 [#search-and-inspect]
 
 ```bash
-bunx --bun shadcn@latest search @sui -q input
-bunx --bun shadcn@latest view @sui/sensitive-input
+bunx --bun shadcn@latest search draco-china/sui -q input
+bunx --bun shadcn@latest view draco-china/sui/sensitive-input
 ```
 
 搜索匹配条目名称与描述。查看命令可在安装前检查文件和依赖。[Registry 指南](/zh-CN/docs/registry)介绍索引和条目的格式。
@@ -17,24 +17,33 @@ bunx --bun shadcn@latest view @sui/sensitive-input
 ## 安装源码 [#install-source]
 
 ```bash
-bunx --bun shadcn@latest add @sui/button @sui/sensitive-input
-bunx --bun shadcn@latest add @sui/data-table
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/sensitive-input
+bunx --bun shadcn@latest add draco-china/sui/data-table
 ```
 
 CLI 将所需源码复制到配置的 `ui`、`components`、`lib` 和 `hooks` 目录，安装包依赖，并将 SUI 样式合并到 `components.json` 指定的 CSS 文件。安装后的文件属于应用，可以直接修改。
 
-每个条目包含完整的本地依赖，安装单个组件时无需先安装整个组件库。`@sui/sui` 安装完整集合，`@sui/sui-style` 安装共享 CSS，`@sui/sui-theme` 安装主题工具与样式。
+每个条目包含完整的本地依赖，安装单个组件时无需先安装整个组件库。`draco-china/sui/sui` 安装完整集合，`draco-china/sui/sui-style` 安装共享 CSS，`draco-china/sui/sui-theme` 安装主题工具与样式。
 
 Editor 和完整集合需要本地 Monaco worker 支持，详见[兼容性说明](/zh-CN/docs/compatibility#editor-workers)。
 
 ## 检查更新 [#review-an-update]
 
 ```bash
-bunx --bun shadcn@latest add @sui/button --dry-run
-bunx --bun shadcn@latest add @sui/button --diff
+bunx --bun shadcn@latest add draco-china/sui/button --dry-run
+bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
 更新可能同时影响共享依赖和 CSS。覆盖文件前先对比本地修改。安装属于源码复制，文件不会自动跟随 SUI 仓库的后续变更。
+
+## 验证与版本 [#validate-and-refs]
+
+```bash
+bunx --bun shadcn@latest registry validate draco-china/sui
+bunx --bun shadcn@latest add draco-china/sui/button#main
+```
+
+`#ref` 可指定分支、tag 或提交 SHA；省略时使用仓库默认分支。现有 Raw 链接与 `@sui` 地址继续受支持，使用短地址时见[可选命名空间配置](/zh-CN/docs/installation#optional-namespace)。
 
 ## 常见问题 [#common-issues]
 

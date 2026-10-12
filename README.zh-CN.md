@@ -39,7 +39,7 @@
 在已初始化 shadcn 与 Base UI 的 React 19、Tailwind CSS 4 项目中，直接安装组件：
 
 ```sh
-bunx --bun shadcn@latest add https://raw.githubusercontent.com/draco-china/sui/main/registry/r/button.json
+bunx --bun shadcn@latest add draco-china/sui/button
 ```
 
 ```tsx
@@ -50,7 +50,13 @@ export function SaveButton() {
 }
 ```
 
-或将 registry 命名空间添加到应用的 `components.json`：
+GitHub Registry 无需配置命名空间。也可以直接安装编辑器和业务区块：
+
+```sh
+bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
+```
+
+现有 Raw 链接和 `@sui` 命名空间仍然受支持。使用命名空间时，将以下配置合并到应用的 `components.json`：
 
 ```json
 {
@@ -66,7 +72,7 @@ bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-
 ```
 
 每个条目将源码、依赖和样式安装到应用中，并使用应用的导入别名。
-通过 `bunx --bun shadcn@latest add @sui/sui` 安装完整集合，所有可用条目见
+通过 `bunx --bun shadcn@latest add draco-china/sui/sui` 安装完整集合，所有可用条目见
 [registry 目录](https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json)。
 
 官方 [shadcn MCP 服务](https://ui.shadcn.com/docs/mcp) 复用同一份 registry 配置，

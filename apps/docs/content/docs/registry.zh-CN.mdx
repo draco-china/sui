@@ -3,7 +3,18 @@ title: Registry
 description: 了解 SUI 条目、共享样式和 GitHub 分发方式
 ---
 
-SUI registry 通过 [CLI](/zh-CN/docs/cli) 和 [MCP](/zh-CN/docs/mcp) 分发可编辑的组件源码。按照[安装指南](/zh-CN/docs/installation)配置 `@sui` 命名空间。
+SUI registry 通过 [CLI](/zh-CN/docs/cli) 和 [MCP](/zh-CN/docs/mcp) 分发可编辑的组件源码。按照[安装指南](/zh-CN/docs/installation)直接使用 GitHub 地址；现有 `@sui` 命名空间也继续受支持。
+
+## GitHub Registry [#github-registry]
+
+仓库根目录的 `registry.json` 声明全部条目，并引用 `registry/source/` 中已转换导入路径的源码。CLI 直接从 GitHub 读取这些文件，无需手动配置命名空间。每个条目保留完整依赖、CSS 与主题 token。
+
+```bash
+bunx --bun shadcn@latest registry validate draco-china/sui
+bunx --bun shadcn@latest add draco-china/sui/button
+```
+
+`bun run registry:build` 同时生成 GitHub Registry 与现有 Raw JSON；`bun run registry:check` 只读检查两种输出是否与源码一致。`registry/source/` 和根目录清单是生成产物，应修改 `packages/ui/src/` 中的源码后重新生成。根目录清单使用紧凑 JSON，确保低于 GitHub Registry 每个文件 5 MiB 的限制。
 
 ## GitHub 文件 [#github-files]
 

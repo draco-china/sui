@@ -5,6 +5,8 @@
       "**",
       "!!**/routeTree.gen.ts",
       "!!registry/r",
+      "!!registry/source",
+      "!!registry.json",
       "!!apps/docs/public/r",
       "!!**/.source",
       "!!**/node_modules",

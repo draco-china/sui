@@ -15,47 +15,37 @@ Use React 19, Tailwind CSS 4, and a shadcn project configured for Base UI. In an
 bunx --bun shadcn@latest init --base base
 ```
 
-Merge this entry into the application's existing `components.json`. Preserve its CSS path and aliases:
-
-```json
-{
-  "registries": {
-    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
-  }
-}
-```
-
-The catalog URL is `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`. Individual manifests use the same directory.
+Use the public GitHub registry directly with `draco-china/sui/<item>` addresses. No `@sui` namespace configuration is required.
 
 ### Search, inspect, and install
 
 Run the following commands from the consuming application directory:
 
 ```bash
-bunx --bun shadcn@latest search @sui -q button
-bunx --bun shadcn@latest view @sui/button
-bunx --bun shadcn@latest add @sui/button @sui/editor
+bunx --bun shadcn@latest search draco-china/sui -q button
+bunx --bun shadcn@latest view draco-china/sui/button
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/editor
 ```
 
 Install the business blocks by their registry names:
 
 ```bash
-bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+bunx --bun shadcn@latest add draco-china/sui/data-table draco-china/sui/delete-resource draco-china/sui/tanstack-form
 ```
 
 To install the complete collection, including all components and blocks:
 
 ```bash
-bunx --bun shadcn@latest add @sui/sui
+bunx --bun shadcn@latest add draco-china/sui/sui
 ```
 
-Each manifest includes the item's local component dependencies, hooks, helpers, types, package dependencies, and SUI CSS and theme tokens. The CLI installs source into the directories configured by your aliases and merges styles into the configured Tailwind CSS file. Standalone entries `@sui/sui-style` and `@sui/sui-theme` provide the shared styles and theme helpers.
+Each manifest includes the item's local component dependencies, hooks, helpers, types, package dependencies, and SUI CSS and theme tokens. The CLI installs source into the directories configured by your aliases and merges styles into the configured Tailwind CSS file. Standalone entries `draco-china/sui/sui-style` and `draco-china/sui/sui-theme` provide the shared styles and theme helpers.
 
 Review the generated files and CSS when adding SUI to an application that already has components with the same names or custom theme values. Preview an update before applying it:
 
 ```bash
-bunx --bun shadcn@latest add @sui/button --dry-run
-bunx --bun shadcn@latest add @sui/button --diff
+bunx --bun shadcn@latest add draco-china/sui/button --dry-run
+bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
 Editor uses locally bundled Monaco workers and requires a Vite-compatible `?worker` loader. Keep the installed `worker.d.ts` in your TypeScript include paths. This also applies when installing the complete collection.
@@ -75,6 +65,26 @@ export function SaveButton() {
 ```
 
 Use the actual aliases in your `components.json` if they differ. Examples throughout this reference use workspace imports such as `@workspace/ui/components/button`. For a registry installation, replace `@workspace/ui/components/*` with your `ui` alias, `@workspace/ui/blocks/*` with your `components` alias followed by `/blocks/*`, and hook or helper imports with your `hooks` or `lib` alias. For example, the default aliases use `@/components/ui/button`, `@/components/blocks/data-table`, and `@/hooks/use-mobile`. The CLI adapts imports inside the installed files automatically.
+
+## Optional: keep using the namespace [#optional-namespace]
+
+Existing Raw installation URLs and the `@sui` namespace remain available. To use short addresses such as `@sui/button`:
+
+Merge this entry into the application's existing `components.json`. Preserve its CSS path and aliases:
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+The catalog URL is `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`. Individual manifests use the same directory.
+
+```bash
+bunx --bun shadcn@latest add @sui/button
+```
 
 ## Connect the shadcn MCP server [#connect-the-shadcn-mcp-server]
 

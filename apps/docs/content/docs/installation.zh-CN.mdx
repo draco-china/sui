@@ -15,47 +15,37 @@ description: 通过 shadcn registry 安装 SUI 源码
 bunx --bun shadcn@latest init --base base
 ```
 
-将以下条目合并到应用现有的 `components.json`，保留其 CSS 路径与别名：
-
-```json
-{
-  "registries": {
-    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
-  }
-}
-```
-
-目录索引地址为 `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`，单个条目也位于该目录。
+公开 GitHub Registry 可以直接使用 `draco-china/sui/<条目>` 地址，无需配置 `@sui` 命名空间。
 
 ### 搜索、查看与安装 [#search-inspect-and-install]
 
 在消费应用目录运行：
 
 ```bash
-bunx --bun shadcn@latest search @sui -q button
-bunx --bun shadcn@latest view @sui/button
-bunx --bun shadcn@latest add @sui/button @sui/editor
+bunx --bun shadcn@latest search draco-china/sui -q button
+bunx --bun shadcn@latest view draco-china/sui/button
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/editor
 ```
 
 按 registry 名称安装业务区块：
 
 ```bash
-bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+bunx --bun shadcn@latest add draco-china/sui/data-table draco-china/sui/delete-resource draco-china/sui/tanstack-form
 ```
 
 安装完整集合，包括所有组件与业务区块：
 
 ```bash
-bunx --bun shadcn@latest add @sui/sui
+bunx --bun shadcn@latest add draco-china/sui/sui
 ```
 
-每个条目包含所需的本地组件依赖、hooks、工具、类型、包依赖，以及 SUI CSS 和主题 token。CLI 将源码安装到别名配置的目录，并将样式合并到配置的 Tailwind CSS 文件。独立条目 `@sui/sui-style` 和 `@sui/sui-theme` 提供共享样式与主题工具。
+每个条目包含所需的本地组件依赖、hooks、工具、类型、包依赖，以及 SUI CSS 和主题 token。CLI 将源码安装到别名配置的目录，并将样式合并到配置的 Tailwind CSS 文件。独立条目 `draco-china/sui/sui-style` 和 `draco-china/sui/sui-theme` 提供共享样式与主题工具。
 
 如果应用已有同名组件或自定义主题值，安装后检查生成的文件与 CSS。更新前可先预览：
 
 ```bash
-bunx --bun shadcn@latest add @sui/button --dry-run
-bunx --bun shadcn@latest add @sui/button --diff
+bunx --bun shadcn@latest add draco-china/sui/button --dry-run
+bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
 Editor 使用本地打包的 Monaco workers，需要兼容 Vite 的 `?worker` 加载器。将安装的 `worker.d.ts` 保留在 TypeScript 的 include 范围内。安装完整集合时同样需要满足此条件。
@@ -75,6 +65,26 @@ export function SaveButton() {
 ```
 
 如果 `components.json` 中的别名不同，请使用实际配置。本文档的示例使用 `@workspace/ui/components/button` 等工作区路径。通过 registry 安装时，将 `@workspace/ui/components/*` 替换为 `ui` 别名，将 `@workspace/ui/blocks/*` 替换为 `components` 别名加 `/blocks/*`，将 hook 或工具导入替换为 `hooks` 或 `lib` 别名。例如，默认别名使用 `@/components/ui/button`、`@/components/blocks/data-table` 和 `@/hooks/use-mobile`。CLI 会自动适配安装文件内部的导入路径。
+
+## 可选：继续使用命名空间 [#optional-namespace]
+
+现有 Raw 安装链接和 `@sui` 命名空间仍然可用。若使用 `@sui/button` 等短地址：
+
+将以下条目合并到应用现有的 `components.json`，保留其 CSS 路径与别名：
+
+```json
+{
+  "registries": {
+    "@sui": "https://raw.githubusercontent.com/draco-china/sui/main/registry/r/{name}.json"
+  }
+}
+```
+
+目录索引地址为 `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`，单个条目也位于该目录。
+
+```bash
+bunx --bun shadcn@latest add @sui/button
+```
 
 ## 连接 shadcn MCP 服务 [#connect-the-shadcn-mcp-server]
 

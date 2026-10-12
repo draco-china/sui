@@ -7,6 +7,8 @@ Use the official [shadcn MCP server](https://ui.shadcn.com/docs/mcp) to browse t
 
 For API guidance and complete usage examples, provide the assistant with [LLMs documentation](/docs/llms-txt). MCP queries and inspects installable source. Its `get_add_command_for_items` tool returns a CLI command; the assistant then runs the command in your application to install the files.
 
+GitHub CLI installs also work without the namespace: `bunx --bun shadcn@latest add draco-china/sui/button`. The MCP examples below retain the optional `@sui` configuration for registry discovery.
+
 ## Configure the application [#configure-the-application]
 
 Prepare the consuming application using [Installation](/docs/installation). Merge this registry entry into its existing `components.json`, preserving the application's aliases and CSS configuration:

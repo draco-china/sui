@@ -40,7 +40,7 @@ Use a React 19 and Tailwind CSS 4 project initialized with shadcn and Base UI.
 Install a component directly:
 
 ```sh
-bunx --bun shadcn@latest add https://raw.githubusercontent.com/draco-china/sui/main/registry/r/button.json
+bunx --bun shadcn@latest add draco-china/sui/button
 ```
 
 ```tsx
@@ -51,7 +51,13 @@ export function SaveButton() {
 }
 ```
 
-Or add the registry namespace to your application's `components.json`:
+The GitHub registry needs no namespace configuration. Install the editor and business blocks directly too:
+
+```sh
+bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
+```
+
+Existing Raw URLs and the `@sui` namespace remain supported. To use the namespace, merge this entry into your application's `components.json`:
 
 ```json
 {
@@ -67,7 +73,7 @@ bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-
 ```
 
 Each item installs its source, dependencies, and styles using your application's
-aliases. Install the full collection with `bunx --bun shadcn@latest add @sui/sui`.
+aliases. Install the full collection with `bunx --bun shadcn@latest add draco-china/sui/sui`.
 Browse the [registry catalog](https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json)
 for available items.
 
