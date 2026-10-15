@@ -28,9 +28,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
 import { useViewerTheme } from "../hooks/use-viewer-theme";
-import { useGlassEnabled } from "../lib/glass/context";
 import { CodeViewer, type CodeViewerLabels } from "./code-viewer";
-import { GlassSurface } from "./glass";
 
 interface MarkdownNode {
   type?: string;
@@ -227,7 +225,6 @@ export interface MarkdownViewerProps {
   content: string;
   theme?: "light" | "dark";
   className?: string;
-  glass?: boolean;
   labels?: Partial<MarkdownViewerLabels>;
 }
 
@@ -251,11 +248,9 @@ export function MarkdownViewer({
   content,
   theme,
   className,
-  glass,
   labels,
 }: Readonly<MarkdownViewerProps>) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const glassEnabled = useGlassEnabled(glass);
   const headingPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
@@ -270,9 +265,8 @@ export function MarkdownViewer({
 
   return (
     <MarkdownContext value={{ headingPrefix, theme: resolvedTheme, labels }}>
-      <GlassSurface
+      <div
         ref={rootRef}
-        glass={glassEnabled}
         data-slot="markdown-viewer"
         className={cn(
           "max-w-none text-foreground text-sm",
@@ -294,7 +288,7 @@ export function MarkdownViewer({
         >
           {content}
         </ReactMarkdown>
-      </GlassSurface>
+      </div>
     </MarkdownContext>
   );
 }
@@ -663,6 +657,7 @@ const markdownComponents: Components = {
     const lang = /language-([\w-]+)/.exec(className)?.[1] ?? "text";
     return (
       <CodeViewer
+        glass={false}
         code={getNodeText(children).replace(/\n$/, "")}
         lang={lang}
         theme={resolvedTheme}

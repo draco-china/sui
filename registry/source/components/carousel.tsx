@@ -8,7 +8,6 @@ import useEmblaCarousel, {
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -43,7 +42,7 @@ function useCarousel() {
   return context;
 }
 
-function CarouselImplementation({
+function Carousel({
   orientation = "horizontal",
   opts,
   setApi,
@@ -250,8 +249,6 @@ function CarouselNext({
     </Button>
   );
 }
-
-const Carousel = withGlass(CarouselImplementation, "scope");
 
 export {
   Carousel,

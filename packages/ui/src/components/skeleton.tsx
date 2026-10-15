@@ -16,6 +16,9 @@ function SkeletonImplementation({
   );
 }
 
-const Skeleton = withGlass(SkeletonImplementation);
+const Skeleton = withGlass(SkeletonImplementation, "surface", {
+  mode: "css",
+  material: "regular",
+});
 
 export { Skeleton };

@@ -21,7 +21,7 @@ import {
   useState,
 } from "react";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
-import { withGlass } from "../lib/glass/context";
+import { type GlassProps, withGlass } from "../lib/glass/context";
 import { ViewerButton } from "../lib/viewer/controls";
 import {
   clampImageScale,
@@ -51,7 +51,7 @@ export type ImageViewerLabels = {
   thumbnail: (alt: string, index: number) => string;
   position: (index: number, total: number) => string;
 };
-export interface ImageViewerProps {
+export interface ImageViewerProps extends GlassProps {
   images: string | string[];
   open: boolean;
   onClose: () => void;
@@ -61,7 +61,6 @@ export interface ImageViewerProps {
   alt?: string;
   container?: ComponentProps<typeof DialogPrimitive.Portal>["container"];
   className?: string;
-  glass?: boolean;
   labels?: Partial<ImageViewerLabels>;
 }
 const defaultLabels: ImageViewerLabels = {
@@ -245,7 +244,7 @@ function ImageViewerImplementation({
     >
       <DialogPrimitive.Portal container={container}>
         <DialogOverlay />
-        <ImagePopup
+        <DialogPrimitive.Popup
           data-slot="image-viewer"
           aria-describedby={undefined}
           className={cn(
@@ -425,6 +424,7 @@ function ImageViewerImplementation({
                   <Button
                     // biome-ignore lint/suspicious/noArrayIndexKey: Repeated URLs are distinct numbered gallery entries.
                     key={`${src}-${imageIndex}`}
+                    glass={false}
                     variant="ghost"
                     size="icon"
                     className={cn(
@@ -447,13 +447,12 @@ function ImageViewerImplementation({
               </div>
             </div>
           )}
-        </ImagePopup>
+        </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </Dialog>
   );
 }
 
-const ImagePopup = withGlass(DialogPrimitive.Popup, "portal");
 const ImageViewer = withGlass(ImageViewerImplementation, "scope");
 
 export { ImageViewer };

@@ -122,6 +122,8 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
 </Dialog>
 ```
 
+Set `glass` on `Attachment` to enable the material on `AttachmentAction` buttons only. The attachment container, media, metadata, and full-card trigger keep their normal styles. Individual actions also accept the `Button` Glass switch.
+
 ## Accessibility
 
 `AttachmentAction` renders a `Button`, and `AttachmentTrigger` renders a real `<button>` (or your element via `render`). Follow the guidance below so both are operable and announced.
@@ -174,6 +176,7 @@ The root attachment container.
 | `state`       | `"idle" \| "uploading" \| "processing" \| "error" \| "done"` | `"done"`       | The upload state. Drives styling and the shimmer. |
 | `size`        | `"default" \| "sm" \| "xs"`                                  | `"default"`    | The attachment size.                              |
 | `orientation` | `"horizontal" \| "vertical"`                                 | `"horizontal"` | Lay the media beside or above the content.        |
+| `glass` | `boolean` | `false` | Enables Glass on action buttons only. |
 | `className`   | `string`                                                     | -              | Additional classes to apply to the root element.  |
 
 ### AttachmentMedia

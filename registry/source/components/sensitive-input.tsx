@@ -118,19 +118,21 @@ function SensitiveInputImplementation({
   React.useEffect(() => {
     const owner = inputRef.current?.form;
     if (!owner || (form !== undefined && owner.id !== form)) return;
+    const root = owner.getRootNode();
     let timer: ReturnType<typeof setTimeout> | undefined;
     function handleReset(event: Event) {
+      if (event.target !== owner || event.defaultPrevented) return;
+      reset();
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (event.defaultPrevented) return;
-        reset();
         setInputValue(inputRef.current?.value ?? "");
       }, 0);
     }
-    owner.addEventListener("reset", handleReset);
+    // Bubble after React's onReset, before the browser restores input values.
+    root.addEventListener("reset", handleReset);
     return () => {
       clearTimeout(timer);
-      owner.removeEventListener("reset", handleReset);
+      root.removeEventListener("reset", handleReset);
     };
   }, [form, reset]);
 

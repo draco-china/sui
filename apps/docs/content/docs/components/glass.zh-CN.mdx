@@ -1,11 +1,11 @@
 ---
 title: Glass
-description: 共用边缘高光，按能力通过 vgpu、SVG 折射和 CSS 回退呈现玻璃表面
+description: 共享高光、SVG 折射与 CSS 回退的玻璃表面。
 ---
 
 ## 预览 [#preview]
 
-在同一个场景切换 CSS + SVG、SVG 折射和 vgpu + WGSL，比较普通表面与三档强度。背景、布局和主题保持一致，状态文字显示实际渲染方式。vgpu 选项使用 `mode="auto"`，设备不可用时依次回退到 SVG 折射与 CSS 基础效果；SVG 选项不请求 GPU，CSS 选项不采样背景。可通过站点明暗切换比较两种主题
+在同一场景切换 CSS、SVG 折射和自动回退，对比普通与玻璃表面。演示显式使用 `mode="auto"`：清透按 WebGPU → SVG → CSS 回退，常规使用 SVG → CSS。可以切换站点明暗主题。
 
 <ComponentPreview name="glass-demo" />
 
@@ -15,108 +15,83 @@ description: 共用边缘高光，按能力通过 vgpu、SVG 折射和 CSS 回�
 bunx --bun shadcn@latest add @sui/glass
 ```
 
-通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
-
 ## 使用 [#usage]
 
 ```tsx
-import { GlassProvider, GlassSurface } from "@workspace/ui/components/glass";
-import { useRef } from "react";
+import { GlassSurface } from "@workspace/ui/components/glass";
 
-export function GlassPanel() {
-  const sceneRef = useRef<HTMLDivElement>(null);
-  return (
-    <GlassProvider intensity="default" captureTarget={sceneRef}>
-      <div ref={sceneRef} className="relative rounded-2xl bg-muted p-6">
-        <GlassSurface className="rounded-2xl bg-background p-6">
-          玻璃表面
-        </GlassSurface>
-      </div>
-    </GlassProvider>
-  );
-}
+<GlassSurface className="rounded-2xl bg-background p-6">
+  Glass surface
+</GlassSurface>
 ```
+
+通过组件的 `glassConfig` 单独选择材质和渲染方式；`glass` 仍只负责开关。局部配置保留 `strength`、`tint`、`tintOpacity` 和 `highlight` 四个参数，不开放模糊或最低文字对比度。局部配置不会写成 HTML 属性，显式 `glass={false}` 始终关闭效果。
+
+```tsx
+import { Button } from "@workspace/ui/components/button";
+import { GlassSurface } from "@workspace/ui/components/glass";
+
+<GlassSurface glassConfig={{ mode: "svg", material: "clear" }} />
+<Button glass glassConfig={{ material: "regular" }}>操作</Button>
+```
+
+每个启用的表面使用独立请求，内部共享观察器、事件监听、渲染器与能力检测。复合组件的根可传递配置给操作控件和浮层；布局根自身不创建渲染请求，无需公开 Provider。
 
 ## 表面如何渲染 [#rendering]
 
-Glass 首屏使用跟随元素原生圆角的 CSS 内侧柔光和背景模糊。挂载并测量表面后，按实际尺寸生成的 SVG 局部边缘高光替换初始柔光。两个阶段均不依赖 GPU，保留原有 DOM 结构和 ref。
+首屏使用 CSS 模糊和圆角内侧柔光。测量后使用 SVG 边缘高光。原生 SVG 直接处理浏览器背后的实时画面，只有 WebGPU 使用解码后的采样帧替换背景。组件库默认 SVG → CSS，只有清透材质显式使用 `mode="auto"` 才请求 WebGPU；常规材质在自动模式下也使用 SVG → CSS。SVG 折射使用原生 `feDisplacementMap`；模糊与更清晰的折射边缘由 SVG 滤镜节点合成。两种渲染器保留随尺寸适配的平滑折射带。WebGPU 背景最高 2 倍采样，受 8 百万像素上限约束，坐标仍使用 CSS 像素。SVG 只生成几何位移图，不抓取背景。
 
-Provider 默认为 `mode="auto"`，挂载时即开始共享能力检测，不必等某个玻璃组件可见。选择顺序为 **vgpu + WGSL → SVG 折射 → CSS 模糊 + SVG 高光**。并存的 Provider 共享初始化结果和渲染器，不逐个组件重复检测。GPU 初始化结果及真实 SVG 像素位移检测决定可用性，仅有 `navigator.gpu` 或 CSS 语法支持还不够。设备或渲染失败时沿同一链路降级，不反复重试已失败的后端
+Glass 保留布尔开关，通过 `glassConfig.material` 选择 `"clear"` 或 `"regular"` 材质。默认清透（Clear）的色调不透明度为 `10%`，常规（Regular）为 `35%`。使用 `<GlassSurface glassConfig={{ material: "regular" }} />` 选择常规材质。显式设置 `options.tintOpacity` 会覆盖材质默认值。Playground 的透明度在手动调节前跟随所选材质，恢复默认参数后回到当前材质的默认值。
 
-所有模式的首屏均立即显示 CSS 基础外观；采样成功且增强帧完成解码后，才一次性替换。`mode="svg"` 只启用 SVG 折射，`mode="css"` 不请求 GPU 或捕获文档。降低透明度偏好与强制颜色模式也使用基础效果；采样失败时保留已解码的旧帧或基础外观
+骨架的 Glass 内部固定为 Regular＋CSS，不请求增强渲染器，外部仍只使用 `glass` 开关。其他需要折射的组件沿用局部或继承配置；组件只在确有固定材质需求时使用内部策略。
 
-默认不添加边框或装饰性外环，由 SVG 软边呈现轮廓；交互控件原有的键盘焦点环仍保留。
+两种材质名称对应 [Apple 的 Clear 与 Regular 变体](https://developer.apple.com/design/human-interface-guidelines/materials)，这里的数值是 Web 近似参数，并非 Apple 官方规格。两种材质均保留折射强度 `22`、高光 `0.3`。模糊仍为内置值：WebGPU `2px`、SVG `4px`、CSS `6px`，不提供公开参数。
 
-测量后，CSS、回退和 WebGPU 增强模式共用同一份 SVG 局部边缘高光，同时移除初始 CSS 柔光。GPU 仅负责背景折射与模糊，避免重复边缘。新帧完成解码后才替换旧帧，避免切换时出现空白。
+从底到顶依次合成背景折射、玻璃底色、组件填充色、边缘高光和内容。`tintOpacity` 控制玻璃底色，不会同时降低组件填充和高光的透明度。不透明主色保留实色，删除态保留自身填充的透明度；高光独立叠在填充之上。CSS、SVG 与 WebGPU 使用同一份材质合成结果。
 
-此功能需要显式启用：普通组件默认保持 `glass={false}`。没有 Provider 的启用表面也使用 auto 增强；需要固定为 CSS 与 SVG 时，使用 `mode="css"` 的 Provider。`GlassSurface` 自身默认 `glass={true}`，可关闭以进行直接对照。
+完全不透底的填充使用 CSS 绘制并保留 SVG 高光，省去被填充覆盖的背景采样和折射计算。透光表面按所选模式增强；渲染状态会显示实际使用的模式。
 
-Provider 为内部组件共享背景采样与渲染设置。`captureTarget` 接受元素或元素引用，建议限定为实际需要的视觉区域，避免捕获过大的文档。auto 与 svg 模式下，不同实例的实际捕获目标、场景版本及遮挡集合一致时，共享同一背景快照和同一份上传至 GPU 的纹理。每个表面使用自己的采样坐标和圆角轮廓；仅移动表面时更新坐标，不重新捕获未变化的背景。背景变化会使旧快照失效。共享采样管线自动从克隆背景中排除所有 Glass 模块及其文字、子内容、嵌套控件和已渲染的图片帧，保留隐藏的布局占位，真实 DOM 保持可见且不变。此规则覆盖跨 Provider 和重叠表面，不仅用于演示；玻璃后面的普通内容仍保留。Portal 浮层仅在实际捕获目标或非玻璃遮挡集合不同时另行取样。截图使用 `html-to-image`，由 `vgpu` 管理 GPU 上下文、纹理和渲染通道，WGSL 着色器负责折射与高斯模糊。Glass runtime 静态导入；采样时才加载取样依赖，auto 检测加载 GPU 渲染器，显式 svg 模式或 GPU 回退时才加载 SVG 折射渲染器。
+## 输入、预览与浮层 [#composition]
 
-## 快照增强 [#webgpu]
+通过 `glass` 为有材质表面的容器和操作控件启用效果。Card、Accordion 和 Toolbar 等容器使用一个连续表面，内部行、标签和分割线不单独绘制材质。玻璃容器内的控件默认复用所属表面，显式开启后可拥有独立材质；浮动菜单和 Tooltip 可拥有自己的表面。`glass={false}` 关闭当前组件及其继承设置，子组件可显式重新启用。Glass 视觉生效时不添加聚焦 ring，普通组件保留原有主题和焦点样式。
 
-CSS 背景模糊直接响应底层页面。启用 vgpu 或 SVG 折射时，背景文字变化、普通图片、网格、尺寸变化和滚动可更新其背景快照。普通采样最高 5Hz，滚动期间最高 10Hz，并在共享队列中串行执行，因此背景变化与折射画面更新之间有短暂延迟，并不是实时视频。应用需要主动请求新快照时，使用 Provider 引用上的 `refresh()`。
-
-下面演示在对比预览的基础上提供背景编辑与渲染参数，状态文字显示当前实际渲染模式。示例使用默认的 `mode="auto"`，可修改背景文字，并提供折射、模糊与边缘高光滑块。两个独立玻璃表面共享场景，请从表面周围露出的区域滚动背景。增强生效时，将折射强度设为 `0` 可比较原始快照与折射结果；不支持增强的设备继续显示 CSS 与 SVG 材质。
-
-<ComponentPreview name="glass-dynamic" />
-
-## 输入框、预览与浮层 [#composition]
-
-给支持的共享组件传入 `glass`，无需替换原生控件。输入保留原 DOM 节点、ref、表单行为和焦点环。玻璃容器内的独立按钮、输入框、选择控件与工具栏操作继承玻璃材质。布局包装、正文以及 InputGroup 内部的原生输入复用所属表面。使用 `glass={false}` 可关闭某个控件或作用域。示例使用普通父容器，让各玻璃控件独立呈现，避免嵌套材质采样。
-
-示例组合了可编辑输入、浮层、对话框、Editor 和 Code Viewer。一般内容不重复叠加材质；对话框中的输入框作为独立交互控件，继承玻璃材质，呈现嵌套玻璃并保留原生焦点环。键盘、焦点、复制和编辑交互保持可用。
+标签、面包屑、布局辅助、状态指示、表格和二维码保持普通样式。Markdown 和 HTML Viewer 的内容不使用 Glass；编辑器、代码与对比查看器、图片查看器、轮播和附件仅为操作控件提供 Glass，内容区保持普通样式，编辑器沿用既有 Monaco 生命周期。小型状态控件与骨架内部固定使用 Regular＋CSS。组件体验页同时展示普通组件和适合玻璃的表面，不为每个示例额外套一张玻璃卡片。
 
 <ComponentPreview name="glass-composition" />
 
-[TabBar](/zh-CN/docs/components/tab-bar) 提供独立应用导航与移动玻璃镜片，复用同一 Provider 和材质基础，路由仍由应用控制。
+## WebGPU 采样与实时 SVG [#webgpu]
 
-## 强度档位 [#materials]
+WebGPU 使用组件的 `glassConfig.captureTarget` 限定采样区域。相同目标、场景版本和遮挡集合共用快照；采样时排除自身、同绘制层级的 Glass 及上方遮挡，保留下层画面。层级结合所属玻璃表面和 CSS 堆叠上下文判断；真实 DOM 不被隐藏或移除。下层 Glass 更新后，使用它的上层请求重新采样。如果下层使用无法被 DOM 快照完整保留的原生背景滤镜，上层局部回退到 SVG，再回退到 CSS；其他请求仍可使用 WebGPU。
 
-通过 `intensity="sm" | "default" | "lg"` 选择三档强度。默认采用中档，Provider 为内部表面共享强度；`GlassSurface` 的 `intensity` 可单独覆盖继承值。
+每个请求按自身光学范围过滤普通节点，并为折射和模糊预留边距。阴影、滤镜和可见伪元素可能越过元素矩形，因此保守保留。排除的图片在截图副本里先换成布局占位，再嵌入资源；排除的 canvas 在像素序列化前跳过，并在副本中补回等尺寸占位。实际保留的资源无法读取或嵌入时，该表面局部回退到 SVG，再回退到 CSS；独立请求仍可使用 WebGPU。不可读取资源使用现有快照条目记录失败，场景失效或刷新后重新尝试；临时采样失败则保留旧帧并允许重试。
 
-| 强度 | 背景模糊 | 底色遮罩 |
-| --- | --- | --- |
-| `sm` | `4px` | `40%` |
-| `default` | `6px` | `60%` |
-| `lg` | `8px` | `78%` |
+自动模式在滚动或标记的运动期间优先使用可用的原生 SVG，停止后重新尝试 WebGPU。播放中的视频与其他保留的 DOM 绘制内容混合时也使用原生路径，暂停后尝试恢复 WebGPU；纯视频纹理仍可由 GPU 渲染，避免实时背景依赖反复过期的 DOM 截图。
 
-三档使用相同的 SVG 高光与折射基础，背景和正文仍跟随主题。`options.blur` 与 `options.tintOpacity` 可覆盖档位默认值；`options.strength` 独立控制数值型折射强度，默认为 `22`。上面的统一预览在各渲染模式下同时展示普通表面和三档强度。
+DOM 采样最高 `5Hz`，原生 SVG 不可用时的运动采样最高 `10Hz`，不是 `60/120Hz` 实时渲染。`refreshGlass(target)` 为使用该目标的已挂载表面请求更新；不传目标时刷新所有已挂载请求。Playground 的两个视频背景保留；原生 SVG 与 CSS 由浏览器跟随视频和滚动画面，不使用 JS 背景快照，实际帧率仍需根据浏览器绘制与显示设备实测。
+
+<ComponentPreview name="glass-dynamic" />
 
 ## 主题与回退 [#themes]
 
-默认色调来自当前表面的背景 token，会跟随浅色、深色及强调配色，并保留主色和危险状态色。可在 Provider 上调整 `strength`、`blur`、`tint`、`tintOpacity` 和 `highlight`，统一表面处理。SVG 柔和高光仅作用于表面边缘，`highlight` 统一控制高光强度；默认的 SVG 与 CSS 外观同样保留这些光线细节；没有 WebGPU 时，`highlight` 和 `blur` 参数仍然生效。
+默认主题 token 不变，材质从组件自身背景读取颜色。最低文字对比度维持内置 `0`，不开放参数；组件自身文字色保持不变。无法完成增强时回退到 SVG 或 CSS。降低透明度偏好和强制颜色模式停用增强、显示不透明基础表面，并保留原生焦点样式。CSS 与 SVG 回退仍需检查实际背景上的文字可读性。
 
-WebGPU 不可用时使用 SVG 折射；两种增强均不可用或背景捕获失败时，基础玻璃表面仍然显示，控件仍可使用。玻璃效果用于视觉表现，不应成为理解内容的必要条件。
+## 采样限制 [#limits]
 
-Glass 在局部增强中性说明文字和占位文字的对比度，同时保留主题的主色、危险色与焦点色。选择清透玻璃或调整遮罩透明度时，需要结合实际背景检查文字；透明材质无法保证任意背景上的对比度。底层内容影响阅读时，可使用更高的强度档位或普通表面。
-
-WebGPU 增强会读取所属表面内正文和输入占位文字的实际颜色与透明度，并平滑调整整个材质，使这些文字达到至少 4.5:1 的对比度，不使用文字矩形遮罩。具有独立背景的子元素与嵌套玻璃分别处理自己的背景；收集到的颜色无法共用可读背景时，增强回退为 CSS 与 SVG。CSS 回退、生成内容或 SVG 文字、自定义混合与滤镜、外层透明度仍需结合实际画面检查。
-
-## 快照限制 [#limits]
-
-vgpu 与 SVG 折射增强使用的 DOM 捕获不是浏览器合成器截图。跨域图片需要合适的 CORS 权限，跨域 iframe 无法读取。内嵌 iframe 文档、视频帧、被跨域内容污染的 canvas 及其他浏览器管理表面，在快照中可能缺失或不准确。无法保证捕获 Canvas 及其他 GPU 渲染内容。
-
-快速动画可能超过采样更新频率。需要准确实时媒体时，使用普通表面或磨砂回退，并在移动设备上控制采样区域大小。
-
-正向的水平与垂直缩放保留原有布局，并将快照与圆角映射到视口坐标。旋转、斜切、透视与镜像变换使用 CSS + SVG 回退，避免显示错位的快照。
+这些限制针对 WebGPU 背景采样；原生 SVG 使用浏览器背后的画面，不进入 DOM 截图路径。DOM 快照不是浏览器合成器截图。跨域图像需要 CORS；iframe、复杂变换及浏览器管理的绘制内容可能无法准确采样。排除 canvas 时，如果无法可靠还原 Shadow DOM 插槽的布局，该表面局部使用原生 SVG，再回退到 CSS。过大的采样区域、快速动画和大量浮层会增加成本。WebGPU 保持原有快照结构，不包含额外的实时画布、嵌套合成层或全局主题备份。
 
 ## API 参考 [#api-reference]
 
-| 属性 | 类型 | 默认值／说明 |
+| Prop | Type | 默认值 / 行为 |
 | --- | --- | --- |
-| Provider `mode` | `"css" \| "svg" \| "auto"` | `"auto"`；vgpu → SVG 折射 → CSS 基础效果，共享一次能力检测 |
-| Provider `intensity` | `"sm" \| "default" \| "lg"` | `"default"`；共享强度 |
-| Provider `options` | `GlassOptions` | 共享渲染设置 |
-| Provider `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | 可选的局部 DOM 捕获目标 |
-| Provider `ref` | `Ref<GlassHandle>` | `refresh(): void` 请求新快照 |
-| Options `strength` | `number` | `22`；vgpu 与 SVG 折射强度 |
-| Options `blur` | `number` | 使用强度档位默认值；显式值覆盖 CSS 与增强模糊 |
-| Options `tint` | `string` | 当前表面背景颜色 |
-| Options `tintOpacity` | `number` | CSS 与增强共用强度档位默认值；显式值覆盖两者 |
+| Config `mode` | `"css" \| "svg" \| "auto"` | `"svg"`；SVG → CSS。Clear `auto`：WebGPU → SVG → CSS；Regular：SVG → CSS。 |
+| Config `material` | `"clear" \| "regular"` | `"clear"`；色调不透明度 `10%` / `35%`。 |
+| Config `options` | `GlassOptions` | 局部材质参数。 |
+| Config `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | 可选 WebGPU 采样范围，SVG 与 CSS 不使用。 |
+| `refreshGlass(target?)` | `(target?: GlassCaptureTarget) => void` | 刷新使用该目标的已挂载请求，不传目标时刷新全部。 |
+| Options `strength` | `number` | `22` |
+| Options `tint` | `string` | 组件自身背景。 |
+| Options `tintOpacity` | `number` | 材质默认值 `0.1` / `0.35`；显式值优先。 |
 | Options `highlight` | `number` | `0.3` |
-| Surface `glass` | `boolean` | `true`；普通组件默认 `false` |
-| Surface `intensity` | `"sm" \| "default" \| "lg"` | 继承 Provider 强度 |
-| Surface 其他属性 | 原生 div 属性 | 包含 `className`、`style` 和 `ref` |
-
-模块导出 `GlassProvider`、`GlassSurface`、`GlassOptions`、`GlassCaptureTarget`、`GlassProviderProps`、`GlassMode`、`GlassIntensity` 和 `GlassHandle`。默认表面由 SVG 与 CSS 提供，可选增强使用 [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)。SUI 的组件接入由上表属性控制。
+| Surface `glass` | `boolean` | `true` |
+| Component `glassConfig` | `GlassConfig` | 局部 `mode`、`material`、`options`、可选 WebGPU `captureTarget`；不包含开关或请求 ID。 |
+| Surface other props | Native div props | `className`, `style`, `ref` |

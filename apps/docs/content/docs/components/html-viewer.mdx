@@ -37,9 +37,9 @@ Set `sandbox=""` for a static preview without script execution. Pass other nativ
 
 <ComponentPreview name="html-viewer-sandbox" />
 
-## Layout and glass [#layout]
+## Layout [#layout]
 
-The iframe defaults to filling its container. Set an explicit height on the component or its parent. `glass` styles the outer surface; it does not refract, capture, or theme the separate iframe document. Glass background snapshots cannot reliably include iframe contents.
+The iframe defaults to filling its container. Set an explicit height on the component or its parent. The iframe and its document do not use Glass.
 
 ## API reference [#api-reference]
 
@@ -49,7 +49,6 @@ The iframe defaults to filling its container. Set an explicit height on the comp
 | `sandbox` | Native iframe sandbox | `"allow-scripts"`. |
 | `title` | `string` | `labels.preview` or `"HTML preview"`. |
 | `labels` | `{ preview?: string }` | Fallback accessible title. |
-| `glass` | `boolean` | `false`. |
 | Other props | Native iframe props | Forwarded, including `className`, `ref`, and `loading`. |
 
 The module exports `HtmlViewerProps`. See the [iframe element documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe) for sandbox permissions. For source editing with preview, use [Editor](/docs/components/editor).

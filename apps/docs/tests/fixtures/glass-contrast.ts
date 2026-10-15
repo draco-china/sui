@@ -13,6 +13,7 @@ Object.assign(globalThis, { window, document: window.document });
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
   value: () => ({
     fillStyle: "rgb(0, 0, 0)",
+    clearRect() {},
     fillRect() {},
     getImageData() {
       const channels = this.fillStyle

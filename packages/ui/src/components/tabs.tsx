@@ -347,10 +347,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   );
 }
 
-function TabsContentImplementation({
-  className,
-  ...props
-}: TabsPrimitive.Panel.Props) {
+function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-content"
@@ -367,6 +364,5 @@ function TabsContentImplementation({
 
 const Tabs = withGlass(TabsImplementation, "scope");
 const TabsList = withGlass(TabsListImplementation);
-const TabsContent = withGlass(TabsContentImplementation);
 
 export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants };

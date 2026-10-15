@@ -1,11 +1,8 @@
 "use client";
 
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible";
-import { withGlass } from "../lib/glass/context";
 
-function CollapsibleImplementation({
-  ...props
-}: CollapsiblePrimitive.Root.Props) {
+function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
   return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />;
 }
 
@@ -20,7 +17,5 @@ function CollapsibleContent({ ...props }: CollapsiblePrimitive.Panel.Props) {
     <CollapsiblePrimitive.Panel data-slot="collapsible-content" {...props} />
   );
 }
-
-const Collapsible = withGlass(CollapsibleImplementation, "scope");
 
 export { Collapsible, CollapsibleContent, CollapsibleTrigger };

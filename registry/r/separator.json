@@ -686,22 +686,61 @@
         "animation": "none"
       }
     },
-    "[data-glass=\"true\"]": {
+    "@layer components.glass": {
+      ":where(\n      [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    )\n    > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+      },
+      ":where([data-slot=\"accordion\"]):has(\n    > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
+        "border-color": "transparent"
+      },
+      ":where(\n      [data-slot=\"accordion\"]:is(\n        [data-glass=\"true\"],\n        [data-glass-part=\"surface\"]\n      )\n    )\n    > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+      },
+      ":where(\n    [data-slot=\"accordion\"] > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
+        "&:first-child": {
+          "border-top-left-radius": "inherit",
+          "border-top-right-radius": "inherit"
+        },
+        "&:last-child": {
+          "border-bottom-left-radius": "inherit",
+          "border-bottom-right-radius": "inherit"
+        }
+      },
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+        ":where(\n        [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n      )\n      > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"]),\n    :where([data-slot=\"accordion\"]):has(\n        > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      ),\n    :where(\n        [data-slot=\"accordion\"]:is(\n          [data-glass=\"true\"],\n          [data-glass-part=\"surface\"]\n        )\n      )\n      > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
+          "border-color": "revert-layer"
+        },
+        ":where(\n        [data-slot=\"accordion\"]\n          > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      )": {
+          "&:first-child": {
+            "border-top-left-radius": "revert-layer",
+            "border-top-right-radius": "revert-layer"
+          },
+          "&:last-child": {
+            "border-bottom-left-radius": "revert-layer",
+            "border-bottom-right-radius": "revert-layer"
+          }
+        }
+      }
+    },
+    "[data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n[data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
+      "background-color": "transparent"
+    },
+    "[data-slot=\"select-content\"][data-glass=\"true\"]\n  > :is(\n    [data-slot=\"select-scroll-up-button\"],\n    [data-slot=\"select-scroll-down-button\"]\n  )": {
+      "background-color": "transparent"
+    },
+    "[data-glass=\"true\"],\n[data-glass-part=\"control\"],\n[data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n[data-slot=\"accordion-item\"]:is(\n    [data-glass=\"true\"],\n    [data-glass-part=\"surface\"]\n  )\n  > *\n  > [data-slot=\"accordion-trigger\"]": {
       "border-color": "transparent",
+      "outline": "none",
       "--tw-ring-color": "transparent",
-      "--muted-foreground": "color-mix(\n    in oklch,\n    var(--foreground) 85%,\n    var(--popover)\n  )"
-    },
-    "[data-glass=\"true\"]:focus-visible,\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot=\"input-group-control\"]:focus-visible\n)": {
-      "--tw-ring-color": "var(--ring)"
-    },
-    "[data-glass=\"true\"][data-variant=\"destructive\"]:focus-visible,\n[data-glass=\"true\"][aria-invalid=\"true\"],\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot][aria-invalid=\"true\"]\n)": {
-      "--tw-ring-color": "var(--destructive)"
+      "--tw-inset-ring-shadow": "0 0 #0000",
+      "--tw-ring-shadow": "0 0 #0000",
+      "--tw-ring-offset-shadow": "0 0 #0000"
     },
     "[data-glass=\"true\"][data-glass-state]": {
       "--glass-edge": "none",
       "--glass-frame": "none",
       "--glass-initial-edge-shadow": "initial",
-      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(--glass-opacity, var(--glass-initial-opacity, 60%)),\n    transparent\n  )",
+      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover)) var(--glass-opacity, 10%),\n    transparent\n  )",
       "--glass-initial-edge-color": "color-mix(\n    in srgb,\n    color-mix(in srgb, var(--foreground) 12%, white) 28%,\n    transparent\n  )",
       "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px\n        color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),\n      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),\n      -1px 1px 2px -0.5px rgb(0 0 0 / 0.07)\n    ),\n    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
       "background-image": "var(--glass-edge, none)",
@@ -709,24 +748,42 @@
       "background-repeat": "no-repeat",
       "background-origin": "border-box",
       "background-clip": "border-box",
-      "-webkit-backdrop-filter": "blur(\n      var(--glass-blur, var(--glass-initial-blur, 6px))\n    )\n    saturate(1.12)",
-      "backdrop-filter": "blur(var(--glass-blur, var(--glass-initial-blur, 6px)))\n    saturate(1.12)"
+      "-webkit-backdrop-filter": "blur(6px) saturate(1.12)",
+      "backdrop-filter": "blur(6px) saturate(1.12)"
+    },
+    "[data-glass=\"true\"][data-glass-state][data-glass-material=\"regular\"]": {
+      "--glass-opacity": "35%"
     },
     "[data-slot=\"tab-bar-indicator\"][data-glass=\"true\"]": {
       "background-color": "transparent",
       "-webkit-backdrop-filter": "none",
       "backdrop-filter": "none"
     },
-    "[data-glass=\"true\"][data-glass-state=\"ready\"]": {
+    "[data-glass=\"true\"][data-glass-state=\"ready\"]:where(\n  [data-glass-renderer=\"vgpu\"]\n)": {
       "background-color": "transparent",
       "background-image": "var(--glass-edge, none), var(--glass-frame, none)",
       "-webkit-backdrop-filter": "none",
       "backdrop-filter": "none"
     },
+    "[data-glass=\"true\"][data-glass-state=\"ready\"]:where(\n  [data-glass-renderer=\"svg\"]\n)": {
+      "-webkit-backdrop-filter": "var(--glass-filter)",
+      "backdrop-filter": "var(--glass-filter)"
+    },
     "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
       "background-image": "var(--glass-edge, none)"
     },
     "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+      "[data-slot=\"select-content\"][data-glass=\"true\"]\n    > :is(\n      [data-slot=\"select-scroll-up-button\"],\n      [data-slot=\"select-scroll-down-button\"]\n    ),\n  [data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n  [data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
+        "background-color": "revert-layer"
+      },
+      "[data-glass=\"true\"],\n  [data-glass-part=\"control\"],\n  [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n  [data-slot=\"accordion-item\"]:is(\n      [data-glass=\"true\"],\n      [data-glass-part=\"surface\"]\n    )\n    > *\n    > [data-slot=\"accordion-trigger\"]": {
+        "border-color": "revert-layer",
+        "outline": "revert-layer",
+        "--tw-ring-color": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer",
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-ring-offset-shadow": "revert-layer"
+      },
       "[data-glass=\"true\"][data-glass-state]": {
         "background-color": "var(--glass-base, var(--popover))",
         "background-image": "none",

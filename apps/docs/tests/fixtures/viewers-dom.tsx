@@ -485,6 +485,52 @@ function expectedPairs(tokens: { content: string; color?: string }[]) {
   });
 }
 await ready();
+// Unequal replacements create padding positions that can collide with token indexes.
+const previousConsoleError = console.error;
+const diffErrors: unknown[][] = [];
+console.error = (...args: unknown[]) => {
+  diffErrors.push(args);
+  previousConsoleError(...args);
+};
+try {
+  for (const newCode of [
+    "head\nnew one\nnew two\ntail",
+    "head\nnew one\nnew two\nnew three\ntail",
+  ]) {
+    await render(
+      <DiffViewer
+        oldCode="head\nold\ntail"
+        newCode={newCode}
+        copyable={false}
+      />,
+    );
+    await click(button("Split"));
+    await ready();
+    const tables = [...host.querySelectorAll("table")];
+    assert.equal(tables.length, 2);
+    assert.equal(
+      tables[0].querySelectorAll("tbody tr").length,
+      newCode.split("\n").length,
+    );
+    assert.equal(
+      tables[1].querySelectorAll("tbody tr").length,
+      newCode.split("\n").length,
+    );
+    assert.equal(
+      [...tables[1].querySelectorAll("tr td:last-child")]
+        .map((cell) => cell.textContent)
+        .join("\n"),
+      newCode,
+    );
+  }
+  assert.equal(
+    diffErrors.length,
+    0,
+    "padding rows must not reuse code-row React keys across updates",
+  );
+} finally {
+  console.error = previousConsoleError;
+}
 for (const [oldCode, newCode] of [
   ["const value = `old\nshared\n`;", 'const value = "new";\nshared\n`;'],
   ["/* old\nshared\n*/", "const ready = true;\nshared\n*/"],

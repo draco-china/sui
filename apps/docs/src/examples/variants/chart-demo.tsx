@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
@@ -78,7 +79,7 @@ export function ChartDemo() {
   );
 
   return (
-    <Card className="py-0 pb-4">
+    <Card className="w-full py-0 pb-4">
       <CardHeader className="flex flex-col items-stretch border-b p-0! sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:py-0!">
           <CardTitle>Bar Chart - Interactive</CardTitle>
@@ -90,11 +91,13 @@ export function ChartDemo() {
           {["desktop", "mobile"].map((key) => {
             const chart = key as keyof typeof chartConfig;
             return (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 key={chart}
                 data-active={activeChart === chart}
-                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
+                aria-pressed={activeChart === chart}
+                className="relative z-30 h-auto flex-1 flex-col items-start justify-center gap-1 rounded-none border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
                 onClick={() => setActiveChart(chart)}
               >
                 <span className="text-muted-foreground text-xs">
@@ -103,7 +106,7 @@ export function ChartDemo() {
                 <span className="font-bold text-lg leading-none sm:text-3xl">
                   {total[key as keyof typeof total].toLocaleString()}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>

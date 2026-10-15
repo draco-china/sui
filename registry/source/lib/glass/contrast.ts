@@ -5,12 +5,19 @@ export class GlassContrastError extends Error {
   override name = "GlassContrastError";
 }
 
+let colorContext: CanvasRenderingContext2D | null = null;
+
 export function parseGlassColor(color: string): GlassTextColor {
   if (!color || color === "transparent") return [0, 0, 0, 0];
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 1;
-  const context = canvas.getContext("2d");
+  if (!colorContext) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    colorContext = canvas.getContext("2d", { willReadFrequently: true });
+  }
+  const context = colorContext;
   if (!context) return [0.5, 0.5, 0.5, 1];
+  context.clearRect(0, 0, 1, 1);
+  context.fillStyle = "#000";
   context.fillStyle = color;
   context.fillRect(0, 0, 1, 1);
   const bytes = context.getImageData(0, 0, 1, 1).data;

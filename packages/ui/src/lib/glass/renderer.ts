@@ -18,8 +18,16 @@ import {
   maxGlassTextColors,
   resolveGlassContrastTint,
 } from "./contrast";
+import { glassDefaults } from "./defaults";
+import {
+  glassBevelFraction,
+  glassMaxBevelWidth,
+  glassMaxEdgeClarity,
+  glassRefractionStrength,
+} from "./refraction";
 
 export type GlassFrame = {
+  pixelRatio?: number;
   width: number;
   height: number;
   margin: number;
@@ -50,6 +58,7 @@ struct Params {
 @group(0) @binding(0) var<uniform> params: Params;
 @group(0) @binding(1) var background: texture_2d<f32>;
 @group(0) @binding(2) var linearSampler: sampler;
+@group(0) @binding(3) var sharpBackground: texture_2d<f32>;
 
 @vertex fn vertexMain(@builtin(vertex_index) index: u32) -> @builtin(position) vec4f {
   var positions = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0));
@@ -96,23 +105,39 @@ fn roundedDistance(p: vec2f) -> f32 {
   }
   return distance;
 }
-fn sourceColor(p: vec2f) -> vec3f {
+fn sourceColor(p: vec2f, clarity: f32) -> vec3f {
   let uv = clamp((p + params.source.zw) / params.source.xy, vec2f(0.0), vec2f(1.0));
-  return textureSampleLevel(background, linearSampler, uv, 0.0).rgb;
+  let blurred = textureSampleLevel(background, linearSampler, uv, 0.0).rgb;
+  let sharp = textureSampleLevel(sharpBackground, linearSampler, uv, 0.0).rgb;
+  return mix(blurred, sharp, clarity);
+}
+fn bevelProfile(depth: f32, width: f32) -> f32 {
+  return 1.0 - smoothstep(0.0, width, depth);
 }
 @fragment fn fragmentMain(@builtin(position) pixel: vec4f) -> @location(0) vec4f {
   let p = pixel.xy * params.surface.xy / params.surface.zw;
   let distance = roundedDistance(p);
+  let antialias = max(fwidth(distance) * 0.5, 0.00001);
   let gradient = vec2f(
     roundedDistance(p + vec2f(0.4, 0.0)) - roundedDistance(p - vec2f(0.4, 0.0)),
     roundedDistance(p + vec2f(0.0, 0.4)) - roundedDistance(p - vec2f(0.0, 0.4))
   ) + vec2f(0.00001);
   let normal = gradient / max(length(gradient), 0.00001);
   let depth = max(-distance, 0.0);
-  let bevel = pow(clamp(1.0 - depth / 17.0, 0.0, 1.0), 2.0);
-  let displaced = p - normal * bevel * params.material.y * 0.45;
-  let split = normal * bevel * min(params.material.y * 0.014, 0.45);
-  let sampled = vec3f(sourceColor(displaced + split).r, sourceColor(displaced).g, sourceColor(displaced - split).b);
+  let bevelWidth = min(${glassMaxBevelWidth}.0, min(params.surface.x, params.surface.y) * ${glassBevelFraction});
+  let bevel = bevelProfile(depth, bevelWidth);
+  var offset = normal * bevel;
+  let edges = min(p, params.surface.xy - p);
+  var corner = select(1u, 0u, p.x < params.surface.x * 0.5);
+  if (p.y >= params.surface.y * 0.5) { corner = 3u - corner; }
+  if (params.radii[corner] == 0.0 && params.verticalRadii[corner] == 0.0 && all(params.radii <= vec4f(params.surface.x * 0.5)) && all(params.verticalRadii <= vec4f(params.surface.y * 0.5)) && all(edges >= vec2f(0.0)) && all(edges < vec2f(bevelWidth))) {
+    let signs = select(vec2f(1.0), vec2f(-1.0), p < params.surface.xy * 0.5);
+    offset = signs * vec2f(bevelProfile(edges.x, bevelWidth), bevelProfile(edges.y, bevelWidth));
+  }
+  let displaced = p - offset * params.material.y * 0.45;
+  let split = offset * min(params.material.y * 0.014, 0.45);
+  let clarity = bevel * min(params.material.y / bevelWidth, 1.0) * ${glassMaxEdgeClarity};
+  let sampled = vec3f(sourceColor(displaced + split, clarity).r, sourceColor(displaced, clarity).g, sourceColor(displaced - split, clarity).b);
   let luminanceValue = dot(sampled, vec3f(0.2126, 0.7152, 0.0722));
   let saturated = mix(vec3f(luminanceValue), sampled, 1.12);
   var result = mix(saturated, params.tint, params.material.x);
@@ -132,7 +157,7 @@ fn sourceColor(p: vec2f) -> vec3f {
     result = mix(result, safeTint, upper);
     if (!supportsTextContrast(result)) { result = safeTint; }
   }
-  return vec4f(result, 1.0 - smoothstep(-0.65, 0.65, distance));
+  return vec4f(result, 1.0 - smoothstep(-antialias, antialias, distance));
 }`;
 
 const gaussianShader = `
@@ -287,7 +312,8 @@ export class GlassRenderer {
         height: source.height,
         filtered: new Map(),
       });
-      if (this.backgrounds.size > 4) {
+      // Serial rendering only needs the current background and its blur targets.
+      if (this.backgrounds.size > 1) {
         const oldest = this.backgrounds.keys().next().value;
         if (oldest) this.releaseBackground(oldest);
       }
@@ -395,7 +421,7 @@ export class GlassRenderer {
       )
     )
       throw new GlassContrastError("Unsupported glass text colors");
-    const minimum = frame.minimumContrast ?? 4.5;
+    const minimum = frame.minimumContrast ?? glassDefaults.minimumContrast;
     const contrastMinimum = minimum > 0 ? minimum + 0.05 : 0;
     const contrastKey = JSON.stringify([
       frame.tint,
@@ -419,12 +445,13 @@ export class GlassRenderer {
     if (
       ![
         frame.width,
+        frame.pixelRatio ?? 1,
         frame.height,
         frame.margin,
         frame.strength,
         frame.blur,
         frame.tintOpacity,
-        frame.minimumContrast ?? 4.5,
+        minimum,
         ...(frame.origin ?? [frame.margin, frame.margin]),
         ...frame.radius,
         ...(frame.radiusY ?? frame.radius),
@@ -434,12 +461,14 @@ export class GlassRenderer {
       frame.blur < 0 ||
       frame.blur > 24 ||
       frame.width <= 0 ||
+      (frame.pixelRatio ?? 1) <= 0 ||
+      (frame.pixelRatio ?? 1) > 2 ||
       frame.height <= 0 ||
       source.width <= 0 ||
       source.height <= 0
     )
       throw new Error("Invalid glass frame dimensions or material");
-    const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 1.5);
+    const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
     const width = Math.max(1, Math.round(frame.width * scale));
     const height = Math.max(1, Math.round(frame.height * scale));
     const bytesPerRow = Math.ceil((width * 4) / 256) * 256;
@@ -453,7 +482,12 @@ export class GlassRenderer {
     let scopeOpen = true;
     this.gpu.gpu.pushErrorScope("validation");
     try {
-      const input = this.filteredBackground(source, frame.blur, temporary);
+      const pixelRatio = frame.pixelRatio ?? 1;
+      const input = this.filteredBackground(
+        source,
+        frame.blur * pixelRatio,
+        temporary,
+      );
       const output = target(this.gpu, {
         label: "Glass frame",
         size: [width, height],
@@ -472,19 +506,23 @@ export class GlassRenderer {
         params: {
           surface: [frame.width, frame.height, width, height],
           source: [
-            source.width,
-            source.height,
+            source.width / pixelRatio,
+            source.height / pixelRatio,
             ...(frame.origin ?? [frame.margin, frame.margin]),
           ],
           radii: frame.radius,
           verticalRadii: frame.radiusY ?? frame.radius,
-          material: [frame.tintOpacity, frame.strength],
+          material: [
+            frame.tintOpacity,
+            glassRefractionStrength(frame.strength, frame.width, frame.height),
+          ],
           tint: frame.tint,
           minimumContrast: contrastMinimum,
           contrastMaterial: [...contrastTint, textColors.length],
           textColors: colors,
         },
         background: input,
+        sharpBackground: this.background(source),
         linearSampler: this.linearSampler,
       });
       gpuFrame(this.gpu, (frame) => frame.pass(output, this.refraction));

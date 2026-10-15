@@ -37,9 +37,9 @@ import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 
 <ComponentPreview name="html-viewer-sandbox" />
 
-## 布局与玻璃效果 [#layout]
+## 布局 [#layout]
 
-iframe 默认填满容器，请为组件或父容器设置明确高度。`glass` 只处理外层表面，不会折射、捕获或主题化独立的 iframe 文档。玻璃背景快照无法可靠包含 iframe 内部内容。
+iframe 默认填满容器，请为组件或父容器设置明确高度。iframe 和内部文档保持普通样式，不支持 Glass。
 
 ## API 参考 [#api-reference]
 
@@ -49,7 +49,6 @@ iframe 默认填满容器，请为组件或父容器设置明确高度。`glass`
 | `sandbox` | 原生 iframe sandbox | `"allow-scripts"` |
 | `title` | `string` | `labels.preview` 或 `"HTML preview"` |
 | `labels` | `{ preview?: string }` | 备用可访问标题 |
-| `glass` | `boolean` | `false` |
 | 其他属性 | 原生 iframe 属性 | 透传，包括 `className`、`ref` 和 `loading` |
 
 模块导出 `HtmlViewerProps`。沙箱权限见 [iframe 元素文档](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)。需要编辑源码并预览时使用 [Editor](/zh-CN/docs/components/editor)。

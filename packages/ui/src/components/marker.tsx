@@ -5,7 +5,6 @@ import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "../lib/glass/context";
 
 const markerVariants = cva(
   "group/marker relative flex min-h-4 w-full items-center gap-2 text-start text-muted-foreground text-sm [&_svg:not([class*='size-'])]:size-4 [a]:underline [a]:underline-offset-3 [a]:hover:text-foreground",
@@ -21,7 +20,7 @@ const markerVariants = cva(
   },
 );
 
-function MarkerImplementation({
+function Marker({
   className,
   variant = "default",
   render,
@@ -69,7 +68,5 @@ function MarkerContent({ className, ...props }: React.ComponentProps<"span">) {
     />
   );
 }
-
-const Marker = withGlass(MarkerImplementation);
 
 export { Marker, MarkerContent, MarkerIcon, markerVariants };

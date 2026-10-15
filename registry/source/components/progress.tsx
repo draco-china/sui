@@ -2,9 +2,8 @@
 
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
 
-function ProgressImplementation({
+function Progress({
   className,
   children,
   value,
@@ -25,10 +24,7 @@ function ProgressImplementation({
   );
 }
 
-function ProgressTrackImplementation({
-  className,
-  ...props
-}: ProgressPrimitive.Track.Props) {
+function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
       className={mergeClassNames(
@@ -76,9 +72,6 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
     />
   );
 }
-
-const Progress = withGlass(ProgressImplementation, "scope");
-const ProgressTrack = withGlass(ProgressTrackImplementation);
 
 export {
   Progress,

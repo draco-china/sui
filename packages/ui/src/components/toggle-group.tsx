@@ -27,6 +27,7 @@ function ToggleGroupImplementation({
   size,
   spacing = 2,
   orientation = "horizontal",
+  style,
   children,
   ...props
 }: ToggleGroupPrimitive.Props &
@@ -42,9 +43,14 @@ function ToggleGroupImplementation({
       data-spacing={spacing}
       data-orientation={orientation}
       orientation={orientation}
-      style={{ "--gap": spacing } as React.CSSProperties}
+      style={(state) =>
+        ({
+          "--gap": spacing,
+          ...(typeof style === "function" ? style(state) : style),
+        }) as React.CSSProperties
+      }
       className={mergeClassNames(
-        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-vertical:flex-col data-vertical:items-stretch",
+        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
         className,
       )}
       {...props}
@@ -75,7 +81,7 @@ function ToggleGroupItemImplementation({
       data-spacing={context.spacing}
       className={mergeClassNames(
         cn(
-          "shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:ps-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pe-2.5 group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-e-3xl group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-s-3xl group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl",
+          "shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:ps-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pe-2.5 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last:rounded-e-3xl group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first:rounded-s-3xl group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first:rounded-t-3xl",
           toggleVariants({
             variant: context.variant || variant,
             size: context.size || size,
@@ -90,7 +96,10 @@ function ToggleGroupItemImplementation({
   );
 }
 
-const ToggleGroupItem = withGlass(ToggleGroupItemImplementation, "control");
+const ToggleGroupItem = withGlass(ToggleGroupItemImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 const ToggleGroup = withGlass(ToggleGroupImplementation, "scope");
 

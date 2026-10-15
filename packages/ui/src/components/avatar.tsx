@@ -4,9 +4,8 @@ import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
 import { cn } from "cn";
 import type * as React from "react";
 import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
 
-function AvatarImplementation({
+function Avatar({
   className,
   size = "default",
   ...props
@@ -39,7 +38,7 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   );
 }
 
-function AvatarFallbackImplementation({
+function AvatarFallback({
   className,
   ...props
 }: AvatarPrimitive.Fallback.Props) {
@@ -55,10 +54,7 @@ function AvatarFallbackImplementation({
   );
 }
 
-function AvatarBadgeImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       data-slot="avatar-badge"
@@ -74,10 +70,7 @@ function AvatarBadgeImplementation({
   );
 }
 
-function AvatarGroupImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="avatar-group"
@@ -90,7 +83,7 @@ function AvatarGroupImplementation({
   );
 }
 
-function AvatarGroupCountImplementation({
+function AvatarGroupCount({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -105,12 +98,6 @@ function AvatarGroupCountImplementation({
     />
   );
 }
-
-const Avatar = withGlass(AvatarImplementation, "scope");
-const AvatarGroup = withGlass(AvatarGroupImplementation, "scope");
-const AvatarFallback = withGlass(AvatarFallbackImplementation);
-const AvatarBadge = withGlass(AvatarBadgeImplementation);
-const AvatarGroupCount = withGlass(AvatarGroupCountImplementation);
 
 export {
   Avatar,

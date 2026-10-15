@@ -2,20 +2,17 @@
 
 import { cn } from "cn";
 import type { ComponentProps } from "react";
-import { withGlass } from "@/lib/glass/context";
 
 type HtmlViewerProps = Omit<ComponentProps<"iframe">, "srcDoc"> & {
   content: string;
-  glass?: boolean;
   labels?: { preview?: string };
 };
-function HtmlViewerImplementation({
+function HtmlViewer({
   content,
   sandbox = "allow-scripts",
   className,
   title,
   labels,
-  glass: _glass,
   ...props
 }: HtmlViewerProps) {
   return (
@@ -31,7 +28,5 @@ function HtmlViewerImplementation({
 }
 
 export type { HtmlViewerProps };
-
-const HtmlViewer = withGlass(HtmlViewerImplementation);
 
 export { HtmlViewer };

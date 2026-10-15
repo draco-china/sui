@@ -51,14 +51,6 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 
 <ComponentPreview name="qr-code-logo" />
 
-## 玻璃模式 [#glass]
-
-设置 `glass` 让整个背景使用共享玻璃材质，通过 `GlassProvider` 调整强度和渲染模式。码面铺满表面，不再单独留出外缘或叠加内部实体底板；`--foreground` 前景仍是清晰的 SVG 内容，码面背景透明，只有中心标记保留小块实体底色。主题和玻璃强度变化不会改变编码内容。`glassIntensity` 可覆盖该实例的强度。
-
-玻璃后面的背景会改变码面和留白的实际对比度。请在最终显示尺寸、实际背景以及明暗模式下验证扫码；玻璃模式不保证默认实体底板的对比度。
-
-<ComponentPreview name="qr-code-glass" />
-
 ## API 参考 [#api-reference]
 
 | 属性 | 类型 | 默认值／说明 |
@@ -69,8 +61,6 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 | `size` | `number` | `256`；目标宽度，限制为 64–1024 像素；窄容器内自动缩小 |
 | `label` | `string` | `"QR code"`；可访问描述 |
 | `margin` | `number` | `16`；四周留白，按目标尺寸的 CSS 像素计 |
-| `glass` | `boolean` | 默认关闭；让码面背景整体使用玻璃材质 |
-| `glassIntensity` | `"sm" \| "default" \| "lg"` | 覆盖 Provider 强度 |
 | `logo` | `ReactNode` | 可选中心覆盖内容 |
 | `render`、`ref`、其他属性 | div／useRender 属性 | 透传到根节点 |
 

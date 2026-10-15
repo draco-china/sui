@@ -42,6 +42,9 @@ function RadioGroupItemImplementation({
 }
 
 const RadioGroup = withGlass(RadioGroupImplementation, "scope");
-const RadioGroupItem = withGlass(RadioGroupItemImplementation, "control");
+const RadioGroupItem = withGlass(RadioGroupItemImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 export { RadioGroup, RadioGroupItem };

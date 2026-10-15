@@ -355,7 +355,10 @@ function InputOTPSeparator({
   );
 }
 const InputOTP = withGlass(InputOTPImplementation, "scope");
-const InputOTPSlot = withGlass(InputOTPSlotImplementation, "control");
+const InputOTPSlot = withGlass(InputOTPSlotImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 export type { InputOTPProps, InputOTPStatus };
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot };

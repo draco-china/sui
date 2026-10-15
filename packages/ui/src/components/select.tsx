@@ -4,13 +4,13 @@ import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import type * as React from "react";
 import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
+import { type GlassProps, withGlass } from "../lib/glass/context";
 
 const Select = withGlass(SelectPrimitive.Root, "scope") as <
   Value,
   Multiple extends boolean | undefined = false,
 >(
-  props: SelectPrimitive.Root.Props<Value, Multiple> & { glass?: boolean },
+  props: SelectPrimitive.Root.Props<Value, Multiple> & GlassProps,
 ) => React.JSX.Element;
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {

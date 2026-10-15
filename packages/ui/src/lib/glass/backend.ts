@@ -1,11 +1,10 @@
-import type { GlassMode } from "./context";
+import type { GlassMaterial, GlassMode } from "./context";
 import type { GlassRenderer } from "./renderer";
 import type { SvgGlassRenderer } from "./svg-renderer";
 
-type Backend = {
-  kind: "vgpu" | "svg";
-  renderer: GlassRenderer | SvgGlassRenderer;
-};
+type Backend =
+  | { kind: "vgpu"; renderer: GlassRenderer }
+  | { kind: "svg"; renderer: SvgGlassRenderer };
 let gpu: Promise<Backend | undefined> | undefined;
 let svg: Promise<Backend | undefined> | undefined;
 let gpuInstance: GlassRenderer | undefined;
@@ -14,7 +13,7 @@ let controller = new AbortController();
 let gpuFailed = false;
 let svgFailed = false;
 
-export function glassBaseOnly(mode: GlassMode = "auto") {
+export function glassBaseOnly(mode: GlassMode = "svg") {
   return (
     mode === "css" ||
     window.matchMedia?.(
@@ -23,10 +22,13 @@ export function glassBaseOnly(mode: GlassMode = "auto") {
   );
 }
 
-export async function prepareGlassRenderer(mode: GlassMode = "auto") {
+export async function prepareGlassRenderer(
+  mode: GlassMode = "svg",
+  material: GlassMaterial = "clear",
+) {
   if (glassBaseOnly(mode)) return;
   const session = controller;
-  if (mode === "auto" && !gpuFailed) {
+  if (mode === "auto" && material === "clear" && !gpuFailed) {
     gpu ??= (async () => {
       try {
         const { GlassRenderer } = await import("./renderer");

@@ -2,7 +2,6 @@
 
 import { cn } from "cn";
 import * as ResizablePrimitive from "react-resizable-panels";
-import { withGlass } from "@/lib/glass/context";
 
 function ResizablePanelGroup({
   className,
@@ -24,7 +23,7 @@ function ResizablePanel({ ...props }: ResizablePrimitive.PanelProps) {
   return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />;
 }
 
-function ResizableHandleImplementation({
+function ResizableHandle({
   withHandle,
   className,
   ...props
@@ -46,7 +45,5 @@ function ResizableHandleImplementation({
     </ResizablePrimitive.Separator>
   );
 }
-
-const ResizableHandle = withGlass(ResizableHandleImplementation);
 
 export { ResizableHandle, ResizablePanel, ResizablePanelGroup };

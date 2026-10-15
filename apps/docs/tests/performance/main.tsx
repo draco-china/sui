@@ -1,10 +1,7 @@
 import { Home, Search, Settings } from "lucide-react";
 import { Profiler, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import {
-  GlassProvider,
-  GlassSurface,
-} from "../../../../packages/ui/src/components/glass";
+import { GlassSurface } from "../../../../packages/ui/src/components/glass";
 import { TabBar } from "../../../../packages/ui/src/components/tab-bar";
 import {
   type GlassFrame,
@@ -21,7 +18,7 @@ import {
   snapshot,
   summary,
 } from "./metrics";
-import { svgPixelAudit } from "./svg-audit";
+import { svgFilterAudit } from "./svg-audit";
 import "./style.css";
 
 instrumentGpu();
@@ -29,9 +26,14 @@ const render = GlassRenderer.prototype.render;
 GlassRenderer.prototype.render = function (source, frame) {
   return measure("render", () => render.call(this, source, frame));
 };
-const renderSvg = SvgGlassRenderer.prototype.render;
-SvgGlassRenderer.prototype.render = function (source, frame) {
-  return measure("render", () => renderSvg.call(this, source, frame));
+const filterSvg = SvgGlassRenderer.prototype.filter;
+SvgGlassRenderer.prototype.filter = function (element, geometry) {
+  const start = performance.now();
+  try {
+    return filterSvg.call(this, element, geometry);
+  } finally {
+    metrics.svgFilter.push(performance.now() - start);
+  }
 };
 const supportsLongTasks =
   PerformanceObserver.supportedEntryTypes.includes("longtask");
@@ -64,7 +66,8 @@ async function stable(scene: HTMLElement) {
     const pending = surfaces.some(
       (surface) => surface.dataset.glassState === "loading",
     );
-    const next = metrics.capture.length + metrics.render.length;
+    const next =
+      metrics.capture.length + metrics.render.length + metrics.svgFilter.length;
     if (count !== next) {
       count = next;
       changed = performance.now();
@@ -170,27 +173,29 @@ function Scene({
       <div className="benchmark-background">
         <p>Real DOM text, grid and colored panels behind the material</p>
       </div>
-      <GlassProvider
-        captureTarget={target}
-        mode={mode}
-        intensity="sm"
-        options={{ highlight }}
-      >
-        <div className="benchmark-surfaces">
-          {surfaceIds.slice(0, count).map((id) => (
-            <GlassSurface className="benchmark-surface" key={id}>
-              Glass {id}
-            </GlassSurface>
-          ))}
-        </div>
-        <TabBar
-          aria-label="Benchmark navigation"
-          glass
-          items={items}
-          value={value}
-          onValueChange={setValue}
-        />
-      </GlassProvider>
+      <div className="benchmark-surfaces">
+        {surfaceIds.slice(0, count).map((id) => (
+          <GlassSurface
+            className="benchmark-surface"
+            key={id}
+            glassConfig={{
+              captureTarget: target,
+              mode,
+              options: { highlight },
+            }}
+          >
+            Glass {id}
+          </GlassSurface>
+        ))}
+      </div>
+      <TabBar
+        aria-label="Benchmark navigation"
+        glass
+        glassConfig={{ captureTarget: target, mode, options: { highlight } }}
+        items={items}
+        value={value}
+        onValueChange={setValue}
+      />
     </div>
   );
 }
@@ -308,7 +313,7 @@ function Benchmark() {
       longTaskSupport: supportsLongTasks,
       scenario: focusedDrag ? "auto-drag diagnostic reproduction" : "full",
       methodology:
-        "Local Vite development harness, real production source, CSS, SVG refraction and vgpu + WGSL. GPU renderer times include queue, GPU completion, readback and PNG serialization; SVG renderer times cover map/Blob generation, excluding deferred browser decoding and raster/paint. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
+        "Local Vite development harness, real production source, CSS, SVG refraction and vgpu + WGSL. GPU renderer times include queue, GPU completion, readback and PNG serialization; SVG filter times cover geometric map and DOM definition updates only; live backdrop raster/paint must be measured separately. SVG has no background snapshot or frame encoding. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
     };
     try {
       if (!focusedDrag && !focusedSvg) {
@@ -320,11 +325,9 @@ function Benchmark() {
           data.renderer = { error: String(error) };
         }
       }
-      const modes: readonly ("css" | "svg" | "auto")[] = focusedDrag
-        ? ["auto"]
-        : focusedSvg
-          ? ["svg"]
-          : ["css", "svg", "auto"];
+      let modes: readonly ("css" | "svg" | "auto")[] = ["css", "svg", "auto"];
+      if (focusedDrag) modes = ["auto"];
+      else if (focusedSvg) modes = ["svg"];
       const counts = focusedDrag || focusedSvg ? [8] : [1, 8];
       for (const mode of modes) {
         for (const count of counts) {
@@ -433,15 +436,15 @@ function CaptureAudit() {
       <button
         type="button"
         onClick={() =>
-          void svgPixelAudit().then(
+          void svgFilterAudit().then(
             (result) => setPixels(JSON.stringify(result)),
             (error) => setPixels(String(error)),
           )
         }
       >
-        Test SVG pixels
+        Inspect native SVG filter
       </button>
-      <pre id="svg-pixel-audit">{pixels}</pre>
+      <pre id="svg-filter-audit">{pixels}</pre>
       <details data-glass-exclude="">
         <summary>Inspect captured background</summary>
         <pre id="capture-audit-metadata" />

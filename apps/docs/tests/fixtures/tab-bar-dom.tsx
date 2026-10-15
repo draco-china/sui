@@ -91,7 +91,6 @@ Object.defineProperty(document, "elementFromPoint", { value: () => hit });
 const { act, createRef, useState } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { TabBar } = await import("@workspace/ui/components/tab-bar");
-const { GlassProvider } = await import("@workspace/ui/components/glass");
 const { gsap } = await import("gsap");
 const host = document.createElement("div");
 document.body.append(host);
@@ -103,32 +102,31 @@ let submitted = 0;
 function Demo() {
   const [value, setValue] = useState("home");
   return (
-    <GlassProvider options={{ highlight: 0.45 }}>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          submitted++;
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        submitted++;
+      }}
+    >
+      <TabBar
+        ref={ref}
+        glass
+        glassConfig={{ mode: "auto", options: { highlight: 0.45 } }}
+        aria-label="Destinations"
+        value={value}
+        onItemActivate={() => activations++}
+        onValueChange={(next) => {
+          changes.push(next);
+          setValue(next);
         }}
-      >
-        <TabBar
-          ref={ref}
-          glass
-          aria-label="Destinations"
-          value={value}
-          onItemActivate={() => activations++}
-          onValueChange={(next) => {
-            changes.push(next);
-            setValue(next);
-          }}
-          items={[
-            { value: "home", label: "Home" },
-            { value: "search", label: "Search" },
-            { value: "disabled", label: "Disabled", disabled: true },
-            { value: "activity", label: "Activity" },
-          ]}
-        />
-      </form>
-    </GlassProvider>
+        items={[
+          { value: "home", label: "Home" },
+          { value: "search", label: "Search" },
+          { value: "disabled", label: "Disabled", disabled: true },
+          { value: "activity", label: "Activity" },
+        ]}
+      />
+    </form>
   );
 }
 await act(async () => {
@@ -158,8 +156,8 @@ assert.ok(outerScope);
 assert.equal(configurations.get(outerScope)?.mode, "auto");
 assert.equal(
   leases.get(outerScope),
-  3,
-  "the provider, outer scope and track share the resting manager",
+  1,
+  "the actual track owns one request; the layout scope has no lease",
 );
 assert.equal(leases.size, 1, "inactive lens does not initialize a manager");
 assert.equal(
@@ -277,8 +275,8 @@ assert.equal(track().getAttribute("data-glass-frozen"), "false");
 assert.equal(leases.get(lensScope), 0, "release stops the lens CSS lease");
 assert.equal(
   leases.get(outerScope),
-  3,
-  "release retains the provider, outer scope and track leases",
+  1,
+  "release retains the track request without a layout lease",
 );
 await act(async () => {
   button("Search").dispatchEvent(

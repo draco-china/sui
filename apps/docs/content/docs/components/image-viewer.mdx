@@ -67,7 +67,7 @@ Opening is controlled through `open` and `onClose`. Supply one image URL or an a
 
 The viewer uses the shared [Dialog](/docs/components/dialog) for modal focus management and dismissal. `alt` describes the images, and `labels` customizes dialog, navigation, zoom, rotation, thumbnail, and position announcements. Function labels receive one-based image positions, while `index` and `onIndexChange` use zero-based indexes.
 
-Use `container` to choose a Portal container when embedding the viewer in a local themed region. The glass effect applies to its surrounding dialog surface; the image itself remains clear.
+Use `container` to choose a Portal container when embedding the viewer in a local themed region. `glass` applies only to fullscreen controls such as zoom, rotate and navigation buttons. The dialog, images and thumbnails keep their normal styles.
 
 ## API reference [#api-reference]
 

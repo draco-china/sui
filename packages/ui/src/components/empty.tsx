@@ -2,12 +2,8 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
-import { withGlass } from "../lib/glass/context";
 
-function EmptyImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function Empty({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="empty"
@@ -98,8 +94,6 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
-const Empty = withGlass(EmptyImplementation);
 
 export {
   Empty,

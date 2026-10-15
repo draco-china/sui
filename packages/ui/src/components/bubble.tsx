@@ -5,12 +5,8 @@ import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "../lib/glass/context";
 
-function BubbleGroupImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function BubbleGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="bubble-group"
@@ -67,7 +63,7 @@ function Bubble({
   );
 }
 
-function BubbleContentImplementation({
+function BubbleContent({
   className,
   render,
   ...props
@@ -129,8 +125,5 @@ function BubbleReactions({
     />
   );
 }
-
-const BubbleGroup = withGlass(BubbleGroupImplementation, "scope");
-const BubbleContent = withGlass(BubbleContentImplementation);
 
 export { Bubble, BubbleContent, BubbleGroup, BubbleReactions };

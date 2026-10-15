@@ -17,6 +17,24 @@ function buttons(html: string) {
 }
 
 describe("Sensitive Input copy contract", () => {
+  test("native reset, immediate copy, cancelled reset, and unmount preserve feedback contracts", () => {
+    const result = Bun.spawnSync({
+      cmd: [
+        process.execPath,
+        new URL("./fixtures/sensitive-input-runtime.tsx", import.meta.url)
+          .pathname,
+      ],
+      cwd: new URL("..", import.meta.url).pathname,
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    expect(new TextDecoder().decode(result.stderr)).toBe("");
+    expect(result.exitCode).toBe(0);
+    expect(new TextDecoder().decode(result.stdout)).toContain(
+      "sensitive input reset lifecycle passed",
+    );
+  }, 10_000);
+
   test("copy is enabled by default without revealing the input or submitting its form", () => {
     const html = render({
       id: "secret",

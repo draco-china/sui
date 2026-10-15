@@ -60,10 +60,17 @@ let peakFonts = 0;
 let failCapture = false;
 let tainted = false;
 let imageFailure = false;
+const embeddedImageSources: string[] = [];
 let lastOptions: CaptureOptions | undefined;
 let drawnSource = "";
 let drawCalls = 0;
 let pixelReads = 0;
+let lastDrawing: { source: unknown; coordinates: number[] } | undefined;
+let lastTranslation: number[] = [];
+let lastScale: number[] = [];
+let lastClip: number[] = [];
+const drawings: { canvas: unknown; source: unknown; coordinates: number[] }[] =
+  [];
 class CaptureImage {
   onload: (() => void) | null = null;
   onerror: (() => void) | null = null;
@@ -74,14 +81,33 @@ class CaptureImage {
 }
 Object.assign(globalThis, { Image: CaptureImage });
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
-  value: () => ({
-    drawImage: () => drawCalls++,
-    getImageData: () => {
-      pixelReads++;
-      if (tainted) throw new Error("SecurityError: tainted canvas");
-      return { data: new Uint8Array([0, 0, 0, 255]) };
-    },
-  }),
+  value: function (this: typeof window.HTMLCanvasElement.prototype) {
+    return {
+      save() {},
+      restore() {},
+      scale: (...coordinates: number[]) => {
+        lastScale = coordinates;
+      },
+      translate: (...coordinates: number[]) => {
+        lastTranslation = coordinates;
+      },
+      beginPath() {},
+      rect: (...coordinates: number[]) => {
+        lastClip = coordinates;
+      },
+      clip() {},
+      drawImage: (source: unknown, ...coordinates: number[]) => {
+        drawCalls++;
+        lastDrawing = { source, coordinates };
+        drawings.push({ canvas: this, source, coordinates });
+      },
+      getImageData: () => {
+        pixelReads++;
+        if (tainted) throw new Error("SecurityError: tainted canvas");
+        return { data: new Uint8Array([0, 0, 0, 255]) };
+      },
+    };
+  },
 });
 
 type HappyElement = InstanceType<typeof window.Element>;
@@ -89,6 +115,7 @@ function cloneFiltered(
   element: HappyElement,
   options: CaptureOptions,
 ): HappyElement {
+  if (element instanceof window.HTMLCanvasElement) element.toDataURL();
   if (element.localName === "svg")
     return element.cloneNode(true) as HappyElement;
   const clone = element.cloneNode(false) as HappyElement;
@@ -122,32 +149,54 @@ mock.module(
         activeFonts--;
       }
     },
-    toSvg: async (target: HappyElement, options: CaptureOptions) => {
-      sourceCalls++;
-      activeSources++;
-      peakSources = Math.max(peakSources, activeSources);
-      try {
-        await pendingSource;
-        lastOptions = options;
-        if (failCapture) throw new Error("Resource failed");
-        const clone = cloneFiltered(target, options);
-        Object.assign((clone as unknown as HTMLElement).style, options.style);
-        for (const image of clone.querySelectorAll(
-          "img[data-test-embed-failure],image[data-test-embed-failure]",
-        )) {
-          options.onImageErrorHandler?.({ target: image } as unknown as Event);
-          image.setAttribute("src", "");
-        }
-        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${options.width}" height="${options.height}"><foreignObject x="0" y="0" width="100%" height="100%">${new window.XMLSerializer().serializeToString(clone)}</foreignObject></svg>`)}`;
-      } finally {
-        activeSources--;
-      }
-    },
   }),
 );
-const { acquireGlassCaptureFonts, captureGlassBackground } = await import(
-  "../../../../packages/ui/src/lib/glass/capture"
-);
+mock.module("html-to-image/es/clone-node", () => ({
+  cloneNode: async (target: HappyElement, options: CaptureOptions) => {
+    sourceCalls++;
+    activeSources++;
+    peakSources = Math.max(peakSources, activeSources);
+    try {
+      await pendingSource;
+      lastOptions = options;
+      if (failCapture) throw new Error("Resource failed");
+      return cloneFiltered(target, options);
+    } finally {
+      activeSources--;
+    }
+  },
+}));
+mock.module("html-to-image/es/embed-images", () => ({
+  embedImages: async (clone: HappyElement, options: CaptureOptions) => {
+    for (const image of clone.querySelectorAll("img,image")) {
+      const source = image.getAttribute("src") ?? image.getAttribute("href");
+      if (source) embeddedImageSources.push(source);
+    }
+    for (const image of clone.querySelectorAll(
+      "img[data-test-embed-failure],image[data-test-embed-failure]",
+    )) {
+      if (!image.getAttribute("src") && !image.getAttribute("href")) continue;
+      options.onImageErrorHandler?.({ target: image } as unknown as Event);
+      image.setAttribute("src", "");
+    }
+  },
+}));
+const {
+  acquireGlassCaptureFonts,
+  captureGlassBackground,
+  glassCaptureOrigin,
+  glassCapturePixelRatio,
+  releaseGlassFrame,
+  GlassResourceError,
+} = await import("../../../../packages/ui/src/lib/glass/capture");
+const revokedFrames: string[] = [];
+const revokeFrame = URL.revokeObjectURL;
+URL.revokeObjectURL = (url) => {
+  revokedFrames.push(url);
+  revokeFrame(url);
+};
+releaseGlassFrame("idle-frame");
+assert.deepEqual(revokedFrames, ["idle-frame"]);
 let releaseFontOwner = acquireGlassCaptureFonts(
   document as unknown as Document,
 );
@@ -193,12 +242,20 @@ scroller.setAttribute("data-glass-capture-id", "caller-value");
 const excluded = target.querySelector("#glass") as unknown as Element;
 const blocked = new Set<Element>([excluded]);
 const initialChildren = scroller.childNodes.length;
-const canvas = await captureGlassBackground(
+const initialCapture = captureGlassBackground(
   target as unknown as HTMLElement,
   blocked,
 );
-assert.equal(canvas.width, 1024);
-assert.equal(canvas.height, 768);
+releaseGlassFrame("active-frame");
+assert.equal(
+  revokedFrames.includes("active-frame"),
+  false,
+  "a mode change cannot revoke a frame while DOM embedding may still read it",
+);
+const canvas = await initialCapture;
+assert.equal(revokedFrames.includes("active-frame"), true);
+assert.equal(canvas.width, 2048);
+assert.equal(canvas.height, 1536);
 assert.equal(lastOptions?.width, 640);
 assert.equal(lastOptions?.height, 1200);
 assert.equal(lastOptions?.pixelRatio, 1);
@@ -208,6 +265,9 @@ const captured = new window.DOMParser().parseFromString(
   drawnSource,
   "image/svg+xml",
 );
+assert.equal(captured.documentElement.getAttribute("width"), "1024");
+assert.equal(captured.documentElement.getAttribute("height"), "768");
+assert.deepEqual(lastDrawing?.coordinates, [0, 0, 2048, 1536]);
 assert.equal(captured.documentElement.getAttribute("viewBox"), "0 0 1024 768");
 assert.equal(captured.querySelector("foreignObject")?.getAttribute("x"), "40");
 assert.equal(
@@ -322,7 +382,7 @@ unreadable.remove();
 const decodedParent = document.createElement("div");
 decodedParent.id = "decoded-glass-parent";
 const embeddedEdge = glassEdge(120, 40, ["20px", "20px", "20px", "20px"], 0.3);
-assert.ok(embeddedEdge.includes("url(%23light0)"));
+assert.ok(embeddedEdge.includes("url(%23topReflection)"));
 assert.ok(embeddedEdge.includes("url(%23soft)"));
 decodedParent.style.backgroundImage = `${embeddedEdge}, url("data:image/png;base64,AAAA")`;
 const quotedEdgeStyle = document.createElement("style");
@@ -372,7 +432,8 @@ assert.equal(
 decodedParent.dataset.glass = "true";
 const nestedGlass = document.createElement("div");
 nestedGlass.dataset.glass = "true";
-nestedGlass.textContent = "Nested text must never enter the snapshot";
+nestedGlass.id = "requested-glass-child";
+nestedGlass.textContent = "Requested child text stays excluded";
 decodedParent.append(nestedGlass);
 const peerGlass = document.createElement("div");
 peerGlass.id = "automatic-peer";
@@ -381,12 +442,34 @@ peerGlass.style.backgroundImage =
   'url("blob:http://localhost/uncapturable-peer")';
 peerGlass.textContent = "Peer glass content";
 target.append(peerGlass);
-await captureGlassBackground(target as unknown as HTMLElement, new Set());
+await captureGlassBackground(
+  target as unknown as HTMLElement,
+  new Set([nestedGlass as unknown as Element, peerGlass as unknown as Element]),
+);
 const cleanScene = new window.DOMParser().parseFromString(
   drawnSource,
   "image/svg+xml",
 );
-for (const id of ["decoded-glass-parent", "automatic-peer"]) {
+const retainedParent = cleanScene.querySelector(
+  "#decoded-glass-parent",
+) as unknown as HTMLElement;
+assert.ok(retainedParent);
+assert.notEqual(
+  retainedParent.style.visibility,
+  "hidden",
+  "caller-unblocked lower Glass remains in the background",
+);
+assert.equal(
+  retainedParent.style.backgroundImage,
+  decodedParent.style.backgroundImage,
+  "the retained parent frame and edge bitmap survive clone repair",
+);
+assert.equal(
+  retainedParent.querySelector("style")?.textContent,
+  quotedEdgeStyle.textContent,
+  "the lower parent's non-Glass contents stay available to child sampling",
+);
+for (const id of ["requested-glass-child", "automatic-peer"]) {
   const clone = cleanScene.querySelector(`#${id}`) as unknown as HTMLElement;
   assert.ok(clone, "the shared pipeline retains layout placeholders");
   assert.equal(clone.style.visibility, "hidden");
@@ -394,7 +477,7 @@ for (const id of ["decoded-glass-parent", "automatic-peer"]) {
   assert.equal(
     clone.childNodes.length,
     0,
-    "all content is removed from each glass module, including nested glass",
+    "only caller-blocked Glass content is removed, preserving its layout placeholder",
   );
 }
 assert.equal(
@@ -403,6 +486,44 @@ assert.equal(
   "the live glass never flashes or loses its frame during capture",
 );
 assert.ok(nestedGlass.isConnected);
+await assert.rejects(
+  captureGlassBackground(
+    target as unknown as HTMLElement,
+    new Set([nestedGlass as unknown as Element]),
+  ),
+  /resource embedding failed/,
+  "an unblocked Glass peer is retained and must satisfy ordinary resource embedding instead of being silently filtered",
+);
+await captureGlassBackground(
+  target as unknown as HTMLElement,
+  new Set([
+    decodedParent as unknown as Element,
+    peerGlass as unknown as Element,
+  ]),
+);
+const parentExcludedScene = new window.DOMParser().parseFromString(
+  drawnSource,
+  "image/svg+xml",
+);
+const explicitlyExcludedParent = parentExcludedScene.querySelector(
+  "#decoded-glass-parent",
+) as unknown as HTMLElement;
+assert.ok(explicitlyExcludedParent);
+assert.equal(
+  explicitlyExcludedParent.style.visibility,
+  "hidden",
+  "caller-blocked parent is excluded when it is actually on the requesting plane",
+);
+assert.equal(
+  explicitlyExcludedParent.childNodes.length,
+  0,
+  "excluding a parent also excludes its child subtree",
+);
+assert.equal(
+  decodedParent.style.cssText,
+  parentStyleBeforeCapture,
+  "changing capture masks never changes the live retained parent's frame",
+);
 peerGlass.remove();
 delete decodedParent.dataset.glass;
 nestedGlass.remove();
@@ -448,6 +569,12 @@ const imageExcludedCapture = new window.DOMParser().parseFromString(
 const hiddenImage = imageExcludedCapture.querySelector(
   "#excluded-image",
 ) as unknown as HTMLElement;
+assert.equal(hiddenImage.localName, "div");
+assert.equal(
+  embeddedImageSources.includes("https://example.test/no-cors.png"),
+  false,
+  "excluded image resources never reach the embedding stage",
+);
 assert.equal(hiddenImage.style.visibility, "hidden");
 assert.equal(hiddenImage.style.width, "40px");
 assert.equal(hiddenImage.style.height, "30px");
@@ -462,6 +589,107 @@ await assert.rejects(
   /image embedding failed/,
 );
 embeddingFailure.remove();
+const canvasLayout = document.createElement("div");
+canvasLayout.id = "canvas-layout";
+canvasLayout.style.cssText = "display:flex;gap:12px;width:400px";
+canvasLayout.setAttribute("data-glass-capture-id", "caller-parent");
+canvasLayout.innerHTML =
+  '<span id="canvas-prefix">Before</span><canvas id="canvas-a" style="width:80px;height:30px;flex-shrink:0"></canvas><script>excluded</script><span id="canvas-middle">Between</span><canvas id="canvas-b" style="width:50px;height:40px;padding:3px;border:2px solid;box-sizing:content-box"></canvas><span id="canvas-suffix">After</span>';
+const canvasA = canvasLayout.querySelector("#canvas-a");
+const canvasB = canvasLayout.querySelector("#canvas-b");
+assert.ok(canvasA);
+assert.ok(canvasB);
+canvasA.setAttribute("data-glass-capture-id", "caller-canvas");
+let canvasSerializations = 0;
+for (const element of [canvasA, canvasB])
+  Object.defineProperty(element, "toDataURL", {
+    value: () => {
+      canvasSerializations++;
+      const error = new Error("Tainted excluded canvas");
+      error.name = "SecurityError";
+      throw error;
+    },
+  });
+target.append(canvasLayout);
+const canvasBlockers = new Set([
+  ...blocked,
+  canvasA as unknown as Element,
+  canvasB as unknown as Element,
+]);
+await captureGlassBackground(target as unknown as HTMLElement, canvasBlockers);
+assert.equal(
+  canvasSerializations,
+  0,
+  "excluded canvases never serialize pixels",
+);
+const canvasExcludedCapture = new window.DOMParser().parseFromString(
+  drawnSource,
+  "image/svg+xml",
+);
+const capturedCanvasLayout =
+  canvasExcludedCapture.querySelector("#canvas-layout");
+assert.ok(capturedCanvasLayout);
+assert.deepEqual(
+  [...capturedCanvasLayout.children].map((node) => node.id),
+  ["canvas-prefix", "canvas-a", "canvas-middle", "canvas-b", "canvas-suffix"],
+  "layout placeholders preserve order beside filtered nodes and multiple canvases",
+);
+const canvasPlaceholderA = canvasExcludedCapture.querySelector(
+  "#canvas-a",
+) as unknown as HTMLElement;
+const canvasPlaceholderB = canvasExcludedCapture.querySelector(
+  "#canvas-b",
+) as unknown as HTMLElement;
+for (const placeholder of [canvasPlaceholderA, canvasPlaceholderB]) {
+  assert.equal(placeholder.localName, "div");
+  assert.equal(placeholder.style.visibility, "hidden");
+  assert.equal(placeholder.style.boxSizing, "border-box");
+}
+assert.equal(canvasPlaceholderA.style.width, "80px");
+assert.equal(canvasPlaceholderA.style.height, "30px");
+assert.equal(canvasPlaceholderB.style.width, "60px");
+assert.equal(canvasPlaceholderB.style.height, "50px");
+assert.equal(canvasA.parentElement, canvasLayout);
+assert.equal(canvasA.getAttribute("data-glass-capture-id"), "caller-canvas");
+assert.equal(
+  canvasLayout.getAttribute("data-glass-capture-id"),
+  "caller-parent",
+);
+assert.equal(canvasB.hasAttribute("data-glass-capture-id"), false);
+await assert.rejects(
+  captureGlassBackground(target as unknown as HTMLElement, blocked),
+  (error: unknown) =>
+    error instanceof GlassResourceError &&
+    error.message.includes("canvas is unreadable"),
+  "an unreadable retained canvas selects the local native fallback",
+);
+assert.equal(canvasSerializations, 1);
+assert.equal(canvasA.getAttribute("data-glass-capture-id"), "caller-canvas");
+assert.equal(
+  canvasLayout.getAttribute("data-glass-capture-id"),
+  "caller-parent",
+);
+canvasLayout.remove();
+const canvasHost = document.createElement("x-canvas-layout");
+canvasHost.attachShadow({ mode: "open" }).innerHTML = "<slot></slot>";
+canvasHost.append(canvasA);
+target.append(canvasHost);
+const beforeSlottedCanvasReads = canvasSerializations;
+await assert.rejects(
+  captureGlassBackground(
+    target as unknown as HTMLElement,
+    new Set([...blocked, canvasA as unknown as Element]),
+  ),
+  (error: unknown) =>
+    error instanceof GlassResourceError &&
+    error.message.includes("unsupported layout"),
+  "flattened shadow slots use native fallback instead of guessing a placeholder parent",
+);
+assert.equal(canvasSerializations, beforeSlottedCanvasReads);
+assert.equal(canvasA.parentElement, canvasHost);
+assert.equal(canvasA.getAttribute("data-glass-capture-id"), "caller-canvas");
+assert.equal(canvasHost.hasAttribute("data-glass-capture-id"), false);
+canvasHost.remove();
 const blockedSvg = document.createElementNS(
   "http://www.w3.org/2000/svg",
   "svg",
@@ -689,6 +917,12 @@ try {
     1,
     "a timed-out capture still owns its library task",
   );
+  releaseGlassFrame("timed-out-dom-frame");
+  assert.equal(
+    revokedFrames.includes("timed-out-dom-frame"),
+    false,
+    "the fallback deadline does not end the actual DOM reader's frame lease",
+  );
   assert.equal(scroller.getAttribute("data-glass-capture-id"), "caller-value");
   assert.equal(pinned.hasAttribute("data-glass-capture-id"), false);
   const retry = await captureGlassBackground(
@@ -706,8 +940,7 @@ try {
   assert.ok(retry instanceof Error);
   assert.match(retry.message, /capture still active/);
   finishSource();
-  await Promise.resolve();
-  await Promise.resolve();
+  await new Promise<void>((resolve) => originalTimeout(resolve, 0));
   deadline = 0;
   const fontsBeforeResume = fontCalls;
   fontEvents.dispatchEvent(new window.Event("loadingdone"));
@@ -728,6 +961,7 @@ try {
   );
   assert.equal(activeSources, 0);
   assert.equal(peakSources, 1);
+  assert.equal(revokedFrames.includes("timed-out-dom-frame"), true);
 
   let finishFont = () => {};
   pendingFont = new Promise<void>((resolve) => {
@@ -744,6 +978,8 @@ try {
   releaseFontOwner();
   assert.equal(fontListenerCount(), 0);
   assert.equal(activeFonts, 1);
+  releaseGlassFrame("timed-out-font-frame");
+  assert.equal(revokedFrames.includes("timed-out-font-frame"), false);
   const fontRetry = await captureGlassBackground(
     target as unknown as HTMLElement,
     blocked,
@@ -766,6 +1002,7 @@ try {
   await captureGlassBackground(target as unknown as HTMLElement, blocked);
   assert.equal(activeFonts, 0);
   assert.equal(peakFonts, 1);
+  assert.equal(revokedFrames.includes("timed-out-font-frame"), true);
 } finally {
   globalThis.setTimeout = originalTimeout;
   releaseFontOwner();
@@ -774,12 +1011,360 @@ try {
 assert.equal(fontListenerCount(), 0);
 assert.equal(otherFontListenerCount(), 0);
 await otherWindow.happyDOM.abort();
+const mediaTarget = document.createElement("section");
+mediaTarget.dataset.glassCapture = "media";
+const mediaImage = document.createElement("img");
+mediaImage.setAttribute("data-glass-backdrop", "");
+mediaImage.style.objectFit = "cover";
+Object.defineProperties(mediaImage, {
+  naturalWidth: { value: 1920 },
+  naturalHeight: { value: 1080 },
+});
+mediaTarget.append(mediaImage);
+document.body.append(mediaTarget);
+bounds(mediaTarget as unknown as Element, 0, 0, 800, 600);
+bounds(mediaImage as unknown as Element, 0, 0, 800, 600);
+const mediaRegion = { left: 260, top: 180, right: 420, bottom: 300 };
+const croppedMedia = await captureGlassBackground(
+  mediaTarget as unknown as HTMLElement,
+  new Set(),
+  true,
+  mediaRegion,
+);
+assert.equal(
+  croppedMedia.width,
+  320,
+  "media raster matches its requested region",
+);
+assert.equal(croppedMedia.height, 240);
+assert.deepEqual(glassCaptureOrigin(croppedMedia), [260, 180]);
+assert.equal(glassCapturePixelRatio(croppedMedia), 2);
+assert.deepEqual(lastTranslation, [-260, -180]);
+Object.assign(globalThis, { innerWidth: 3840, innerHeight: 2400 });
+try {
+  const cappedDom = await captureGlassBackground(
+    target as unknown as HTMLElement,
+    blocked,
+    false,
+    mediaRegion,
+  );
+  assert.deepEqual(
+    glassCaptureOrigin(cappedDom),
+    [0, 0],
+    "DOM composition keeps viewport coordinates",
+  );
+  const beforeMediaSourceCalls = sourceCalls;
+  const cappedMedia = await captureGlassBackground(
+    mediaTarget as unknown as HTMLElement,
+    new Set(),
+  );
+  assert.equal(
+    sourceCalls,
+    beforeMediaSourceCalls,
+    "media bypasses DOM serialization",
+  );
+  assert.equal(
+    lastDrawing?.source,
+    mediaImage,
+    "normal images draw their own decoded bitmap",
+  );
+  assert.deepEqual(lastClip, [0, 0, 800, 600]);
+  assert.equal(lastScale.length, 2);
+  assert.equal(lastScale[0], lastScale[1]);
+  assert.ok(lastScale[0] > 0 && lastScale[0] <= 2);
+  assert.equal(cappedMedia.width, Math.floor(3840 * lastScale[0]));
+  assert.equal(cappedMedia.height, Math.floor(2400 * lastScale[1]));
+  mediaImage.setAttribute("data-glass-exclude", "");
+  const beforeExcludedMedia = sourceCalls;
+  await captureGlassBackground(
+    mediaTarget as unknown as HTMLElement,
+    new Set(),
+  );
+  assert.equal(
+    sourceCalls,
+    beforeExcludedMedia + 1,
+    "excluded media keeps DOM capture fallback",
+  );
+  mediaImage.remove();
+  const beforeMissingMedia = sourceCalls;
+  await captureGlassBackground(
+    mediaTarget as unknown as HTMLElement,
+    new Set(),
+  );
+  assert.equal(
+    sourceCalls,
+    beforeMissingMedia + 1,
+    "missing media keeps DOM capture fallback",
+  );
+  const video = Object.assign(document.createElement("video"), {
+    poster: "/posters/coast.png",
+  });
+  video.setAttribute("data-glass-backdrop", "");
+  video.crossOrigin = "anonymous";
+  video.style.objectFit = "cover";
+  const playback = { paused: true, currentTime: 0, played: 0, readyState: 4 };
+  Object.defineProperties(video, {
+    paused: { get: () => playback.paused },
+    currentTime: { get: () => playback.currentTime },
+    played: { get: () => ({ length: playback.played }) },
+    readyState: { get: () => playback.readyState },
+    videoWidth: { value: 1920 },
+    videoHeight: { value: 1080 },
+  });
+  mediaTarget.append(video);
+  bounds(mediaTarget as unknown as Element, 10, 20, 700, 500);
+  bounds(video as unknown as Element, 30, 40, 800, 600);
+  const originalDecode = Object.getOwnPropertyDescriptor(
+    window.HTMLImageElement.prototype,
+    "decode",
+  );
+  let decodeCalls = 0;
+  let finishPoster = () => {};
+  let beginPoster = () => {};
+  const posterStarted = new Promise<void>((resolve) => {
+    beginPoster = resolve;
+  });
+  let pendingPoster: Promise<void> | undefined = new Promise<void>(
+    (resolve) => {
+      finishPoster = resolve;
+    },
+  );
+  let failPoster = false;
+  Object.defineProperty(window.HTMLImageElement.prototype, "decode", {
+    configurable: true,
+    value: async function (this: typeof window.HTMLImageElement.prototype) {
+      decodeCalls++;
+      beginPoster();
+      await pendingPoster;
+      if (failPoster) throw new Error("Poster decode failed");
+      Object.defineProperties(this, {
+        naturalWidth: { value: 1200 },
+        naturalHeight: { value: 600 },
+      });
+    },
+  });
+  const captureMedia = () =>
+    captureGlassBackground(mediaTarget as unknown as HTMLElement, new Set());
+  try {
+    const beforePosterDraws = drawCalls;
+    const beforePosterSources = sourceCalls;
+    const pendingCanvas = captureMedia();
+    await posterStarted;
+    assert.equal(
+      drawCalls,
+      beforePosterDraws,
+      "capture waits for the poster bitmap to decode",
+    );
+    finishPoster();
+    const posterCanvas = await pendingCanvas;
+    pendingPoster = undefined;
+    const poster = lastDrawing?.source;
+    assert.ok(
+      poster instanceof window.HTMLImageElement,
+      "unplayed paused video captures its visible poster instead of the empty video frame",
+    );
+    assert.notEqual(poster, video);
+    assert.equal(poster.src, new URL(video.poster, document.URL).href);
+    assert.equal(poster.crossOrigin, "anonymous");
+    assert.deepEqual(
+      lastDrawing?.coordinates,
+      [-170, 40, 1200, 600],
+      "cover uses poster dimensions with the original video bounds",
+    );
+    assert.deepEqual(
+      lastClip,
+      [10, 20, 700, 500],
+      "poster drawing keeps the capture target clipping rectangle",
+    );
+    assert.equal(
+      sourceCalls,
+      beforePosterSources,
+      "poster capture stays on the media-only path",
+    );
+    assert.equal(posterCanvas.width, Math.floor(3840 * lastScale[0]));
+    assert.equal(posterCanvas.height, Math.floor(2400 * lastScale[1]));
+    assert.ok(posterCanvas.width * posterCanvas.height <= 8_388_608);
+
+    const toolbar = document.createElement("div");
+    toolbar.id = "ordinary-media-toolbar";
+    toolbar.style.backgroundColor = "rgb(34, 51, 68)";
+    toolbar.textContent = "Ordinary toolbar background";
+    mediaTarget.append(toolbar);
+    const beforeCompositeSources = sourceCalls;
+    const beforeCompositeDraws = drawings.length;
+    const composited = await captureGlassBackground(
+      mediaTarget as unknown as HTMLElement,
+      new Set(),
+      false,
+    );
+    const compositeDraws = drawings.slice(beforeCompositeDraws);
+    assert.equal(
+      sourceCalls,
+      beforeCompositeSources + 1,
+      "a DOM-backed media capture serializes the ordinary toolbar",
+    );
+    assert.equal(
+      compositeDraws.length,
+      3,
+      "capture first paints its decoded media, then media and DOM into the output canvas",
+    );
+    assert.ok(compositeDraws[0]?.source instanceof window.HTMLImageElement);
+    assert.equal(
+      compositeDraws[1]?.source,
+      compositeDraws[0]?.canvas,
+      "the decoded poster canvas is the output's base layer",
+    );
+    assert.ok(
+      compositeDraws[2]?.source instanceof CaptureImage,
+      "the rasterized DOM paints after the media base",
+    );
+    assert.equal(compositeDraws[1]?.canvas, composited);
+    assert.equal(compositeDraws[2]?.canvas, composited);
+    assert.deepEqual(compositeDraws[1]?.coordinates, [0, 0]);
+    assert.deepEqual(
+      compositeDraws[2]?.coordinates,
+      [0, 0, composited.width, composited.height],
+      "logical DOM coordinates scale to the media layer's viewport pixels",
+    );
+    const mediaCanvas = compositeDraws[0]?.canvas;
+    assert.ok(mediaCanvas instanceof window.HTMLCanvasElement);
+    assert.equal(mediaCanvas.width, composited.width);
+    assert.equal(mediaCanvas.height, composited.height);
+    const compositeXml = new window.DOMParser().parseFromString(
+      drawnSource,
+      "image/svg+xml",
+    );
+    const compositeForeign = compositeXml.querySelector("foreignObject");
+    assert.equal(
+      compositeXml.documentElement.getAttribute("viewBox"),
+      "0 0 3840 2400",
+    );
+    assert.equal(compositeForeign?.getAttribute("x"), "10");
+    assert.equal(compositeForeign?.getAttribute("y"), "20");
+    assert.ok(compositeXml.querySelector("#ordinary-media-toolbar"));
+    assert.equal(
+      compositeXml.querySelector("video"),
+      null,
+      "DOM overlay excludes the video already painted in its base layer",
+    );
+    const beforeMediaOnlySources = sourceCalls;
+    await captureMedia();
+    assert.equal(
+      sourceCalls,
+      beforeMediaOnlySources,
+      "default media-only capture still bypasses DOM serialization",
+    );
+    toolbar.remove();
+
+    video.style.objectFit = "contain";
+    await captureMedia();
+    assert.ok(lastDrawing?.source instanceof window.HTMLImageElement);
+    assert.deepEqual(
+      lastDrawing?.coordinates,
+      [30, 140, 800, 400],
+      "contain centers the poster without stretching it to the video aspect ratio",
+    );
+    video.style.objectFit = "cover";
+    playback.readyState = 0;
+    await captureMedia();
+    assert.ok(
+      lastDrawing?.source instanceof window.HTMLImageElement,
+      "the visible poster remains capturable before video frame readiness",
+    );
+    playback.readyState = 4;
+
+    for (const state of [
+      { paused: false, currentTime: 0, played: 0 },
+      { paused: true, currentTime: 0, played: 1 },
+      { paused: true, currentTime: 2, played: 0 },
+    ]) {
+      Object.assign(playback, state);
+      const beforeDecode = decodeCalls;
+      await captureMedia();
+      assert.equal(
+        lastDrawing?.source,
+        video,
+        `video frame stays authoritative for ${JSON.stringify(state)}`,
+      );
+      assert.equal(
+        decodeCalls,
+        beforeDecode,
+        "playback and seek states do not decode a poster",
+      );
+    }
+    Object.assign(playback, { paused: true, currentTime: 0, played: 0 });
+    video.poster = "";
+    await captureMedia();
+    assert.equal(
+      lastDrawing?.source,
+      video,
+      "a ready video without poster keeps its existing frame path",
+    );
+    playback.readyState = 0;
+    await assert.rejects(captureMedia(), /video is not ready/);
+    playback.readyState = 4;
+    video.poster = "/posters/coast.png";
+    failPoster = true;
+    await assert.rejects(
+      captureMedia(),
+      /Poster decode failed/,
+      "failed poster decoding must not silently draw a transparent video frame",
+    );
+    failPoster = false;
+    await captureMedia();
+    assert.ok(
+      lastDrawing?.source instanceof window.HTMLImageElement,
+      "a later poster capture recovers after decoding fails",
+    );
+    tainted = true;
+    await assert.rejects(
+      captureMedia(),
+      /tainted canvas/,
+      "poster captures retain the canvas pixel-read safety check",
+    );
+    tainted = false;
+
+    video.setAttribute("data-glass-exclude", "");
+    const beforeExcludedVideo = sourceCalls;
+    const beforeExcludedDecode = decodeCalls;
+    await captureMedia();
+    assert.equal(
+      sourceCalls,
+      beforeExcludedVideo + 1,
+      "excluded video keeps DOM fallback",
+    );
+    assert.equal(
+      decodeCalls,
+      beforeExcludedDecode,
+      "excluded video never decodes a poster",
+    );
+  } finally {
+    tainted = false;
+    if (originalDecode)
+      Object.defineProperty(
+        window.HTMLImageElement.prototype,
+        "decode",
+        originalDecode,
+      );
+    else Reflect.deleteProperty(window.HTMLImageElement.prototype, "decode");
+    video.remove();
+  }
+  for (const captured of [cappedDom, cappedMedia])
+    assert.ok(
+      captured.width * captured.height <= 8_388_608,
+      `capture respects its pixel cap after rounding: ${captured.width}x${captured.height}`,
+    );
+} finally {
+  Object.assign(globalThis, { innerWidth: 1024, innerHeight: 768 });
+  mediaTarget.remove();
+}
 target.remove();
 await assert.rejects(
   captureGlassBackground(target as unknown as HTMLElement, blocked),
   /target unavailable/,
 );
 await window.happyDOM.abort();
+URL.revokeObjectURL = revokeFrame;
 console.log(
   "viewport, exclusions, scroll, font cache, taint and restoration passed",
 );

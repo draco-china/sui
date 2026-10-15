@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@workspace/ui/components/carousel";
+import {
   CodeViewer,
   ShikiProvider,
 } from "@workspace/ui/components/code-viewer";
@@ -10,6 +17,7 @@ import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 import { ImageViewer } from "@workspace/ui/components/image-viewer";
 import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
 import { renderToStaticMarkup } from "react-dom/server";
+import { GlassContext } from "../../../packages/ui/src/lib/glass/context";
 import {
   clampImageScale,
   normalizeImageIndex,
@@ -286,12 +294,18 @@ test("editor workers release shared threads and reopen with a fresh actual Monac
   );
 });
 
-test("viewer content reuses its shell while independent editor actions inherit glass", () => {
+test("markdown content stays plain while independent editor actions inherit glass", () => {
   const markdown = "```typescript\nconst answer = 42;\n```";
   const html = renderToStaticMarkup(
-    <MarkdownViewer glass content={markdown} />,
+    <GlassContext value={{ enabled: true, surface: false }}>
+      <MarkdownViewer content={markdown} />
+      <HtmlViewer content="<h1>Plain HTML</h1>" />
+    </GlassContext>,
   );
-  expect((html.match(/data-glass="true"/g) ?? []).length).toBe(1);
+  expect(html).not.toContain('data-glass="true"');
+  expect(html).not.toMatch(
+    /data-slot="(?:markdown-viewer|html-viewer|code-viewer)"[^>]*data-glass="true"/,
+  );
   const Preview = ({ content }: { content: string }) => (
     <MarkdownViewer content={content} />
   );
@@ -303,7 +317,9 @@ test("viewer content reuses its shell while independent editor actions inherit g
       preview={{ component: Preview, defaultMode: "preview" }}
     />,
   );
-  expect(editor).toMatch(/data-slot="editor-surface"[^>]*data-glass="true"/);
+  expect(editor).not.toMatch(
+    /data-slot="editor-(?:surface|toolbar|content|preview|monaco)"[^>]*data-glass="true"/,
+  );
   expect(editor).not.toMatch(
     /data-slot="(?:markdown-viewer|code-viewer)"[^>]*data-glass="true"/,
   );
@@ -315,4 +331,58 @@ test("viewer content reuses its shell while independent editor actions inherit g
       </GlassSurface>,
     ),
   ).not.toMatch(/data-slot="code-viewer"[^>]*data-glass="true"/);
+});
+
+test("carousel material belongs only to navigation controls", () => {
+  const html = renderToStaticMarkup(
+    <GlassContext value={{ enabled: true, surface: false }}>
+      <Carousel>
+        <CarouselContent>
+          <CarouselItem>
+            <img src="/photo.png" alt="Mountain lake" />
+          </CarouselItem>
+        </CarouselContent>
+        <CarouselPrevious glass={false} />
+        <CarouselNext />
+      </Carousel>
+    </GlassContext>,
+  );
+  expect((html.match(/data-glass="true"/g) ?? []).length).toBe(1);
+  expect(html).toMatch(/data-slot="carousel-next"[^>]*data-glass="true"/);
+  expect(html).not.toMatch(
+    /data-slot="(?:carousel|carousel-content|carousel-item|carousel-previous)"[^>]*data-glass="true"/,
+  );
+  expect(html).toContain('aria-roledescription="carousel"');
+  expect(html).toContain('aria-roledescription="slide"');
+});
+
+test("code tools keep content plain and Glass only on their operation controls", () => {
+  const code = "function answer() {\n  return 42;\n}";
+  for (const glass of [undefined, true, false]) {
+    const html = renderToStaticMarkup(
+      <GlassContext value={{ enabled: true, surface: false }}>
+        <CodeViewer glass={glass} code={code} />
+        <CodeViewer glass={glass} code={code} variant="plain" />
+        <DiffViewer
+          glass={glass}
+          oldCode="const answer = 1;"
+          newCode="const answer = 42;"
+        />
+        <Editor glass={glass} value={code} language="typescript" height={240} />
+      </GlassContext>,
+    );
+    expect(html).not.toMatch(
+      /data-slot="(?:code-viewer|diff-viewer|editor-(?:surface|toolbar|content|monaco)|(?:code-viewer|diff-viewer)-content)"[^>]*data-glass="true"/,
+    );
+    expect(html).not.toMatch(/<table[^>]*data-glass="true"/);
+    expect(html).not.toMatch(
+      /<button[^>]*aria-label="Collapse"[^>]*data-glass="true"/,
+    );
+    if (glass === false) expect(html).not.toContain('data-glass="true"');
+    else expect(html).toMatch(/<button[^>]*data-glass="true"/);
+  }
+  const noActions = renderToStaticMarkup(
+    <Editor glass toolbar={false} value={code} height={240} />,
+  );
+  expect(noActions).not.toContain('data-glass="true"');
 });

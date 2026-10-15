@@ -15,6 +15,49 @@ function deferred() {
 }
 
 describe("clipboard async feedback", () => {
+  test("synchronizing the value just copied preserves pending and completed feedback", async () => {
+    const write = deferred();
+    const states: ClipboardStatus[] = [];
+    const copied: string[] = [];
+    const controller = createClipboardController({
+      writeText: () => write.promise,
+      onStatusChange: (state) => states.push(state),
+      onCopy: (value) => copied.push(value),
+    });
+    const result = controller.copy("restored default");
+    controller.synchronize("restored default");
+    expect(states).toEqual(["pending"]);
+    write.resolve();
+    expect(await result).toBe(true);
+    controller.synchronize("restored default");
+    expect(states).toEqual(["pending", "copied"]);
+    expect(copied).toEqual(["restored default"]);
+    controller.dispose();
+  });
+
+  test("a different value and an explicit reset still invalidate pending copies", async () => {
+    for (const invalidate of [
+      (controller: ReturnType<typeof createClipboardController>) =>
+        controller.synchronize("changed"),
+      (controller: ReturnType<typeof createClipboardController>) =>
+        controller.reset(),
+    ]) {
+      const write = deferred();
+      const copied: string[] = [];
+      const controller = createClipboardController({
+        writeText: () => write.promise,
+        onStatusChange: () => {},
+        onCopy: (value) => copied.push(value),
+      });
+      const result = controller.copy("old");
+      invalidate(controller);
+      write.resolve();
+      expect(await result).toBe(false);
+      expect(copied).toEqual([]);
+      controller.dispose();
+    }
+  });
+
   test("announces success only after the write and resets after the delay", async () => {
     const write = deferred();
     const states: ClipboardStatus[] = [];

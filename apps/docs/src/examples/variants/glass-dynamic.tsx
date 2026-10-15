@@ -1,9 +1,9 @@
 "use client";
 import { Button } from "@workspace/ui/components/button";
 import {
-  type GlassHandle,
-  GlassProvider,
+  type GlassConfig,
   GlassSurface,
+  refreshGlass,
 } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -35,7 +35,6 @@ export default function Example({ locale }: ExampleProps) {
       };
   const id = useId();
   const scene = useRef<HTMLDivElement>(null);
-  const controller = useRef<GlassHandle>(null);
   const [rendering, setRendering] = useState<
     "vgpu" | "svg" | "fallback" | "loading"
   >("loading");
@@ -73,8 +72,12 @@ export default function Example({ locale }: ExampleProps) {
   }, []);
   const [text, setText] = useState("SUI / REFRACTION");
   const [strength, setStrength] = useState(22);
-  const [blur, setBlur] = useState(6);
   const [highlight, setHighlight] = useState(0.3);
+  const glassConfig: GlassConfig = {
+    mode: "auto",
+    captureTarget: scene,
+    options: { strength, highlight },
+  };
   const controls = [
     {
       key: "strength",
@@ -83,14 +86,6 @@ export default function Example({ locale }: ExampleProps) {
       max: 64,
       step: 1,
       change: setStrength,
-    },
-    {
-      key: "blur",
-      label: chinese ? "模糊" : "Blur",
-      value: blur,
-      max: 24,
-      step: 1,
-      change: setBlur,
     },
     {
       key: "highlight",
@@ -118,12 +113,12 @@ export default function Example({ locale }: ExampleProps) {
         <Button
           variant="outline"
           type="button"
-          onClick={() => controller.current?.refresh()}
+          onClick={() => refreshGlass(scene)}
         >
-          {chinese ? "刷新快照" : "Refresh snapshot"}
+          {chinese ? "刷新效果" : "Refresh effect"}
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {controls.map(({ key, label, value, max, step, change }) => (
           <div key={key} className="grid gap-2">
             <Label id={`${id}-${key}-label`} htmlFor={`${id}-${key}`}>
@@ -143,69 +138,63 @@ export default function Example({ locale }: ExampleProps) {
           </div>
         ))}
       </div>
-      <GlassProvider
-        ref={controller}
-        captureTarget={scene}
-        options={{ strength, blur, highlight }}
+      <div
+        ref={scene}
+        className="relative isolate h-96 overflow-hidden rounded-2xl border bg-muted"
       >
-        <div
-          ref={scene}
-          className="relative isolate h-96 overflow-hidden rounded-2xl border bg-muted"
+        <ScrollArea
+          role="region"
+          className="absolute inset-0"
+          aria-label={chinese ? "可滚动的背景" : "Scrollable background"}
         >
-          <ScrollArea
-            role="region"
-            className="absolute inset-0"
-            aria-label={chinese ? "可滚动的背景" : "Scrollable background"}
-          >
-            <img
-              src={illustration}
-              alt={
-                chinese
-                  ? "由圆形和斜线组成的彩色图案"
-                  : "Colorful circles and a diagonal stripe"
-              }
-              className="h-44 w-full object-cover"
-            />
-            <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4">
-              {rows.map((row) => (
-                <div
-                  key={row}
-                  className="grid min-h-24 content-center gap-1 rounded-xl bg-background p-3"
-                >
-                  <p className="text-primary text-sm">{text}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {chinese ? "网格" : "Grid"} {row}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-          <GlassSurface
-            intensity="default"
-            className="absolute top-20 left-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
-          >
-            <p>{chinese ? "文字与图片背景" : "Text and image background"}</p>
-            <p className="mt-2 text-muted-foreground text-sm">
-              {chinese
-                ? "调整滑块或滚动背景，比较折射与原始快照"
-                : "Adjust the sliders or scroll to compare refraction with the original snapshot."}
-            </p>
-          </GlassSurface>
-          <GlassSurface
-            intensity="default"
-            className="absolute top-20 right-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
-          >
-            <p>
-              {chinese ? "同一场景，独立表面" : "One scene, separate surfaces"}
-            </p>
-            <p className="mt-2 text-muted-foreground text-sm">
-              {chinese
-                ? "同场景共用截图与纹理，独立更新坐标"
-                : "Matching scenes share a snapshot and texture, with separate sampling coordinates."}
-            </p>
-          </GlassSurface>
-        </div>
-      </GlassProvider>
+          <img
+            src={illustration}
+            alt={
+              chinese
+                ? "由圆形和斜线组成的彩色图案"
+                : "Colorful circles and a diagonal stripe"
+            }
+            className="h-44 w-full object-cover"
+          />
+          <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4">
+            {rows.map((row) => (
+              <div
+                key={row}
+                className="grid min-h-24 content-center gap-1 rounded-xl bg-background p-3"
+              >
+                <p className="text-primary text-sm">{text}</p>
+                <p className="text-muted-foreground text-xs">
+                  {chinese ? "网格" : "Grid"} {row}
+                </p>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+        <GlassSurface
+          glassConfig={glassConfig}
+          className="absolute top-20 left-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
+        >
+          <p>{chinese ? "文字与图片背景" : "Text and image background"}</p>
+          <p className="mt-2 text-muted-foreground text-sm">
+            {chinese
+              ? "调整滑块或滚动背景，比较折射与实际背景"
+              : "Adjust the sliders or scroll to compare refraction with the background."}
+          </p>
+        </GlassSurface>
+        <GlassSurface
+          glassConfig={glassConfig}
+          className="absolute top-20 right-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
+        >
+          <p>
+            {chinese ? "同一场景，独立表面" : "One scene, separate surfaces"}
+          </p>
+          <p className="mt-2 text-muted-foreground text-sm">
+            {chinese
+              ? "SVG 随背景实时更新，WebGPU 共用场景采样"
+              : "SVG follows the live backdrop; WebGPU shares scene sampling."}
+          </p>
+        </GlassSurface>
+      </div>
     </div>
   );
 }

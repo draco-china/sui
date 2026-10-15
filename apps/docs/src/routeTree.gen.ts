@@ -16,6 +16,7 @@ import { Route as ApiSearchRouteImport } from './routes/api.search'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}.index'
 import { Route as Char123LangChar125LlmsFullDottxtRouteImport } from './routes/{-$lang}.llms-full[.]txt'
 import { Route as Char123LangChar125LlmsDottxtRouteImport } from './routes/{-$lang}.llms[.]txt'
+import { Route as Char123LangChar125PlaygroundRouteImport } from './routes/{-$lang}.playground'
 import { Route as Char123LangChar125DocsSplatRouteImport } from './routes/{-$lang}.docs.$'
 
 const Char123LangChar125Route = Char123LangChar125RouteImport.update({
@@ -55,6 +56,12 @@ const Char123LangChar125LlmsDottxtRoute =
     path: '/llms.txt',
     getParentRoute: () => Char123LangChar125Route,
   } as any)
+const Char123LangChar125PlaygroundRoute =
+  Char123LangChar125PlaygroundRouteImport.update({
+    id: '/playground',
+    path: '/playground',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
 const Char123LangChar125DocsSplatRoute =
   Char123LangChar125DocsSplatRouteImport.update({
     id: '/docs/$',
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/api/search': typeof ApiSearchRoute
   '/{-$lang}/llms-full.txt': typeof Char123LangChar125LlmsFullDottxtRoute
   '/{-$lang}/llms.txt': typeof Char123LangChar125LlmsDottxtRoute
+  '/{-$lang}/playground': typeof Char123LangChar125PlaygroundRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/{-$lang}/docs/$': typeof Char123LangChar125DocsSplatRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   '/api/search': typeof ApiSearchRoute
   '/{-$lang}/llms-full.txt': typeof Char123LangChar125LlmsFullDottxtRoute
   '/{-$lang}/llms.txt': typeof Char123LangChar125LlmsDottxtRoute
+  '/{-$lang}/playground': typeof Char123LangChar125PlaygroundRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
   '/{-$lang}/docs/$': typeof Char123LangChar125DocsSplatRoute
 }
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   '/api/search': typeof ApiSearchRoute
   '/{-$lang}/llms-full.txt': typeof Char123LangChar125LlmsFullDottxtRoute
   '/{-$lang}/llms.txt': typeof Char123LangChar125LlmsDottxtRoute
+  '/{-$lang}/playground': typeof Char123LangChar125PlaygroundRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/{-$lang}/docs/$': typeof Char123LangChar125DocsSplatRoute
 }
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/{-$lang}/llms-full.txt'
     | '/{-$lang}/llms.txt'
+    | '/{-$lang}/playground'
     | '/{-$lang}/'
     | '/{-$lang}/docs/$'
   fileRoutesByTo: FileRoutesByTo
@@ -110,6 +121,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/{-$lang}/llms-full.txt'
     | '/{-$lang}/llms.txt'
+    | '/{-$lang}/playground'
     | '/{-$lang}'
     | '/{-$lang}/docs/$'
   id:
@@ -120,6 +132,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/{-$lang}/llms-full.txt'
     | '/{-$lang}/llms.txt'
+    | '/{-$lang}/playground'
     | '/{-$lang}/'
     | '/{-$lang}/docs/$'
   fileRoutesById: FileRoutesById
@@ -182,6 +195,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LangChar125LlmsDottxtRouteImport
       parentRoute: typeof Char123LangChar125Route
     }
+    '/{-$lang}/playground': {
+      id: '/{-$lang}/playground'
+      path: '/playground'
+      fullPath: '/{-$lang}/playground'
+      preLoaderRoute: typeof Char123LangChar125PlaygroundRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
     '/{-$lang}/docs/$': {
       id: '/{-$lang}/docs/$'
       path: '/docs/$'
@@ -195,6 +215,7 @@ declare module '@tanstack/react-router' {
 interface Char123LangChar125RouteChildren {
   Char123LangChar125LlmsFullDottxtRoute: typeof Char123LangChar125LlmsFullDottxtRoute
   Char123LangChar125LlmsDottxtRoute: typeof Char123LangChar125LlmsDottxtRoute
+  Char123LangChar125PlaygroundRoute: typeof Char123LangChar125PlaygroundRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
   Char123LangChar125DocsSplatRoute: typeof Char123LangChar125DocsSplatRoute
 }
@@ -202,6 +223,7 @@ interface Char123LangChar125RouteChildren {
 const Char123LangChar125RouteChildren: Char123LangChar125RouteChildren = {
   Char123LangChar125LlmsFullDottxtRoute: Char123LangChar125LlmsFullDottxtRoute,
   Char123LangChar125LlmsDottxtRoute: Char123LangChar125LlmsDottxtRoute,
+  Char123LangChar125PlaygroundRoute: Char123LangChar125PlaygroundRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
   Char123LangChar125DocsSplatRoute: Char123LangChar125DocsSplatRoute,
 }

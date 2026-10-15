@@ -23,6 +23,7 @@ export default function Example({ locale }: ExampleProps) {
           <Button
             key={image}
             type="button"
+            glass={false}
             variant="ghost"
             className="h-auto w-full overflow-hidden rounded-xl p-0"
             aria-label={

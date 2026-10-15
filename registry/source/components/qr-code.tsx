@@ -5,28 +5,19 @@ import { useRender } from "@base-ui/react/use-render";
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import { CircleAlertIcon } from "lucide-react";
-import {
-  type ReactNode,
-  useContext,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { GlassContext, type GlassProps, withGlass } from "@/lib/glass/context";
 import { applyQRCodeFinderGeometry } from "@/lib/qr-code/finder";
 
-type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> &
-  GlassProps & {
-    value?: string;
-    loading?: boolean;
-    animated?: boolean;
-    label?: string;
-    margin?: number;
-    logo?: ReactNode;
-    size?: number;
-  };
+type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
+  value?: string;
+  loading?: boolean;
+  animated?: boolean;
+  label?: string;
+  margin?: number;
+  logo?: ReactNode;
+  size?: number;
+};
 const qrCodeVariants = cva(
   "relative isolate mx-auto aspect-square w-full overflow-hidden rounded-xl bg-card text-foreground",
 );
@@ -282,7 +273,7 @@ function DotMatrix({
 
 function QRCode(props: QRCodeProps) {
   return (
-    <DecoratedQRCode
+    <QRCodeContent
       key={JSON.stringify([props.value ?? "", props.size, props.margin])}
       {...props}
     />
@@ -301,7 +292,6 @@ function QRCodeContent({
   render,
   ...props
 }: QRCodeProps) {
-  const glassEnabled = useContext(GlassContext).enabled;
   const pixels = Number.isFinite(size)
     ? Math.min(1024, Math.max(64, size))
     : 256;
@@ -416,10 +406,7 @@ function QRCodeContent({
         children: (
           <div
             data-slot="qr-code-content"
-            className={cn(
-              "absolute inset-0 overflow-hidden rounded-[inherit] text-foreground",
-              glassEnabled ? "bg-transparent" : "bg-card",
-            )}
+            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground"
           >
             {!ready && !failed && (
               <div
@@ -541,8 +528,6 @@ function QRCodeContent({
     ),
   });
 }
-
-const DecoratedQRCode = withGlass(QRCodeContent);
 
 export type { QRCodeProps };
 export { QRCode, qrCodeVariants };

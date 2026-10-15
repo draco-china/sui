@@ -57,7 +57,7 @@ const components: { title: string; href: string; description: string }[] = [
 export default function NavigationMenuDemo() {
   return (
     <NavigationMenu>
-      <NavigationMenuList>
+      <NavigationMenuList className="flex-wrap">
         <NavigationMenuItem>
           <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
           <NavigationMenuContent>

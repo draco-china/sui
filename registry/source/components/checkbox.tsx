@@ -28,6 +28,9 @@ function CheckboxImplementation({
   );
 }
 
-const Checkbox = withGlass(CheckboxImplementation, "control");
+const Checkbox = withGlass(CheckboxImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 export { Checkbox };

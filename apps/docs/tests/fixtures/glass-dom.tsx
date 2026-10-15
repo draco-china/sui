@@ -59,7 +59,28 @@ Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
     return {
       fillStyle: "#ffffff",
       fillRect() {},
+      clearRect() {},
       getImageData() {
+        const rgb = this.fillStyle.match(/^rgba?\(([^)]+)\)$/)?.[1];
+        if (rgb) {
+          const channels = rgb.split(",").map(Number);
+          return {
+            data: new Uint8Array([
+              channels[0],
+              channels[1],
+              channels[2],
+              (channels[3] ?? 1) * 255,
+            ]),
+          };
+        }
+        if (/^#[a-f\d]{6}$/i.test(this.fillStyle)) {
+          const channels =
+            this.fillStyle
+              .slice(1)
+              .match(/../g)
+              ?.map((channel) => Number.parseInt(channel, 16)) ?? [];
+          return { data: new Uint8Array([...channels, 255]) };
+        }
         return { data: new Uint8Array([255, 255, 255, 255]) };
       },
     };
@@ -74,20 +95,19 @@ const { act, createRef, useState } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { Button } = await import("@workspace/ui/components/button");
 const { Input } = await import("@workspace/ui/components/input");
-const { GlassProvider, GlassSurface } = await import(
-  "@workspace/ui/components/glass"
-);
+const { GlassSurface } = await import("@workspace/ui/components/glass");
 const { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } =
   await import("@workspace/ui/components/tooltip");
-const { GlassContext } = await import(
+const { GlassContext, withGlass } = await import(
   "../../../../packages/ui/src/lib/glass/context"
 );
 const { acquireGlass, updateGlassConfiguration } = await import(
   "@workspace/ui/lib/glass/runtime"
 );
 const { glassShadow } = await import("@workspace/ui/lib/glass/edge");
+const { parseGlassColor } = await import("@workspace/ui/lib/glass/contrast");
 const pause = () => new Promise((resolve) => setTimeout(resolve, 300));
-const configuration = { id: "dom-native-controls", mode: "css" as const };
+const configuration = { mode: "css" as const };
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host as unknown as HTMLElement);
@@ -127,9 +147,14 @@ assert.equal(
   "INPUT",
   "glass must preserve the native input ref",
 );
-assert.equal(
-  buttonRef.current?.getAttribute("data-glass-scope"),
-  configuration.id,
+const buttonScope = buttonRef.current?.getAttribute("data-glass-scope");
+const inputScope = inputRef.current?.getAttribute("data-glass-scope");
+assert.ok(buttonScope);
+assert.ok(inputScope);
+assert.notEqual(
+  buttonScope,
+  inputScope,
+  "same inherited settings retain independent requests",
 );
 assert.equal(inputRef.current?.name, "workspace");
 assert.equal(inputRef.current?.value, "Studio");
@@ -156,10 +181,14 @@ assert.equal(
 assert.equal(buttonRef.current?.style.getPropertyValue("--glass-frame"), "");
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  glassShadow(0.3),
-  "measurement keeps the default outer shadow while replacing only initial inner highlights",
+  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
+  "measurement adapts outer shading to the native white surface tint",
 );
-updateGlassConfiguration({ ...configuration, options: { highlight: 0 } });
+updateGlassConfiguration({
+  ...configuration,
+  id: buttonScope,
+  options: { highlight: 0 },
+});
 await pause();
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
@@ -167,11 +196,16 @@ assert.equal(
   "disabling highlights removes outer shading after measurement as well as before hydration",
 );
 assert.equal(buttonRef.current?.style.getPropertyValue("--glass-edge"), "none");
-updateGlassConfiguration(configuration);
+assert.equal(
+  inputRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
+  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
+  "updating one independent request does not change its same-configuration sibling",
+);
+updateGlassConfiguration({ ...configuration, id: buttonScope });
 await pause();
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  glassShadow(0.3),
+  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
 );
 await act(async () => root.unmount());
 assert.equal(buttonRef.current, null);
@@ -183,7 +217,11 @@ await act(async () => {
   standaloneRoot.render(<Button glass>Standalone glass</Button>);
 });
 await pause();
-assert.ok(gpuAttempts > 0, "standalone glass defaults to auto enhancement");
+assert.equal(
+  gpuAttempts,
+  0,
+  "standalone glass defaults to SVG without requesting a GPU",
+);
 assert.equal(host.querySelector("button")?.dataset.glassState, "fallback");
 await act(async () => standaloneRoot.unmount());
 
@@ -202,18 +240,19 @@ const semanticEvents = { input: 0, change: 0 };
 semanticHost.addEventListener("input", () => semanticEvents.input++);
 semanticHost.addEventListener("change", () => semanticEvents.change++);
 const semanticControls = (checked: boolean) => (
-  <GlassProvider>
+  <>
     <Toggle id="semantic-toggle" glass>
       Selected
     </Toggle>
     <Switch id="semantic-switch" checked={checked} glass />
-  </GlassProvider>
+  </>
 );
 await act(async () => semanticRoot.render(semanticControls(false)));
 await act(async () => pause());
-assert.ok(
-  gpuAttempts > 0,
-  "the default Provider attempts automatic GPU enhancement",
+assert.equal(
+  gpuAttempts,
+  0,
+  "fixed small controls use CSS without requesting a GPU",
 );
 const semanticToggle = document.getElementById("semantic-toggle");
 const semanticSwitch = semanticHost.querySelector('[data-slot="switch"]');
@@ -256,8 +295,8 @@ document.body.append(tooltipHost);
 const tooltipRoot = createRoot(tooltipHost as unknown as HTMLElement);
 await act(async () => {
   tooltipRoot.render(
-    <GlassProvider mode="css">
-      <GlassSurface id="tooltip-parent" intensity="sm">
+    <>
+      <GlassSurface id="tooltip-parent" glassConfig={{ mode: "css" }}>
         <TooltipProvider>
           <Tooltip open>
             <TooltipTrigger
@@ -269,31 +308,33 @@ await act(async () => {
           </Tooltip>
         </TooltipProvider>
       </GlassSurface>
-      <GlassSurface id="default-intensity" />
-      <GlassSurface id="large-intensity" intensity="lg" />
-    </GlassProvider>,
+      <GlassSurface id="default-intensity" glassConfig={{ mode: "css" }} />
+      <GlassSurface id="large-intensity" glassConfig={{ mode: "css" }} />
+    </>,
   );
 });
 await act(async () => pause());
-for (const [id, intensity, blur, opacity] of [
-  ["tooltip-parent", "sm", "4px", "40%"],
-  ["default-intensity", "default", "6px", "60%"],
-  ["large-intensity", "lg", "8px", "78%"],
-]) {
+for (const id of ["tooltip-parent", "default-intensity", "large-intensity"]) {
   const surface = document.getElementById(id);
   assert.ok(surface instanceof window.HTMLElement);
-  assert.equal(surface.dataset.glassIntensity, intensity);
-  assert.equal(surface.style.getPropertyValue("--glass-blur"), blur);
-  assert.equal(surface.style.getPropertyValue("--glass-opacity"), opacity);
+  assert.equal(surface.dataset.glass, "true");
+  assert.equal(surface.dataset.glassIntensity, undefined);
+  assert.equal(surface.style.getPropertyValue("--glass-blur"), "");
 }
+
 const tooltipParent = document.getElementById("tooltip-parent");
 assert.ok(tooltipParent instanceof window.HTMLElement);
-assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "4px");
-assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "40%");
+assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "");
+assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "10%");
 assert.equal(
   document.getElementById("tooltip-trigger")?.hasAttribute("data-glass"),
-  true,
-  "an independent trigger inside an existing material inherits glass",
+  false,
+  "a default trigger shares its existing container material",
+);
+assert.equal(
+  document.getElementById("tooltip-trigger")?.getAttribute("data-glass-part"),
+  "control",
+  "the ordinary trigger remains a semantic part for local focus styling",
 );
 assert.equal(
   document.getElementById("tooltip-popup")?.getAttribute("data-glass"),
@@ -327,18 +368,40 @@ assert.notEqual(
 const initialRelease = acquireGlass({
   id: "leases",
   mode: "css",
-  options: { blur: 0, tintOpacity: 0 },
+  options: { tintOpacity: 0 },
 });
-assert.equal(
-  surface.style.getPropertyValue("--glass-base"),
-  nativeMaterial,
+assert.deepEqual(
+  parseGlassColor(surface.style.getPropertyValue("--glass-base")),
+  parseGlassColor(nativeMaterial),
   "initial glass must read the native dark background instead of the decorated material",
 );
-assert.equal(surface.style.getPropertyValue("--glass-blur"), "0px");
+assert.equal(surface.style.getPropertyValue("--glass-blur"), "");
 assert.equal(surface.style.getPropertyValue("--glass-opacity"), "0%");
 initialRelease();
 initialThemeStyle.remove();
-surface.style.backgroundColor = "#ffffff";
+const pendingSurface = document.createElement("div");
+pendingSurface.dataset.glass = "true";
+pendingSurface.dataset.glassScope = "pending-hydration";
+pendingSurface.dataset.glassMounted = "false";
+pendingSurface.style.backgroundColor = "#ffffff";
+document.body.append(pendingSurface);
+const releasePending = acquireGlass({ id: "pending-hydration", mode: "css" });
+assert.equal(
+  pendingSurface.style.getPropertyValue("--glass-base"),
+  "",
+  "unhydrated surfaces keep server styles untouched",
+);
+pendingSurface.dataset.glassMounted = "true";
+await pause();
+assert.deepEqual(
+  parseGlassColor(pendingSurface.style.getPropertyValue("--glass-base")),
+  parseGlassColor(window.getComputedStyle(pendingSurface).backgroundColor),
+  "hydrated surfaces join normal sampling",
+);
+releasePending();
+pendingSurface.remove();
+// Translucent caller paint remains eligible for renderer fallback.
+surface.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
 const releaseOne = acquireGlass({ id: "leases", mode: "auto" });
 const releaseTwo = acquireGlass({ id: "leases", mode: "auto" });
 await pause();
@@ -348,12 +411,12 @@ assert.ok(
   "auto mode attempts GPU initialization before fallback",
 );
 assert.ok(surface.style.getPropertyValue("--glass-base"));
-surface.style.backgroundColor = "#161617";
+surface.style.backgroundColor = "rgba(22, 22, 23, 0.5)";
 await pause();
 assert.equal(
   surface.style.getPropertyValue("--glass-base"),
-  window.getComputedStyle(surface).backgroundColor,
-  "fallback material must refresh when the application changes appearance",
+  "rgb(43, 43, 44)",
+  "fallback material must recomposite changed caller paint over the glass tint",
 );
 releaseOne();
 assert.equal(
@@ -373,9 +436,103 @@ assert.equal(surface.style.getPropertyValue("--glass-base"), "");
 assert.equal(surface.style.getPropertyValue("--glass-frame"), "");
 assert.ok(observers.every((observer) => observer.disconnected));
 
+const leaseStyle = {
+  "--glass-frame": 'url("caller-frame")',
+  "--glass-filter": 'url("#caller-filter")',
+  "--glass-edge": "linear-gradient(red, blue)",
+  "--glass-initial-edge-shadow": "inset 0 0 1px red",
+  "--glass-opacity": "23%",
+  "--glass-base": "rgb(12, 34, 56)",
+};
+const leased = document.createElement("div");
+leased.dataset.glass = "true";
+leased.dataset.glassScope = "caller-styles";
+for (const [property, value] of Object.entries(leaseStyle))
+  leased.style.setProperty(property, value, "important");
+document.body.append(leased);
+const releaseStyleOne = acquireGlass({ id: "caller-styles", mode: "css" });
+const releaseStyleTwo = acquireGlass({ id: "caller-styles", mode: "css" });
+releaseStyleOne();
+assert.notEqual(
+  leased.style.getPropertyValue("--glass-base"),
+  leaseStyle["--glass-base"],
+);
+releaseStyleTwo();
+releaseStyleTwo();
+for (const [property, value] of Object.entries(leaseStyle)) {
+  assert.equal(leased.style.getPropertyValue(property), value);
+  assert.equal(leased.style.getPropertyPriority(property), "important");
+}
+for (const refresh of [false, true]) {
+  const release = acquireGlass({ id: "caller-styles", mode: "css" });
+  leased.style.setProperty("--glass-base", "rgb(70, 80, 90)", "important");
+  if (refresh) {
+    updateGlassConfiguration({
+      id: "caller-styles",
+      mode: "css",
+      options: { highlight: 0 },
+    });
+    await pause();
+    assert.notEqual(
+      leased.style.getPropertyValue("--glass-base"),
+      "rgb(70, 80, 90)",
+    );
+  }
+  release();
+  assert.equal(
+    leased.style.getPropertyValue("--glass-base"),
+    "rgb(70, 80, 90)",
+  );
+  assert.equal(leased.style.getPropertyPriority("--glass-base"), "important");
+  for (const [property, value] of Object.entries(leaseStyle)) {
+    if (property === "--glass-base") continue;
+    assert.equal(leased.style.getPropertyValue(property), value);
+    assert.equal(leased.style.getPropertyPriority(property), "important");
+  }
+}
+leased.remove();
+
+const transferred = document.createElement("div");
+transferred.dataset.glass = "true";
+transferred.dataset.glassScope = "previous-scope";
+transferred.style.backgroundColor = "transparent";
+transferred.style.color = "rgb(20, 30, 40)";
+transferred.style.borderRadius = "9px";
+transferred.style.setProperty("padding", "4px", "important");
+document.body.append(transferred);
+const originalTransferredStyle = transferred.getAttribute("style");
+const releasePreviousScope = acquireGlass({
+  id: "previous-scope",
+  mode: "css",
+});
+transferred.dataset.glassScope = "next-scope";
+const releaseNextScope = acquireGlass({
+  id: "next-scope",
+  mode: "css",
+  material: "regular",
+});
+const transferredState = transferred.dataset.glassState;
+const transferredPaint = transferred.getAttribute("style");
+assert.ok(transferredState);
+releasePreviousScope();
+assert.equal(
+  transferred.dataset.glassState,
+  transferredState,
+  "a delayed previous owner cannot clear the new scope's state",
+);
+assert.equal(transferred.getAttribute("style"), transferredPaint);
+await pause();
+assert.equal(transferred.dataset.glassState, "css");
+assert.equal(transferred.style.getPropertyValue("--glass-opacity"), "35%");
+releaseNextScope();
+assert.equal(transferred.getAttribute("style"), originalTransferredStyle);
+assert.equal(transferred.dataset.glassState, undefined);
+transferred.remove();
+
 const hidden = document.createElement("div");
-hidden.style.backgroundColor = "#ffffff";
+hidden.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
 hidden.hidden = true;
+hidden.dataset.closed = "";
 hidden.dataset.glass = "true";
 hidden.dataset.glassScope = "hidden";
 document.body.append(hidden);
@@ -384,11 +541,16 @@ const releaseHidden = acquireGlass({ id: "hidden", mode: "auto" });
 await pause();
 assert.equal(
   gpuAttempts,
-  beforeHidden + 1,
-  "the scope detects its renderer on initialization even with hidden surfaces",
+  beforeHidden,
+  "hidden surfaces do not initialize an unused renderer",
 );
 hidden.hidden = false;
 await pause();
+assert.equal(
+  gpuAttempts,
+  beforeHidden + 1,
+  "a visible closed-state surface initializes enhancement",
+);
 assert.equal(hidden.dataset.glassState, "fallback");
 
 releaseHidden();
@@ -518,19 +680,17 @@ document.body.append(selectorHost);
 const selectorRoot = createRoot(selectorHost as unknown as HTMLElement);
 await act(async () =>
   selectorRoot.render(
-    <GlassProvider>
-      <LocaleToggle
-        id="glass-language-selector"
-        glass
-        value="en-US"
-        onValueChange={() => {}}
-        options={[
-          { value: "en-US", label: "English" },
-          { value: "zh-CN", label: "简体中文" },
-          { value: "fr-FR", label: "Français" },
-        ]}
-      />
-    </GlassProvider>,
+    <LocaleToggle
+      id="glass-language-selector"
+      glass
+      value="en-US"
+      onValueChange={() => {}}
+      options={[
+        { value: "en-US", label: "English" },
+        { value: "zh-CN", label: "简体中文" },
+        { value: "fr-FR", label: "Français" },
+      ]}
+    />,
   ),
 );
 await act(async () => click("glass-language-selector"));
@@ -559,22 +719,20 @@ document.body.append(navigationHost);
 const navigationRoot = createRoot(navigationHost as unknown as HTMLElement);
 await act(async () => {
   navigationRoot.render(
-    <GlassProvider>
-      <NavigationMenu glass defaultValue="products">
-        <NavigationMenuList>
-          <NavigationMenuItem value="products">
-            <NavigationMenuTrigger id="menu-trigger">
+    <NavigationMenu glass defaultValue="products">
+      <NavigationMenuList>
+        <NavigationMenuItem value="products">
+          <NavigationMenuTrigger id="menu-trigger">
+            Products
+          </NavigationMenuTrigger>
+          <NavigationMenuContent id="menu-content">
+            <NavigationMenuLink href="/products" id="menu-link">
               Products
-            </NavigationMenuTrigger>
-            <NavigationMenuContent id="menu-content">
-              <NavigationMenuLink href="/products" id="menu-link">
-                Products
-              </NavigationMenuLink>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-    </GlassProvider>,
+            </NavigationMenuLink>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>,
   );
 });
 await act(async () => pause());
@@ -610,23 +768,21 @@ const sidebarRoot = createRoot(sidebarHost as unknown as HTMLElement);
 const sidebarRef = createRef<HTMLDivElement>();
 await act(async () => {
   sidebarRoot.render(
-    <GlassProvider>
-      <SidebarProvider>
-        <Sidebar glass id="sidebar-layout" ref={sidebarRef}>
-          Navigation
-        </Sidebar>
-      </SidebarProvider>
-    </GlassProvider>,
+    <SidebarProvider>
+      <Sidebar id="sidebar-layout" ref={sidebarRef}>
+        Navigation
+      </Sidebar>
+    </SidebarProvider>,
   );
 });
 await act(async () => pause());
 const sidebarSurface = document.querySelector('[data-slot="sidebar-inner"]');
 assert.ok(sidebarSurface);
-assert.equal(sidebarSurface.getAttribute("data-glass"), "true");
+assert.equal(sidebarSurface.getAttribute("data-glass"), null);
 assert.equal(
   sidebarSurface.getAttribute("data-glass-state"),
-  "fallback",
-  "the automatic Provider keeps its CSS/SVG material when no GPU adapter is available",
+  null,
+  "structural navigation never acquires a glass material",
 );
 assert.equal(
   sidebarRef.current?.id,
@@ -636,7 +792,7 @@ assert.equal(
 assert.equal(sidebarRef.current?.getAttribute("data-glass"), null);
 assert.equal(
   sidebarRef.current?.querySelectorAll('[data-glass="true"]').length,
-  1,
+  0,
 );
 await act(async () => sidebarRoot.unmount());
 assert.equal(sidebarRef.current, null);
@@ -756,19 +912,59 @@ exampleStyle.remove();
 const capabilityHost = document.createElement("div");
 document.body.append(capabilityHost);
 const capabilityRoot = createRoot(capabilityHost as unknown as HTMLElement);
-const beforeProvider = gpuAttempts;
+const beforeScope = gpuAttempts;
+const beforeScopeObservers = observers.length;
+const Scope = withGlass(
+  (props: { children?: import("react").ReactNode }) => <div {...props} />,
+  "scope",
+);
 await act(async () =>
   capabilityRoot.render(
-    <GlassProvider>
+    <Scope glass glassConfig={{ mode: "auto" }}>
       <p>No glass mounted yet</p>
-    </GlassProvider>,
+    </Scope>,
   ),
 );
 await pause();
 assert.equal(
   gpuAttempts,
-  beforeProvider + 1,
-  "the global provider detects capabilities before any glass module mounts",
+  beforeScope,
+  "a layout scope without actual surfaces does not request a GPU",
+);
+assert.equal(
+  observers.length,
+  beforeScopeObservers,
+  "a layout scope without actual surfaces does not acquire a runtime owner",
+);
+assert.equal(capabilityHost.querySelector("[data-glass]"), null);
+await act(async () =>
+  capabilityRoot.render(
+    <Button
+      glass
+      id="regular-capability"
+      glassConfig={{ material: "regular", mode: "auto" }}
+    >
+      Regular
+    </Button>,
+  ),
+);
+await pause();
+assert.equal(
+  gpuAttempts,
+  beforeScope,
+  "Regular auto uses SVG then CSS without requesting a GPU",
+);
+assert.equal(
+  document
+    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
+    ?.getAttribute("data-glass-material"),
+  "regular",
+);
+assert.equal(
+  document
+    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
+    ?.style.getPropertyValue("--glass-opacity"),
+  "35%",
 );
 await act(async () => capabilityRoot.unmount());
 capabilityHost.remove();

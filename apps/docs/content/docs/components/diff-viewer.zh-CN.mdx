@@ -59,6 +59,6 @@ import { DiffViewer } from "@workspace/ui/components/diff-viewer";
 | `maxHeight` | `number` | `280` 像素 |
 | `copyable` | `boolean` | `true`；复制修改后的代码 |
 | `labels` | `Partial<DiffViewerLabels>` | 英文文案 |
-| `glass` | `boolean` | `false` |
+| `glass` | `boolean` | `false`；仅工具栏操作控件使用 Glass，内容区保持普通样式。 |
 
 模块导出 `DiffViewerProps` 和 `DiffViewerLabels`。逐行比较使用 [jsdiff](https://github.com/kpdecker/jsdiff)。

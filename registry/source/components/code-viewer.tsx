@@ -9,7 +9,7 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { useGlassEnabled } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/context";
 import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
@@ -70,13 +70,12 @@ const DEFAULT_CODE_VIEWER_LABELS: CodeViewerLabels = {
 
 const EMPTY_LINES: number[] = [];
 
-export function CodeViewer({
+function CodeViewerImplementation({
   code,
   variant = "default",
   lang = "typescript",
   theme,
   className,
-  glass,
   title,
   labels,
   status = "complete",
@@ -87,7 +86,6 @@ export function CodeViewer({
   copyable = true,
 }: Readonly<CodeViewerProps>) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const glassEnabled = useGlassEnabled(glass);
   const text = { ...DEFAULT_CODE_VIEWER_LABELS, ...labels };
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
@@ -187,9 +185,8 @@ export function CodeViewer({
 
   const showSkeleton = highlightLoading && !streaming && !hasStreamed;
   return (
-    <GlassSurface
+    <div
       ref={rootRef}
-      glass={glassEnabled}
       data-slot="code-viewer"
       data-state={status}
       aria-busy={streaming}
@@ -239,7 +236,9 @@ export function CodeViewer({
           </span>
         </div>
       )}
-      <div
+      <GlassSurface
+        glass={false}
+        data-slot="code-viewer-content"
         ref={viewportRef}
         tabIndex={0}
         role={streaming ? "log" : undefined}
@@ -351,10 +350,12 @@ export function CodeViewer({
             {text.empty}
           </div>
         )}
-      </div>
-    </GlassSurface>
+      </GlassSurface>
+    </div>
   );
 }
+
+export const CodeViewer = withGlass(CodeViewerImplementation, "scope");
 
 export type { ShikiProviderProps } from "@/lib/viewer/shiki-context";
 export { ShikiProvider } from "@/lib/viewer/shiki-context";

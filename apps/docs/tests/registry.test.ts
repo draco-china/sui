@@ -169,10 +169,12 @@ test("CLI transformed WebGPU files compile with restrictive consumer types and f
         [
           "@lib/glass/renderer.ts",
           "@lib/glass/contrast.ts",
+          "@lib/glass/defaults.ts",
+          "@lib/glass/refraction.ts",
           "@lib/sui/types/webgpu.d.ts",
         ].includes(file.target ?? ""),
       ) ?? [];
-    expect(required).toHaveLength(3);
+    expect(required).toHaveLength(5);
     for (const file of required) {
       const content = await transform({
         filename: file.path,

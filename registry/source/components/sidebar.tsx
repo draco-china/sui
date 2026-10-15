@@ -24,11 +24,6 @@ import { cn } from "cn";
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { useGlassEnabled, withGlass } from "@/lib/glass/context";
-
-const SidebarSurface = withGlass((props: React.ComponentProps<"div">) => (
-  <div {...props} />
-));
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -58,7 +53,7 @@ function useSidebar() {
   return context;
 }
 
-function SidebarProviderImplementation({
+function SidebarProvider({
   defaultOpen = true,
   open: openProp,
   onOpenChange: setOpenProp,
@@ -152,7 +147,7 @@ function SidebarProviderImplementation({
   );
 }
 
-function SidebarImplementation({
+function Sidebar({
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
@@ -166,11 +161,10 @@ function SidebarImplementation({
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-  const glass = useGlassEnabled();
 
   if (collapsible === "none") {
     return (
-      <SidebarSurface
+      <div
         data-slot="sidebar"
         className={cn(
           "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
@@ -179,7 +173,7 @@ function SidebarImplementation({
         {...props}
       >
         {children}
-      </SidebarSurface>
+      </div>
     );
   }
 
@@ -187,6 +181,7 @@ function SidebarImplementation({
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
+          glass={false}
           dir={dir}
           data-sidebar="sidebar"
           data-slot="sidebar"
@@ -239,18 +234,17 @@ function SidebarImplementation({
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=right]:border-s group-data-[side=left]:border-e",
-          glass && "border-transparent",
           className,
         )}
         {...props}
       >
-        <SidebarSurface
+        <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
           className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-2xl group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
         >
           {children}
-        </SidebarSurface>
+        </div>
       </div>
     </div>
   );
@@ -307,10 +301,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   );
 }
 
-function SidebarInsetImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"main">) {
+function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
   return (
     <main
       data-slot="sidebar-inset"
@@ -507,7 +498,7 @@ const sidebarMenuButtonVariants = cva(
   },
 );
 
-function SidebarMenuButtonImplementation({
+function SidebarMenuButton({
   render,
   isActive = false,
   variant = "default",
@@ -674,7 +665,7 @@ function SidebarMenuSubItem({
   );
 }
 
-function SidebarMenuSubButtonImplementation({
+function SidebarMenuSubButton({
   render,
   size = "md",
   isActive = false,
@@ -705,15 +696,6 @@ function SidebarMenuSubButtonImplementation({
     },
   });
 }
-
-const SidebarProvider = withGlass(SidebarProviderImplementation, "scope");
-const Sidebar = withGlass(SidebarImplementation, "scope");
-const SidebarInset = withGlass(SidebarInsetImplementation);
-const SidebarMenuButton = withGlass(SidebarMenuButtonImplementation, "control");
-const SidebarMenuSubButton = withGlass(
-  SidebarMenuSubButtonImplementation,
-  "control",
-);
 
 export {
   Sidebar,

@@ -2,7 +2,6 @@
 
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "@/lib/glass/context";
 
 function MessageGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -32,10 +31,7 @@ function Message({
   );
 }
 
-function MessageAvatarImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function MessageAvatar({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="message-avatar"
@@ -86,8 +82,6 @@ function MessageFooter({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
-const MessageAvatar = withGlass(MessageAvatarImplementation);
 
 export {
   Message,

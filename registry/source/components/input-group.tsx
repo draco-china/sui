@@ -99,7 +99,6 @@ function InputGroupButton({
   }) {
   return (
     <Button
-      glass={false}
       type={type}
       data-size={size}
       variant={variant}
@@ -130,7 +129,6 @@ function InputGroupInput({
 }: React.ComponentProps<"input">) {
   return (
     <Input
-      glass={false}
       data-slot="input-group-control"
       className={cn(
         "flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
@@ -147,7 +145,6 @@ function InputGroupTextarea({
 }: React.ComponentProps<"textarea">) {
   return (
     <Textarea
-      glass={false}
       data-slot="input-group-control"
       className={cn(
         "flex-1 resize-none rounded-none border-0 bg-transparent py-2.5 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",

@@ -2,12 +2,8 @@
 
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "../lib/glass/context";
 
-function TableImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"table">) {
+function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
@@ -106,8 +102,6 @@ function TableCaption({
     />
   );
 }
-
-const Table = withGlass(TableImplementation);
 
 export {
   Table,

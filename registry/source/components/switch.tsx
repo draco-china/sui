@@ -29,6 +29,9 @@ function SwitchImplementation({
   );
 }
 
-const Switch = withGlass(SwitchImplementation, "control");
+const Switch = withGlass(SwitchImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 export { Switch };

@@ -1,6 +1,19 @@
+import {
+  glassBevelWidth,
+  glassMaxEdgeClarity,
+  glassRefractionProfile,
+  glassRefractionStrength,
+} from "./refraction";
 import type { GlassFrame } from "./renderer";
 
-function roundedDistance(x: number, y: number, frame: GlassFrame) {
+export type SvgGlassGeometry = Pick<
+  GlassFrame,
+  "width" | "height" | "radius" | "radiusY" | "strength"
+>;
+
+let filterSequence = 0;
+
+function roundedDistance(x: number, y: number, frame: SvgGlassGeometry) {
   const { width, height, radius } = frame;
   const vertical = frame.radiusY ?? radius;
   let distance = Math.max(-x, x - width, -y, y - height);
@@ -38,16 +51,54 @@ function roundedDistance(x: number, y: number, frame: GlassFrame) {
   return distance;
 }
 
-export function glassDisplacement(x: number, y: number, frame: GlassFrame) {
+function glassOptics(x: number, y: number, frame: SvgGlassGeometry) {
   const distance = roundedDistance(x, y, frame);
-  if (distance <= -17) return [0, 0];
-  const dx =
+  const bevelWidth = glassBevelWidth(frame.width, frame.height);
+  if (distance <= -bevelWidth) return [0, 0, 0];
+  const gradientX =
     roundedDistance(x + 0.4, y, frame) - roundedDistance(x - 0.4, y, frame);
-  const dy =
+  const gradientY =
     roundedDistance(x, y + 0.4, frame) - roundedDistance(x, y - 0.4, frame);
-  const length = Math.hypot(dx, dy) || 1;
-  const bevel = Math.max(0, 1 - Math.max(-distance, 0) / 17) ** 2;
-  return [(-dx / length) * bevel * 0.45, (-dy / length) * bevel * 0.45];
+  const length = Math.hypot(gradientX, gradientY) || 1;
+  const bevel = glassRefractionProfile(Math.max(-distance, 0), bevelWidth);
+  let dx = (-gradientX / length) * bevel * 0.45;
+  let dy = (-gradientY / length) * bevel * 0.45;
+  const clarity = Math.hypot(dx, dy) / 0.45;
+  const vertical = frame.radiusY ?? frame.radius;
+  let corner = x < frame.width / 2 ? 0 : 1;
+  if (y >= frame.height / 2) corner = 3 - corner;
+  const depthX = Math.min(x, frame.width - x);
+  const depthY = Math.min(y, frame.height - y);
+  if (
+    depthX >= 0 &&
+    depthY >= 0 &&
+    depthX < bevelWidth &&
+    depthY < bevelWidth &&
+    frame.radius[corner] === 0 &&
+    vertical[corner] === 0 &&
+    frame.radius.every((radius) => radius <= frame.width / 2) &&
+    vertical.every((radius) => radius <= frame.height / 2)
+  ) {
+    // Adjacent flat edges bend independently; curved corner regions stay intact.
+    dx =
+      (x < frame.width / 2 ? 1 : -1) *
+      glassRefractionProfile(depthX, bevelWidth) *
+      0.45;
+    dy =
+      (y < frame.height / 2 ? 1 : -1) *
+      glassRefractionProfile(depthY, bevelWidth) *
+      0.45;
+  }
+  return [dx, dy, clarity];
+}
+
+export function glassDisplacement(
+  x: number,
+  y: number,
+  frame: SvgGlassGeometry,
+) {
+  const [dx, dy] = glassOptics(x, y, frame);
+  return [dx, dy];
 }
 
 async function decodedSvg(svg: string) {
@@ -75,10 +126,20 @@ async function decodedSvg(svg: string) {
 export class SvgGlassRenderer {
   private disposed = false;
   private readonly maps = new Map<string, string>();
-  private backgrounds = new WeakMap<HTMLCanvasElement, string>();
+  private root: SVGSVGElement | undefined;
+  private readonly filters = new Map<
+    HTMLElement,
+    { filter: SVGFilterElement; key: string }
+  >();
 
   static async create() {
-    // Probe actual pixel displacement, not merely CSS syntax acceptance.
+    if (!window.CSS?.supports("backdrop-filter", 'url("#glass-probe")'))
+      throw new Error("Native SVG backdrop filtering unavailable");
+    // WebKit parses URL filters but does not paint SVG backdrops (WebKit #245510).
+    const agent = window.navigator.userAgent;
+    if (/AppleWebKit\//.test(agent) && !/(Chrome|Chromium)\//.test(agent))
+      throw new Error("Native SVG backdrop filtering unavailable");
+    // Verify inline SVG displacement after excluding the unsupported backdrop engine.
     const image = await decodedSvg(
       `<svg xmlns="http://www.w3.org/2000/svg" width="4" height="1"><defs><filter id="probe" filterUnits="userSpaceOnUse" x="0" y="0" width="4" height="1" color-interpolation-filters="sRGB"><feFlood flood-color="rgb(255,128,0)" result="map"/><feDisplacementMap in="SourceGraphic" in2="map" scale="2" xChannelSelector="R" yChannelSelector="G"/></filter></defs><g filter="url(#probe)"><rect width="2" height="1" fill="red"/><rect x="2" width="2" height="1" fill="blue"/></g></svg>`,
     );
@@ -94,7 +155,7 @@ export class SvgGlassRenderer {
     return new SvgGlassRenderer();
   }
 
-  private normalMap(frame: GlassFrame) {
+  private normalMap(frame: SvgGlassGeometry) {
     const key = JSON.stringify([
       frame.width,
       frame.height,
@@ -103,7 +164,7 @@ export class SvgGlassRenderer {
     ]);
     const existing = this.maps.get(key);
     if (existing) return existing;
-    const scale = Math.min(1, 1024 / Math.max(frame.width, frame.height));
+    const scale = Math.min(2, 1024 / Math.max(frame.width, frame.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.ceil(frame.width * scale));
     canvas.height = Math.max(1, Math.ceil(frame.height * scale));
@@ -114,34 +175,29 @@ export class SvgGlassRenderer {
       for (let x = 0; x < canvas.width; x++) {
         const px = ((x + 0.5) * frame.width) / canvas.width;
         const py = ((y + 0.5) * frame.height) / canvas.height;
-        const [dx, dy] = glassDisplacement(px, py, frame);
+        const [dx, dy, clarity] = glassOptics(px, py, frame);
         const offset = (y * canvas.width + x) * 4;
         pixels.data[offset] = Math.round(128 + dx * 256);
         pixels.data[offset + 1] = Math.round(128 + dy * 256);
-        pixels.data[offset + 2] = 128;
+        pixels.data[offset + 2] = Math.round(clarity * 255);
         pixels.data[offset + 3] = 255;
       }
     }
     context.putImageData(pixels, 0, 0);
     const result = canvas.toDataURL("image/png");
-    if (this.maps.size >= 4)
+    if (this.maps.size >= 32)
       this.maps.delete(this.maps.keys().next().value ?? "");
     this.maps.set(key, result);
     return result;
   }
 
-  async render(source: HTMLCanvasElement, frame: GlassFrame) {
+  filter(element: HTMLElement, frame: SvgGlassGeometry) {
     if (this.disposed) throw new Error("SVG renderer disposed");
     if (
       ![
         frame.width,
         frame.height,
-        frame.margin,
-        ...(frame.origin ?? [frame.margin, frame.margin]),
         frame.strength,
-        frame.blur,
-        frame.tintOpacity,
-        ...frame.tint,
         ...frame.radius,
         ...(frame.radiusY ?? frame.radius),
       ].every(Number.isFinite) ||
@@ -149,38 +205,74 @@ export class SvgGlassRenderer {
       frame.height <= 0 ||
       frame.strength < 0 ||
       frame.strength > 64 ||
-      frame.blur < 0 ||
-      frame.blur > 24 ||
-      frame.tintOpacity < 0 ||
-      frame.tintOpacity > 1 ||
       [...frame.radius, ...(frame.radiusY ?? frame.radius)].some(
         (radius) => radius < 0,
-      ) ||
-      frame.tint.some((channel) => channel < 0 || channel > 1)
+      )
     )
       throw new Error("Invalid SVG glass geometry");
-    let background = this.backgrounds.get(source);
-    if (!background) {
-      background = source.toDataURL("image/png");
-      this.backgrounds.set(source, background);
+    const key = JSON.stringify([
+      frame.width,
+      frame.height,
+      frame.radius,
+      frame.radiusY,
+      frame.strength,
+    ]);
+    let entry = this.filters.get(element);
+    if (!entry) {
+      const document = element.ownerDocument;
+      if (!this.root) {
+        this.root = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg",
+        );
+        this.root.setAttribute("data-glass-decoration", "true");
+        this.root.setAttribute("aria-hidden", "true");
+        this.root.style.cssText =
+          "position:absolute;width:0;height:0;overflow:hidden";
+        document.body.append(this.root);
+      }
+      const filter = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "filter",
+      );
+      filter.id = `glass-svg-${++filterSequence}`;
+      this.root.append(filter);
+      entry = { filter, key: "" };
+      this.filters.set(element, entry);
     }
-    const normal = this.normalMap(frame);
-    const [tl, tr, br, bl] = frame.radius;
-    const [ty, ry, by, ly] = frame.radiusY ?? frame.radius;
-    const { width, height } = frame;
-    const outline = `M${tl} 0H${width - tr}A${tr} ${ry} 0 0 1 ${width} ${ry}V${height - by}A${br} ${by} 0 0 1 ${width - br} ${height}H${bl}A${bl} ${ly} 0 0 1 0 ${height - ly}V${ty}A${tl} ${ty} 0 0 1 ${tl} 0Z`;
-    const [x, y] = frame.origin ?? [frame.margin, frame.margin];
-    const margin = frame.strength + frame.blur * 3 + 2;
-    const tint = frame.tint
-      .map((channel) => Math.round(Math.max(0, Math.min(1, channel)) * 255))
-      .join(" ");
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><clipPath id="outline"><path d="${outline}"/></clipPath><filter id="refract" filterUnits="userSpaceOnUse" x="${-margin}" y="${-margin}" width="${width + margin * 2}" height="${height + margin * 2}" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="${Math.max(0, frame.blur)}" result="blurred"/><feImage href="${normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${Math.max(0, frame.strength)}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feColorMatrix in="refracted" type="saturate" values="1.12"/></filter></defs><g clip-path="url(#outline)"><image href="${background}" x="${-x}" y="${-y}" width="${source.width}" height="${source.height}" filter="url(#refract)"/><path d="${outline}" fill="rgb(${tint})" fill-opacity="${Math.max(0, Math.min(1, frame.tintOpacity))}"/></g></svg>`;
-    return new Blob([svg], { type: "image/svg+xml" });
+    if (entry.key !== key) {
+      const { width, height } = frame;
+      const normal = this.normalMap(frame);
+      const strength = glassRefractionStrength(frame.strength, width, height);
+      const clarity =
+        Math.min(strength / glassBevelWidth(width, height), 1) *
+        glassMaxEdgeClarity;
+      const margin = frame.strength + 4 * 3 + 2;
+      const filter = entry.filter;
+      filter.setAttribute("filterUnits", "userSpaceOnUse");
+      filter.setAttribute("x", String(-margin));
+      filter.setAttribute("y", String(-margin));
+      filter.setAttribute("width", String(width + margin * 2));
+      filter.setAttribute("height", String(height + margin * 2));
+      filter.setAttribute("color-interpolation-filters", "sRGB");
+      // SourceGraphic is the live browser backdrop. Only the geometric normal
+      // map is encoded; there is no DOM snapshot or background PNG here.
+      filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blurred"/><feImage href="${normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feDisplacementMap in="SourceGraphic" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="sharp"/><feColorMatrix in="encoded" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0" result="clarity"/><feComposite in="sharp" in2="clarity" operator="in" result="edge"/><feComposite in="edge" in2="refracted" operator="over" result="combined"/><feColorMatrix in="combined" type="saturate" values="1.12"/>`;
+      entry.key = key;
+    }
+    return `url("#${entry.filter.id}")`;
+  }
+
+  release(element: HTMLElement) {
+    this.filters.get(element)?.filter.remove();
+    this.filters.delete(element);
   }
 
   destroy() {
     this.disposed = true;
     this.maps.clear();
-    this.backgrounds = new WeakMap();
+    this.root?.remove();
+    this.root = undefined;
+    this.filters.clear();
   }
 }

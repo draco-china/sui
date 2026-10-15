@@ -5,12 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { useMemo } from "react";
-import { withGlass } from "@/lib/glass/context";
 
-function FieldSetImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"fieldset">) {
+function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
     <fieldset
       data-slot="field-set"
@@ -41,10 +37,7 @@ function FieldLegend({
   );
 }
 
-function FieldGroupImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="field-group"
@@ -75,7 +68,7 @@ const fieldVariants = cva(
   },
 );
 
-function FieldImplementation({
+function Field({
   className,
   orientation = "vertical",
   ...props
@@ -105,7 +98,7 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function FieldLabelImplementation({
+function FieldLabel({
   className,
   ...props
 }: React.ComponentProps<typeof Label>) {
@@ -230,11 +223,6 @@ function FieldError({
     </div>
   );
 }
-
-const Field = withGlass(FieldImplementation, "scope");
-const FieldGroup = withGlass(FieldGroupImplementation, "scope");
-const FieldSet = withGlass(FieldSetImplementation, "scope");
-const FieldLabel = withGlass(FieldLabelImplementation);
 
 export {
   Field,

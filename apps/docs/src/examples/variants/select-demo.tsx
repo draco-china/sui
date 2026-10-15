@@ -15,6 +15,12 @@ const items = [
   { label: "Blueberry", value: "blueberry" },
   { label: "Grapes", value: "grapes" },
   { label: "Pineapple", value: "pineapple" },
+  { label: "Kiwi", value: "kiwi" },
+  { label: "Mango", value: "mango" },
+  { label: "Orange", value: "orange" },
+  { label: "Pear", value: "pear" },
+  { label: "Strawberry", value: "strawberry" },
+  { label: "Watermelon", value: "watermelon" },
 ];
 
 export function SelectDemo() {
@@ -23,7 +29,7 @@ export function SelectDemo() {
       <SelectTrigger className="w-full max-w-48">
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="max-h-64">
         <SelectGroup>
           <SelectLabel>Fruits</SelectLabel>
           {items.map((item) => (

@@ -724,27 +724,26 @@ await render(
     value="config-race"
     size={192}
     margin={8}
-    glass
     logo={<span>Glass brand</span>}
   />,
 );
 assert.equal(
   nativeRef.current,
   qr("main"),
-  "optional glass preserves the native div ref",
+  "ordinary QR content preserves the native div ref",
 );
-assert.equal(qr("main").dataset.glass, "true");
+assert.equal(qr("main").hasAttribute("data-glass"), false);
 assert.equal(
   qr("main")
     .querySelector('[data-slot="qr-code-content"]')
     ?.classList.contains("inset-2"),
   false,
-  "glass fills the code surface without a separate 8px rim",
+  "ordinary QR content fills the code surface without a separate 8px rim",
 );
 assert.ok(
   qr("main")
     .querySelector('[data-slot="qr-code-content"]')
-    ?.classList.contains("bg-transparent"),
+    ?.classList.contains("bg-card"),
 );
 const glassLightColors = themeColors("main");
 assert.equal(glassLightColors.foreground, plainLightColors.foreground);
@@ -753,12 +752,12 @@ assert.equal(
     .querySelector('[data-slot="qr-code-content"]')
     ?.hasAttribute("data-glass"),
   false,
-  "sharp code content remains real DOM over the single shared glass background",
+  "sharp code content remains ordinary real DOM",
 );
 await act(async () => document.documentElement.classList.add("dark"));
 const glassDarkColors = themeColors("main");
 assert.notDeepEqual(glassDarkColors, glassLightColors);
-assert.equal(qr("main").dataset.glass, "true");
+assert.equal(qr("main").hasAttribute("data-glass"), false);
 assert.equal(qr("main").dataset.state, "ready");
 assert.equal(pending.length, beforeGlassChange);
 await act(async () => document.documentElement.classList.remove("dark"));
@@ -769,7 +768,6 @@ await render(
     value="config-race"
     size={192}
     margin={8}
-    glass
     loading
     logo={<span>Glass brand</span>}
   />,
@@ -793,7 +791,6 @@ await render(
     value="config-race"
     size={192}
     margin={8}
-    glass={false}
   />,
 );
 assert.equal(qr("main").hasAttribute("data-glass"), false);
@@ -807,7 +804,7 @@ assert.equal(pending.length, beforeGlassChange);
 assert.deepEqual(
   themeColors("main"),
   plainLightColors,
-  "turning off glass restores the solid neutral scan surface",
+  "theme and loading transitions retain the solid neutral scan surface",
 );
 const finder = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 finder.innerHTML =

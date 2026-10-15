@@ -2,6 +2,7 @@ import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import * as vgpu from "vgpu";
 import { getMockGPUDeviceInstrumentation, init as mockInit } from "vgpu/mock";
+import { glassRefractionStrength } from "../../../../packages/ui/src/lib/glass/refraction";
 import type { GlassFrame } from "../../../../packages/ui/src/lib/glass/renderer";
 
 function deferred<T>() {
@@ -180,6 +181,7 @@ const frame: GlassFrame = {
   tint: [1, 1, 1],
   tintOpacity: 0.28,
   foreground: [0, 0, 0],
+  minimumContrast: 4.5,
 };
 const source = { width: 16, height: 16 } as HTMLCanvasElement;
 const running = await configureDevice();
@@ -244,14 +246,22 @@ assert.equal(
 );
 assert.deepEqual(
   Array.from(shared.uniforms[0]?.slice(16, 18) ?? []),
-  [frame.tintOpacity, frame.strength].map(Math.fround),
+  [
+    frame.tintOpacity,
+    glassRefractionStrength(frame.strength, frame.width, frame.height),
+  ].map(Math.fround),
 );
 assert.equal(
   shared.uniforms[0]?.[23],
   Math.fround(4.55),
   "minimum contrast shares the tint alignment slot",
 );
-assert.equal(shared.uniforms[0]?.[17], 22);
+assert.equal(
+  shared.uniforms[0]?.[17],
+  Math.fround(
+    glassRefractionStrength(frame.strength, frame.width, frame.height),
+  ),
+);
 assert.equal(shared.uniforms[0]?.[27], 1);
 assert.ok(
   shared.instrumentation.calls.createCommandEncoder >= 4,
@@ -318,6 +328,22 @@ const isolated = await configureDevice();
 const isolatedRenderer = await GlassRenderer.create();
 await isolatedRenderer.render(viewport, frame);
 assert.equal(isolated.uploads.length, 1, "contexts own separate textures");
+for (const ratio of [2, 3]) {
+  Object.defineProperty(window, "devicePixelRatio", {
+    configurable: true,
+    value: ratio,
+  });
+  await isolatedRenderer.render(viewport, frame);
+  assert.deepEqual(
+    Array.from(isolated.uniforms.at(-1)?.slice(0, 4) ?? []),
+    [16, 16, 32, 32],
+    "high-density displays receive a 2x frame without unbounded output growth",
+  );
+}
+Object.defineProperty(window, "devicePixelRatio", {
+  configurable: true,
+  value: 1,
+});
 isolatedRenderer.destroy();
 assert.equal(isolated.inputs[0]?.destroyed, 1);
 assert.ok(isolated.filtered.every((image) => image.destroyed === 1));
@@ -327,25 +353,43 @@ const siblings = Array.from(
   { length: 4 },
   () => ({ width: 640, height: 480 }) as HTMLCanvasElement,
 );
-for (const background of siblings.slice(0, 3))
+for (const background of siblings) {
   await sharedRenderer.render(background, frame);
+  assert.equal(
+    shared.inputs.filter((image) => image.destroyed === 0).length,
+    1,
+    "new snapshots release previous background textures",
+  );
+  assert.ok(
+    shared.filtered.filter((image) => image.destroyed === 0).length <= 3,
+  );
+}
+assert.equal(shared.inputs[0]?.destroyed, 1);
 await sharedRenderer.render(viewport, { ...frame, origin: [14, 36] });
 assert.equal(
   shared.uploads.length,
-  4,
-  "movement only updates reflected uniforms",
+  6,
+  "evicted snapshots can be uploaded again",
 );
-await sharedRenderer.render(siblings[3] as HTMLCanvasElement, frame);
+const uploadsBeforeMove = shared.uploads.length;
+await sharedRenderer.render(viewport, { ...frame, origin: [16, 38] });
 assert.equal(
-  shared.inputs[1]?.destroyed,
-  1,
-  "evicts least recently used input",
+  shared.uploads.length,
+  uploadsBeforeMove,
+  "movement on the current snapshot only updates reflected uniforms",
 );
-assert.equal(shared.inputs[0]?.destroyed, 0);
-assert.equal(shared.inputs.filter((image) => image.destroyed === 0).length, 4);
+assert.deepEqual(
+  Array.from(shared.uniforms.at(-1)?.slice(6, 8) ?? []),
+  [16, 38],
+);
+const beforeResize = shared.inputs.at(-1);
 viewport.width = 800;
 await sharedRenderer.render(viewport, frame);
-assert.equal(shared.inputs[0]?.destroyed, 1, "resized input is invalidated");
+assert.equal(
+  beforeResize?.destroyed,
+  1,
+  "resized current input is invalidated",
+);
 shared.failNextUpload();
 const failedSource = { width: 100, height: 100 } as HTMLCanvasElement;
 await assert.rejects(

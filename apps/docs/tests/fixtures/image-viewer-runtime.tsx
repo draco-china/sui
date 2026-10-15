@@ -547,6 +547,58 @@ assert.equal(
 );
 await interaction(() => emptyRoot.unmount());
 emptyHost.remove();
+const controlsHost = document.createElement("div");
+document.body.append(controlsHost);
+const controlsRoot = createRoot(controlsHost);
+for (const enabled of [true, false]) {
+  await interaction(() =>
+    controlsRoot.render(
+      <ImageViewer
+        glass={enabled}
+        glassConfig={{ mode: "css" }}
+        images={gallery}
+        open
+        labels={{ viewer: "Glass controls" }}
+        onClose={() => {}}
+      />,
+    ),
+  );
+  const controlsPanel = popup("Glass controls");
+  assert.equal(
+    controlsPanel.hasAttribute("data-glass"),
+    false,
+    "fullscreen shell must remain plain",
+  );
+  assert.equal(mainImage(controlsPanel).hasAttribute("data-glass"), false);
+  for (const label of [
+    "Zoom in",
+    "Zoom out",
+    "Rotate clockwise",
+    "Close image viewer",
+    "Next image",
+    "Previous image",
+  ])
+    assert.equal(
+      button(controlsPanel, label).getAttribute("data-glass"),
+      enabled ? "true" : null,
+      label,
+    );
+  for (const thumbnail of controlsPanel.querySelectorAll(
+    '[data-slot="image-viewer-thumbnails"] button',
+  ))
+    assert.equal(
+      thumbnail.hasAttribute("data-glass"),
+      false,
+      "thumbnails must not refract images",
+    );
+  await interaction(() => button(controlsPanel, "Reset image").click());
+  await interaction(() => button(controlsPanel, "Zoom in").click());
+  assert.match(mainImage(controlsPanel).style.transform, /scale\(1\.25\)/);
+}
+await interaction(() => controlsRoot.unmount());
+controlsHost.remove();
+assert.equal(wheelTargets.size, 0);
+assert.equal(mediaListeners.size, 0);
 await window.happyDOM.close();
 console.log(
   "ImageViewer controlled state, loading, retry, gestures, keyboard and cleanup passed",

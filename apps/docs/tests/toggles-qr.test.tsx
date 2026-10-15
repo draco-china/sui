@@ -142,12 +142,12 @@ describe("QR code asynchronous SSR boundary", () => {
     expect(html).not.toContain("blob:");
     expect(html).not.toContain("https://example.com");
   });
-  test("optional QR glass uses a full shared background behind transparent code content", () => {
-    const html = renderToString(<QRCode glass value="connect:workspace" />);
-    expect(html).toMatch(/data-glass="(?:true)?"/);
+  test("QR content always retains a plain readable scanner surface", () => {
+    const html = renderToString(<QRCode value="connect:workspace" />);
+    expect(html).not.toContain("data-glass=");
     expect(html).toContain('data-slot="qr-code-content"');
     expect(html).not.toContain("inset-2");
-    expect(html).toMatch(/data-slot="qr-code-content"[^>]*bg-transparent/);
+    expect(html).toMatch(/data-slot="qr-code-content"[^>]*bg-card/);
     expect(html).toContain("text-foreground");
     expect(html).not.toContain("<mask");
     expect(html).toContain('aria-busy="true"');

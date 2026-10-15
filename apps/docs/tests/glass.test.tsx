@@ -1,13 +1,26 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { Button } from "@workspace/ui/components/button";
-import { GlassProvider, GlassSurface } from "@workspace/ui/components/glass";
+import {
+  ButtonGroup,
+  ButtonGroupText,
+} from "@workspace/ui/components/button-group";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "@workspace/ui/components/field";
+import { GlassSurface } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import {
   InputGroup,
   InputGroupButton,
   InputGroupInput,
 } from "@workspace/ui/components/input-group";
+import { Kbd, KbdGroup } from "@workspace/ui/components/kbd";
+import { Label } from "@workspace/ui/components/label";
+import { Marker } from "@workspace/ui/components/marker";
 import {
   Menubar,
   MenubarMenu,
@@ -32,7 +45,6 @@ import {
   GlassContext,
   withGlass,
 } from "../../../packages/ui/src/lib/glass/context";
-import { glassIntensityDefaults } from "../../../packages/ui/src/lib/glass/intensity";
 
 function Element(props: ComponentProps<"div">) {
   return <div {...props} />;
@@ -49,87 +61,100 @@ function tag(html: string, id: string) {
 }
 
 describe("glass preserves component semantics", () => {
-  test("three intensities render their shared CSS defaults before hydration", () => {
+  test("boolean glass keeps the original surface boundary without fixed inline blur", () => {
     const html = renderToString(
-      <GlassProvider>
-        <GlassSurface id="inherited-intensity">Default</GlassSurface>
-        <GlassSurface id="sm-intensity" intensity="sm">
-          Small
-        </GlassSurface>
-        <GlassSurface id="lg-intensity" intensity="lg">
-          Large
-        </GlassSurface>
+      <>
+        <GlassSurface id="enabled">Glass</GlassSurface>
         <GlassSurface id="ordinary" glass={false}>
           Ordinary
         </GlassSurface>
-      </GlassProvider>,
+      </>,
     );
-    for (const [id, intensity, blur, opacity] of [
-      ["inherited-intensity", "default", 6, 60],
-      ["sm-intensity", "sm", 4, 40],
-      ["lg-intensity", "lg", 8, 78],
-    ] as const) {
-      const element = tag(html, id);
-      expect(element).toContain('data-glass="true"');
-      expect(element).toContain(`data-glass-intensity="${intensity}"`);
-      expect(element).toContain(`--glass-initial-blur:${blur}px`);
-      expect(element).toContain(`--glass-initial-opacity:${opacity}%`);
-      expect(element).not.toContain(" intensity=");
-      expect(element).not.toContain(" material=");
-      expect(element).not.toContain("data-glass-material");
-    }
+    expect(tag(html, "enabled")).toContain('data-glass="true"');
     expect(tag(html, "ordinary")).not.toContain('data-glass="true"');
-    expect(html).toContain('data-glass-state="loading"');
-    expect(html).not.toContain('data-glass-state="ready"');
+    expect(html).not.toContain("data-glass-intensity");
+    expect(html).not.toContain("--glass-blur");
+    expect(html).not.toContain("--glass-initial-blur");
     expect(html).not.toContain("<canvas");
   });
-  test("provider intensity inherits through controls and a surface can override it", () => {
+  test("plain layout and text allow independently enabled controls", () => {
     const html = renderToString(
-      <GlassProvider intensity="lg">
-        <GlassSurface id="large-surface">
-          <Input id="large-input" />
-          <Input id="small-input" glassIntensity="sm" />
-        </GlassSurface>
-        <GlassSurface intensity="sm" id="small-surface" />
-      </GlassProvider>,
+      <Scope glass>
+        <FieldSet id="text-fieldset">
+          <FieldGroup id="text-fieldgroup">
+            <Field id="text-field">
+              <FieldLabel id="plain-fieldlabel" htmlFor="painted-input">
+                Name
+              </FieldLabel>
+              <Input id="painted-input" />
+            </Field>
+          </FieldGroup>
+          <ButtonGroup id="text-buttongroup">
+            <ButtonGroupText
+              id="plain-affix"
+              render={<Label htmlFor="painted-input" />}
+            >
+              Name
+            </ButtonGroupText>
+            <Button id="painted-button">Save</Button>
+          </ButtonGroup>
+          <KbdGroup id="plain-keygroup">
+            <Kbd id="painted-key">⌘</Kbd>
+          </KbdGroup>
+          <Marker id="plain-marker-link" render={<a href="/files" />}>
+            View files
+          </Marker>
+          <Marker
+            id="plain-marker-button"
+            render={<button type="button" onClick={() => {}} />}
+          >
+            Show details
+          </Marker>
+        </FieldSet>
+      </Scope>,
     );
-    for (const id of ["large-surface", "large-input"])
-      expect(tag(html, id)).toContain('data-glass-intensity="lg"');
-    for (const id of ["small-surface", "small-input"])
-      expect(tag(html, id)).toContain('data-glass-intensity="sm"');
+    for (const id of [
+      "text-fieldset",
+      "text-fieldgroup",
+      "text-field",
+      "text-buttongroup",
+      "plain-fieldlabel",
+      "plain-affix",
+      "plain-keygroup",
+      "painted-key",
+      "plain-marker-link",
+      "plain-marker-button",
+    ])
+      expect(tag(html, id)).not.toContain("data-glass=");
+    for (const id of ["painted-input", "painted-button"])
+      expect(tag(html, id)).toContain('data-glass="true"');
+    expect(tag(html, "plain-fieldlabel")).toMatch(/^<label\b/);
+    expect(tag(html, "plain-fieldlabel")).toContain('for="painted-input"');
+    expect(tag(html, "plain-affix")).toMatch(/^<label\b/);
+    expect(tag(html, "plain-affix")).toContain('for="painted-input"');
+    expect(tag(html, "plain-marker-link")).toMatch(/^<a\b/);
+    expect(tag(html, "plain-marker-link")).toContain('href="/files"');
+    expect(tag(html, "plain-marker-button")).toMatch(/^<button\b/);
+    expect(tag(html, "plain-marker-button")).toContain('type="button"');
   });
-  test("invalid runtime intensity values use default constants", () => {
-    expect(glassIntensityDefaults()).toEqual({ blur: 6, tintOpacity: 0.6 });
-    expect(glassIntensityDefaults("unknown")).toEqual({
-      blur: 6,
-      tintOpacity: 0.6,
-    });
-    expect(glassIntensityDefaults("sm")).toEqual({ blur: 4, tintOpacity: 0.4 });
-    expect(glassIntensityDefaults("lg")).toEqual({
-      blur: 8,
-      tintOpacity: 0.78,
-    });
-  });
-  test("server material respects zero blur, zero tint opacity, and disabled highlights", () => {
+  test("server material respects zero tint opacity and disabled highlights", () => {
     const html = renderToString(
-      <GlassProvider
-        intensity="lg"
-        options={{ blur: 0, tint: "#161617", tintOpacity: 0, highlight: 0 }}
-      >
-        <GlassSurface id="initial-options" style={{ minHeight: 48 }} />
-      </GlassProvider>,
+      <GlassSurface
+        id="initial-options"
+        glassConfig={{
+          options: { tint: "#161617", tintOpacity: 0, highlight: 0 },
+        }}
+        style={{ minHeight: 48 }}
+      />,
     );
     const element = tag(html, "initial-options");
-    expect(element).toContain("--glass-initial-blur:8px");
-    expect(element).toContain("--glass-initial-opacity:78%");
-    expect(element).toContain("--glass-blur:0px");
     expect(element).toContain("--glass-opacity:0%");
     expect(element).toContain("--glass-base:#161617");
     expect(element).toContain("--glass-edge:none");
     expect(element).toContain("--glass-initial-edge-shadow:0 0 #0000");
     expect(element).toContain("min-height:48px");
   });
-  test("initial native-element lighting follows CSS radius and preserves focus shadows", () => {
+  test("initial lighting follows native radius and suppresses glass focus rings", () => {
     const css = readFileSync(
       new URL(
         "../../../packages/ui/src/styles/components/glass.css",
@@ -160,7 +185,7 @@ describe("glass preserves component semantics", () => {
         value={{
           enabled: false,
           surface: false,
-          configuration: { id: "shared-test-scope" },
+          configuration: {},
         }}
       >
         <Scope glass id="scope">
@@ -183,17 +208,21 @@ describe("glass preserves component semantics", () => {
     );
     expect(tag(html, "scope")).not.toContain("data-glass=");
     expect(tag(html, "inherited")).toContain('data-glass="true"');
-    expect(tag(html, "inherited")).toContain(
-      'data-glass-scope="shared-test-scope"',
+    const scopes = ["inherited", "surface", "explicit-nested"].map(
+      (id) => tag(html, id).match(/data-glass-scope="([^"]+)"/)?.[1],
     );
+    expect(scopes.every(Boolean)).toBe(true);
+    expect(new Set(scopes).size).toBe(3);
+    expect(scopes).not.toContain("shared-test-scope");
     expect(tag(html, "disabled-glass")).not.toContain("data-glass=");
     expect(tag(html, "surface")).toContain('data-glass="true"');
-    expect(tag(html, "nested")).toContain('data-glass="true"');
+    expect(tag(html, "nested")).not.toContain("data-glass=");
+    expect(tag(html, "nested")).toContain('data-glass-part="control"');
     expect(tag(html, "explicit-nested")).toContain('data-glass="true"');
     expect(html).toContain('data-glass-state="loading"');
     expect(html).not.toContain('data-glass-state="ready"');
   });
-  test("independent controls inherit while compound internals and opted-out scopes stay plain", () => {
+  test("container internals stay plain while explicit opt-ins remain independent", () => {
     const html = renderToString(
       <GlassSurface>
         <Input id="nested-input" />
@@ -208,10 +237,12 @@ describe("glass preserves component semantics", () => {
         </GlassSurface>
       </GlassSurface>,
     );
-    expect(tag(html, "nested-input")).toContain('data-glass="true"');
-    expect(tag(html, "group-material")).toContain('data-glass="true"');
+    expect(tag(html, "nested-input")).toContain('data-glass-part="control"');
+    expect(tag(html, "group-material")).toContain('data-glass-part="control"');
     for (const id of [
       "content-wrapper",
+      "nested-input",
+      "group-material",
       "group-input",
       "group-action",
       "plain-input",
@@ -219,7 +250,7 @@ describe("glass preserves component semantics", () => {
     ])
       expect(tag(html, id)).not.toContain("data-glass=");
   });
-  test("independent controls inherit glass inside a surface and tooltip scope", () => {
+  test("tooltip trigger shares its container without a second material", () => {
     const html = renderToString(
       <GlassSurface id="tooltip-surface">
         <TooltipProvider>
@@ -234,9 +265,10 @@ describe("glass preserves component semantics", () => {
       </GlassSurface>,
     );
     expect(tag(html, "tooltip-surface")).toContain('data-glass="true"');
-    expect(tag(html, "tooltip-trigger")).toContain('data-glass="true"');
+    expect(tag(html, "tooltip-trigger")).not.toContain("data-glass=");
+    expect(tag(html, "tooltip-trigger")).toContain('data-glass-part="control"');
   });
-  test("menubar controls inherit material independently inside a glass surface", () => {
+  test("menubar triggers share a surface while explicit false keeps native styling", () => {
     const html = renderToString(
       <GlassSurface>
         <Menubar>
@@ -251,8 +283,12 @@ describe("glass preserves component semantics", () => {
         </Menubar>
       </GlassSurface>,
     );
-    expect(tag(html, "glass-menu-trigger")).toContain('data-glass="true"');
+    expect(tag(html, "glass-menu-trigger")).not.toContain("data-glass=");
+    expect(tag(html, "glass-menu-trigger")).toContain(
+      'data-glass-part="control"',
+    );
     expect(tag(html, "plain-menu-trigger")).not.toContain("data-glass=");
+    expect(tag(html, "plain-menu-trigger")).not.toContain("data-glass-part=");
   });
   test("QR shells use a real glass scope and leave the scanner image undecorated", () => {
     const html = renderToString(
@@ -260,7 +296,7 @@ describe("glass preserves component semantics", () => {
         value={{
           enabled: true,
           surface: false,
-          configuration: { id: "qr-scope" },
+          configuration: {},
         }}
       >
         <GlassSurface id="card">
@@ -272,34 +308,33 @@ describe("glass preserves component semantics", () => {
       </GlassContext.Provider>,
     );
     expect(tag(html, "card")).toContain('data-glass="true"');
-    expect(tag(html, "card")).toContain('data-glass-scope="qr-scope"');
+    expect(tag(html, "card")).toContain("data-glass-scope=");
+    expect(tag(html, "card")).not.toContain('data-glass-scope="qr-scope"');
     expect(tag(html, "code")).not.toContain("data-glass=");
     expect(tag(html, "plain-card")).not.toContain("data-glass=");
   });
-  test("desktop and static sidebar glass marks the painted surface and preserves its outer container", () => {
+  test("desktop and static sidebar preserve ordinary backgrounds and borders", () => {
     const desktop = renderToString(
       <SidebarProvider>
-        <Sidebar glass id="desktop-sidebar">
-          Navigation
-        </Sidebar>
+        <Sidebar id="desktop-sidebar">Navigation</Sidebar>
       </SidebarProvider>,
     );
     const painted = [...desktop.matchAll(/<\w+\b[^>]*>/g)]
       .map(([element]) => element)
       .find((element) => element.includes('data-slot="sidebar-inner"'));
-    expect(painted).toContain('data-glass="true"');
+    expect(painted).not.toContain("data-glass");
     expect(painted).toContain("bg-sidebar");
     expect(tag(desktop, "desktop-sidebar")).not.toContain("data-glass=");
-    expect(tag(desktop, "desktop-sidebar")).toContain("border-transparent");
-    expect([...desktop.matchAll(/data-glass="true"/g)]).toHaveLength(1);
+    expect(tag(desktop, "desktop-sidebar")).not.toContain("border-transparent");
+    expect(desktop).not.toContain("data-glass");
     const staticSidebar = renderToString(
       <SidebarProvider>
-        <Sidebar glass collapsible="none" id="static-sidebar">
+        <Sidebar collapsible="none" id="static-sidebar">
           Navigation
         </Sidebar>
       </SidebarProvider>,
     );
-    expect(tag(staticSidebar, "static-sidebar")).toContain('data-glass="true"');
+    expect(tag(staticSidebar, "static-sidebar")).not.toContain("data-glass");
     const plain = renderToString(
       <SidebarProvider>
         <Sidebar id="plain-sidebar">Navigation</Sidebar>

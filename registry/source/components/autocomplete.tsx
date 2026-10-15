@@ -9,20 +9,19 @@ import {
 import { ChevronDownIcon, XIcon } from "lucide-react";
 import type * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { type GlassProps, withGlass } from "@/lib/glass/context";
 
 const Autocomplete = withGlass(AutocompletePrimitive.Root, "scope") as {
   <Items extends readonly { items: readonly unknown[] }[]>(
     props: Omit<
       AutocompletePrimitive.Root.Props<Items[number]["items"][number]>,
       "items"
-    > & { items: Items; glass?: boolean },
+    > & { items: Items } & GlassProps,
   ): React.JSX.Element;
   <Value>(
     props: Omit<AutocompletePrimitive.Root.Props<Value>, "items"> & {
       items?: readonly Value[];
-      glass?: boolean;
-    },
+    } & GlassProps,
   ): React.JSX.Element;
 };
 const AutocompleteValue = AutocompletePrimitive.Value;

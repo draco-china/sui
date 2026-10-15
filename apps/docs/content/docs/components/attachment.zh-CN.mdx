@@ -122,6 +122,8 @@ AttachmentGroup
 </Dialog>
 ```
 
+在 `Attachment` 上设置 `glass`，仅为 `AttachmentAction` 操作按钮启用材质。附件容器、媒体、元数据和覆盖整张卡片的触发器保持普通样式。单个操作按钮也接受 `Button` 的 Glass 开关。
+
 ## 无障碍 [#accessibility]
 
 `AttachmentAction` 渲染为 Button，`AttachmentTrigger` 默认渲染为真实的 `<button>`，也可通过 `render` 使用其他元素。遵循下列要求，让控件可操作且能够被辅助技术正确识别。
@@ -174,6 +176,7 @@ AttachmentGroup
 | `state` | `"idle" \| "uploading" \| "processing" \| "error" \| "done"` | `"done"` |上传状态。控制状态样式与流光效果 |
 | `size` | `"default" \| "sm" \| "xs"` | `"default"` |附件大小                              |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |将媒体放置在内容旁边或上方        |
+| `glass` | `boolean` | `false` | 仅为操作按钮启用 Glass。 |
 | `className` | `string` | - |应用于根元素的额外类名  |
 
 ### AttachmentMedia [#attachmentmedia]

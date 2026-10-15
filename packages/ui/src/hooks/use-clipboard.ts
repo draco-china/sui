@@ -26,30 +26,39 @@ function createClipboardController(options: ClipboardControllerOptions) {
   let active = true;
   let pending = false;
   let attempt = 0;
+  let copiedValue: string | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const clear = () => {
     if (timer !== undefined) clearTimeout(timer);
     timer = undefined;
   };
+  const reset = () => {
+    attempt++;
+    pending = false;
+    copiedValue = undefined;
+    clear();
+    if (active) options.onStatusChange("idle");
+  };
   return {
     activate() {
       active = true;
     },
-    reset() {
-      attempt++;
-      pending = false;
-      clear();
-      if (active) options.onStatusChange("idle");
+    reset,
+    synchronize(value: string) {
+      // An uncontrolled input can synchronize after copying its live DOM value.
+      if (value !== copiedValue) reset();
     },
     dispose() {
       active = false;
       attempt++;
       pending = false;
+      copiedValue = undefined;
       clear();
     },
     async copy(value: string): Promise<boolean> {
       if (!active || pending) return false;
       const current = ++attempt;
+      copiedValue = value;
       pending = true;
       clear();
       options.onStatusChange("pending");
@@ -110,9 +119,9 @@ function useClipboard(value: string, options: ClipboardOptions = {}) {
     controller.activate();
     return () => controller.dispose();
   }, [controller]);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: A changed value or disabled state invalidates in-flight attempts and clears feedback.
   useEffect(() => {
-    controller.reset();
+    if (options.disabled) controller.reset();
+    else controller.synchronize(value);
   }, [controller, value, options.disabled]);
   return {
     status,

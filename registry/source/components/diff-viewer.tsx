@@ -10,7 +10,7 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { useGlassEnabled } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/context";
 import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,7 @@ const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels = {
   copyFailed: "Copy failed",
 };
 
-export function DiffViewer({
+function DiffViewerImplementation({
   oldCode,
   newCode,
   oldTitle,
@@ -79,14 +79,12 @@ export function DiffViewer({
   lang = "typescript",
   theme,
   className,
-  glass,
   labels,
   status = "complete",
   maxHeight = 280,
   copyable = true,
 }: Readonly<DiffViewerProps>) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const glassEnabled = useGlassEnabled(glass);
   const text = { ...DEFAULT_DIFF_VIEWER_LABELS, ...labels };
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
@@ -156,9 +154,8 @@ export function DiffViewer({
   useStreamingScroll(viewportRef, `${oldCode}\u0000${newCode}`, streaming);
 
   return (
-    <GlassSurface
+    <div
       ref={rootRef}
-      glass={glassEnabled}
       data-slot="diff-viewer"
       data-state={status}
       aria-busy={streaming}
@@ -216,7 +213,9 @@ export function DiffViewer({
         />
         {copyable ? <ViewerCopyButton value={newCode} labels={text} /> : null}
       </div>
-      <div
+      <GlassSurface
+        glass={false}
+        data-slot="diff-viewer-content"
         ref={viewportRef}
         tabIndex={0}
         role={streaming ? "log" : undefined}
@@ -257,10 +256,12 @@ export function DiffViewer({
             />
           </div>
         )}
-      </div>
-    </GlassSurface>
+      </GlassSurface>
+    </div>
   );
 }
+
+export const DiffViewer = withGlass(DiffViewerImplementation, "scope");
 
 function SplitDiffPane({
   title,
@@ -300,7 +301,7 @@ function SplitDiffPane({
             ) : (
               <tr
                 // biome-ignore lint/suspicious/noArrayIndexKey: Padding cells are identified by their position in the aligned diff.
-                key={index}
+                key={`padding-${index}`}
                 className="h-5 bg-muted/40"
               >
                 <td className="w-10" />

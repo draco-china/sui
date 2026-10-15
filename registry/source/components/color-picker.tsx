@@ -106,7 +106,7 @@ function ColorPicker({
   onValueChange,
   alpha = false,
   swatches = [],
-  glass = false,
+  glass,
   inline = false,
   eyeDropper = true,
   labels,

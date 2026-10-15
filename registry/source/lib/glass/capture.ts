@@ -1,8 +1,22 @@
+import {
+  captureGlassMedia,
+  type GlassCaptureBounds,
+  glassCaptureRatio,
+} from "@/lib/glass/capture-media";
+
 type CaptureOptions = NonNullable<
   Parameters<typeof import("html-to-image").toSvg>[1]
 >;
 
-let library: Promise<typeof import("html-to-image")> | undefined;
+export class GlassResourceError extends Error {}
+
+let library:
+  | Promise<{
+      getFontEmbedCSS: typeof import("html-to-image").getFontEmbedCSS;
+      cloneNode: typeof import("html-to-image/es/clone-node").cloneNode;
+      embedImages: typeof import("html-to-image/es/embed-images").embedImages;
+    }>
+  | undefined;
 type FontVersion = {
   value: number;
   leases: number;
@@ -14,12 +28,49 @@ const marker = "data-glass-capture-id";
 let sequence = 0;
 let capturing = false;
 const unfinishedSamples = new Set<Promise<unknown>>();
+const retiredFrames = new Set<string>();
+const captureGeometry = new WeakMap<
+  HTMLCanvasElement,
+  { ratio: number; origin: readonly [number, number] }
+>();
+
+function releaseRetiredFrames() {
+  if (capturing || unfinishedSamples.size) return;
+  for (const url of retiredFrames) URL.revokeObjectURL(url);
+  retiredFrames.clear();
+}
+
+// DOM embedding can still be reading a frame after its surface changes mode.
+export function releaseGlassFrame(url: string) {
+  retiredFrames.add(url);
+  releaseRetiredFrames();
+}
+
+export function glassCapturePixelRatio(source: HTMLCanvasElement) {
+  return captureGeometry.get(source)?.ratio ?? 1;
+}
+
+export function glassCaptureOrigin(
+  source: HTMLCanvasElement,
+): readonly [number, number] {
+  return captureGeometry.get(source)?.origin ?? [0, 0];
+}
 
 function loadLibrary() {
-  library ??= import("html-to-image").catch((error) => {
-    library = undefined;
-    throw error;
-  });
+  library ??= Promise.all([
+    import("html-to-image"),
+    import("html-to-image/es/clone-node"),
+    import("html-to-image/es/embed-images"),
+  ])
+    .then(([fonts, clone, images]) => ({
+      getFontEmbedCSS: fonts.getFontEmbedCSS,
+      cloneNode: clone.cloneNode,
+      embedImages: images.embedImages,
+    }))
+    .catch((error) => {
+      library = undefined;
+      throw error;
+    });
   return library;
 }
 
@@ -46,7 +97,10 @@ function sample<T>(operation: Promise<T>, milliseconds: number) {
   // html-to-image has no cancellation API. A deadline returns to the CSS
   // fallback, but the real font/DOM task keeps the sampling lease until it ends.
   unfinishedSamples.add(operation);
-  const release = () => unfinishedSamples.delete(operation);
+  const release = () => {
+    unfinishedSamples.delete(operation);
+    releaseRetiredFrames();
+  };
   void operation.then(release, release);
   return bounded(operation, milliseconds);
 }
@@ -172,6 +226,11 @@ function prepare(
   blocked: Set<Element>,
   placements: Placement[],
 ) {
+  const canvasParents = new Set(
+    [...blocked]
+      .filter((element) => element.localName === "canvas")
+      .map((element) => element.parentElement),
+  );
   for (const element of [
     target,
     ...target.querySelectorAll<HTMLElement>("*"),
@@ -181,7 +240,13 @@ function prepare(
     const hidden = blocked.has(element);
     const pinned =
       element !== target && (position === "fixed" || position === "sticky");
-    if (!hidden && !pinned && !element.scrollTop && !element.scrollLeft)
+    if (
+      !hidden &&
+      !pinned &&
+      !element.scrollTop &&
+      !element.scrollLeft &&
+      !canvasParents.has(element)
+    )
       continue;
     const id = String(++sequence);
     placements.push({
@@ -206,10 +271,28 @@ function restore(placements: Placement[]) {
   }
 }
 
+function layoutPlaceholder(element: HTMLElement, style: CSSStyleDeclaration) {
+  const placeholder = element.ownerDocument.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "div",
+  );
+  placeholder.id = element.id;
+  for (const property of Array.from(style))
+    placeholder.style.setProperty(
+      property,
+      style.getPropertyValue(property),
+      style.getPropertyPriority(property),
+    );
+  if (placeholder.style.display === "inline")
+    placeholder.style.display = "inline-block";
+  return placeholder;
+}
+
 function repairClone(
   root: Element,
   placements: Placement[],
   target: HTMLElement,
+  blocked: Set<Element>,
 ) {
   const clones = new Map<HTMLElement, HTMLElement>();
   for (const item of placements) {
@@ -219,9 +302,42 @@ function repairClone(
     if (clone) clones.set(item.element, clone as HTMLElement);
   }
   for (const item of placements) {
-    const clone = clones.get(item.element);
+    let clone = clones.get(item.element);
+    // The library must not serialize excluded canvas pixels, even when tainted.
+    if (!clone && item.hidden && item.element.localName === "canvas") {
+      const originalParent = item.element.parentElement;
+      const parent = originalParent && clones.get(originalParent);
+      if (
+        !originalParent ||
+        !parent ||
+        originalParent.localName === "slot" ||
+        originalParent.shadowRoot ||
+        item.element.assignedSlot
+      )
+        throw new GlassResourceError(
+          "Glass canvas placeholder has unsupported layout",
+        );
+      const index = [...originalParent.childNodes]
+        .filter(
+          (node) => !(node instanceof Element) || included(node, blocked, true),
+        )
+        .indexOf(item.element);
+      clone = layoutPlaceholder(item.element, getComputedStyle(item.element));
+      parent.insertBefore(clone, parent.childNodes[index] ?? null);
+      clones.set(item.element, clone);
+    }
     if (!clone) continue;
     if (item.hidden) {
+      if (clone.matches("img,image,canvas,svg,iframe")) {
+        const placeholder = layoutPlaceholder(clone, clone.style);
+        clone.replaceWith(placeholder);
+        clone = placeholder;
+        clones.set(item.element, clone);
+      }
+      const size = glassLayoutSize(item.element, item.rect);
+      clone.style.width = `${size.width}px`;
+      clone.style.height = `${size.height}px`;
+      clone.style.boxSizing = "border-box";
       clone.style.visibility = "hidden";
       clone.style.backgroundImage = "none";
       clone.style.maskImage = "none";
@@ -264,7 +380,10 @@ function repairClone(
       ? Number.parseFloat(padding.paddingLeft) || 0
       : 0;
     if (getComputedStyle(item.element).position === "sticky") {
-      const placeholder = clone.ownerDocument.createElement("div");
+      const placeholder = clone.ownerDocument.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "div",
+      );
       placeholder.style.cssText = `width:${itemSize.width}px;height:${itemSize.height}px;flex-shrink:0;visibility:hidden`;
       clone.before(placeholder);
     }
@@ -302,7 +421,11 @@ function repairClone(
         );
       continue;
     }
-    const contents = clone.ownerDocument.createElement("div");
+    // Keep XHTML children so the eventual foreignObject retains HTML layout.
+    const contents = clone.ownerDocument.createElementNS(
+      "http://www.w3.org/1999/xhtml",
+      "div",
+    );
     const style = getComputedStyle(item.element);
     const paddingX =
       (Number.parseFloat(style.paddingLeft) || 0) +
@@ -336,9 +459,7 @@ function repairClone(
   }
   for (const clone of [root, ...root.querySelectorAll(`[${marker}]`)])
     clone.removeAttribute(marker);
-  // html-to-image embeds the resolved background-image, but also copies the
-  // original custom properties. A retained parent's blob-backed frame variable
-  // is redundant in the clone and is not an external resource to fetch again.
+  // Resolved background-image is retained; its original frame variable is redundant.
   for (const clone of [
     root,
     ...root.querySelectorAll<HTMLElement>("[style]"),
@@ -425,7 +546,9 @@ async function imageReadiness(target: HTMLElement, blocked: Set<Element>) {
       if (!included(image, blocked) || !image.getAttribute("src")) return;
       if (!image.complete) await bounded(image.decode(), 3000);
       if (!image.naturalWidth)
-        throw new Error("Glass background contains a failed image");
+        throw new GlassResourceError(
+          "Glass background contains a failed image",
+        );
     }),
   );
 }
@@ -437,9 +560,11 @@ function validateResources(root: Element) {
       image.getAttribute("href") ??
       image.getAttribute("xlink:href");
     if (source && !source.startsWith("data:"))
-      throw new Error("Glass background contains an unreadable image");
+      throw new GlassResourceError(
+        "Glass background contains an unreadable image",
+      );
     if (source === "")
-      throw new Error("Glass background image embedding failed");
+      throw new GlassResourceError("Glass background image embedding failed");
   }
   const source = [root, ...root.querySelectorAll("*")]
     .map(
@@ -455,31 +580,50 @@ function validateResources(root: Element) {
       !resource ||
       (!resource.startsWith("data:") && !resource.startsWith("#"))
     )
-      throw new Error("Glass background resource embedding failed");
+      throw new GlassResourceError(
+        "Glass background resource embedding failed",
+      );
   }
 }
 
 async function captureBackground(
   target: HTMLElement,
   blocked: Set<Element>,
+  mediaOnly: boolean,
+  region?: GlassCaptureBounds,
 ): Promise<HTMLCanvasElement> {
   if (!target.isConnected || !included(target, blocked))
     throw new Error("Glass capture target unavailable");
   const bounds = target.getBoundingClientRect();
   if (!bounds.width || !bounds.height || !axisAligned(target))
     throw new Error("Glass capture target has unsupported geometry");
+  const media = await bounded(
+    captureGlassMedia(target, mediaOnly ? region : undefined),
+    5000,
+  );
+  if (media && mediaOnly) {
+    captureGeometry.set(media.canvas, {
+      ratio: media.ratio,
+      origin: media.origin,
+    });
+    return media.canvas;
+  }
   const size = glassLayoutSize(target, bounds);
   const scaleX = bounds.width / size.width;
   const scaleY = bounds.height / size.height;
   await bounded(target.ownerDocument.fonts?.ready ?? Promise.resolve(), 1500);
   await imageReadiness(target, blocked);
-  const { toSvg } = await loadLibrary();
+  const { cloneNode, embedImages } = await loadLibrary();
   const fontEmbedCSS = await embeddedFonts(target);
   const placements: Placement[] = [];
-  let svg: string;
+  let content: HTMLElement;
   try {
     prepare(target, blocked, placements);
     const options: CaptureOptions = {
+      // Computed paint resolves variables; copying inherited SVG data into every clone is redundant.
+      includeStyleProperties: Array.from(
+        getComputedStyle(target.ownerDocument.documentElement),
+      ).filter((property) => !property.startsWith("--")),
       width: size.width,
       height: size.height,
       fontEmbedCSS,
@@ -503,45 +647,53 @@ async function captureBackground(
         zoom: "1",
       },
       filter: (node) =>
-        !(node instanceof Element) || included(node, blocked, true),
-      onImageErrorHandler: (event) => {
-        const failed = typeof event === "string" ? null : event.target;
-        const marked =
-          failed instanceof Element ? failed.closest(`[${marker}]`) : null;
-        if (
-          marked &&
-          placements.some(
-            (item) => item.hidden && marked.getAttribute(marker) === item.id,
-          )
-        )
-          return;
-        throw new Error("Glass background image embedding failed");
+        !(node instanceof Element) ||
+        (included(node, blocked, true) &&
+          !(node.localName === "canvas" && blocked.has(node))),
+      onImageErrorHandler: () => {
+        throw new GlassResourceError("Glass background image embedding failed");
       },
     };
-    svg = await sample(toSvg(target, options), 6000);
+    content = await sample(
+      (async () => {
+        const clone = await cloneNode(target, options, true).catch((error) => {
+          if (error instanceof Error && error.name === "SecurityError")
+            throw new GlassResourceError(
+              "Glass background canvas is unreadable",
+              {
+                cause: error,
+              },
+            );
+          throw error;
+        });
+        if (!clone) throw new Error("Glass capture content missing");
+        // Strip excluded resources before embedding, while retaining their layout.
+        repairClone(clone, placements, target, blocked);
+        Object.assign(clone.style, options.style);
+        if (fontEmbedCSS) {
+          const fonts = target.ownerDocument.createElement("style");
+          fonts.textContent = fontEmbedCSS;
+          clone.prepend(fonts);
+        }
+        await embedImages(clone, options);
+        return clone;
+      })(),
+      6000,
+    );
   } finally {
     restore(placements);
   }
-  const comma = svg.indexOf(",");
-  if (comma < 0 || !svg.startsWith("data:image/svg+xml"))
-    throw new Error("Invalid glass capture SVG");
-  const source = svg.slice(comma + 1);
-  const xml = new DOMParser().parseFromString(
-    svg.slice(0, comma).includes(";base64")
-      ? new TextDecoder().decode(
-          Uint8Array.from(atob(source), (character) => character.charCodeAt(0)),
-        )
-      : decodeURIComponent(source),
-    "image/svg+xml",
+  const root = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const foreign = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "foreignObject",
   );
-  if (xml.querySelector("parsererror"))
-    throw new Error("Invalid glass capture SVG");
-  const root = xml.documentElement;
-  const foreign = root.querySelector("foreignObject");
-  const content = foreign?.firstElementChild;
-  if (!foreign || !content) throw new Error("Glass capture content missing");
-  repairClone(content, placements, target);
+  foreign.append(content);
+  root.append(foreign);
   validateResources(root);
+  const ratio = glassCaptureRatio();
+  const pixelWidth = Math.max(1, Math.floor(innerWidth * ratio));
+  const pixelHeight = Math.max(1, Math.floor(innerHeight * ratio));
   root.setAttribute("width", String(innerWidth));
   root.setAttribute("height", String(innerHeight));
   root.setAttribute("viewBox", `0 0 ${innerWidth} ${innerHeight}`);
@@ -573,11 +725,13 @@ async function captureBackground(
     image.onload = image.onerror = null;
   }
   const canvas = document.createElement("canvas");
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  canvas.width = pixelWidth;
+  canvas.height = pixelHeight;
+  captureGeometry.set(canvas, { ratio, origin: [0, 0] });
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Glass background canvas unavailable");
-  context.drawImage(image, 0, 0);
+  if (media) context.drawImage(media.canvas, 0, 0);
+  context.drawImage(image, 0, 0, pixelWidth, pixelHeight);
   context.getImageData(0, 0, 1, 1);
   return canvas;
 }
@@ -585,16 +739,16 @@ async function captureBackground(
 export async function captureGlassBackground(
   target: HTMLElement,
   blocked: Set<Element>,
+  mediaOnly = true,
+  region?: GlassCaptureBounds,
 ): Promise<HTMLCanvasElement> {
   if (capturing || unfinishedSamples.size)
     throw new Error("Glass background capture still active");
   capturing = true;
   try {
-    const exclusions = new Set(blocked);
-    for (const surface of target.querySelectorAll('[data-glass="true"]'))
-      exclusions.add(surface);
-    return await captureBackground(target, exclusions);
+    return await captureBackground(target, new Set(blocked), mediaOnly, region);
   } finally {
     capturing = false;
+    releaseRetiredFrames();
   }
 }

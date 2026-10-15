@@ -12,16 +12,14 @@ import { cn } from "cn";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { type GlassProps, withGlass } from "@/lib/glass/context";
 
 const Combobox = withGlass(ComboboxPrimitive.Root, "scope") as <
   Value,
   Multiple extends boolean | undefined = false,
   Item = Value,
 >(
-  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & {
-    glass?: boolean;
-  },
+  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & GlassProps,
 ) => React.JSX.Element;
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {

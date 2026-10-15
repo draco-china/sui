@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { GlassProvider } from "@workspace/ui/components/glass";
+import type { GlassConfig } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Toggle } from "@workspace/ui/components/toggle";
@@ -31,6 +31,7 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
   const zh = locale === "zh-CN";
   const { resolvedTheme } = useTheme();
   const scene = useRef<HTMLDivElement>(null);
+  const glassConfig: GlassConfig = { mode: "css", captureTarget: scene };
   const nameId = useId();
   const updatesId = useId();
   const [glass, setGlass] = useState(true);
@@ -118,131 +119,133 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
   }, [resolvedTheme]);
 
   return (
-    <GlassProvider mode="css" captureTarget={scene} intensity="sm">
-      <div ref={scene} className="home-glass-scene">
-        <div className="home-glass-backdrop" aria-hidden="true">
-          <div className="home-glass-artwork">
-            <div className="home-glass-flow-color" />
-            <img
-              className="home-glass-flow-light"
-              src="/images/home-glass-flow.png"
-              width={1254}
-              height={1254}
-              alt=""
-              decoding="async"
-            />
-          </div>
-        </div>
-        <div className="home-glass-stack">
-          <div className="flex items-center justify-between gap-3 px-2">
-            <span className="font-medium text-muted-foreground text-xs tracking-wide">
-              {zh ? "同一界面，两种质感" : "One interface. Two textures."}
-            </span>
-            <Toggle
-              variant="outline"
-              size="sm"
-              glass={glass}
-              pressed={glass}
-              onPressedChange={setGlass}
-              aria-label={zh ? "玻璃材质" : "Glass material"}
-            >
-              <Layers />
-              {glass ? "Glass" : labels.default}
-            </Toggle>
-          </div>
-          <Card glass={glass} className="w-full gap-5">
-            <CardHeader>
-              <div className="mb-5 flex items-center justify-between">
-                <Logo markOnly className="text-primary" />
-                <span className="font-mono text-muted-foreground text-xs">
-                  SUI / STUDIO
-                </span>
-              </div>
-              <CardTitle className="text-2xl tracking-tight">
-                {zh ? "让界面，成为你的" : "Make it yours"}
-              </CardTitle>
-              <CardDescription>
-                {zh
-                  ? "细节可见，交互可感"
-                  : "Details you see. Interactions you feel."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                className="grid gap-5"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  setSaved(true);
-                }}
-              >
-                <div className="grid gap-2">
-                  <label className="font-medium text-sm" htmlFor={nameId}>
-                    {zh ? "工作区名称" : "Workspace name"}
-                  </label>
-                  <Input
-                    glass={glass}
-                    id={nameId}
-                    defaultValue="Design studio"
-                    required
-                    onChange={() => setSaved(false)}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-4 py-1">
-                  <div className="grid gap-1">
-                    <label className="font-medium text-sm" htmlFor={updatesId}>
-                      {zh ? "产品更新" : "Product updates"}
-                    </label>
-                    <p className="text-muted-foreground text-xs">
-                      {zh ? "不错过新的灵感" : "Keep the inspiration coming"}
-                    </p>
-                  </div>
-                  <Switch
-                    glass={false}
-                    id={updatesId}
-                    defaultChecked
-                    onCheckedChange={() => setSaved(false)}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    glass={glass}
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setValue("projects");
-                      setSaved(false);
-                    }}
-                  >
-                    <Folder />
-                    {zh ? "我的项目" : "Projects"}
-                  </Button>
-                  <Button type="submit" glass={glass} glassIntensity="lg">
-                    {saved ? <Check /> : <ArrowUpRight />}
-                    {labels[saveLabel]}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-          <HomeTabBarPreview
-            glass={glass}
-            size="sm"
-            aria-label={zh ? "首页组件预览导航" : "Homepage preview navigation"}
-            items={items}
-            value={value}
-            onValueChange={setValue}
-            className="mx-auto w-fit max-w-full"
+    <div ref={scene} className="home-glass-scene">
+      <div className="home-glass-backdrop" aria-hidden="true">
+        <div className="home-glass-artwork">
+          <div className="home-glass-flow-color" />
+          <img
+            className="home-glass-flow-light"
+            src="/images/home-glass-flow.png"
+            width={1254}
+            height={1254}
+            alt=""
+            decoding="async"
           />
-          <p
-            className="min-h-5 text-center text-muted-foreground text-xs"
-            role="status"
-          >
-            {saved
-              ? labels.feedback
-              : items.find((item) => item.value === value)?.label}
-          </p>
         </div>
       </div>
-    </GlassProvider>
+      <div className="home-glass-stack">
+        <div className="flex items-center justify-between gap-3 px-2">
+          <span className="font-medium text-muted-foreground text-xs tracking-wide">
+            {zh ? "同一界面，两种质感" : "One interface. Two textures."}
+          </span>
+          <Toggle
+            variant="outline"
+            size="sm"
+            glass={glass}
+            glassConfig={glassConfig}
+            pressed={glass}
+            onPressedChange={setGlass}
+            aria-label={zh ? "玻璃材质" : "Glass material"}
+          >
+            <Layers />
+            {glass ? "Glass" : labels.default}
+          </Toggle>
+        </div>
+        <Card glass={glass} glassConfig={glassConfig} className="w-full gap-5">
+          <CardHeader>
+            <div className="mb-5 flex items-center justify-between">
+              <Logo markOnly className="text-primary" />
+              <span className="font-mono text-muted-foreground text-xs">
+                SUI / STUDIO
+              </span>
+            </div>
+            <CardTitle className="text-2xl tracking-tight">
+              {zh ? "让界面，成为你的" : "Make it yours"}
+            </CardTitle>
+            <CardDescription>
+              {zh
+                ? "细节可见，交互可感"
+                : "Details you see. Interactions you feel."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="grid gap-5"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setSaved(true);
+              }}
+            >
+              <div className="grid gap-2">
+                <label className="font-medium text-sm" htmlFor={nameId}>
+                  {zh ? "工作区名称" : "Workspace name"}
+                </label>
+                <Input
+                  glass={glass}
+                  glassConfig={glassConfig}
+                  id={nameId}
+                  defaultValue="Design studio"
+                  required
+                  onChange={() => setSaved(false)}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-4 py-1">
+                <div className="grid gap-1">
+                  <label className="font-medium text-sm" htmlFor={updatesId}>
+                    {zh ? "产品更新" : "Product updates"}
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {zh ? "不错过新的灵感" : "Keep the inspiration coming"}
+                  </p>
+                </div>
+                <Switch
+                  glass={false}
+                  id={updatesId}
+                  defaultChecked
+                  onCheckedChange={() => setSaved(false)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  glass={glass}
+                  glassConfig={glassConfig}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setValue("projects");
+                    setSaved(false);
+                  }}
+                >
+                  <Folder />
+                  {zh ? "我的项目" : "Projects"}
+                </Button>
+                <Button type="submit" glass={glass} glassConfig={glassConfig}>
+                  {saved ? <Check /> : <ArrowUpRight />}
+                  {labels[saveLabel]}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+        <HomeTabBarPreview
+          glass={glass}
+          glassConfig={glassConfig}
+          size="sm"
+          aria-label={zh ? "首页组件预览导航" : "Homepage preview navigation"}
+          items={items}
+          value={value}
+          onValueChange={setValue}
+          className="mx-auto w-fit max-w-full"
+        />
+        <p
+          className="min-h-5 text-center text-muted-foreground text-xs"
+          role="status"
+        >
+          {saved
+            ? labels.feedback
+            : items.find((item) => item.value === value)?.label}
+        </p>
+      </div>
+    </div>
   );
 }

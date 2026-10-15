@@ -18,7 +18,10 @@ export function NotFoundPage() {
             ? "检查地址，或回到组件目录继续浏览"
             : "Check the address or explore the component directory."}
         </p>
-        <Button render={<Link to={localePath(locale, "/docs/components")} />}>
+        <Button
+          nativeButton={false}
+          render={<Link to={localePath(locale, "/docs/components")} />}
+        >
           {chinese ? "浏览组件" : "Browse components"}
         </Button>
       </div>

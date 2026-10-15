@@ -42,6 +42,9 @@ function ToggleImplementation({
   );
 }
 
-const Toggle = withGlass(ToggleImplementation, "control");
+const Toggle = withGlass(ToggleImplementation, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 export { Toggle, toggleVariants };

@@ -93,7 +93,7 @@ function AccordionContent({
   );
 }
 
-const Accordion = withGlass(AccordionImplementation, "scope");
+const Accordion = withGlass(AccordionImplementation);
 const AccordionItem = withGlass(AccordionItemImplementation);
 
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

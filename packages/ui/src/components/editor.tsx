@@ -33,7 +33,7 @@ import { useClipboard } from "../hooks/use-clipboard";
 import { useFullscreen } from "../hooks/use-fullscreen";
 import { useViewerTheme } from "../hooks/use-viewer-theme";
 import { mergeClassNames } from "../lib/class-name";
-import { useGlassEnabled } from "../lib/glass/context";
+import { type GlassProps, withGlass } from "../lib/glass/context";
 import type { ViewerThemes } from "../lib/viewer/shiki";
 import { useShikiThemes } from "../lib/viewer/shiki-context";
 import type { Button } from "./button";
@@ -124,7 +124,7 @@ function editorLanguageLabel(value: string) {
   return value;
 }
 
-export interface EditorProps {
+export interface EditorProps extends Readonly<GlassProps> {
   readonly value?: string;
   readonly onChange?: (value: string) => void;
   readonly disabled?: boolean;
@@ -133,7 +133,6 @@ export interface EditorProps {
   readonly languages?: readonly EditorLanguageOption[];
   readonly toolbarLanguage?: boolean;
   readonly className?: string;
-  readonly glass?: boolean;
   readonly defaultValue?: string;
   readonly height?: string | number;
   readonly size?: ButtonSize;
@@ -567,7 +566,7 @@ function useEditorPreviewScrollSync() {
   };
 }
 
-export function Editor({
+function EditorImplementation({
   value,
   onChange,
   disabled = false,
@@ -576,7 +575,6 @@ export function Editor({
   languages = DEFAULT_EDITOR_LANGUAGES,
   toolbarLanguage = true,
   className,
-  glass,
   defaultValue,
   height,
   size = "icon-sm",
@@ -588,7 +586,6 @@ export function Editor({
   fullscreen,
   preview,
 }: Readonly<EditorProps>) {
-  const glassEnabled = useGlassEnabled(glass);
   const language = normalizeEditorLanguage(requestedLanguage);
   const languageOptions = new Map<string, EditorLanguageOption>();
   for (const option of languages) {
@@ -682,8 +679,7 @@ export function Editor({
       )}
       style={editor.rootStyle}
     >
-      <GlassSurface
-        glass={glassEnabled}
+      <div
         data-slot="editor-surface"
         className={cn(
           "flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-border",
@@ -694,7 +690,10 @@ export function Editor({
         )}
       >
         {toolbar !== false && (
-          <div className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-border/70 border-b bg-muted/80 px-3 py-1">
+          <div
+            data-slot="editor-toolbar"
+            className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-border/70 border-b bg-muted/80 px-3 py-1"
+          >
             <FileCode2
               aria-hidden="true"
               className="size-3.5 shrink-0 text-muted-foreground/70"
@@ -805,7 +804,9 @@ export function Editor({
             </div>
           </div>
         )}
-        <div
+        <GlassSurface
+          glass={false}
+          data-slot="editor-content"
           className={cn(
             "flex min-h-0",
             editor.contentFillsParent && "flex-1",
@@ -837,6 +838,7 @@ export function Editor({
                       </div>
                     }
                     errorLabel={text.error}
+                    wrapperProps={{ "data-slot": "editor-monaco" }}
                     height="100%"
                     language={language}
                     path={editorPath}
@@ -881,6 +883,7 @@ export function Editor({
 
           {editor.showPreviewPane && PreviewComponent && (
             <div
+              data-slot="editor-preview"
               ref={editor.previewScroll.previewPaneRef}
               onScroll={(event) =>
                 editor.previewScroll.handlePreviewScroll(
@@ -927,11 +930,13 @@ export function Editor({
               </Suspense>
             </div>
           )}
-        </div>
-      </GlassSurface>
+        </GlassSurface>
+      </div>
     </div>
   );
 }
+
+export const Editor = withGlass(EditorImplementation, "scope");
 
 function HtmlEditorPreview({ content }: Readonly<{ content: string }>) {
   const port = useContext(HtmlPreviewScrollContext);

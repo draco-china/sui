@@ -1,16 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@workspace/ui/components/button";
 import { CopyIcon } from "@workspace/ui/components/copy-icon";
-import { GlassProvider } from "@workspace/ui/components/glass";
 import { useClipboard } from "@workspace/ui/hooks/use-clipboard";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type Locale, localePath } from "../lib/i18n";
-import { LayoutLocaleSwitch } from "../lib/layout";
-import { GitHubLink } from "./github-link";
 import { HomeGlassPreview } from "./home-glass-preview";
-import { Logo } from "./logo";
-import { ThemeModeMenu } from "./theme-mode-menu";
-import { ThemePanel } from "./theme-panel";
+import { SiteHeader } from "./site-header";
 
 const snippet = 'import { Button } from "@workspace/ui/components/button";';
 export function HomePage({ locale }: { locale: Locale }) {
@@ -40,30 +35,7 @@ export function HomePage({ locale }: { locale: Locale }) {
       <a className="home-skip-link" href="#main-content">
         {zh ? "跳至主要内容" : "Skip to content"}
       </a>
-      <header className="home-header">
-        <Link
-          className="home-brand"
-          to={localePath(locale, "/")}
-          aria-label={zh ? "SUI 首页" : "SUI home"}
-        >
-          <Logo />
-        </Link>
-        <nav
-          className="home-nav"
-          aria-label={zh ? "主导航" : "Main navigation"}
-        >
-          <Link to={localePath(locale, "/docs")}>{zh ? "文档" : "Docs"}</Link>
-          <Link to={localePath(locale, "/docs/components")}>
-            {zh ? "组件" : "Components"}
-          </Link>
-        </nav>
-        <div className="home-header-actions">
-          <GitHubLink />
-          <ThemeModeMenu locale={locale} />
-          <ThemePanel locale={locale} />
-          <LayoutLocaleSwitch />
-        </div>
-      </header>
+      <SiteHeader locale={locale} />
       <main id="main-content" className="home-main">
         <section className="hero-copy" aria-labelledby="home-title">
           <h1 id="home-title">
@@ -91,18 +63,16 @@ export function HomePage({ locale }: { locale: Locale }) {
               : "Composable React components, built with Base UI and Tailwind CSS. Read the source, try the examples, and shape your own interface"}
           </p>
           <div className="hero-actions">
-            <GlassProvider mode="css">
-              <Button
-                glass
-                glassIntensity="lg"
-                nativeButton={false}
-                size="lg"
-                render={<Link to={localePath(locale, "/docs/installation")} />}
-              >
-                {zh ? "开始使用" : "Get started"}
-                <ArrowRight />
-              </Button>
-            </GlassProvider>
+            <Button
+              glass
+              glassConfig={{ mode: "css" }}
+              nativeButton={false}
+              size="lg"
+              render={<Link to={localePath(locale, "/docs/installation")} />}
+            >
+              {zh ? "开始使用" : "Get started"}
+              <ArrowRight />
+            </Button>
             <Button
               nativeButton={false}
               variant="ghost"

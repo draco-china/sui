@@ -7,15 +7,17 @@ import {
   type ComponentProps,
   type ReactNode,
   useCallback,
-  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import { GlassContext, useGlassEnabled, withGlass } from "../lib/glass/context";
+import {
+  type GlassProps,
+  useGlassEnabled,
+  withGlass,
+} from "../lib/glass/context";
 import { Button } from "./button";
-import { GlassProvider } from "./glass";
 
 export type TabBarItem = {
   value: string;
@@ -52,11 +54,16 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
     onValueChange: (value: string) => void;
     onItemActivate?: (value: string) => void;
     orientation?: "horizontal" | "vertical";
-    glass?: boolean;
-  };
+  } & GlassProps;
 
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
-const Lens = withGlass((props: ComponentProps<"div">) => <div {...props} />);
+const Lens = withGlass(
+  (props: ComponentProps<"div">) => <div {...props} />,
+  "surface",
+  {
+    mode: "css",
+  },
+);
 const indicatorVariants = cva(
   "pointer-events-none absolute top-0 left-0 z-0 rounded-full data-[pressed=true]:shadow-lg",
   {
@@ -83,7 +90,6 @@ function TabBarImplementation({
 }: TabBarProps) {
   const track = useRef<HTMLDivElement>(null);
   const glass = useGlassEnabled();
-  const { configuration } = useContext(GlassContext);
   const [heldValue, setHeldValue] = useState<string | null>(null);
   const selection = useRef<HTMLDivElement>(null);
   const lens = useRef<HTMLDivElement>(null);
@@ -496,7 +502,6 @@ function TabBarImplementation({
         {items.map((item, index) => (
           <Button
             key={item.value}
-            glass={false}
             type="button"
             variant="ghost"
             disabled={item.disabled}
@@ -541,23 +546,20 @@ function TabBarImplementation({
             visibility: bounds && !pressed ? "visible" : "hidden",
           }}
         />
-        <GlassProvider mode="css" options={configuration?.options}>
-          <Lens
-            ref={lens}
-            glass={glass && pressed}
-            glassIntensity="sm"
-            data-slot="tab-bar-indicator"
-            data-pressed={pressed}
-            aria-hidden="true"
-            className={indicatorVariants({ glass })}
-            style={{
-              translate: "0px 0px",
-              width: 0,
-              height: 0,
-              visibility: bounds && pressed ? "visible" : "hidden",
-            }}
-          />
-        </GlassProvider>
+        <Lens
+          ref={lens}
+          glass={glass && pressed}
+          data-slot="tab-bar-indicator"
+          data-pressed={pressed}
+          aria-hidden="true"
+          className={indicatorVariants({ glass })}
+          style={{
+            translate: "0px 0px",
+            width: 0,
+            height: 0,
+            visibility: bounds && pressed ? "visible" : "hidden",
+          }}
+        />
       </Track>
     </nav>
   );

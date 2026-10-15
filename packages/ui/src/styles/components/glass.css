@@ -1,26 +1,106 @@
-[data-glass="true"] {
+@layer components.glass {
+  :where(
+      [data-slot="card"]:is([data-glass="true"], [data-glass-part="surface"])
+    )
+    > :where([data-slot="card-header"], [data-slot="card-footer"]) {
+    border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+  }
+
+  :where([data-slot="accordion"]):has(
+    > [data-slot="accordion-item"][data-glass="true"]
+  ) {
+    border-color: transparent;
+  }
+
+  :where(
+      [data-slot="accordion"]:is(
+        [data-glass="true"],
+        [data-glass-part="surface"]
+      )
+    )
+    > :where([data-slot="accordion-item"][data-glass-part="surface"]) {
+    border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+  }
+
+  :where(
+    [data-slot="accordion"] > [data-slot="accordion-item"][data-glass="true"]
+  ) {
+    &:first-child {
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: inherit;
+      border-bottom-right-radius: inherit;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    :where(
+        [data-slot="card"]:is([data-glass="true"], [data-glass-part="surface"])
+      )
+      > :where([data-slot="card-header"], [data-slot="card-footer"]),
+    :where([data-slot="accordion"]):has(
+        > [data-slot="accordion-item"][data-glass="true"]
+      ),
+    :where(
+        [data-slot="accordion"]:is(
+          [data-glass="true"],
+          [data-glass-part="surface"]
+        )
+      )
+      > :where([data-slot="accordion-item"][data-glass-part="surface"]) {
+      border-color: revert-layer;
+    }
+
+    :where(
+        [data-slot="accordion"]
+          > [data-slot="accordion-item"][data-glass="true"]
+      ) {
+      &:first-child {
+        border-top-left-radius: revert-layer;
+        border-top-right-radius: revert-layer;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: revert-layer;
+        border-bottom-right-radius: revert-layer;
+      }
+    }
+  }
+}
+
+/* Inherited surfaces reuse their container material; explicit caller paint wins. */
+[data-slot="command"][data-glass-part="surface"][class~="bg-popover"],
+[data-slot="accordion"]:is([data-glass="true"], [data-glass-part="surface"])
+  > [data-slot="accordion-item"][data-glass-part="surface"][data-open][class~="data-open:bg-muted/50"] {
+  background-color: transparent;
+}
+
+[data-slot="select-content"][data-glass="true"]
+  > :is(
+    [data-slot="select-scroll-up-button"],
+    [data-slot="select-scroll-down-button"]
+  ) {
+  background-color: transparent;
+}
+
+[data-glass="true"],
+[data-glass-part="control"],
+[data-slot="tabs-list"][data-glass="true"] [data-slot="tabs-trigger"],
+[data-slot="accordion-item"]:is(
+    [data-glass="true"],
+    [data-glass-part="surface"]
+  )
+  > *
+  > [data-slot="accordion-trigger"] {
   border-color: transparent;
+  outline: none;
   --tw-ring-color: transparent;
-  --muted-foreground: color-mix(
-    in oklch,
-    var(--foreground) 85%,
-    var(--popover)
-  );
-}
-
-[data-glass="true"]:focus-visible,
-[data-glass="true"][data-slot="input-group"]:has(
-  [data-slot="input-group-control"]:focus-visible
-) {
-  --tw-ring-color: var(--ring);
-}
-
-[data-glass="true"][data-variant="destructive"]:focus-visible,
-[data-glass="true"][aria-invalid="true"],
-[data-glass="true"][data-slot="input-group"]:has(
-  [data-slot][aria-invalid="true"]
-) {
-  --tw-ring-color: var(--destructive);
+  --tw-inset-ring-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
 }
 
 [data-glass="true"][data-glass-state] {
@@ -29,8 +109,7 @@
   --glass-initial-edge-shadow: initial;
   background-color: color-mix(
     in srgb,
-    var(--glass-base, var(--popover))
-      var(--glass-opacity, var(--glass-initial-opacity, 60%)),
+    var(--glass-base, var(--popover)) var(--glass-opacity, 10%),
     transparent
   );
   --glass-initial-edge-color: color-mix(
@@ -55,12 +134,12 @@
   background-repeat: no-repeat;
   background-origin: border-box;
   background-clip: border-box;
-  -webkit-backdrop-filter: blur(
-      var(--glass-blur, var(--glass-initial-blur, 6px))
-    )
-    saturate(1.12);
-  backdrop-filter: blur(var(--glass-blur, var(--glass-initial-blur, 6px)))
-    saturate(1.12);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+}
+
+[data-glass="true"][data-glass-state][data-glass-material="regular"] {
+  --glass-opacity: 35%;
 }
 
 [data-slot="tab-bar-indicator"][data-glass="true"] {
@@ -69,11 +148,20 @@
   backdrop-filter: none;
 }
 
-[data-glass="true"][data-glass-state="ready"] {
+[data-glass="true"][data-glass-state="ready"]:where(
+  [data-glass-renderer="vgpu"]
+) {
   background-color: transparent;
   background-image: var(--glass-edge, none), var(--glass-frame, none);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+[data-glass="true"][data-glass-state="ready"]:where(
+  [data-glass-renderer="svg"]
+) {
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
 }
 
 [data-glass="true"][data-glass-state="fallback"] {
@@ -81,6 +169,34 @@
 }
 
 @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  [data-slot="select-content"][data-glass="true"]
+    > :is(
+      [data-slot="select-scroll-up-button"],
+      [data-slot="select-scroll-down-button"]
+    ),
+  [data-slot="command"][data-glass-part="surface"][class~="bg-popover"],
+  [data-slot="accordion"]:is([data-glass="true"], [data-glass-part="surface"])
+    > [data-slot="accordion-item"][data-glass-part="surface"][data-open][class~="data-open:bg-muted/50"] {
+    background-color: revert-layer;
+  }
+
+  [data-glass="true"],
+  [data-glass-part="control"],
+  [data-slot="tabs-list"][data-glass="true"] [data-slot="tabs-trigger"],
+  [data-slot="accordion-item"]:is(
+      [data-glass="true"],
+      [data-glass-part="surface"]
+    )
+    > *
+    > [data-slot="accordion-trigger"] {
+    border-color: revert-layer;
+    outline: revert-layer;
+    --tw-ring-color: revert-layer;
+    --tw-inset-ring-shadow: revert-layer;
+    --tw-ring-shadow: revert-layer;
+    --tw-ring-offset-shadow: revert-layer;
+  }
+
   [data-glass="true"][data-glass-state] {
     background-color: var(--glass-base, var(--popover));
     background-image: none;

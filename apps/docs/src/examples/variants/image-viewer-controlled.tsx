@@ -24,6 +24,7 @@ export default function Example({ locale }: ExampleProps) {
             key={image}
             variant="ghost"
             type="button"
+            glass={false}
             className="h-auto w-full overflow-hidden rounded-xl p-0"
             aria-label={
               chinese

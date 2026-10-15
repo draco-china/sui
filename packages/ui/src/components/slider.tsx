@@ -4,8 +4,14 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 import { mergeClassNames } from "../lib/class-name";
 import { withGlass } from "../lib/glass/context";
 
-const GlassSliderTrack = withGlass(SliderPrimitive.Track, "control");
-const GlassSliderThumb = withGlass(SliderPrimitive.Thumb, "control");
+const GlassSliderTrack = withGlass(SliderPrimitive.Track, "control", {
+  mode: "css",
+  material: "regular",
+});
+const GlassSliderThumb = withGlass(SliderPrimitive.Thumb, "control", {
+  mode: "css",
+  material: "regular",
+});
 
 function SliderImplementation({
   className,
@@ -45,6 +51,9 @@ function SliderImplementation({
         {Array.from({ length: thumbCount }, (_, index) => (
           <GlassSliderThumb
             data-slot="slider-thumb"
+            aria-label={props["aria-label"]}
+            aria-labelledby={props["aria-labelledby"]}
+            aria-describedby={props["aria-describedby"]}
             // biome-ignore lint/suspicious/noArrayIndexKey: Thumb identity is its position; using its changing value would remount it while dragging.
             key={index}
             className="block h-4 w-6 shrink-0 select-none rounded-full bg-white not-dark:bg-clip-padding shadow-md ring-1 ring-black/10 transition-[color,box-shadow,background-color] hover:ring-4 hover:ring-ring/30 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-vertical:h-6 data-vertical:w-4"

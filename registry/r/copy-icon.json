@@ -27,7 +27,7 @@
     },
     {
       "path": "packages/ui/src/hooks/use-clipboard.ts",
-      "content": "\"use client\";\n\nimport { useEffect, useRef, useState } from \"react\";\n\ntype ClipboardStatus = \"idle\" | \"pending\" | \"copied\" | \"error\";\ntype ClipboardLabels = {\n  copy?: string;\n  pending?: string;\n  copied?: string;\n  failed?: string;\n};\ntype ClipboardOptions = {\n  disabled?: boolean;\n  resetDelay?: number;\n  onCopy?: (value: string) => void;\n  onCopyError?: (error: Error) => void;\n};\ntype ClipboardControllerOptions = Omit<ClipboardOptions, \"disabled\"> & {\n  writeText: (value: string) => Promise<void>;\n  onStatusChange: (status: ClipboardStatus) => void;\n};\n\n// The controller owns each async attempt, so late results never update a newer\n// value, a second attempt, or an unmounted component.\nfunction createClipboardController(options: ClipboardControllerOptions) {\n  let active = true;\n  let pending = false;\n  let attempt = 0;\n  let timer: ReturnType<typeof setTimeout> | undefined;\n  const clear = () => {\n    if (timer !== undefined) clearTimeout(timer);\n    timer = undefined;\n  };\n  return {\n    activate() {\n      active = true;\n    },\n    reset() {\n      attempt++;\n      pending = false;\n      clear();\n      if (active) options.onStatusChange(\"idle\");\n    },\n    dispose() {\n      active = false;\n      attempt++;\n      pending = false;\n      clear();\n    },\n    async copy(value: string): Promise<boolean> {\n      if (!active || pending) return false;\n      const current = ++attempt;\n      pending = true;\n      clear();\n      options.onStatusChange(\"pending\");\n      try {\n        await options.writeText(value);\n      } catch (reason) {\n        if (!active || current !== attempt) return false;\n        pending = false;\n        const error =\n          reason instanceof Error ? reason : new Error(String(reason));\n        options.onStatusChange(\"error\");\n        options.onCopyError?.(error);\n        return false;\n      }\n      if (!active || current !== attempt) return false;\n      pending = false;\n      options.onStatusChange(\"copied\");\n      const delay = options.resetDelay ?? 1500;\n      timer = setTimeout(\n        () => {\n          timer = undefined;\n          if (active && current === attempt) options.onStatusChange(\"idle\");\n        },\n        Number.isFinite(delay) ? Math.max(0, delay) : 1500,\n      );\n      options.onCopy?.(value);\n      return true;\n    },\n  };\n}\n\nfunction useClipboard(value: string, options: ClipboardOptions = {}) {\n  const [status, setStatus] = useState<ClipboardStatus>(\"idle\");\n  const optionsRef = useRef(options);\n  optionsRef.current = options;\n  const [controller] = useState(() =>\n    createClipboardController({\n      writeText: async (text) => {\n        if (\n          typeof navigator === \"undefined\" ||\n          !navigator.clipboard?.writeText\n        ) {\n          throw new Error(\n            \"Clipboard access is unavailable. Select and copy the text manually.\",\n          );\n        }\n        await navigator.clipboard.writeText(text);\n      },\n      onStatusChange: setStatus,\n      onCopy: (text) => optionsRef.current.onCopy?.(text),\n      onCopyError: (error) => optionsRef.current.onCopyError?.(error),\n      get resetDelay() {\n        return optionsRef.current.resetDelay;\n      },\n    }),\n  );\n  useEffect(() => {\n    controller.activate();\n    return () => controller.dispose();\n  }, [controller]);\n  // biome-ignore lint/correctness/useExhaustiveDependencies: A changed value or disabled state invalidates in-flight attempts and clears feedback.\n  useEffect(() => {\n    controller.reset();\n  }, [controller, value, options.disabled]);\n  return {\n    status,\n    copy: (text = value) =>\n      options.disabled ? Promise.resolve(false) : controller.copy(text),\n    reset: controller.reset,\n  };\n}\n\nexport type { ClipboardLabels, ClipboardOptions, ClipboardStatus };\nexport { createClipboardController, useClipboard };\n",
+      "content": "\"use client\";\n\nimport { useEffect, useRef, useState } from \"react\";\n\ntype ClipboardStatus = \"idle\" | \"pending\" | \"copied\" | \"error\";\ntype ClipboardLabels = {\n  copy?: string;\n  pending?: string;\n  copied?: string;\n  failed?: string;\n};\ntype ClipboardOptions = {\n  disabled?: boolean;\n  resetDelay?: number;\n  onCopy?: (value: string) => void;\n  onCopyError?: (error: Error) => void;\n};\ntype ClipboardControllerOptions = Omit<ClipboardOptions, \"disabled\"> & {\n  writeText: (value: string) => Promise<void>;\n  onStatusChange: (status: ClipboardStatus) => void;\n};\n\n// The controller owns each async attempt, so late results never update a newer\n// value, a second attempt, or an unmounted component.\nfunction createClipboardController(options: ClipboardControllerOptions) {\n  let active = true;\n  let pending = false;\n  let attempt = 0;\n  let copiedValue: string | undefined;\n  let timer: ReturnType<typeof setTimeout> | undefined;\n  const clear = () => {\n    if (timer !== undefined) clearTimeout(timer);\n    timer = undefined;\n  };\n  const reset = () => {\n    attempt++;\n    pending = false;\n    copiedValue = undefined;\n    clear();\n    if (active) options.onStatusChange(\"idle\");\n  };\n  return {\n    activate() {\n      active = true;\n    },\n    reset,\n    synchronize(value: string) {\n      // An uncontrolled input can synchronize after copying its live DOM value.\n      if (value !== copiedValue) reset();\n    },\n    dispose() {\n      active = false;\n      attempt++;\n      pending = false;\n      copiedValue = undefined;\n      clear();\n    },\n    async copy(value: string): Promise<boolean> {\n      if (!active || pending) return false;\n      const current = ++attempt;\n      copiedValue = value;\n      pending = true;\n      clear();\n      options.onStatusChange(\"pending\");\n      try {\n        await options.writeText(value);\n      } catch (reason) {\n        if (!active || current !== attempt) return false;\n        pending = false;\n        const error =\n          reason instanceof Error ? reason : new Error(String(reason));\n        options.onStatusChange(\"error\");\n        options.onCopyError?.(error);\n        return false;\n      }\n      if (!active || current !== attempt) return false;\n      pending = false;\n      options.onStatusChange(\"copied\");\n      const delay = options.resetDelay ?? 1500;\n      timer = setTimeout(\n        () => {\n          timer = undefined;\n          if (active && current === attempt) options.onStatusChange(\"idle\");\n        },\n        Number.isFinite(delay) ? Math.max(0, delay) : 1500,\n      );\n      options.onCopy?.(value);\n      return true;\n    },\n  };\n}\n\nfunction useClipboard(value: string, options: ClipboardOptions = {}) {\n  const [status, setStatus] = useState<ClipboardStatus>(\"idle\");\n  const optionsRef = useRef(options);\n  optionsRef.current = options;\n  const [controller] = useState(() =>\n    createClipboardController({\n      writeText: async (text) => {\n        if (\n          typeof navigator === \"undefined\" ||\n          !navigator.clipboard?.writeText\n        ) {\n          throw new Error(\n            \"Clipboard access is unavailable. Select and copy the text manually.\",\n          );\n        }\n        await navigator.clipboard.writeText(text);\n      },\n      onStatusChange: setStatus,\n      onCopy: (text) => optionsRef.current.onCopy?.(text),\n      onCopyError: (error) => optionsRef.current.onCopyError?.(error),\n      get resetDelay() {\n        return optionsRef.current.resetDelay;\n      },\n    }),\n  );\n  useEffect(() => {\n    controller.activate();\n    return () => controller.dispose();\n  }, [controller]);\n  useEffect(() => {\n    if (options.disabled) controller.reset();\n    else controller.synchronize(value);\n  }, [controller, value, options.disabled]);\n  return {\n    status,\n    copy: (text = value) =>\n      options.disabled ? Promise.resolve(false) : controller.copy(text),\n    reset: controller.reset,\n  };\n}\n\nexport type { ClipboardLabels, ClipboardOptions, ClipboardStatus };\nexport { createClipboardController, useClipboard };\n",
       "type": "registry:hook",
       "target": "@hooks/use-clipboard.ts"
     }
@@ -692,22 +692,61 @@
         "animation": "none"
       }
     },
-    "[data-glass=\"true\"]": {
+    "@layer components.glass": {
+      ":where(\n      [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    )\n    > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+      },
+      ":where([data-slot=\"accordion\"]):has(\n    > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
+        "border-color": "transparent"
+      },
+      ":where(\n      [data-slot=\"accordion\"]:is(\n        [data-glass=\"true\"],\n        [data-glass-part=\"surface\"]\n      )\n    )\n    > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+      },
+      ":where(\n    [data-slot=\"accordion\"] > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
+        "&:first-child": {
+          "border-top-left-radius": "inherit",
+          "border-top-right-radius": "inherit"
+        },
+        "&:last-child": {
+          "border-bottom-left-radius": "inherit",
+          "border-bottom-right-radius": "inherit"
+        }
+      },
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+        ":where(\n        [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n      )\n      > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"]),\n    :where([data-slot=\"accordion\"]):has(\n        > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      ),\n    :where(\n        [data-slot=\"accordion\"]:is(\n          [data-glass=\"true\"],\n          [data-glass-part=\"surface\"]\n        )\n      )\n      > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
+          "border-color": "revert-layer"
+        },
+        ":where(\n        [data-slot=\"accordion\"]\n          > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      )": {
+          "&:first-child": {
+            "border-top-left-radius": "revert-layer",
+            "border-top-right-radius": "revert-layer"
+          },
+          "&:last-child": {
+            "border-bottom-left-radius": "revert-layer",
+            "border-bottom-right-radius": "revert-layer"
+          }
+        }
+      }
+    },
+    "[data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n[data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
+      "background-color": "transparent"
+    },
+    "[data-slot=\"select-content\"][data-glass=\"true\"]\n  > :is(\n    [data-slot=\"select-scroll-up-button\"],\n    [data-slot=\"select-scroll-down-button\"]\n  )": {
+      "background-color": "transparent"
+    },
+    "[data-glass=\"true\"],\n[data-glass-part=\"control\"],\n[data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n[data-slot=\"accordion-item\"]:is(\n    [data-glass=\"true\"],\n    [data-glass-part=\"surface\"]\n  )\n  > *\n  > [data-slot=\"accordion-trigger\"]": {
       "border-color": "transparent",
+      "outline": "none",
       "--tw-ring-color": "transparent",
-      "--muted-foreground": "color-mix(\n    in oklch,\n    var(--foreground) 85%,\n    var(--popover)\n  )"
-    },
-    "[data-glass=\"true\"]:focus-visible,\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot=\"input-group-control\"]:focus-visible\n)": {
-      "--tw-ring-color": "var(--ring)"
-    },
-    "[data-glass=\"true\"][data-variant=\"destructive\"]:focus-visible,\n[data-glass=\"true\"][aria-invalid=\"true\"],\n[data-glass=\"true\"][data-slot=\"input-group\"]:has(\n  [data-slot][aria-invalid=\"true\"]\n)": {
-      "--tw-ring-color": "var(--destructive)"
+      "--tw-inset-ring-shadow": "0 0 #0000",
+      "--tw-ring-shadow": "0 0 #0000",
+      "--tw-ring-offset-shadow": "0 0 #0000"
     },
     "[data-glass=\"true\"][data-glass-state]": {
       "--glass-edge": "none",
       "--glass-frame": "none",
       "--glass-initial-edge-shadow": "initial",
-      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover))\n      var(--glass-opacity, var(--glass-initial-opacity, 60%)),\n    transparent\n  )",
+      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover)) var(--glass-opacity, 10%),\n    transparent\n  )",
       "--glass-initial-edge-color": "color-mix(\n    in srgb,\n    color-mix(in srgb, var(--foreground) 12%, white) 28%,\n    transparent\n  )",
       "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px\n        color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),\n      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),\n      -1px 1px 2px -0.5px rgb(0 0 0 / 0.07)\n    ),\n    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
       "background-image": "var(--glass-edge, none)",
@@ -715,24 +754,42 @@
       "background-repeat": "no-repeat",
       "background-origin": "border-box",
       "background-clip": "border-box",
-      "-webkit-backdrop-filter": "blur(\n      var(--glass-blur, var(--glass-initial-blur, 6px))\n    )\n    saturate(1.12)",
-      "backdrop-filter": "blur(var(--glass-blur, var(--glass-initial-blur, 6px)))\n    saturate(1.12)"
+      "-webkit-backdrop-filter": "blur(6px) saturate(1.12)",
+      "backdrop-filter": "blur(6px) saturate(1.12)"
+    },
+    "[data-glass=\"true\"][data-glass-state][data-glass-material=\"regular\"]": {
+      "--glass-opacity": "35%"
     },
     "[data-slot=\"tab-bar-indicator\"][data-glass=\"true\"]": {
       "background-color": "transparent",
       "-webkit-backdrop-filter": "none",
       "backdrop-filter": "none"
     },
-    "[data-glass=\"true\"][data-glass-state=\"ready\"]": {
+    "[data-glass=\"true\"][data-glass-state=\"ready\"]:where(\n  [data-glass-renderer=\"vgpu\"]\n)": {
       "background-color": "transparent",
       "background-image": "var(--glass-edge, none), var(--glass-frame, none)",
       "-webkit-backdrop-filter": "none",
       "backdrop-filter": "none"
     },
+    "[data-glass=\"true\"][data-glass-state=\"ready\"]:where(\n  [data-glass-renderer=\"svg\"]\n)": {
+      "-webkit-backdrop-filter": "var(--glass-filter)",
+      "backdrop-filter": "var(--glass-filter)"
+    },
     "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
       "background-image": "var(--glass-edge, none)"
     },
     "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+      "[data-slot=\"select-content\"][data-glass=\"true\"]\n    > :is(\n      [data-slot=\"select-scroll-up-button\"],\n      [data-slot=\"select-scroll-down-button\"]\n    ),\n  [data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n  [data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
+        "background-color": "revert-layer"
+      },
+      "[data-glass=\"true\"],\n  [data-glass-part=\"control\"],\n  [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n  [data-slot=\"accordion-item\"]:is(\n      [data-glass=\"true\"],\n      [data-glass-part=\"surface\"]\n    )\n    > *\n    > [data-slot=\"accordion-trigger\"]": {
+        "border-color": "revert-layer",
+        "outline": "revert-layer",
+        "--tw-ring-color": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer",
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-ring-offset-shadow": "revert-layer"
+      },
       "[data-glass=\"true\"][data-glass-state]": {
         "background-color": "var(--glass-base, var(--popover))",
         "background-image": "none",

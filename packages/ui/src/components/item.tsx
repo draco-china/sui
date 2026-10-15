@@ -7,7 +7,6 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
 import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -60,7 +59,7 @@ const itemVariants = cva(
   },
 );
 
-function ItemImplementation({
+function Item({
   className,
   variant = "default",
   size = "default",
@@ -190,8 +189,6 @@ function ItemFooter({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
-const Item = withGlass(ItemImplementation);
 
 export {
   Item,

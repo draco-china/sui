@@ -1,6 +1,7 @@
 export const metrics = {
   capture: [] as number[],
   render: [] as number[],
+  svgFilter: [] as number[],
   uploads: 0,
   commits: 0,
   reactMilliseconds: 0,
@@ -32,6 +33,7 @@ export async function measure<T>(
 export function resetMetrics() {
   metrics.capture.length = 0;
   metrics.render.length = 0;
+  metrics.svgFilter.length = 0;
   metrics.longTasks.length = 0;
   metrics.uploads = 0;
   metrics.commits = 0;
@@ -55,6 +57,7 @@ export function snapshot() {
   return {
     capture: summary(metrics.capture),
     render: summary(metrics.render),
+    svgFilter: summary(metrics.svgFilter),
     uploads: metrics.uploads,
     reactCommits: metrics.commits,
     reactActualMs: metrics.reactMilliseconds,
