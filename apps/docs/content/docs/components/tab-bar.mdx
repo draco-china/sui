@@ -52,13 +52,13 @@ The bar can scroll when destinations exceed its available space. Set `orientatio
 
 ## Material [#material]
 
-TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` to apply shared glass material to the outer bar, using its local `glassConfig` or inherited [Glass](/docs/components/glass) rendering and material settings. Both modes use a theme-colored selection background; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the theme primary color. The glass material stays continuous without separate label backplates. A floating glass lens appears only while holding. Its background is fully transparent, with shared SVG highlights and outer shadows but no blur, background capture or liquid refraction.
+TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` to apply shared glass material to the outer bar, using its local `glassConfig` or inherited [Glass](/docs/components/glass) material and edge settings. Items share equal widths, as in iOS tab bars. Both modes use a neutral selection pill, as on iOS; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the theme primary color. The glass material stays continuous without separate label backplates. A floating glass lens appears only while holding. Its background is fully transparent, with shared SVG highlights and outer shadows but no blur or refraction.
 
 Keep the surrounding container ordinary to avoid nested glass. The example compares both modes using the same controlled destinations and background.
 
 ## Press and slide [#long-press]
 
-Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a floating lens and gently enlarge its icon and label. In glass mode the lens has a fully transparent background, with no tint, background image, backdrop blur or refraction. It keeps shared SVG edge highlights and floating outer shadows; otherwise it keeps the theme selection background. The underlying glass background stays stable during dragging; the lens needs no GPU initialization or enhanced frames. Slide while holding to continuously move the lens and position the lens over other enabled items. The resting selection background is hidden while holding. The held item's label and icon immediately use the theme color, while the previous selection returns to its normal color. `aria-current` still identifies the actual destination until releasing commits the new selection and restores its background. Releasing outside the bar, cancelling the pointer, or losing window focus restores the original selection and colors. Short clicks and keyboard activation keep their usual behavior, and disabled items remain unavailable. Reduced-motion preferences disable scaling and animated movement.
+Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a floating lens and gently enlarge its icon and label. In glass mode the lens has a fully transparent background, with no tint, background image, backdrop blur or refraction. It keeps shared SVG edge highlights and floating outer shadows; otherwise it keeps the neutral selection pill. The underlying glass background stays stable during dragging. Slide while holding to continuously move the lens and position the lens over other enabled items. The resting selection background is hidden while holding. The held item's label and icon immediately use the theme color, while the previous selection returns to its normal color. `aria-current` still identifies the actual destination until releasing commits the new selection and restores its background. Dragging past either end lets the lens follow with growing resistance, at most half its own width beyond the bar, while the end item stays held; releasing there selects it. Releasing well above or below the bar, cancelling the pointer, or losing window focus restores the original selection and colors. Short clicks and keyboard activation keep their usual behavior, and disabled items remain unavailable. Reduced-motion preferences disable scaling and animated movement.
 
 ## API reference [#api-reference]
 
@@ -72,7 +72,7 @@ Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a
 | `value` | `string` | Controlled current destination. |
 | `onValueChange` | `(value: string) => void` | Called when selecting an enabled destination. |
 | `glass` | `boolean` | `false`; optional glass treatment. |
-| `glassConfig` | `GlassConfig` | Local rendering, material, options and optional WebGPU capture target. |
+| `glassConfig` | `GlassConfig` | Local material, edge and options. |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"`. |
 | `onItemActivate` | `(value: string) => void` | Optional activation notification. |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"`. |

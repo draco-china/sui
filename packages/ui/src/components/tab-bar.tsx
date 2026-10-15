@@ -27,14 +27,15 @@ export type TabBarItem = {
 };
 
 const tabBarVariants = cva(
-  "group/tab-bar relative isolate flex w-fit max-w-full touch-pan-y select-none gap-1 overflow-auto rounded-full bg-muted p-1 text-muted-foreground data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:flex-col data-[pressed=true]:overflow-visible",
+  // Equal tracks: every item takes the width (or height) of the largest one.
+  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
   },
 );
 const tabBarItemVariants = cva(
-  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-accent focus-visible:z-20 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent group-data-[glass=true]/tab-bar:active:translate-y-0",
+  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-accent focus-visible:z-20 data-[active=true]:bg-foreground/8 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent group-data-[glass=true]/tab-bar:active:translate-y-0 dark:data-[active=true]:bg-foreground/12",
   {
     variants: {
       size: {
@@ -57,20 +58,16 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
   } & GlassProps;
 
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
-const Lens = withGlass(
-  (props: ComponentProps<"div">) => <div {...props} />,
-  "surface",
-  {
-    mode: "css",
-  },
-);
+const Lens = withGlass((props: ComponentProps<"div">) => <div {...props} />);
 const indicatorVariants = cva(
   "pointer-events-none absolute top-0 left-0 z-0 rounded-full data-[pressed=true]:shadow-lg",
   {
+    // A neutral selection pill, as on iOS; only the icon and label take the
+    // theme color.
     variants: {
       glass: {
-        false: "bg-primary/10",
-        true: "bg-primary/10 backdrop-blur-[7px]",
+        false: "bg-foreground/8 dark:bg-foreground/12",
+        true: "bg-foreground/8 backdrop-blur-[7px] dark:bg-foreground/12",
       },
     },
     defaultVariants: { glass: false },
@@ -128,6 +125,50 @@ function TabBarImplementation({
       if (hold.current?.timer) clearTimeout(hold.current.timer);
     };
   }, [cancelHold]);
+  /**
+   * The item under the pointer. While held, a pointer past either end of the
+   * bar, within a short distance of it, keeps the nearest end item.
+   */
+  function heldItem(x: number, y: number, held: boolean) {
+    const element = track.current;
+    const hit = document
+      .elementFromPoint(x, y)
+      ?.closest<HTMLButtonElement>("button[data-tab-bar-item]");
+    if (!element || (hit && element.contains(hit))) return hit ?? null;
+    if (!held) return null;
+    const rect = element.getBoundingClientRect();
+    const horizontal = orientation === "horizontal";
+    const tolerance = 24;
+    const along = horizontal ? x : y;
+    const across = horizontal ? y : x;
+    const [start, end] = horizontal
+      ? [rect.left, rect.right]
+      : [rect.top, rect.bottom];
+    const [near, far] = horizontal
+      ? [rect.top, rect.bottom]
+      : [rect.left, rect.right];
+    if (
+      (along >= start && along <= end) ||
+      across < near - tolerance ||
+      across > far + tolerance
+    )
+      return null;
+    let nearest: HTMLButtonElement | null = null;
+    let distance = Number.POSITIVE_INFINITY;
+    for (const button of element.querySelectorAll<HTMLButtonElement>(
+      "button[data-tab-bar-item]",
+    )) {
+      const bounds = button.getBoundingClientRect();
+      const center = horizontal
+        ? bounds.left + bounds.width / 2
+        : bounds.top + bounds.height / 2;
+      if (Math.abs(center - along) < distance) {
+        distance = Math.abs(center - along);
+        nearest = button;
+      }
+    }
+    return nearest;
+  }
   function activateHold() {
     const pending = hold.current;
     const element = track.current;
@@ -273,33 +314,49 @@ function TabBarImplementation({
   }, []);
   useLayoutEffect(() => {
     if (!bounds) return;
+    // Past either end the lens keeps following with rubber-band resistance,
+    // like iOS, and its edge passes the bar by at most half its held size.
+    // Held, it grows 5px on each side from 4px inside the bar, so it already
+    // sits 1px past the edge at rest.
+    const rubberBand = (value: number, max: number, size: number) => {
+      const min = 4;
+      const range = (size + 10) / 2 - 1;
+      const resist = (distance: number) =>
+        range * (1 - 1 / ((distance * 0.55) / range + 1));
+      if (value < min) return min - resist(min - value);
+      if (value > max) return max + resist(value - max);
+      return value;
+    };
     moveLens.current = (duration = 0.08) => {
       const pending = hold.current;
       const element = track.current;
       const target = { ...bounds };
+      // The held bar lets the lens overflow, which would grow scrollWidth
+      // with the lens itself, so the content ends at the last item.
+      const items =
+        element?.querySelectorAll<HTMLElement>("[data-tab-bar-item]") ?? [];
+      const last = items[items.length - 1];
       if (pending?.active && element) {
         const rect = element.getBoundingClientRect();
         if (orientation === "horizontal") {
           const position =
             ((pending.x - rect.left) * element.offsetWidth) / rect.width +
             element.scrollLeft;
-          target.x = Math.max(
-            4,
-            Math.min(
-              element.scrollWidth - bounds.width - 4,
-              position - bounds.width / 2,
-            ),
+          target.x = rubberBand(
+            position - bounds.width / 2,
+            (last ? last.offsetLeft + last.offsetWidth : element.scrollWidth) -
+              bounds.width,
+            bounds.width,
           );
         } else {
           const position =
             ((pending.y - rect.top) * element.offsetHeight) / rect.height +
             element.scrollTop;
-          target.y = Math.max(
-            4,
-            Math.min(
-              element.scrollHeight - bounds.height - 4,
-              position - bounds.height / 2,
-            ),
+          target.y = rubberBand(
+            position - bounds.height / 2,
+            (last ? last.offsetTop + last.offsetHeight : element.scrollHeight) -
+              bounds.height,
+            bounds.height,
           );
         }
         target.x -= 5;
@@ -361,7 +418,6 @@ function TabBarImplementation({
         data-lens={Boolean(bounds)}
         data-pressed={pressed}
         data-glass-frozen={pressed}
-        data-glass-contrast="surface"
         data-glass={glass ? "true" : undefined}
         className={tabBarVariants({ size })}
         onPointerDown={(event) => {
@@ -407,9 +463,7 @@ function TabBarImplementation({
           )
             activateHold();
           if (pending.active) moveLens.current();
-          const button = document
-            .elementFromPoint(event.clientX, event.clientY)
-            ?.closest<HTMLButtonElement>("button[data-tab-bar-item]");
+          const button = heldItem(event.clientX, event.clientY, pending.active);
           if (!button || !track.current?.contains(button) || button.disabled) {
             if (!pending.active) cancelHold();
             return;
@@ -428,9 +482,7 @@ function TabBarImplementation({
           if (!pending || pending.pointerId !== event.pointerId) return;
           if (pending.active) {
             suppressClick.current = true;
-            const button = document
-              .elementFromPoint(event.clientX, event.clientY)
-              ?.closest<HTMLButtonElement>("button[data-tab-bar-item]");
+            const button = heldItem(event.clientX, event.clientY, true);
             const item = button && items[Number(button.dataset.tabBarItem)];
             if (
               button &&

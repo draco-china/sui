@@ -1,12 +1,11 @@
 "use client";
 import { TabBar } from "@workspace/ui/components/tab-bar";
 import { BellIcon, HomeIcon, SearchIcon, SettingsIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { ExampleProps } from "../types";
 
 export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
-  const scene = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState("home");
   const items = [
     { value: "home", label: chinese ? "首页" : "Home", icon: <HomeIcon /> },
@@ -28,10 +27,7 @@ export default function Example({ locale }: ExampleProps) {
   ];
   const current = items.find((item) => item.value === value);
   return (
-    <div
-      ref={scene}
-      className="relative isolate flex min-h-80 w-full flex-col justify-between overflow-hidden rounded-2xl bg-muted p-6"
-    >
+    <div className="relative isolate flex min-h-80 w-full flex-col justify-between overflow-hidden rounded-2xl bg-muted p-6">
       <div
         className="absolute inset-0 -z-10 grid grid-cols-3 gap-3 p-3"
         aria-hidden="true"
@@ -65,7 +61,6 @@ export default function Example({ locale }: ExampleProps) {
           </p>
           <TabBar
             glass
-            glassConfig={{ captureTarget: scene }}
             aria-label={
               chinese ? "玻璃应用导航" : "Glass application navigation"
             }

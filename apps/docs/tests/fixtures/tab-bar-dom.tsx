@@ -57,12 +57,12 @@ Object.defineProperties(window.HTMLElement.prototype, {
   },
   offsetWidth: {
     get() {
-      return 64;
+      return this.dataset?.slot === "tab-bar-list" ? 280 : 64;
     },
   },
   offsetHeight: {
     get() {
-      return 56;
+      return this.dataset?.slot === "tab-bar-list" ? 64 : 56;
     },
   },
   scrollWidth: {
@@ -77,7 +77,11 @@ Object.defineProperties(window.HTMLElement.prototype, {
   },
   getBoundingClientRect: {
     value() {
-      return new window.DOMRect(0, 0, 280, 64);
+      // Items sit along the 280×64 track at their mocked offsets.
+      const item = this.dataset?.tabBarItem;
+      return item === undefined
+        ? new window.DOMRect(0, 0, 280, 64)
+        : new window.DOMRect(4 + Number(item) * 68, 4, 64, 56);
     },
   },
 });
@@ -111,7 +115,7 @@ function Demo() {
       <TabBar
         ref={ref}
         glass
-        glassConfig={{ mode: "auto", options: { highlight: 0.45 } }}
+        glassConfig={{ options: { strength: 30 } }}
         aria-label="Destinations"
         value={value}
         onItemActivate={() => activations++}
@@ -153,7 +157,6 @@ assert.equal(ref.current, host.querySelector("nav") as unknown as HTMLElement);
 assert.equal(track().getAttribute("data-glass"), "true");
 const outerScope = track().getAttribute("data-glass-scope");
 assert.ok(outerScope);
-assert.equal(configurations.get(outerScope)?.mode, "auto");
 assert.equal(
   leases.get(outerScope),
   1,
@@ -201,25 +204,11 @@ assert.equal(lens().getAttribute("data-pressed"), "true");
 assert.equal(track().getAttribute("data-glass-frozen"), "true");
 const lensScope = lens().getAttribute("data-glass-scope");
 assert.ok(lensScope);
-assert.notEqual(
-  lensScope,
-  outerScope,
-  "held lens has an independent CSS-only scope",
-);
+assert.notEqual(lensScope, outerScope, "held lens has an independent scope");
 assert.equal(
-  configurations.get(lensScope)?.mode,
-  "css",
-  "held lens never requests liquid refraction",
-);
-assert.equal(
-  configurations.get(lensScope)?.options?.highlight,
-  0.45,
-  "lens keeps inherited highlight configuration",
-);
-assert.equal(
-  configurations.get(outerScope)?.mode,
-  "auto",
-  "outer glass retains GPU enhancement",
+  configurations.get(lensScope)?.options?.strength,
+  30,
+  "lens keeps inherited option configuration",
 );
 assert.equal(leases.get(lensScope), 1);
 const nativeDrag = new window.Event("dragstart", {
@@ -372,6 +361,35 @@ await act(async () => {
   motionPreference.matches = false;
   motionPreference.dispatchEvent(new window.Event("change"));
 });
+// Past either end, the end item stays held and the lens rubber-bands out by
+// at most half its held size.
+hit = button("Home");
+await pointer(hit, "pointerdown");
+await pointer(track(), "pointermove", 50);
+hit = null;
+await pointer(track(), "pointermove", 900);
+await act(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 220));
+});
+assert.equal(
+  button("Activity").getAttribute("data-held"),
+  "true",
+  "a pointer past the end keeps the end item held",
+);
+const held = lens() as HappyHTMLElement;
+const heldWidth = Number.parseFloat(held.style.width);
+const heldRight = Number.parseFloat(held.style.translate) + heldWidth;
+assert.ok(heldRight > 280, "the lens overshoots the end of the bar");
+assert.ok(
+  heldRight <= 280 + heldWidth / 2,
+  "the lens overshoots by at most half its held size",
+);
+await pointer(track(), "pointerup", 900);
+assert.equal(
+  changes.at(-1),
+  "activity",
+  "releasing past the end selects the end item",
+);
 hit = button("Home");
 await pointer(hit, "pointerdown");
 await pointer(track(), "pointermove", 50);
