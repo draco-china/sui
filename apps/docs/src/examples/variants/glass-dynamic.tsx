@@ -22,62 +22,43 @@ export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const stateLabels = chinese
     ? {
-        vgpu: "当前渲染：vgpu + WGSL 折射 + SVG 高光",
         svg: "当前渲染：SVG 折射 + SVG 高光",
-        fallback: "当前渲染：CSS + SVG（增强不可用）",
-        loading: "当前渲染：CSS + SVG（等待增强）",
+        css: "当前渲染：CSS 模糊 + SVG 高光（浏览器不支持 SVG 背景滤镜）",
+        loading: "当前渲染：CSS + SVG（等待折射）",
       }
     : {
-        vgpu: "Rendering: vgpu + WGSL refraction + SVG highlights",
         svg: "Rendering: SVG refraction + SVG highlights",
-        fallback: "Rendering: CSS + SVG (enhancement unavailable)",
-        loading: "Rendering: CSS + SVG (awaiting enhancement)",
+        css: "Rendering: CSS blur + SVG highlights (no SVG backdrop filters)",
+        loading: "Rendering: CSS + SVG (awaiting refraction)",
       };
   const id = useId();
   const scene = useRef<HTMLDivElement>(null);
-  const [rendering, setRendering] = useState<
-    "vgpu" | "svg" | "fallback" | "loading"
-  >("loading");
+  const [rendering, setRendering] = useState<"svg" | "css" | "loading">(
+    "loading",
+  );
   useEffect(() => {
     const target = scene.current;
     if (!target) return;
     const update = () => {
-      const surfaces = [...target.querySelectorAll('[data-glass="true"]')];
-      const ready = surfaces.filter(
-        (surface) => surface.getAttribute("data-glass-state") === "ready",
-      );
-      let next: "vgpu" | "svg" | "fallback" | "loading" = "loading";
-      if (ready.length)
-        next = ready.every(
-          (surface) => surface.getAttribute("data-glass-renderer") === "vgpu",
-        )
-          ? "vgpu"
-          : "svg";
-      else if (
-        surfaces.some(
-          (surface) => surface.getAttribute("data-glass-state") === "fallback",
-        )
-      )
-        next = "fallback";
-      setRendering(next);
+      const state = target
+        .querySelector('[data-glass="true"]')
+        ?.getAttribute("data-glass-state");
+      if (state === "ready") setRendering("svg");
+      else if (state === "css" || state === "fallback") setRendering("css");
+      else setRendering("loading");
     };
     const observer = new MutationObserver(update);
     observer.observe(target, {
       subtree: true,
       attributes: true,
-      attributeFilter: ["data-glass-state", "data-glass-renderer"],
+      attributeFilter: ["data-glass-state"],
     });
     update();
     return () => observer.disconnect();
   }, []);
   const [text, setText] = useState("SUI / REFRACTION");
   const [strength, setStrength] = useState(22);
-  const [highlight, setHighlight] = useState(0.3);
-  const glassConfig: GlassConfig = {
-    mode: "auto",
-    captureTarget: scene,
-    options: { strength, highlight },
-  };
+  const glassConfig: GlassConfig = { options: { strength } };
   const controls = [
     {
       key: "strength",
@@ -86,14 +67,6 @@ export default function Example({ locale }: ExampleProps) {
       max: 64,
       step: 1,
       change: setStrength,
-    },
-    {
-      key: "highlight",
-      label: chinese ? "边缘高光" : "Edge highlight",
-      value: highlight,
-      max: 1,
-      step: 0.05,
-      change: setHighlight,
     },
   ];
   return (
@@ -190,8 +163,8 @@ export default function Example({ locale }: ExampleProps) {
           </p>
           <p className="mt-2 text-muted-foreground text-sm">
             {chinese
-              ? "SVG 随背景实时更新，WebGPU 共用场景采样"
-              : "SVG follows the live backdrop; WebGPU shares scene sampling."}
+              ? "每个表面各自折射实时背景"
+              : "Each surface refracts the live backdrop on its own."}
           </p>
         </GlassSurface>
       </div>

@@ -97,7 +97,6 @@ function ToggleGroupItemImplementation({
 }
 
 const ToggleGroupItem = withGlass(ToggleGroupItemImplementation, "control", {
-  mode: "css",
   material: "regular",
 });
 

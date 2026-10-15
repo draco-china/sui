@@ -20,6 +20,6 @@ function TextareaImplementation({
   );
 }
 
-const Textarea = withGlass(TextareaImplementation, "control");
+const Textarea = withGlass(TextareaImplementation, "field");
 
 export { Textarea };

@@ -9,8 +9,6 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@workspace/ui/components/radio-group";
-import { Slider } from "@workspace/ui/components/slider";
-import { Switch } from "@workspace/ui/components/switch";
 import { Toggle } from "@workspace/ui/components/toggle";
 import {
   ToggleGroup,
@@ -27,36 +25,6 @@ const controls: {
   slots: string[];
   render: (props: ControlProps) => ReactNode;
 }[] = [
-  {
-    name: "checkbox",
-    slots: ["checkbox"],
-    render: (props) => (
-      <Checkbox {...props} defaultChecked aria-label="Agree" />
-    ),
-  },
-  {
-    name: "radio",
-    slots: ["radio-group-item"],
-    render: ({ glass, disabled }) => (
-      <RadioGroup glass={glass} defaultValue="one" disabled={disabled}>
-        <RadioGroupItem value="one" aria-label="One" />
-      </RadioGroup>
-    ),
-  },
-  {
-    name: "switch",
-    slots: ["switch"],
-    render: (props) => (
-      <Switch {...props} defaultChecked aria-label="Enabled" />
-    ),
-  },
-  {
-    name: "range slider",
-    slots: ["slider-track", "slider-thumb"],
-    render: (props) => (
-      <Slider {...props} defaultValue={[20, 80]} aria-label="Range" />
-    ),
-  },
   {
     name: "toggle",
     slots: ["toggle"],
@@ -75,18 +43,6 @@ const controls: {
       </ToggleGroup>
     ),
   },
-  {
-    name: "OTP",
-    slots: ["input-otp-slot"],
-    render: ({ glass, disabled }) => (
-      <InputOTP glass={glass} length={2} disabled={disabled} defaultValue="12">
-        <InputOTPGroup>
-          <InputOTPSlot aria-label="First digit" />
-          <InputOTPSlot aria-label="Second digit" />
-        </InputOTPGroup>
-      </InputOTP>
-    ),
-  },
 ];
 
 function documentFor(content: ReactNode, inherited = false) {
@@ -96,7 +52,7 @@ function documentFor(content: ReactNode, inherited = false) {
       value={{
         enabled: inherited,
         surface: false,
-        configuration: { mode: "auto", material: "clear" },
+        configuration: { material: "clear" },
       }}
     >
       {content}
@@ -169,68 +125,35 @@ describe("small glass controls use fixed Regular CSS", () => {
         </Fragment>
       )),
     );
-    for (const slot of ["checkbox", "radio-group-item", "switch"])
-      expect(
-        document
-          .querySelector(`[data-slot="${slot}"]`)
-          ?.hasAttribute("data-checked"),
-      ).toBe(true);
     for (const slot of ["toggle", "toggle-group-item"])
       expect(
         document
           .querySelector(`[data-slot="${slot}"]`)
           ?.getAttribute("aria-pressed"),
       ).toBe("true");
-    expect(
-      document.querySelectorAll(
-        '[data-slot="slider-thumb"] input[type="range"]',
-      ).length,
-    ).toBe(2);
-    expect(
-      [...document.querySelectorAll('[data-slot="input-otp-slot"]')].map(
-        (input) => input.getAttribute("value"),
-      ),
-    ).toEqual(["1", "2"]);
   });
 
   test("group items can explicitly opt in or opt out independently of the group", () => {
     const document = documentFor(
-      <>
-        <RadioGroup glass defaultValue="plain">
-          <RadioGroupItem glass={false} value="plain" data-case="plain-radio" />
-          <RadioGroupItem glass value="glass" data-case="glass-radio" />
-        </RadioGroup>
-        <ToggleGroup glass>
-          <ToggleGroupItem glass={false} value="plain" data-case="plain-toggle">
-            Plain
-          </ToggleGroupItem>
-          <ToggleGroupItem glass value="glass" data-case="glass-toggle">
-            Glass
-          </ToggleGroupItem>
-        </ToggleGroup>
-        <InputOTP glass length={2}>
-          <InputOTPSlot glass={false} data-case="plain-otp" />
-          <InputOTPSlot glass data-case="glass-otp" />
-        </InputOTP>
-      </>,
+      <ToggleGroup glass>
+        <ToggleGroupItem glass={false} value="plain" data-case="plain-toggle">
+          Plain
+        </ToggleGroupItem>
+        <ToggleGroupItem glass value="glass" data-case="glass-toggle">
+          Glass
+        </ToggleGroupItem>
+      </ToggleGroup>,
     );
-    for (const kind of ["radio", "toggle", "otp"]) {
-      expect(
-        document
-          .querySelector(`[data-case="plain-${kind}"][data-slot]`)
-          ?.hasAttribute("data-glass"),
-      ).toBe(false);
-      expect(
-        document
-          .querySelector(`[data-case="glass-${kind}"][data-slot]`)
-          ?.getAttribute("data-glass-material"),
-      ).toBe("regular");
-      expect(
-        document
-          .querySelector(`[data-case="glass-${kind}"][data-slot]`)
-          ?.getAttribute("data-glass-scope"),
-      ).toBeTruthy();
-    }
+    expect(
+      document
+        .querySelector('[data-case="plain-toggle"][data-slot]')
+        ?.hasAttribute("data-glass"),
+    ).toBe(false);
+    const item = document.querySelector(
+      '[data-case="glass-toggle"][data-slot]',
+    );
+    expect(item?.getAttribute("data-glass-material")).toBe("regular");
+    expect(item?.getAttribute("data-glass-scope")).toBeTruthy();
   });
 
   test("custom rendering and caller attributes remain on the native control", () => {
@@ -255,3 +178,61 @@ describe("small glass controls use fixed Regular CSS", () => {
     expect(button?.getAttribute("data-glass-material")).toBe("regular");
   });
 });
+
+test("checkbox, radio and OTP stay ordinary content controls inside glass", () => {
+  for (const surface of [false, true]) {
+    const window = new Window();
+    window.document.body.innerHTML = renderToString(
+      <GlassContext.Provider
+        value={{
+          enabled: true,
+          surface,
+          configuration: { material: "clear" },
+        }}
+      >
+        <Checkbox defaultChecked aria-label="Agree" />
+        <RadioGroup defaultValue="one">
+          <RadioGroupItem value="one" aria-label="One" />
+        </RadioGroup>
+        <InputOTP length={2} defaultValue="12">
+          <InputOTPGroup>
+            <InputOTPSlot aria-label="First digit" />
+            <InputOTPSlot aria-label="Second digit" />
+          </InputOTPGroup>
+        </InputOTP>
+      </GlassContext.Provider>,
+    );
+    const document = window.document;
+    expect(
+      document.querySelector("[data-glass], [data-glass-part]"),
+    ).toBeNull();
+    for (const slot of ["checkbox", "radio-group-item"])
+      expect(
+        document
+          .querySelector(`[data-slot="${slot}"]`)
+          ?.hasAttribute("data-checked"),
+      ).toBe(true);
+    expect(
+      [...document.querySelectorAll('[data-slot="input-otp-slot"]')].map(
+        (input) => input.getAttribute("value"),
+      ),
+    ).toEqual(["1", "2"]);
+  }
+});
+
+test("Switch and Slider lift a clear glass lens only while pressed or dragged", () => {
+  const result = Bun.spawnSync({
+    cmd: [
+      process.execPath,
+      new URL("./fixtures/glass-press-lens.tsx", import.meta.url).pathname,
+    ],
+    cwd: new URL("..", import.meta.url).pathname,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  expect(new TextDecoder().decode(result.stderr)).toBe("");
+  expect(result.exitCode).toBe(0);
+  expect(new TextDecoder().decode(result.stdout)).toContain(
+    "lift a lens only while pressed passed",
+  );
+}, 15_000);

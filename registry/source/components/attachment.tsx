@@ -3,12 +3,11 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { Button } from "@/components/ui/button";
-import { GlassSurface } from "@/components/ui/glass";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 
 const attachmentVariants = cva(
   "group/attachment relative flex w-fit min-w-0 max-w-full shrink-0 flex-wrap rounded-3xl border bg-card text-card-foreground transition-colors focus-within:ring-1 focus-within:ring-ring/30 has-[>a,>button]:hover:bg-muted/50 data-[state=error]:border-destructive/30 data-[state=idle]:border-dashed",
@@ -72,8 +71,7 @@ function AttachmentMedia({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof attachmentMediaVariants>) {
   return (
-    <GlassSurface
-      glass={false}
+    <div
       data-slot="attachment-media"
       data-variant={variant}
       className={cn(attachmentMediaVariants({ variant }), className)}
@@ -87,8 +85,7 @@ function AttachmentContent({
   ...props
 }: React.ComponentProps<"div">) {
   return (
-    <GlassSurface
-      glass={false}
+    <div
       data-slot="attachment-content"
       className={cn(
         "min-w-0 max-w-full flex-1 leading-tight group-data-[orientation=vertical]/attachment:px-1",
@@ -200,7 +197,7 @@ function AttachmentGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-const Attachment = withGlass(AttachmentImplementation, "scope");
+const Attachment = withoutGlass(AttachmentImplementation);
 
 export {
   Attachment,

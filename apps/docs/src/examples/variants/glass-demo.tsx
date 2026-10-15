@@ -1,5 +1,8 @@
 "use client";
-import { type GlassMode, GlassSurface } from "@workspace/ui/components/glass";
+import {
+  type GlassMaterial,
+  GlassSurface,
+} from "@workspace/ui/components/glass";
 import {
   Tabs,
   TabsContent,
@@ -17,84 +20,60 @@ const tiles = [
   "bg-violet-500",
   "bg-cyan-500",
 ];
-export default function Example({
-  locale,
-  mode: forcedMode,
-}: ExampleProps & { mode?: GlassMode }) {
+
+type Rendering = "svg" | "css" | "loading";
+
+export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
-  const [mode, setMode] = useState<GlassMode>("auto");
-  const activeMode = forcedMode ?? mode;
+  const [material, setMaterial] = useState<GlassMaterial>("clear");
   const scene = useRef<HTMLDivElement>(null);
-  const [rendering, setRendering] = useState<
-    "vgpu" | "svg" | "css" | "fallback" | "loading"
-  >("loading");
+  const [rendering, setRendering] = useState<Rendering>("loading");
   const labels = chinese
     ? {
-        css: "当前渲染：CSS 模糊 + SVG 高光",
-        vgpu: "当前渲染：vgpu + WGSL 折射 + SVG 高光",
         svg: "当前渲染：SVG 折射 + CSS 材质 + SVG 高光",
-        fallback: "当前渲染：CSS + SVG（增强不可用）",
-        loading: "当前渲染：CSS + SVG（等待增强）",
+        css: "当前渲染：CSS 模糊 + SVG 高光（浏览器不支持 SVG 背景滤镜）",
+        loading: "当前渲染：CSS + SVG（等待折射）",
       }
     : {
-        css: "Rendering: CSS blur + SVG highlights",
-        vgpu: "Rendering: vgpu + WGSL refraction + SVG highlights",
         svg: "Rendering: SVG refraction + CSS material + SVG highlights",
-        fallback: "Rendering: CSS + SVG (enhancement unavailable)",
-        loading: "Rendering: CSS + SVG (awaiting enhancement)",
+        css: "Rendering: CSS blur + SVG highlights (no SVG backdrop filters)",
+        loading: "Rendering: CSS + SVG (awaiting refraction)",
       };
   useEffect(() => {
     const target = scene.current;
     if (!target) return;
     const update = () => {
-      const surfaces = [...target.querySelectorAll('[data-glass="true"]')];
-      const ready = surfaces.filter(
-        (surface) => surface.getAttribute("data-glass-state") === "ready",
-      );
-      let next: "vgpu" | "svg" | "css" | "fallback" | "loading" = "loading";
-      if (activeMode === "css") next = "css";
-      else if (ready.length)
-        next = ready.every(
-          (surface) => surface.getAttribute("data-glass-renderer") === "vgpu",
-        )
-          ? "vgpu"
-          : "svg";
-      else if (
-        surfaces.some(
-          (surface) => surface.getAttribute("data-glass-state") === "fallback",
-        )
-      )
-        next = "fallback";
-      setRendering(next);
+      const surface = target.querySelector('[data-glass="true"]');
+      const state = surface?.getAttribute("data-glass-state");
+      if (state === "ready") setRendering("svg");
+      else if (state === "css" || state === "fallback") setRendering("css");
+      else setRendering("loading");
     };
     const observer = new MutationObserver(update);
     observer.observe(target, {
       subtree: true,
       attributes: true,
-      attributeFilter: ["data-glass-state", "data-glass-renderer"],
+      attributeFilter: ["data-glass-state"],
     });
     update();
     return () => observer.disconnect();
-  }, [activeMode]);
+  }, []);
   return (
     <Tabs
-      value={activeMode}
-      onValueChange={(value) => setMode(value as GlassMode)}
+      value={material}
+      onValueChange={(value) => setMaterial(value as GlassMaterial)}
       className="w-full gap-3"
     >
-      {!forcedMode && (
-        <TabsList
-          aria-label={chinese ? "玻璃渲染方案" : "Glass rendering mode"}
-          wrapperClassName="w-full sm:w-fit"
-        >
-          <TabsTrigger value="css">CSS + SVG</TabsTrigger>
-          <TabsTrigger value="svg">
-            {chinese ? "SVG 折射" : "SVG refraction"}
-          </TabsTrigger>
-          <TabsTrigger value="auto">vgpu + WGSL</TabsTrigger>
-        </TabsList>
-      )}
-      <TabsContent value={activeMode} keepMounted className="grid gap-3">
+      <TabsList
+        aria-label={chinese ? "玻璃材质" : "Glass material"}
+        wrapperClassName="w-full sm:w-fit"
+      >
+        <TabsTrigger value="clear">{chinese ? "清透" : "Clear"}</TabsTrigger>
+        <TabsTrigger value="regular">
+          {chinese ? "常规" : "Regular"}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value={material} keepMounted className="grid gap-3">
         <p role="status" className="text-muted-foreground text-sm">
           {labels[rendering]}
         </p>
@@ -112,25 +91,24 @@ export default function Example({
           </div>
           <GlassSurface
             glass={false}
-            data-glass-exclude=""
             className="rounded-2xl border bg-background p-6 text-foreground"
           >
             <h3>{chinese ? "普通表面" : "Standard surface"}</h3>
             <p className="mt-2 text-muted-foreground text-sm">
               {chinese
-                ? "不采样背景，保持默认外观"
-                : "Keeps the default appearance without sampling the background."}
+                ? "不透出背景，保持默认外观"
+                : "Keeps the default appearance without showing the background."}
             </p>
           </GlassSurface>
           <GlassSurface
-            glassConfig={{ mode: activeMode, captureTarget: scene }}
+            glassConfig={{ material }}
             className="rounded-2xl bg-background p-6 text-foreground"
           >
             <h3>{chinese ? "玻璃表面" : "Glass surface"}</h3>
             <p className="mt-2 text-muted-foreground text-sm">
               {chinese
-                ? "统一的清透材质，保留背景折射与柔和高光"
-                : "Shared clear material with background refraction and soft highlights."}
+                ? "背景折射、材质着色与柔和的边缘高光"
+                : "Background refraction, a material tint and a soft edge highlight."}
             </p>
           </GlassSurface>
         </div>

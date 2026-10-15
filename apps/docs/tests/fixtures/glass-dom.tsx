@@ -1,3 +1,4 @@
+import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { Window } from "happy-dom";
@@ -43,15 +44,25 @@ Object.defineProperty(globalThis, "navigator", {
   value: window.navigator,
   configurable: true,
 });
-let gpuAttempts = 0;
-Object.defineProperty(window.navigator, "gpu", {
-  configurable: true,
-  value: {
-    requestAdapter: async () => {
-      gpuAttempts++;
-      return null;
+// happy-dom cannot paint SVG backdrops, so every attempt falls back to CSS.
+let svgAttempts = 0;
+mock.module("../../../../packages/ui/src/lib/glass/svg-renderer", () => ({
+  SvgGlassRenderer: {
+    create: async () => {
+      svgAttempts++;
+      throw new Error("No SVG backdrop filters");
     },
   },
+}));
+// Reduced transparency keeps the CSS material without requesting SVG.
+let reducedTransparency = true;
+const matchMedia = window.matchMedia.bind(window);
+Object.defineProperty(window, "matchMedia", {
+  configurable: true,
+  value: (query: string) =>
+    query.includes("prefers-reduced-transparency")
+      ? { ...matchMedia(query), matches: reducedTransparency }
+      : matchMedia(query),
 });
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
   value: (type: string) => {
@@ -105,14 +116,15 @@ const { acquireGlass, updateGlassConfiguration } = await import(
   "@workspace/ui/lib/glass/runtime"
 );
 const { glassShadow } = await import("@workspace/ui/lib/glass/edge");
-const { parseGlassColor } = await import("@workspace/ui/lib/glass/contrast");
+const { parseGlassColor } = await import("@workspace/ui/lib/glass/color");
 const pause = () => new Promise((resolve) => setTimeout(resolve, 300));
-const configuration = { mode: "css" as const };
+const configuration = {};
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host as unknown as HTMLElement);
 const buttonRef = createRef<HTMLButtonElement>();
 const inputRef = createRef<HTMLInputElement>();
+const siblingRef = createRef<HTMLButtonElement>();
 let clicked = 0;
 let submitted = 0;
 await act(async () => {
@@ -130,6 +142,9 @@ await act(async () => {
           Copy
         </Button>
         <Input ref={inputRef} name="workspace" defaultValue="Studio" />
+        <Button ref={siblingRef} type="button">
+          Paste
+        </Button>
         <Button id="plain" glass={false} type="button">
           Plain
         </Button>
@@ -148,13 +163,18 @@ assert.equal(
   "glass must preserve the native input ref",
 );
 const buttonScope = buttonRef.current?.getAttribute("data-glass-scope");
-const inputScope = inputRef.current?.getAttribute("data-glass-scope");
+const siblingScope = siblingRef.current?.getAttribute("data-glass-scope");
 assert.ok(buttonScope);
-assert.ok(inputScope);
+assert.ok(siblingScope);
 assert.notEqual(
   buttonScope,
-  inputScope,
+  siblingScope,
   "same inherited settings retain independent requests",
+);
+assert.equal(
+  inputRef.current?.getAttribute("data-glass"),
+  "true",
+  "a field on its own in an enabled scope is a glass field",
 );
 assert.equal(inputRef.current?.name, "workspace");
 assert.equal(inputRef.current?.value, "Studio");
@@ -172,40 +192,42 @@ assert.equal(
   "a type=button glass control cannot submit the surrounding form",
 );
 await pause();
-assert.equal(gpuAttempts, 0, "an explicit CSS scope does not initialize a GPU");
+assert.equal(svgAttempts, 0, "reduced transparency does not request SVG");
 assert.equal(
   buttonRef.current?.dataset.glassState,
   "css",
-  "CSS mode initializes a usable material",
+  "the CSS material is usable on its own",
 );
-assert.equal(buttonRef.current?.style.getPropertyValue("--glass-frame"), "");
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
+  glassShadow([1, 1, 1], [1, 1, 1]),
   "measurement adapts outer shading to the native white surface tint",
 );
 updateGlassConfiguration({
   ...configuration,
   id: buttonScope,
-  options: { highlight: 0 },
+  options: { strength: 30 },
 });
 await pause();
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  "0 0 #0000",
-  "disabling highlights removes outer shading after measurement as well as before hydration",
+  glassShadow([1, 1, 1], [1, 1, 1]),
+  "option updates keep the built-in outer shading",
 );
-assert.equal(buttonRef.current?.style.getPropertyValue("--glass-edge"), "none");
+assert.match(
+  buttonRef.current?.style.getPropertyValue("--glass-edge") ?? "",
+  /^url\("data:image\/svg\+xml/,
+);
 assert.equal(
-  inputRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
+  siblingRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
+  glassShadow([1, 1, 1], [1, 1, 1]),
   "updating one independent request does not change its same-configuration sibling",
 );
 updateGlassConfiguration({ ...configuration, id: buttonScope });
 await pause();
 assert.equal(
   buttonRef.current?.style.getPropertyValue("--glass-initial-edge-shadow"),
-  glassShadow(0.3, [1, 1, 1], [1, 1, 1]),
+  glassShadow([1, 1, 1], [1, 1, 1]),
 );
 await act(async () => root.unmount());
 assert.equal(buttonRef.current, null);
@@ -213,17 +235,15 @@ assert.equal(inputRef.current, null);
 assert.ok(observers.every((observer) => observer.disconnected));
 
 const standaloneRoot = createRoot(host as unknown as HTMLElement);
+reducedTransparency = false;
 await act(async () => {
   standaloneRoot.render(<Button glass>Standalone glass</Button>);
 });
 await pause();
-assert.equal(
-  gpuAttempts,
-  0,
-  "standalone glass defaults to SVG without requesting a GPU",
-);
+assert.equal(svgAttempts, 1, "standalone glass requests SVG refraction");
 assert.equal(host.querySelector("button")?.dataset.glassState, "fallback");
 await act(async () => standaloneRoot.unmount());
+reducedTransparency = true;
 
 const { Toggle } = await import("@workspace/ui/components/toggle");
 const { Switch } = await import("@workspace/ui/components/switch");
@@ -249,11 +269,6 @@ const semanticControls = (checked: boolean) => (
 );
 await act(async () => semanticRoot.render(semanticControls(false)));
 await act(async () => pause());
-assert.equal(
-  gpuAttempts,
-  0,
-  "fixed small controls use CSS without requesting a GPU",
-);
 const semanticToggle = document.getElementById("semantic-toggle");
 const semanticSwitch = semanticHost.querySelector('[data-slot="switch"]');
 assert.ok(semanticToggle instanceof window.HTMLButtonElement);
@@ -275,28 +290,25 @@ await act(async () => pause());
 assert.ok(semanticSwitch.hasAttribute("data-checked"));
 assert.equal(semanticSwitch.getAttribute("aria-checked"), "true");
 assert.equal(
-  semanticSwitch.style.getPropertyValue("--glass-base"),
-  "rgb(0, 88, 204)",
-  "a controlled Switch updates its material without a native input event",
+  semanticSwitch.hasAttribute("data-glass"),
+  false,
+  "a controlled Switch keeps an ordinary track; only a pressed thumb lifts glass",
 );
 await act(async () => semanticRoot.render(semanticControls(false)));
 await act(async () => pause());
-assert.equal(
-  semanticSwitch.style.getPropertyValue("--glass-base"),
-  "rgb(255, 255, 255)",
-);
+assert.equal(semanticSwitch.getAttribute("aria-checked"), "false");
 assert.deepEqual(semanticEvents, { input: 0, change: 0 });
 await act(async () => semanticRoot.unmount());
 semanticStyle.remove();
 
 const tooltipHost = document.createElement("div");
-const beforeTooltipGpu = gpuAttempts;
+const beforeTooltip = svgAttempts;
 document.body.append(tooltipHost);
 const tooltipRoot = createRoot(tooltipHost as unknown as HTMLElement);
 await act(async () => {
   tooltipRoot.render(
     <>
-      <GlassSurface id="tooltip-parent" glassConfig={{ mode: "css" }}>
+      <GlassSurface id="tooltip-parent">
         <TooltipProvider>
           <Tooltip open>
             <TooltipTrigger
@@ -308,8 +320,8 @@ await act(async () => {
           </Tooltip>
         </TooltipProvider>
       </GlassSurface>
-      <GlassSurface id="default-intensity" glassConfig={{ mode: "css" }} />
-      <GlassSurface id="large-intensity" glassConfig={{ mode: "css" }} />
+      <GlassSurface id="default-intensity" />
+      <GlassSurface id="large-intensity" />
     </>,
   );
 });
@@ -325,7 +337,7 @@ for (const id of ["tooltip-parent", "default-intensity", "large-intensity"]) {
 const tooltipParent = document.getElementById("tooltip-parent");
 assert.ok(tooltipParent instanceof window.HTMLElement);
 assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "");
-assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "10%");
+assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "30%");
 assert.equal(
   document.getElementById("tooltip-trigger")?.hasAttribute("data-glass"),
   false,
@@ -342,9 +354,9 @@ assert.equal(
   "a portaled tooltip owns an independent material surface",
 );
 assert.equal(
-  gpuAttempts,
-  beforeTooltipGpu,
-  "portals in explicit CSS mode also avoid GPU requests",
+  svgAttempts,
+  beforeTooltip,
+  "portals under reduced transparency also keep CSS",
 );
 await act(async () => tooltipRoot.unmount());
 
@@ -367,7 +379,6 @@ assert.notEqual(
 );
 const initialRelease = acquireGlass({
   id: "leases",
-  mode: "css",
   options: { tintOpacity: 0 },
 });
 assert.deepEqual(
@@ -385,7 +396,7 @@ pendingSurface.dataset.glassScope = "pending-hydration";
 pendingSurface.dataset.glassMounted = "false";
 pendingSurface.style.backgroundColor = "#ffffff";
 document.body.append(pendingSurface);
-const releasePending = acquireGlass({ id: "pending-hydration", mode: "css" });
+const releasePending = acquireGlass({ id: "pending-hydration" });
 assert.equal(
   pendingSurface.style.getPropertyValue("--glass-base"),
   "",
@@ -402,21 +413,19 @@ releasePending();
 pendingSurface.remove();
 // Translucent caller paint remains eligible for renderer fallback.
 surface.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
-const releaseOne = acquireGlass({ id: "leases", mode: "auto" });
-const releaseTwo = acquireGlass({ id: "leases", mode: "auto" });
+reducedTransparency = false;
+const releaseOne = acquireGlass({ id: "leases", material: "clear" });
+const releaseTwo = acquireGlass({ id: "leases", material: "clear" });
 await pause();
 assert.equal(surface.dataset.glassState, "fallback");
-assert.ok(
-  gpuAttempts > 0,
-  "auto mode attempts GPU initialization before fallback",
-);
+assert.ok(svgAttempts > 1, "surfaces attempt SVG before falling back");
 assert.ok(surface.style.getPropertyValue("--glass-base"));
 surface.style.backgroundColor = "rgba(22, 22, 23, 0.5)";
 await pause();
 assert.equal(
   surface.style.getPropertyValue("--glass-base"),
-  "rgb(43, 43, 44)",
-  "fallback material must recomposite changed caller paint over the glass tint",
+  "rgb(47, 47, 48)",
+  "fallback material must recomposite changed caller paint over the 12% Clear tint",
 );
 releaseOne();
 assert.equal(
@@ -431,13 +440,12 @@ assert.equal(
   "release callbacks must be idempotent",
 );
 releaseTwo();
+reducedTransparency = true;
 assert.equal(surface.dataset.glassState, undefined);
 assert.equal(surface.style.getPropertyValue("--glass-base"), "");
-assert.equal(surface.style.getPropertyValue("--glass-frame"), "");
 assert.ok(observers.every((observer) => observer.disconnected));
 
 const leaseStyle = {
-  "--glass-frame": 'url("caller-frame")',
   "--glass-filter": 'url("#caller-filter")',
   "--glass-edge": "linear-gradient(red, blue)",
   "--glass-initial-edge-shadow": "inset 0 0 1px red",
@@ -450,8 +458,8 @@ leased.dataset.glassScope = "caller-styles";
 for (const [property, value] of Object.entries(leaseStyle))
   leased.style.setProperty(property, value, "important");
 document.body.append(leased);
-const releaseStyleOne = acquireGlass({ id: "caller-styles", mode: "css" });
-const releaseStyleTwo = acquireGlass({ id: "caller-styles", mode: "css" });
+const releaseStyleOne = acquireGlass({ id: "caller-styles" });
+const releaseStyleTwo = acquireGlass({ id: "caller-styles" });
 releaseStyleOne();
 assert.notEqual(
   leased.style.getPropertyValue("--glass-base"),
@@ -464,13 +472,12 @@ for (const [property, value] of Object.entries(leaseStyle)) {
   assert.equal(leased.style.getPropertyPriority(property), "important");
 }
 for (const refresh of [false, true]) {
-  const release = acquireGlass({ id: "caller-styles", mode: "css" });
+  const release = acquireGlass({ id: "caller-styles" });
   leased.style.setProperty("--glass-base", "rgb(70, 80, 90)", "important");
   if (refresh) {
     updateGlassConfiguration({
       id: "caller-styles",
-      mode: "css",
-      options: { highlight: 0 },
+      options: { strength: 30 },
     });
     await pause();
     assert.notEqual(
@@ -501,14 +508,10 @@ transferred.style.borderRadius = "9px";
 transferred.style.setProperty("padding", "4px", "important");
 document.body.append(transferred);
 const originalTransferredStyle = transferred.getAttribute("style");
-const releasePreviousScope = acquireGlass({
-  id: "previous-scope",
-  mode: "css",
-});
+const releasePreviousScope = acquireGlass({ id: "previous-scope" });
 transferred.dataset.glassScope = "next-scope";
 const releaseNextScope = acquireGlass({
   id: "next-scope",
-  mode: "css",
   material: "regular",
 });
 const transferredState = transferred.dataset.glassState;
@@ -523,7 +526,7 @@ assert.equal(
 assert.equal(transferred.getAttribute("style"), transferredPaint);
 await pause();
 assert.equal(transferred.dataset.glassState, "css");
-assert.equal(transferred.style.getPropertyValue("--glass-opacity"), "35%");
+assert.equal(transferred.style.getPropertyValue("--glass-opacity"), "30%");
 releaseNextScope();
 assert.equal(transferred.getAttribute("style"), originalTransferredStyle);
 assert.equal(transferred.dataset.glassState, undefined);
@@ -536,24 +539,26 @@ hidden.dataset.closed = "";
 hidden.dataset.glass = "true";
 hidden.dataset.glassScope = "hidden";
 document.body.append(hidden);
-const beforeHidden = gpuAttempts;
-const releaseHidden = acquireGlass({ id: "hidden", mode: "auto" });
+reducedTransparency = false;
+const beforeHidden = svgAttempts;
+const releaseHidden = acquireGlass({ id: "hidden", material: "clear" });
 await pause();
 assert.equal(
-  gpuAttempts,
+  svgAttempts,
   beforeHidden,
   "hidden surfaces do not initialize an unused renderer",
 );
 hidden.hidden = false;
 await pause();
 assert.equal(
-  gpuAttempts,
+  svgAttempts,
   beforeHidden + 1,
   "a visible closed-state surface initializes enhancement",
 );
 assert.equal(hidden.dataset.glassState, "fallback");
 
 releaseHidden();
+reducedTransparency = true;
 assert.equal(hidden.dataset.glassState, undefined);
 assert.ok(observers.every((observer) => observer.disconnected));
 const { ThemeToggle } = await import("@workspace/ui/components/theme-toggle");
@@ -912,7 +917,8 @@ exampleStyle.remove();
 const capabilityHost = document.createElement("div");
 document.body.append(capabilityHost);
 const capabilityRoot = createRoot(capabilityHost as unknown as HTMLElement);
-const beforeScope = gpuAttempts;
+reducedTransparency = false;
+const beforeScope = svgAttempts;
 const beforeScopeObservers = observers.length;
 const Scope = withGlass(
   (props: { children?: import("react").ReactNode }) => <div {...props} />,
@@ -920,16 +926,16 @@ const Scope = withGlass(
 );
 await act(async () =>
   capabilityRoot.render(
-    <Scope glass glassConfig={{ mode: "auto" }}>
+    <Scope glass>
       <p>No glass mounted yet</p>
     </Scope>,
   ),
 );
 await pause();
 assert.equal(
-  gpuAttempts,
+  svgAttempts,
   beforeScope,
-  "a layout scope without actual surfaces does not request a GPU",
+  "a layout scope without actual surfaces does not request SVG",
 );
 assert.equal(
   observers.length,
@@ -939,20 +945,18 @@ assert.equal(
 assert.equal(capabilityHost.querySelector("[data-glass]"), null);
 await act(async () =>
   capabilityRoot.render(
-    <Button
-      glass
-      id="regular-capability"
-      glassConfig={{ material: "regular", mode: "auto" }}
-    >
+    <Button glass id="regular-capability" glassConfig={{ material: "regular" }}>
       Regular
     </Button>,
   ),
 );
 await pause();
 assert.equal(
-  gpuAttempts,
-  beforeScope,
-  "Regular auto uses SVG then CSS without requesting a GPU",
+  document
+    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
+    ?.getAttribute("data-glass-state"),
+  "fallback",
+  "Regular requests SVG, then keeps CSS where it is unsupported",
 );
 assert.equal(
   document
@@ -964,11 +968,11 @@ assert.equal(
   document
     .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
     ?.style.getPropertyValue("--glass-opacity"),
-  "35%",
+  "30%",
 );
 await act(async () => capabilityRoot.unmount());
 capabilityHost.remove();
 await window.happyDOM.close();
 console.log(
-  "CSS mode avoids GPU work; native refs/form semantics, false override, auto fallback, shared cleanup, and hidden surfaces passed",
+  "reduced transparency avoids SVG work; native refs/form semantics, false override, SVG fallback, shared cleanup, and hidden surfaces passed",
 );

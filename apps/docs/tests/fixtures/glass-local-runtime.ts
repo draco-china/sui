@@ -47,7 +47,11 @@ const documentRemoves = spyOn(document, "removeEventListener");
 const appearance = new window.EventTarget();
 const appearanceAdds = spyOn(appearance, "addEventListener");
 const appearanceRemoves = spyOn(appearance, "removeEventListener");
-Object.defineProperty(window, "matchMedia", { value: () => appearance });
+// Reduced transparency keeps these surfaces on the CSS material.
+Object.defineProperty(window, "matchMedia", {
+  value: (query: string) =>
+    query.includes("reduced-transparency") ? { matches: true } : appearance,
+});
 const discovery = spyOn(document, "querySelectorAll");
 Object.assign(globalThis, {
   window,
@@ -74,16 +78,6 @@ Object.assign(globalThis, {
 Object.defineProperty(globalThis, "navigator", {
   value: window.navigator,
   configurable: true,
-});
-let gpuAttempts = 0;
-Object.defineProperty(window.navigator, "gpu", {
-  configurable: true,
-  value: {
-    requestAdapter: async () => {
-      gpuAttempts++;
-      return null;
-    },
-  },
 });
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
   value: (type: string) => {
@@ -123,8 +117,9 @@ Object.defineProperty(window.HTMLElement.prototype, "getBoundingClientRect", {
     return new window.DOMRect(20, 20, 120, 40);
   },
 });
-const { acquireGlass, refreshGlassTarget, updateGlassConfiguration } =
-  await import("@workspace/ui/lib/glass/runtime");
+const { acquireGlass, refreshGlass, updateGlassConfiguration } = await import(
+  "@workspace/ui/lib/glass/runtime"
+);
 const pause = () => new Promise((resolve) => setTimeout(resolve, 250));
 const makeSurface = (id: string) => {
   const element = document.createElement("div");
@@ -146,14 +141,10 @@ targetA.append(input);
 targetB.append(second);
 const settingsA = {
   id: "local-first",
-  mode: "css" as const,
-  captureTarget: targetA as unknown as HTMLElement,
   options: { tintOpacity: 0.15 },
 };
 const settingsB = {
   id: "local-second",
-  mode: "css" as const,
-  captureTarget: targetB as unknown as HTMLElement,
   options: { tintOpacity: 0.45 },
 };
 const releaseFirst = acquireGlass(settingsA);
@@ -169,29 +160,24 @@ assert.equal(
 for (const observer of observers)
   assert.deepEqual([...observer.observed], [first, second]);
 assert.equal(
-  windowAdds.mock.calls.filter(([type]) => type === "scroll").length,
-  1,
-);
-assert.equal(
   windowAdds.mock.calls.filter(([type]) => type === "resize").length,
   1,
 );
-for (const type of [
-  "input",
-  "change",
-  "load",
-  "timeupdate",
-  "play",
-  "pause",
+const documentEvents = [
   "visibilitychange",
   "pointerover",
   "pointerout",
   "focusin",
   "focusout",
-  "transitionrun",
   "transitionend",
   "transitioncancel",
-])
+];
+assert.deepEqual(
+  [...new Set(documentAdds.mock.calls.map(([name]) => name))].sort(),
+  [...documentEvents].sort(),
+  "the runtime listens only for paint-affecting events",
+);
+for (const type of documentEvents)
   assert.equal(
     documentAdds.mock.calls.filter(([name]) => name === type).length,
     1,
@@ -223,9 +209,16 @@ assert.equal(
 );
 input.type = "checkbox";
 await pause();
+assert.equal(
+  firstClones.mock.calls.length,
+  beforeUnchangedType,
+  "sibling content cannot change a surface's inherited paint",
+);
+targetA.setAttribute("class", "inverted");
+await pause();
 assert.ok(
   firstClones.mock.calls.length > beforeUnchangedType,
-  "an actual input type change still invalidates the material",
+  "an ancestor class change invalidates the material",
 );
 assert.equal(secondClones.mock.calls.length, 0);
 
@@ -243,6 +236,24 @@ assert.equal(
   0,
   "updating one id does not recompute another material",
 );
+const lit = (element: typeof first) =>
+  decodeURIComponent(element.style.getPropertyValue("--glass-edge"));
+// The 120×40 square-cornered surface is lit from its corners by default.
+assert.ok(lit(first).includes("translate(0 0)"), "diagonal is the default");
+updateGlassConfiguration({
+  ...settingsA,
+  edge: "vertical",
+  options: { tintOpacity: 0.25 },
+});
+await pause();
+assert.ok(
+  lit(first).includes("feSpecularLighting"),
+  "switching the edge relights it as the top and bottom bevel",
+);
+assert.ok(lit(second).includes("translate(0 0)"));
+updateGlassConfiguration({ ...settingsA, options: { tintOpacity: 0.25 } });
+await pause();
+assert.ok(lit(first).includes("translate(0 0)"));
 // A targeted background change only updates its own group's material.
 second.style.backgroundColor = "rgba(120, 140, 160, 0.2)";
 await pause();
@@ -265,7 +276,7 @@ assert.equal(
 );
 const firstRefreshReads = firstClones.mock.calls.length;
 const secondRefreshReads = secondClones.mock.calls.length;
-refreshGlassTarget(targetA as unknown as HTMLElement);
+refreshGlass(targetA as unknown as HTMLElement);
 await pause();
 assert.ok(firstClones.mock.calls.length > firstRefreshReads);
 assert.equal(
@@ -274,7 +285,7 @@ assert.equal(
   "refreshing one target preserves another independent request",
 );
 const afterTargetRefresh = firstClones.mock.calls.length;
-refreshGlassTarget({ current: null });
+refreshGlass({ current: null });
 await pause();
 assert.equal(firstClones.mock.calls.length, afterTargetRefresh);
 assert.equal(secondClones.mock.calls.length, secondRefreshReads);
@@ -284,7 +295,7 @@ assert.equal(first.style.getPropertyValue("--glass-base"), "caller-base");
 assert.equal(first.style.getPropertyPriority("--glass-base"), "important");
 assert.equal(first.dataset.glassState, undefined);
 assert.equal(
-  windowRemoves.mock.calls.filter(([type]) => type === "scroll").length,
+  windowRemoves.mock.calls.filter(([type]) => type === "resize").length,
   0,
 );
 assert.ok(observers.every((observer) => !observer.disconnected));
@@ -297,13 +308,11 @@ assert.equal(second.style.getPropertyValue("--glass-opacity"), "44%");
 const replacement = makeSurface("local-replacement");
 const releaseReplacement = acquireGlass({
   id: "local-replacement",
-  mode: "css",
   options: { tintOpacity: 0.6 },
 });
 second.dataset.glassScope = "local-replacement";
 updateGlassConfiguration({
   id: "local-replacement",
-  mode: "css",
   options: { tintOpacity: 0.5 },
 });
 await pause();
@@ -326,28 +335,11 @@ assert.equal(replacement.dataset.glassState, undefined);
 assert.ok(mutations.every((observer) => observer.disconnected));
 assert.ok(observers.every((observer) => observer.disconnected));
 assert.equal(
-  windowRemoves.mock.calls.filter(([type]) => type === "scroll").length,
-  1,
-);
-assert.equal(
   windowRemoves.mock.calls.filter(([type]) => type === "resize").length,
   1,
 );
 assert.equal(appearanceRemoves.mock.calls.length, 1);
-for (const type of [
-  "input",
-  "change",
-  "load",
-  "timeupdate",
-  "visibilitychange",
-  "pointerover",
-  "pointerout",
-  "focusin",
-  "focusout",
-  "transitionrun",
-  "transitionend",
-  "transitioncancel",
-])
+for (const type of documentEvents)
   assert.equal(
     documentRemoves.mock.calls.filter(([name]) => name === type).length,
     1,
@@ -356,11 +348,9 @@ for (const type of [
 const regular = makeSurface("local-regular");
 const releaseRegular = acquireGlass({
   id: "local-regular",
-  mode: "auto",
   material: "regular",
 });
 await pause();
-assert.equal(gpuAttempts, 0, "CSS and Regular never request GPU");
 assert.equal(
   mutations.length,
   2,

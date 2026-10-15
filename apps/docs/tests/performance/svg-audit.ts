@@ -23,7 +23,6 @@ export async function svgFilterAudit() {
         ?.getAttribute("stdDeviation"),
       displacementLayers:
         definition?.querySelectorAll("feDisplacementMap").length,
-      backgroundCapture: "not used by the native SVG renderer",
       pixelAcceptance:
         "Requires external native browser screenshots; DOM metadata is insufficient",
     };

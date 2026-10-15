@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { Editor } from "@workspace/ui/components/editor";
-import type { GlassConfig } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import {
@@ -18,19 +17,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
-import { useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import type { ExampleProps } from "../types";
 export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const id = useId();
-  const scene = useRef<HTMLDivElement>(null);
-  const glassConfig: GlassConfig = { mode: "css", captureTarget: scene };
   const [code, setCode] = useState('const theme = "bamboo";');
   return (
-    <div
-      ref={scene}
-      className="relative isolate grid w-full gap-4 overflow-hidden rounded-2xl bg-muted p-5"
-    >
+    <div className="relative isolate grid w-full gap-4 overflow-hidden rounded-2xl bg-muted p-5">
       <div
         className="absolute inset-0 -z-10 grid grid-cols-3 gap-3 p-3"
         aria-hidden="true"
@@ -48,21 +42,15 @@ export default function Example({ locale }: ExampleProps) {
           </Label>
           <Input
             id={id}
-            glass
-            glassConfig={glassConfig}
             placeholder={chinese ? "输入一些文字" : "Type something"}
           />
         </div>
         <div className="flex flex-wrap gap-2">
           <Popover>
-            <PopoverTrigger
-              render={
-                <Button variant="outline" glass glassConfig={glassConfig} />
-              }
-            >
+            <PopoverTrigger render={<Button variant="outline" glass />}>
               {chinese ? "玻璃浮层" : "Glass popover"}
             </PopoverTrigger>
-            <PopoverContent glass glassConfig={glassConfig}>
+            <PopoverContent glass>
               <p className="text-sm">
                 {chinese
                   ? "浮层保留 SVG 高光与 CSS 磨砂，内容维持清晰"
@@ -71,14 +59,10 @@ export default function Example({ locale }: ExampleProps) {
             </PopoverContent>
           </Popover>
           <Dialog>
-            <DialogTrigger
-              render={
-                <Button variant="outline" glass glassConfig={glassConfig} />
-              }
-            >
+            <DialogTrigger render={<Button variant="outline" glass />}>
               {chinese ? "打开对话框" : "Open dialog"}
             </DialogTrigger>
-            <DialogContent glass glassConfig={glassConfig}>
+            <DialogContent glass>
               <DialogHeader>
                 <DialogTitle>
                   {chinese ? "玻璃对话框" : "Glass dialog"}
@@ -102,8 +86,6 @@ export default function Example({ locale }: ExampleProps) {
         onChange={setCode}
         language="typescript"
         height={180}
-        glass
-        glassConfig={glassConfig}
         labels={
           chinese
             ? {
@@ -128,8 +110,6 @@ export default function Example({ locale }: ExampleProps) {
       <CodeViewer
         code={code}
         lang="typescript"
-        glass
-        glassConfig={glassConfig}
         title={chinese ? "当前代码" : "Current code"}
         maxHeight={160}
         labels={

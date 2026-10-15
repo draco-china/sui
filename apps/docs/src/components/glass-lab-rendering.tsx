@@ -5,10 +5,8 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 function useRenderingStatus(
   scene: RefObject<HTMLDivElement | null>,
   root: RefObject<HTMLDivElement | null>,
-  gpuSurface: RefObject<HTMLElement | null>,
 ) {
   const [counts, setCounts] = useState({
-    vgpu: 0,
     svg: 0,
     css: 0,
     loading: 0,
@@ -34,14 +32,12 @@ function useRenderingStatus(
     });
     const update = () => {
       const next = {
-        vgpu: 0,
         svg: 0,
         css: 0,
         loading: 0,
         fallback: 0,
       };
       const tracked = new Set<Element>();
-      let selectedGpu: HTMLElement | null = null;
       // Portals own independent requests outside the scene's DOM subtree.
       for (const element of document.querySelectorAll<HTMLElement>(
         '[data-glass="true"][data-glass-scope]',
@@ -83,11 +79,7 @@ function useRenderingStatus(
             continue;
         }
         const renderer = element.getAttribute("data-glass-renderer");
-        if (state === "ready" && renderer === "vgpu") {
-          next.vgpu++;
-          if (!selectedGpu || element.dataset.slot === "glass-refraction-probe")
-            selectedGpu = element;
-        } else if (state === "ready" && renderer === "svg") next.svg++;
+        if (state === "ready" && renderer === "svg") next.svg++;
         else if (state === "css") next.css++;
         else if (state === "fallback") {
           next.css++;
@@ -99,7 +91,6 @@ function useRenderingStatus(
           intersection.unobserve(element);
           intersections.delete(element);
         }
-      gpuSurface.current = selectedGpu;
       setCounts((previous) => {
         if (
           Object.keys(next).every(
@@ -139,7 +130,6 @@ function useRenderingStatus(
     update();
     return () => {
       document.removeEventListener("visibilitychange", visibility);
-      gpuSurface.current = null;
       observer.disconnect();
       intersection.disconnect();
       intersections.clear();
@@ -148,56 +138,25 @@ function useRenderingStatus(
       window.removeEventListener("resize", schedule);
       window.cancelAnimationFrame(frame);
     };
-  }, [scene, root, gpuSurface]);
+  }, [scene, root]);
   return counts;
 }
 
-function useFrameRates(gpuSurface: RefObject<HTMLElement | null>) {
-  const [rates, setRates] = useState<{
-    browser: number | null;
-    gpu: number | null;
-  }>({ browser: null, gpu: null });
+/** Page frame rate from requestAnimationFrame callbacks over about a second. */
+function useFrameRate() {
+  const [rate, setRate] = useState<number | null>(null);
   useEffect(() => {
     let frame = 0;
     let start = 0;
-    let browserFrames = 0;
-    let selected: HTMLElement | null = null;
-    let lastUrl = "";
-    let gpuStart = 0;
-    let gpuFrames = 0;
+    let frames = 0;
     const tick = (now: number) => {
       if (!start) start = now;
-      browserFrames++;
-      const candidate = gpuSurface.current;
-      let current: HTMLElement | null = null;
-      if (candidate?.isConnected && candidate.dataset.glassRenderer === "vgpu")
-        current = candidate;
-      if (current !== selected) {
-        selected = current;
-        lastUrl = current?.style.getPropertyValue("--glass-frame") ?? "";
-        gpuFrames = 0;
-        gpuStart = now;
-        setRates((previous) =>
-          previous.gpu === null ? previous : { ...previous, gpu: null },
-        );
-      } else if (current) {
-        const url = current.style.getPropertyValue("--glass-frame");
-        if (url && url !== lastUrl) gpuFrames++;
-        lastUrl = url;
-      }
+      frames++;
       const elapsed = now - start;
       if (elapsed >= 1000) {
-        let gpu: number | null = null;
-        if (selected && now > gpuStart)
-          gpu = Math.round((gpuFrames * 1000) / (now - gpuStart));
-        setRates({
-          browser: Math.round(((browserFrames - 1) * 1000) / elapsed),
-          gpu,
-        });
+        setRate(Math.round(((frames - 1) * 1000) / elapsed));
         start = now;
-        browserFrames = 1;
-        gpuStart = now;
-        gpuFrames = 0;
+        frames = 1;
       }
       frame = window.requestAnimationFrame(tick);
     };
@@ -205,12 +164,8 @@ function useFrameRates(gpuSurface: RefObject<HTMLElement | null>) {
       window.cancelAnimationFrame(frame);
       frame = 0;
       start = 0;
-      browserFrames = 0;
-      selected = null;
-      lastUrl = "";
-      gpuStart = 0;
-      gpuFrames = 0;
-      if (document.hidden) setRates({ browser: null, gpu: null });
+      frames = 0;
+      if (document.hidden) setRate(null);
       else frame = window.requestAnimationFrame(tick);
     };
     visibility();
@@ -219,8 +174,8 @@ function useFrameRates(gpuSurface: RefObject<HTMLElement | null>) {
       window.cancelAnimationFrame(frame);
       document.removeEventListener("visibilitychange", visibility);
     };
-  }, [gpuSurface]);
-  return rates;
+  }, []);
+  return rate;
 }
 
 export function RenderingStatus({
@@ -231,9 +186,8 @@ export function RenderingStatus({
   zh: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null);
-  const gpuSurface = useRef<HTMLElement | null>(null);
-  const counts = useRenderingStatus(scene, root, gpuSurface);
-  const rates = useFrameRates(gpuSurface);
+  const counts = useRenderingStatus(scene, root);
+  const rate = useFrameRate();
   return (
     <div
       ref={root}
@@ -242,10 +196,9 @@ export function RenderingStatus({
       className="space-y-3 text-xs"
     >
       <p className="sr-only">{zh ? "当前可见组件" : "Visible components"}</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {(
           [
-            ["WebGPU", counts.vgpu],
             ["SVG", counts.svg],
             ["CSS", counts.css],
           ] as const
@@ -297,28 +250,10 @@ export function RenderingStatus({
             {zh ? "页面帧率" : "Page frame rate"}
           </span>
           <output aria-live="off" className="font-medium tabular-nums">
-            {rates.browser ?? "—"}{" "}
+            {rate ?? "—"}{" "}
             <span className="text-[10px] text-muted-foreground">FPS</span>
           </output>
         </div>
-        {counts.vgpu > 0 && (
-          <div
-            className="flex items-center justify-between gap-2"
-            title={
-              zh
-                ? "优先统计折射镜片，否则统计首个可见 GPU 表面已提交的新画面；不累加多个组件，也不代表实际显示帧数。"
-                : "New frames committed by the refraction lens, or the first visible GPU surface; surfaces are not added together, and this is not a count of displayed frames."
-            }
-          >
-            <span className="text-muted-foreground">
-              {zh ? "玻璃更新" : "Glass updates"}
-            </span>
-            <output aria-live="off" className="font-medium tabular-nums">
-              {rates.gpu ?? "—"}{" "}
-              <span className="text-[10px] text-muted-foreground">FPS</span>
-            </output>
-          </div>
-        )}
       </div>
     </div>
   );

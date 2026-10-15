@@ -1,8 +1,7 @@
-export const glassMaxBevelWidth = 17;
-export const glassBevelFraction = 0.25;
+// A narrower band keeps small controls from bending half their height.
+export const glassMaxBevelWidth = 12;
+export const glassBevelFraction = 0.15;
 export const glassMaxEdgeClarity = 0.8;
-// Covers maximum GPU displacement (64 × .45 + .45), 2px blur and antialiasing.
-export const glassSamplePadding = 40;
 
 export function glassBevelWidth(width: number, height: number) {
   return Math.min(

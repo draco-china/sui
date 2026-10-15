@@ -508,14 +508,17 @@ function PaginationSeparator({
   );
 }
 
-function PaginationContent({
+function PaginationContentImplementation({
   className,
   ...props
 }: React.ComponentProps<"ul">) {
   return (
     <ul
       data-slot="pagination-content"
-      className={cn("mx-auto flex items-center gap-1", className)}
+      className={cn(
+        "mx-auto flex items-center gap-1 data-[glass=true]:w-fit data-[glass=true]:rounded-4xl data-[glass=true]:p-1",
+        className,
+      )}
       {...props}
     />
   );
@@ -638,7 +641,10 @@ export type {
   PaginationRangeInfo,
 };
 
+// Like ButtonGroup, glass pagination controls form one capsule; the page
+// links of a composed pagination share one capsule too.
 const Pagination = withGlass(PaginationImplementation, "scope");
+const PaginationContent = withGlass(PaginationContentImplementation);
 
 export {
   Pagination,

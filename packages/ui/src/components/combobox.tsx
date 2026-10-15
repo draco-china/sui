@@ -248,7 +248,7 @@ function ComboboxChipsImplementation({
   );
 }
 
-function ComboboxChipImplementation({
+function ComboboxChip({
   className,
   children,
   showRemove = true,
@@ -297,8 +297,7 @@ function useComboboxAnchor() {
 }
 
 const ComboboxContent = withGlass(ComboboxContentImplementation, "portal");
-const ComboboxChips = withGlass(ComboboxChipsImplementation, "control");
-const ComboboxChip = withGlass(ComboboxChipImplementation, "control");
+const ComboboxChips = withGlass(ComboboxChipsImplementation, "field");
 
 export {
   Combobox,

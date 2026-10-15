@@ -10,7 +10,7 @@ import {
   useClipboard,
 } from "../hooks/use-clipboard";
 import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
+import { withoutGlass } from "../lib/glass/context";
 import { CopyIcon } from "./copy-icon";
 
 type InlineCopyTextProps = Omit<
@@ -122,6 +122,6 @@ function InlineCopyTextImplementation({
 
 export type { InlineCopyTextProps };
 
-const InlineCopyText = withGlass(InlineCopyTextImplementation, "control");
+const InlineCopyText = withoutGlass(InlineCopyTextImplementation);
 
 export { InlineCopyText };

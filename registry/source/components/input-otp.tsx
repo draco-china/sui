@@ -5,7 +5,7 @@ import { cn } from "cn";
 import { MinusIcon } from "lucide-react";
 import * as React from "react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 import { type IconNode, MorphIcon } from "@/components/ui/morph-icon";
 
 type InputOTPStatus = "idle" | "loading" | "success" | "error";
@@ -319,7 +319,7 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-function InputOTPSlotImplementation({
+function InputOTPSlot({
   className,
   ...props
 }: React.ComponentProps<typeof OTPField.Input>) {
@@ -354,11 +354,7 @@ function InputOTPSeparator({
     </OTPField.Separator>
   );
 }
-const InputOTP = withGlass(InputOTPImplementation, "scope");
-const InputOTPSlot = withGlass(InputOTPSlotImplementation, "control", {
-  mode: "css",
-  material: "regular",
-});
+const InputOTP = withoutGlass(InputOTPImplementation);
 
 export type { InputOTPProps, InputOTPStatus };
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot };

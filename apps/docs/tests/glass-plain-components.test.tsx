@@ -26,7 +26,6 @@ import {
   BubbleGroup,
 } from "@workspace/ui/components/bubble";
 import { Button } from "@workspace/ui/components/button";
-import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
   Collapsible,
   CollapsibleContent,
@@ -70,7 +69,6 @@ const plainComponents = {
   Field,
   FieldGroup,
   FieldSet,
-  ButtonGroup,
   Collapsible,
   ResizableHandle,
   Avatar,
@@ -88,7 +86,6 @@ const plainComponents = {
   Alert,
   BubbleGroup,
   BubbleContent,
-  QRCode,
 };
 
 // Type checking rejects reintroducing a Glass prop on these public components.
@@ -103,7 +100,6 @@ const noGlassApis: {
   Field: false,
   FieldGroup: false,
   FieldSet: false,
-  ButtonGroup: false,
   Collapsible: false,
   ResizableHandle: false,
   Avatar: false,
@@ -121,7 +117,6 @@ const noGlassApis: {
   Alert: false,
   BubbleGroup: false,
   BubbleContent: false,
-  QRCode: false,
 };
 
 function ambient(children: ReactNode, surface = false) {
@@ -168,9 +163,7 @@ describe("Glass stays on interaction surfaces instead of text and content", () =
               <Input id="field-input" />
             </Field>
           </FieldGroup>
-          <ButtonGroup id="button-group">
-            <Button id="save">Save</Button>
-          </ButtonGroup>
+          <Button id="save">Save</Button>
           <Collapsible id="collapsible" defaultOpen>
             <CollapsibleTrigger render={<Button id="collapse-control" />}>
               Details
@@ -182,21 +175,15 @@ describe("Glass stays on interaction surfaces instead of text and content", () =
         </FieldSet>,
       ),
     );
-    for (const id of [
-      "fieldset",
-      "field-group",
-      "field",
-      "button-group",
-      "collapsible",
-      "key",
-    ])
+    for (const id of ["fieldset", "field-group", "field", "collapsible", "key"])
       expect(tag(html, id)).not.toContain("data-glass=");
-    for (const id of ["field-input", "save", "collapse-control"])
+    for (const id of ["save", "collapse-control"])
       expect(tag(html, id)).toContain('data-glass="true"');
+    // A field on its own in an enabled scope is a glass field.
+    expect(tag(html, "field-input")).toContain('data-glass="true"');
     expect(tag(html, "fieldset")).toMatch(/^<fieldset\b/);
     expect(html).toContain('for="field-input"');
     expect(tag(html, "key")).toMatch(/^<kbd\b/);
-    expect(tag(html, "button-group")).toContain('role="group"');
   });
 
   test("avatar, status and resize parts have no independent material in an enabled scope", () => {
@@ -287,63 +274,33 @@ describe("Glass stays on interaction surfaces instead of text and content", () =
         .map(([value]) => value)
         .find((value) => value.includes('data-slot="qr-code-content"'));
       expect(body).toContain("bg-card");
-      expect(body).not.toContain("bg-transparent");
+      // Only an explicit glass QR code clears its reading area.
+      expect(body).not.toMatch(/\sbg-transparent/);
       expect(html.match(/data-glass="true"/g)?.length ?? 0).toBe(
         parent ? 1 : 0,
       );
     }
   });
 
-  test("Attachment paints only actions and isolates controls placed inside media or content", () => {
-    const html = renderToStaticMarkup(
-      <Attachment glass id="attachment">
-        <AttachmentMedia id="media">
-          <Button id="media-button">Image control</Button>
-        </AttachmentMedia>
-        <AttachmentContent id="content">
-          <AttachmentTitle>File</AttachmentTitle>
-          <Button id="content-button">Content control</Button>
-        </AttachmentContent>
-        <AttachmentActions>
-          <AttachmentAction id="remove" aria-label="Remove" />
-          <AttachmentAction
-            glass={false}
-            id="plain-action"
-            aria-label="Plain"
-          />
-        </AttachmentActions>
-      </Attachment>,
-    );
-    for (const id of [
-      "attachment",
-      "media",
-      "content",
-      "media-button",
-      "content-button",
-      "plain-action",
-    ])
-      expect(tag(html, id)).not.toContain("data-glass=");
-    expect(tag(html, "remove")).toContain('data-glass="true"');
-    expect(tag(html, "remove")).toContain('aria-label="Remove"');
-    expect(tag(html, "attachment")).toContain("bg-card");
-    expect(html.match(/data-glass="true"/g)).toHaveLength(1);
-  });
-
-  test("Attachment explicit opt-out overrides ambient glass without altering actions", () => {
+  test("Attachment and its actions stay ordinary inside ambient glass", () => {
     const html = renderToStaticMarkup(
       ambient(
-        <Attachment glass={false} state="error">
-          <AttachmentContent>
+        <Attachment id="attachment" state="error">
+          <AttachmentMedia id="media">
+            <Button id="media-button">Image control</Button>
+          </AttachmentMedia>
+          <AttachmentContent id="content">
             <AttachmentTitle>Upload failed</AttachmentTitle>
           </AttachmentContent>
           <AttachmentActions>
-            <AttachmentAction aria-label="Retry" />
+            <AttachmentAction id="retry" aria-label="Retry" />
           </AttachmentActions>
         </Attachment>,
       ),
     );
     expectPlain(html);
+    expect(tag(html, "attachment")).toContain("bg-card");
     expect(html).toContain('data-state="error"');
-    expect(html).toContain('aria-label="Retry"');
+    expect(tag(html, "retry")).toContain('aria-label="Retry"');
   });
 });

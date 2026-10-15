@@ -1,9 +1,8 @@
 import { readFile } from "node:fs/promises";
 
 type Measurement = {
-  capture?: { count: number; medianMs: number; p95Ms: number };
-  render?: { count: number; medianMs: number; p95Ms: number };
-  uploads?: number;
+  svgFilter?: { count: number; medianMs: number; p95Ms: number };
+  frames?: { framesPerSecond: number | null; p95Ms: number };
   reactCommits?: number;
   reactActualMs?: number;
   longTasks?: { count: number; totalMs: number };
@@ -29,14 +28,18 @@ function rows(report: Report) {
   for (const [scenario, value] of Object.entries(report)) {
     if (!value || typeof value !== "object") continue;
     const measurement = value as Measurement;
-    for (const name of ["capture", "render"] as const) {
-      const series = measurement[name];
-      if (!series) continue;
-      values.set(`${scenario} / ${name} calls`, series.count);
-      values.set(`${scenario} / ${name} median ms`, series.medianMs);
-      values.set(`${scenario} / ${name} p95 ms`, series.p95Ms);
+    const filter = measurement.svgFilter;
+    if (filter) {
+      values.set(`${scenario} / SVG filter calls`, filter.count);
+      values.set(`${scenario} / SVG filter median ms`, filter.medianMs);
+      values.set(`${scenario} / SVG filter p95 ms`, filter.p95Ms);
     }
-    for (const name of ["uploads", "reactCommits", "reactActualMs"] as const) {
+    const frames = measurement.frames;
+    if (frames?.framesPerSecond != null) {
+      values.set(`${scenario} / frames per second`, frames.framesPerSecond);
+      values.set(`${scenario} / frame p95 ms`, frames.p95Ms);
+    }
+    for (const name of ["reactCommits", "reactActualMs"] as const) {
       const count = measurement[name];
       if (count !== undefined) values.set(`${scenario} / ${name}`, count);
     }

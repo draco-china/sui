@@ -41,15 +41,14 @@ Object.defineProperty(globalThis, "navigator", {
   value: window.navigator,
   configurable: true,
 });
-let gpuAttempts = 0;
-Object.defineProperty(window.navigator, "gpu", {
+// Reduced transparency keeps the CSS material, so no SVG renderer is needed.
+const matchMedia = window.matchMedia.bind(window);
+Object.defineProperty(window, "matchMedia", {
   configurable: true,
-  value: {
-    requestAdapter: async () => {
-      gpuAttempts++;
-      return null;
-    },
-  },
+  value: (query: string) =>
+    query.includes("prefers-reduced-transparency")
+      ? { ...matchMedia(query), matches: true }
+      : matchMedia(query),
 });
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
   value: (type: string) => {
@@ -104,20 +103,23 @@ themed.dataset.glass = "true";
 themed.dataset.glassScope = "theme-material";
 document.body.append(themed);
 const originalThemeStyle = themed.getAttribute("style");
-const themeConfiguration = { id: "theme-material", mode: "css" as const };
+const themeConfiguration = {
+  id: "theme-material",
+  material: "clear" as const,
+};
 const releaseThemed = acquireGlass(themeConfiguration);
 await pause();
-assert.equal(themed.style.getPropertyValue("--glass-opacity"), "10%");
+assert.equal(themed.style.getPropertyValue("--glass-opacity"), "12%");
 assert.equal(themed.style.getPropertyValue("--glass-base"), "rgb(70, 70, 74)");
 updateGlassConfiguration({ ...themeConfiguration, material: "regular" });
 await pause();
-assert.equal(themed.style.getPropertyValue("--glass-opacity"), "35%");
+assert.equal(themed.style.getPropertyValue("--glass-opacity"), "30%");
 updateGlassConfiguration(themeConfiguration);
 materialRules.textContent = `
   .theme-material { --input: rgb(199, 199, 204); background-color: rgba(199, 199, 204, 0.5); }
 `;
 await pause();
-assert.equal(themed.style.getPropertyValue("--glass-opacity"), "10%");
+assert.equal(themed.style.getPropertyValue("--glass-opacity"), "12%");
 assert.equal(
   themed.style.getPropertyValue("--glass-base"),
   "rgb(199, 199, 204)",
@@ -127,7 +129,8 @@ themed.style.background = "rgba(199, 199, 204, 0.2)";
 await pause();
 assert.ok(
   Math.abs(
-    Number.parseFloat(themed.style.getPropertyValue("--glass-opacity")) - 28,
+    // 20% paint plus the 12% Clear tint over the remaining 80%.
+    Number.parseFloat(themed.style.getPropertyValue("--glass-opacity")) - 29.6,
   ) < 0.01,
 );
 updateGlassConfiguration({
@@ -141,7 +144,7 @@ await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "0%");
 updateGlassConfiguration(themeConfiguration);
 await pause();
-assert.equal(themed.style.getPropertyValue("--glass-opacity"), "10%");
+assert.equal(themed.style.getPropertyValue("--glass-opacity"), "12%");
 themed.style.setProperty("background-color", "rgb(120, 120, 120)", "important");
 await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "100%");
@@ -160,7 +163,6 @@ assert.equal(themed.getAttribute("style") || null, originalThemeStyle);
 themed.remove();
 materialRules.remove();
 
-assert.equal(gpuAttempts, 0);
 assert.ok(observers.every((observer) => observer.disconnected));
 await window.happyDOM.close();
 console.log("native theme material, explicit caller paint and cleanup passed");

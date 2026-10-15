@@ -1,12 +1,8 @@
 "use client";
 
 import { cn } from "cn";
-import { withGlass } from "@/lib/glass/context";
 
-function SkeletonImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="skeleton"
@@ -15,10 +11,5 @@ function SkeletonImplementation({
     />
   );
 }
-
-const Skeleton = withGlass(SkeletonImplementation, "surface", {
-  mode: "css",
-  material: "regular",
-});
 
 export { Skeleton };

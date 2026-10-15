@@ -87,6 +87,18 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="card-rtl" previewClassName="h-[30rem]" direction="rtl" />
 
+## Glass
+
+Cards are content and stay ordinary inside glass, so their own controls keep their styles while menus they open still use glass. Pass `glass` to make a card a glass surface, such as a widget over media; its controls then share the card's material.
+
+```tsx
+<Card glass>
+  <CardHeader>
+    <CardTitle>24°</CardTitle>
+  </CardHeader>
+</Card>
+```
+
 ## API Reference
 
 ### Card
@@ -96,6 +108,8 @@ The `Card` component is the root container for card content.
 | Prop        | Type                | Default     |
 | ----------- | ------------------- | ----------- |
 | `size`      | `"default" \| "sm"` | `"default"` |
+| `glass`     | `boolean`           | `false`     |
+| `glassConfig` | `GlassConfig`     | -           |
 | `className` | `string`            | -           |
 
 ### CardHeader

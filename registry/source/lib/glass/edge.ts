@@ -1,3 +1,5 @@
+import { type GlassEdge, glassDefaultEdge } from "@/lib/glass/defaults";
+
 export function glassRadii(
   width: number,
   height: number,
@@ -41,30 +43,107 @@ function surfaceBrightness(
   return background ? brightness(background) : 1 - brightness(foreground);
 }
 
-export function glassEdge(
+type Corner = { x: number; y: number };
+
+/** Rounded outline inset by a distance, following elliptical corners. */
+function outlinePath(
   width: number,
   height: number,
-  radii: [string, string, string, string],
-  highlight: number,
-  color: readonly number[] = [1, 1, 1],
-  background?: readonly number[],
+  corners: Corner[],
+  requestedInset: number,
 ) {
-  if (highlight <= 0 || width <= 0 || height <= 0) return "none";
-  const corners = glassRadii(width, height, radii);
-  const outline = (requestedInset: number) => {
-    const inset = Math.min(requestedInset, width / 2, height / 2);
-    const [tl, tr, br, bl] = corners.map((radius) => ({
-      x: Math.max(0, radius.x - inset),
-      y: Math.max(0, radius.y - inset),
-    }));
-    const right = width - inset;
-    const bottom = height - inset;
-    return `M${inset + tl.x} ${inset}H${right - tr.x}A${tr.x} ${tr.y} 0 0 1 ${right} ${inset + tr.y}V${bottom - br.y}A${br.x} ${br.y} 0 0 1 ${right - br.x} ${bottom}H${inset + bl.x}A${bl.x} ${bl.y} 0 0 1 ${inset} ${bottom - bl.y}V${inset + tl.y}A${tl.x} ${tl.y} 0 0 1 ${inset + tl.x} ${inset}Z`;
-  };
-  const opacity =
-    Math.min(1, highlight * 1.7) *
-    (0.9 - surfaceBrightness(color, background) * 0.25);
-  const bevel = Math.min(2.5, Math.min(width, height) * 0.045);
+  const inset = Math.min(requestedInset, width / 2, height / 2);
+  const [tl, tr, br, bl] = corners.map((radius) => ({
+    x: Math.max(0, radius.x - inset),
+    y: Math.max(0, radius.y - inset),
+  }));
+  const right = width - inset;
+  const bottom = height - inset;
+  return `M${inset + tl.x} ${inset}H${right - tr.x}A${tr.x} ${tr.y} 0 0 1 ${right} ${inset + tr.y}V${bottom - br.y}A${br.x} ${br.y} 0 0 1 ${right - br.x} ${bottom}H${inset + bl.x}A${bl.x} ${bl.y} 0 0 1 ${inset} ${bottom - bl.y}V${inset + tl.y}A${tl.x} ${tl.y} 0 0 1 ${inset + tl.x} ${inset}Z`;
+}
+
+type EdgeShape = {
+  width: number;
+  height: number;
+  corners: Corner[];
+  opacity: number;
+  pixelRatio: number;
+};
+
+/**
+ * The SUI 1.1 rim: a thin stroke lit from the top-left and bottom-right
+ * corners, fading along the sides.
+ */
+function diagonalEdge(
+  { width, height, corners, opacity, pixelRatio }: EdgeShape,
+  color: readonly number[],
+) {
+  const density = Math.max(pixelRatio, 1);
+  // The 1.1 stroke up to 2x, narrowing continuously on denser phone screens.
+  const line = Math.min(0.9, Math.max(0.6, 1.8 / density));
+  const softness = 0.55 * Math.min(1, 2 / density);
+  const stroke = `rgb(${color
+    .slice(0, 3)
+    .map((channel) => Math.round((0.8 + channel * 0.2) * 255))
+    .join(" ")})`;
+  const [topLeft, , bottomRight] = corners;
+  // Each light sits on its corner arc and reaches along both adjacent sides.
+  const arc = 1 - Math.SQRT1_2;
+  const reach = Math.max(12, Math.min(width, height) * 0.7);
+  const reachX = Math.max(reach, width * 0.65);
+  const reachY = Math.max(reach, height * 0.65);
+  const lights = [
+    { x: topLeft.x * arc, y: topLeft.y * arc, opacity },
+    {
+      x: width - bottomRight.x * arc,
+      y: height - bottomRight.y * arc,
+      opacity: opacity * 0.7,
+    },
+  ];
+  const outline = outlinePath(width, height, corners, line * (0.65 / 0.9));
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <defs>
+      ${lights
+        .map(
+          (
+            light,
+            index,
+          ) => `<radialGradient id="light${index}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(${light.x} ${light.y}) scale(${reachX} ${reachY})">
+        <stop stop-color="${stroke}" stop-opacity=".85"/>
+        <stop offset=".5" stop-color="${stroke}" stop-opacity=".36"/>
+        <stop offset=".85" stop-color="${stroke}" stop-opacity=".06"/>
+        <stop offset="1" stop-color="${stroke}" stop-opacity="0"/>
+      </radialGradient>`,
+        )
+        .join("")}
+      <filter id="soft" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="${softness}"/>
+      </filter>
+    </defs>
+    ${lights
+      .map(
+        (light, index) =>
+          `<path d="${outline}" fill="none" stroke="url(#light${index})" stroke-width="${line}" opacity="${light.opacity}" filter="url(#soft)"/>`,
+      )
+      .join("")}
+  </svg>`;
+}
+
+/** The SUI 1.3 bevel, lit by top and bottom reflections. */
+function verticalEdge({
+  width,
+  height,
+  corners,
+  opacity,
+  pixelRatio,
+}: EdgeShape) {
+  const outline = (inset: number) => outlinePath(width, height, corners, inset);
+  // Tiny surfaces such as a pressed Switch or Slider thumb keep a visible rim.
+  const bevel = Math.min(2.5, Math.max(1.25, Math.min(width, height) * 0.045));
+  // Small controls on 1x screens would light a sub-pixel band that breaks into dots,
+  // so the height map keeps at least about one device pixel.
+  const device = 1 / Math.max(pixelRatio, 1);
+  const softness = Math.max(bevel * 0.46, device * 0.6);
   const reflections = [
     { id: "top", azimuth: 270, opacity, stops: [0.95, 0.72, 0.5] },
     {
@@ -77,7 +156,7 @@ export function glassEdge(
   // A blurred silhouette supplies bevel normals. Lighting varies through its thickness,
   // rather than painting a constant-width bright stroke around the whole surface.
   // Saturated band coverage clips the feather without dimming subpixel bevels twice.
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
     <defs>
       <clipPath id="inside"><path d="${outline(0)}"/></clipPath>
       <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
@@ -100,8 +179,8 @@ export function glassEdge(
         <rect width="${width}" height="${height}" fill="url(#${id}Fade)"/>
       </mask>
       <filter id="${id}Reflection" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="${bevel * 0.46}" result="height"/>
-        <feSpecularLighting in="height" surfaceScale="${bevel * 1.12}" specularConstant="1.6" specularExponent="26" lighting-color="white">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="${softness}" result="height"/>
+        <feSpecularLighting in="height" surfaceScale="${softness * (1.12 / 0.46)}" specularConstant="1.6" specularExponent="26" lighting-color="white">
           <feDistantLight azimuth="${azimuth}" elevation="32"/>
         </feSpecularLighting>
         <feComposite in2="SourceAlpha" operator="in"/>
@@ -120,20 +199,66 @@ export function glassEdge(
         .join("")}
     </g>
   </svg>`;
+}
+
+export type GlassEdgeOptions = {
+  /** Built-in strength from {@link glassHighlight}. */
+  highlight: number;
+  style?: GlassEdge;
+  /** Foreground color, which tints the diagonal rim. */
+  color?: readonly number[];
+  /** Surface tint, which dims the vertical bevel over bright materials. */
+  background?: readonly number[];
+  pixelRatio?: number;
+};
+
+/** The edge highlight as a CSS background image. */
+export function glassEdge(
+  width: number,
+  height: number,
+  radii: [string, string, string, string],
+  {
+    highlight,
+    style = glassDefaultEdge,
+    color = [1, 1, 1],
+    background,
+    pixelRatio = 1,
+  }: GlassEdgeOptions,
+) {
+  if (highlight <= 0 || width <= 0 || height <= 0) return "none";
+  const shape = {
+    width,
+    height,
+    corners: glassRadii(width, height, radii),
+    pixelRatio,
+  };
+  const svg =
+    style === "vertical"
+      ? verticalEdge({
+          ...shape,
+          opacity:
+            Math.min(1, highlight * 1.7) *
+            (0.9 - surfaceBrightness(color, background) * 0.25),
+        })
+      : diagonalEdge({ ...shape, opacity: Math.min(1, highlight * 2) }, color);
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
+/** Edge highlight strength: full from 2x, dimmer where device pixels are larger. */
+export function glassHighlight(pixelRatio = 1) {
+  return Math.min(0.3, Math.max(0.15, 0.15 * pixelRatio));
+}
+
 export function glassShadow(
-  highlight: number,
   color: readonly number[] = [1, 1, 1],
   background?: readonly number[],
 ) {
-  if (highlight <= 0) return "0 0 #0000";
   const opacity = Number(
     Math.min(
-      (highlight / 3) * (1 + surfaceBrightness(color, background) * 0.3),
+      0.1 * (1 + surfaceBrightness(color, background) * 0.3),
       0.28,
     ).toFixed(3),
   );
-  return `1px -1px 2px -0.5px rgb(0 0 0 / ${opacity}), -1px 1px 2px -0.5px rgb(0 0 0 / ${Number((opacity * 0.7).toFixed(3))})`;
+  // One soft drop shadow: two diagonal offsets read as a dark ring on small screens.
+  return `0 1px 3px -1px rgb(0 0 0 / ${opacity})`;
 }

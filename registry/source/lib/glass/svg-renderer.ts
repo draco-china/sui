@@ -4,16 +4,28 @@ import {
   glassRefractionProfile,
   glassRefractionStrength,
 } from "@/lib/glass/refraction";
-import type { GlassFrame } from "@/lib/glass/renderer";
 
-export type SvgGlassGeometry = Pick<
-  GlassFrame,
-  "width" | "height" | "radius" | "radiusY" | "strength"
->;
+type Corners = [number, number, number, number];
+
+export type SvgGlassGeometry = {
+  width: number;
+  height: number;
+  /** Horizontal corner radii: top-left, top-right, bottom-right, bottom-left. */
+  radius: Corners;
+  /** Vertical corner radii for elliptical corners; defaults to `radius`. */
+  radiusY?: Corners;
+  strength: number;
+  blur?: number;
+};
 
 let filterSequence = 0;
 
-function roundedDistance(x: number, y: number, frame: SvgGlassGeometry) {
+/** Signed distance to the rounded outline: negative inside, positive outside. */
+export function glassRoundedDistance(
+  x: number,
+  y: number,
+  frame: SvgGlassGeometry,
+) {
   const { width, height, radius } = frame;
   const vertical = frame.radiusY ?? radius;
   let distance = Math.max(-x, x - width, -y, y - height);
@@ -52,13 +64,15 @@ function roundedDistance(x: number, y: number, frame: SvgGlassGeometry) {
 }
 
 function glassOptics(x: number, y: number, frame: SvgGlassGeometry) {
-  const distance = roundedDistance(x, y, frame);
+  const distance = glassRoundedDistance(x, y, frame);
   const bevelWidth = glassBevelWidth(frame.width, frame.height);
   if (distance <= -bevelWidth) return [0, 0, 0];
   const gradientX =
-    roundedDistance(x + 0.4, y, frame) - roundedDistance(x - 0.4, y, frame);
+    glassRoundedDistance(x + 0.4, y, frame) -
+    glassRoundedDistance(x - 0.4, y, frame);
   const gradientY =
-    roundedDistance(x, y + 0.4, frame) - roundedDistance(x, y - 0.4, frame);
+    glassRoundedDistance(x, y + 0.4, frame) -
+    glassRoundedDistance(x, y - 0.4, frame);
   const length = Math.hypot(gradientX, gradientY) || 1;
   const bevel = glassRefractionProfile(Math.max(-distance, 0), bevelWidth);
   let dx = (-gradientX / length) * bevel * 0.45;
@@ -90,6 +104,11 @@ function glassOptics(x: number, y: number, frame: SvgGlassGeometry) {
       0.45;
   }
   return [dx, dy, clarity];
+}
+
+/** Share of the sharp edge layer kept at a device pixel ratio. */
+export function glassEdgeDensity(pixelRatio = 1) {
+  return pixelRatio >= 2 ? 1 : 0.4;
 }
 
 export function glassDisplacement(
@@ -210,12 +229,16 @@ export class SvgGlassRenderer {
       )
     )
       throw new Error("Invalid SVG glass geometry");
+    // Displacing the unblurred backdrop aliases on low-density screens.
+    const density = glassEdgeDensity(window.devicePixelRatio);
     const key = JSON.stringify([
       frame.width,
       frame.height,
       frame.radius,
       frame.radiusY,
       frame.strength,
+      frame.blur,
+      density,
     ]);
     let entry = this.filters.get(element);
     if (!entry) {
@@ -246,8 +269,10 @@ export class SvgGlassRenderer {
       const strength = glassRefractionStrength(frame.strength, width, height);
       const clarity =
         Math.min(strength / glassBevelWidth(width, height), 1) *
-        glassMaxEdgeClarity;
-      const margin = frame.strength + 4 * 3 + 2;
+        glassMaxEdgeClarity *
+        density;
+      const blur = frame.blur ?? 4;
+      const margin = frame.strength + blur * 3 + 2;
       const filter = entry.filter;
       filter.setAttribute("filterUnits", "userSpaceOnUse");
       filter.setAttribute("x", String(-margin));
@@ -257,7 +282,8 @@ export class SvgGlassRenderer {
       filter.setAttribute("color-interpolation-filters", "sRGB");
       // SourceGraphic is the live browser backdrop. Only the geometric normal
       // map is encoded; there is no DOM snapshot or background PNG here.
-      filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blurred"/><feImage href="${normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feDisplacementMap in="SourceGraphic" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="sharp"/><feColorMatrix in="encoded" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0" result="clarity"/><feComposite in="sharp" in2="clarity" operator="in" result="edge"/><feComposite in="edge" in2="refracted" operator="over" result="combined"/><feColorMatrix in="combined" type="saturate" values="1.12"/>`;
+      // Material saturation follows in CSS after this filter.
+      filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="blurred"/><feImage href="${normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feDisplacementMap in="SourceGraphic" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="sharp"/><feColorMatrix in="encoded" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0" result="clarity"/><feComposite in="sharp" in2="clarity" operator="in" result="edge"/><feComposite in="edge" in2="refracted" operator="over"/>`;
       entry.key = key;
     }
     return `url("#${entry.filter.id}")`;

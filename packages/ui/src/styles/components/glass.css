@@ -105,11 +105,11 @@
 
 [data-glass="true"][data-glass-state] {
   --glass-edge: none;
-  --glass-frame: none;
   --glass-initial-edge-shadow: initial;
+  --glass-backdrop-blur: 6px;
   background-color: color-mix(
     in srgb,
-    var(--glass-base, var(--popover)) var(--glass-opacity, 10%),
+    var(--glass-base, var(--popover)) var(--glass-opacity, 12%),
     transparent
   );
   --glass-initial-edge-color: color-mix(
@@ -123,10 +123,10 @@
       inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),
       inset -0.8px -0.8px 0.4px -0.6px
         color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),
-      1px -1px 2px -0.5px rgb(0 0 0 / 0.1),
-      -1px 1px 2px -0.5px rgb(0 0 0 / 0.07)
+      0 1px 3px -1px rgb(0 0 0 / 0.1)
     ),
-    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+    var(--glass-press, 0 0 #0000), var(--tw-inset-shadow, 0 0 #0000),
+    var(--tw-inset-ring-shadow, 0 0 #0000),
     var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow, 0 0 #0000);
   background-image: var(--glass-edge, none);
@@ -134,38 +134,85 @@
   background-repeat: no-repeat;
   background-origin: border-box;
   background-clip: border-box;
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
+  -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.3);
 }
 
+/* Regular frosts the backdrop more than Clear; both share the edge light.
+   Only variables change here, so SVG refraction still applies. */
 [data-glass="true"][data-glass-state][data-glass-material="regular"] {
-  --glass-opacity: 35%;
+  --glass-opacity: 30%;
+  --glass-backdrop-blur: 16px;
 }
 
-[data-slot="tab-bar-indicator"][data-glass="true"] {
-  background-color: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+/* Glass shows the backdrop through, so bright, busy content can wash out its
+   text, most of all through Clear. Text carries a soft glow in the
+   material's own tint, like a little extra frost right behind the glyphs:
+   dark behind light text, light behind dark text. It stays invisible where
+   the backdrop already matches the tint and only shows where the backdrop
+   fights the text. Secondary text also moves toward the foreground. */
+[data-glass="true"][data-glass-state] {
+  --glass-halo: var(--glass-base, var(--popover));
+  text-shadow:
+    0 0 0.2em color-mix(in srgb, var(--glass-halo) 90%, transparent),
+    0 0 0.5em color-mix(in srgb, var(--glass-halo) 70%, transparent),
+    0 0 1em color-mix(in srgb, var(--glass-halo) 50%, transparent);
+
+  /* Ordinary buttons and fields keep crisp labels, as most browser styles
+     already set, so a filled button's label never glows. */
+  & :where(button, input, select, textarea):not([data-glass-state]) {
+    text-shadow: none;
+  }
+
+  & :where(.text-muted-foreground) {
+    color: color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground));
+  }
+
+  /* Placeholders strengthen less, so they stay lighter than real values. */
+  &::placeholder,
+  & ::placeholder {
+    color: color-mix(in oklab, var(--muted-foreground) 65%, var(--foreground));
+  }
+
+  /* Icons take the same glow; only icons, so QR codes and charts stay crisp. */
+  & :where(svg.lucide) {
+    filter: drop-shadow(
+        0 0 3px color-mix(in srgb, var(--glass-halo) 80%, transparent)
+      )
+      drop-shadow(
+        0 0 6px color-mix(in srgb, var(--glass-halo) 50%, transparent)
+      );
+  }
 }
 
-[data-glass="true"][data-glass-state="ready"]:where(
-  [data-glass-renderer="vgpu"]
+/* Grouped buttons share their group's capsule: plain segments and fields
+   drop their own fill and border, and hover, focus or an open menu shows a
+   light wash instead of a solid block. Primary actions keep theirs. Variants,
+   not slots, identify buttons rendered as menu or popover triggers. */
+[data-slot="button-group"]:is([data-glass="true"], [data-glass-part="surface"])
+> :is(
+  [data-variant="outline"],
+  [data-variant="secondary"],
+  [data-variant="ghost"],
+  [data-slot="button-group-text"],
+  [data-slot="input"],
+  [data-slot="select-trigger"]
 ) {
   background-color: transparent;
-  background-image: var(--glass-edge, none), var(--glass-frame, none);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  border-color: transparent;
 }
 
-[data-glass="true"][data-glass-state="ready"]:where(
-  [data-glass-renderer="svg"]
-) {
-  -webkit-backdrop-filter: var(--glass-filter);
-  backdrop-filter: var(--glass-filter);
-}
-
-[data-glass="true"][data-glass-state="fallback"] {
-  background-image: var(--glass-edge, none);
+[data-slot="button-group"]:is([data-glass="true"], [data-glass-part="surface"])
+  > :is(
+    [data-variant="outline"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-slot="input"],
+    [data-slot="select-trigger"]
+  ):is(:hover, :focus-visible, [aria-expanded="true"]):not(:disabled),
+[data-slot="pagination-content"][data-glass="true"]
+  [data-slot="pagination-link"]:not([data-active="true"]):hover {
+  background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
 /* Separators inside glass use a translucent foreground line that follows the
@@ -175,6 +222,104 @@
   [data-slot="resizable-handle"]
 ) {
   background-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+/* Glass fields brighten slightly while focused instead of drawing a ring. */
+[data-glass="true"]:is(
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="input-group"],
+  [data-slot="sensitive-input"],
+  [data-slot="select-trigger"],
+  [data-slot="combobox-chips"],
+  [data-slot="tag-input"]
+):focus-within {
+  --glass-press: inset 0 0 0 100vmax rgb(255 255 255 / 0.08);
+}
+
+/* Pressed glass controls also brighten briefly, like Apple glass buttons;
+   Button's press bloom applies with or without glass. */
+[data-glass="true"]:is(button, [role="button"], a[href]):not(
+  :disabled,
+  [aria-disabled="true"]
+) {
+  transition-property: color, background-color, box-shadow, scale;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:active {
+    --glass-press: inset 0 0 0 100vmax rgb(255 255 255 / 0.1);
+  }
+}
+
+/* Floating glass layers cast one soft, diffuse shadow, as on Apple platforms,
+   in place of stacked utility shadows. */
+[data-glass="true"]:is(
+  [data-slot="alert-dialog-content"],
+  [data-slot="combobox-content"],
+  [data-slot="context-menu-content"],
+  [data-slot="context-menu-sub-content"],
+  [data-slot="dialog-content"],
+  [data-slot="drawer-content"],
+  [data-slot="drawer-popup"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="hover-card-content"],
+  [data-slot="menubar-content"],
+  [data-slot="menubar-sub-content"],
+  [data-slot="navigation-menu-popup"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="sheet-content"],
+  [data-slot="tab-bar-list"],
+  [data-slot="toast"],
+  [data-slot="tooltip-content"]
+) {
+  --tw-shadow:
+    0 14px 36px -14px rgb(0 0 0 / 0.24), 0 2px 8px -4px rgb(0 0 0 / 0.08);
+}
+
+.dark
+  [data-glass="true"]:is(
+    [data-slot="alert-dialog-content"],
+    [data-slot="combobox-content"],
+    [data-slot="context-menu-content"],
+    [data-slot="context-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="drawer-content"],
+    [data-slot="drawer-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="hover-card-content"],
+    [data-slot="menubar-content"],
+    [data-slot="menubar-sub-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="popover-content"],
+    [data-slot="select-content"],
+    [data-slot="sheet-content"],
+    [data-slot="tab-bar-list"],
+    [data-slot="toast"],
+    [data-slot="tooltip-content"]
+  ) {
+  --tw-shadow:
+    0 14px 36px -14px rgb(0 0 0 / 0.5), 0 2px 8px -4px rgb(0 0 0 / 0.2);
+}
+
+[data-slot="tab-bar-indicator"][data-glass="true"] {
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+[data-glass="true"][data-glass-state="ready"]:where(
+  [data-glass-renderer="svg"]
+) {
+  -webkit-backdrop-filter: var(--glass-filter) saturate(1.3);
+  backdrop-filter: var(--glass-filter) saturate(1.3);
+}
+
+[data-glass="true"][data-glass-state="fallback"] {
+  background-image: var(--glass-edge, none);
 }
 
 @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
@@ -212,6 +357,15 @@
     --glass-initial-edge-shadow: 0 0 #0000;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+    text-shadow: none;
+  }
+
+  [data-glass="true"][data-glass-state] :where(.text-muted-foreground) {
+    color: revert-layer;
+  }
+
+  [data-glass="true"][data-glass-state] :where(svg.lucide) {
+    filter: revert-layer;
   }
 
   :is([data-glass="true"], [data-glass-part])
@@ -219,5 +373,10 @@
       [data-slot="resizable-handle"]
     ) {
     background-color: revert-layer;
+  }
+
+  [data-glass="true"][data-glass-state]::placeholder,
+  [data-glass="true"][data-glass-state] ::placeholder {
+    color: revert-layer;
   }
 }

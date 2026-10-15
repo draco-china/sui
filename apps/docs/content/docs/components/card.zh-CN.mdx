@@ -87,6 +87,18 @@ Card
 
 <ComponentPreview name="card-rtl" previewClassName="h-[30rem]" direction="rtl" />
 
+## 玻璃 [#glass]
+
+卡片属于内容，在玻璃中保持普通样式：自身控件保留原有样式，打开的菜单仍使用玻璃。传入 `glass` 可让卡片成为玻璃表面，例如媒体之上的小组件，此时卡片内的控件共用其材质。
+
+```tsx
+<Card glass>
+  <CardHeader>
+    <CardTitle>24°</CardTitle>
+  </CardHeader>
+</Card>
+```
+
 ## API 参考 [#api-reference]
 
 ### 卡片组合 [#card]
@@ -96,6 +108,8 @@ Card
 | 属性|类型 |默认 |
 | ----------- | ------------------- | ----------- |
 | `size` | `"default" \| "sm"` | `"default"` |
+| `glass` | `boolean` | `false` |
+| `glassConfig` | `GlassConfig` | - |
 | `className` | `string` | - |
 
 ### CardHeader [#cardheader]

@@ -59,11 +59,10 @@ test("Button and Toggle execute Base UI state class callbacks", () => {
   expect(toggle).toContain("group/toggle");
 });
 
-test("chart content forwards native and glass attributes without leaking Recharts configuration", () => {
+test("chart content forwards native attributes without leaking Recharts configuration", () => {
   const tooltip = renderToStaticMarkup(
     <ChartContainer config={{ count: { label: "Count" } }}>
       <ChartTooltipContent
-        glass
         active
         payload={[
           {
@@ -83,7 +82,7 @@ test("chart content forwards native and glass attributes without leaking Rechart
   );
   expect(tooltip).toContain('id="tooltip-probe"');
   expect(tooltip).toContain('aria-label="Count details"');
-  expect(tooltip).toContain('data-glass="true"');
+  expect(tooltip).not.toContain("data-glass");
   expect(tooltip).toContain("max-width:240px");
   expect(tooltip).not.toContain('offset="12"');
   expect(tooltip).not.toContain("animationDuration=");

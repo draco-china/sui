@@ -4,7 +4,6 @@ import { cn } from "cn";
 import * as React from "react";
 import type { TooltipValueType } from "recharts";
 import * as RechartsPrimitive from "recharts";
-import { withGlass } from "../lib/glass/context";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -164,7 +163,7 @@ function chartDomProps(props: object): React.ComponentProps<"div"> {
   );
 }
 
-function ChartTooltipContentImplementation({
+function ChartTooltipContent({
   active,
   payload,
   className,
@@ -416,8 +415,6 @@ function getPayloadConfigFromPayload(
 
   return configLabelKey in config ? config[configLabelKey] : config[key];
 }
-
-const ChartTooltipContent = withGlass(ChartTooltipContentImplementation);
 
 export {
   ChartContainer,

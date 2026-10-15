@@ -260,8 +260,8 @@ function App() {
           <InputOTPSlot />
         </InputOTPGroup>
       </InputOTP>
-      <label htmlFor="glass">Glass code</label>
-      <InputOTP id="glass" length={2} glass>
+      <label htmlFor="styled">Styled code</label>
+      <InputOTP id="styled" length={2}>
         <InputOTPGroup>
           <InputOTPSlot
             style={(state) => ({ opacity: state.filled ? 0.9 : 0.8 })}
@@ -574,13 +574,13 @@ assert.equal(
   "154321",
 );
 assert.equal(
-  document.querySelector("#glass")?.getAttribute("data-glass"),
-  "true",
+  document.querySelector("#styled")?.hasAttribute("data-glass"),
+  false,
 );
-const glassSlot = document.querySelector("#glass") as HTMLInputElement;
-assert.equal(glassSlot.style.opacity, "0.8");
-await interact(() => paste(glassSlot, "42"));
-assert.equal(glassSlot.style.opacity, "0.9");
+const styledSlot = document.querySelector("#styled") as HTMLInputElement;
+assert.equal(styledSlot.style.opacity, "0.8");
+await interact(() => paste(styledSlot, "42"));
+assert.equal(styledSlot.style.opacity, "0.9");
 await interact(() => inputRef.current?.focus());
 await interact(() => setStatus("loading"));
 await interact(() => setStatus("idle"));

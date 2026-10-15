@@ -31,7 +31,6 @@ export function GlassRefractionProbe({
   const position = useRef<Position | null>(null);
   const drag = useRef<Drag | null>(null);
   const [coordinates, setCoordinates] = useState<Position | null>(null);
-  const [moving, setMoving] = useState(false);
   const description = useId();
 
   const moveTo = useCallback(
@@ -90,7 +89,6 @@ export function GlassRefractionProbe({
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     event.currentTarget.focus({ preventScroll: true });
-    setMoving(true);
   };
   const continueDrag = (event: PointerEvent<HTMLButtonElement>) => {
     const current = drag.current;
@@ -103,7 +101,6 @@ export function GlassRefractionProbe({
   const endDrag = (event: PointerEvent<HTMLButtonElement>) => {
     if (drag.current?.pointer !== event.pointerId) return;
     drag.current = null;
-    setMoving(false);
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   };
@@ -135,7 +132,6 @@ export function GlassRefractionProbe({
       aria-describedby={description}
       aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       data-slot="glass-refraction-probe"
-      data-glass-motion={moving ? "true" : undefined}
       className="absolute z-20 h-[170px] w-60 max-w-[calc(100%-2rem)] touch-none flex-col justify-between gap-4 whitespace-normal rounded-[2rem] bg-background p-5 text-center shadow-none hover:bg-background active:translate-y-0"
       style={
         coordinates
@@ -148,7 +144,6 @@ export function GlassRefractionProbe({
       onPointerCancel={endDrag}
       onLostPointerCapture={() => {
         drag.current = null;
-        setMoving(false);
       }}
       onKeyDown={moveWithKeyboard}
     >

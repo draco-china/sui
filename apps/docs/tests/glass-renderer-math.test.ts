@@ -1,75 +1,25 @@
 import { describe, expect, test } from "bun:test";
 import {
-  glassCaptureRatio,
-  glassMediaBounds,
-} from "../../../packages/ui/src/lib/glass/capture-media";
-import {
   glassBevelWidth,
   glassRefractionProfile,
   glassRefractionStrength,
 } from "../../../packages/ui/src/lib/glass/refraction";
-import type { GlassFrame } from "../../../packages/ui/src/lib/glass/renderer";
 import {
   glassDisplacement,
+  glassEdgeDensity,
+  glassRoundedDistance,
   type SvgGlassGeometry,
 } from "../../../packages/ui/src/lib/glass/svg-renderer";
 
-const source = await Bun.file(
-  new URL("../../../packages/ui/src/lib/glass/renderer.ts", import.meta.url),
-).text();
-
-function shaderFunction(name: string) {
-  const start = source.indexOf(`fn ${name}(`);
-  if (start < 0) throw new Error(`Missing production WGSL function: ${name}`);
-  const opening = source.indexOf("{", start);
-  let depth = 1;
-  let end = opening + 1;
-  while (end < source.length && depth) {
-    if (source[end] === "{") depth++;
-    if (source[end] === "}") depth--;
-    end++;
-  }
-  if (depth) throw new Error(`Incomplete WGSL function: ${name}`);
-  return source.slice(start, end);
-}
-
-// Evaluate the production scalar WGSL expressions, rather than a separate JS
-// implementation of the clipping algorithm. Browser tests still compile WGSL.
-const expressions = [
-  shaderFunction("ellipseDistance"),
-  shaderFunction("roundedDistance"),
-]
-  .join("\n")
-  .replace(/\bfn\s+/g, "function ")
-  .replace(/:\s*(?:vec2f|f32)/g, "")
-  .replace(/\s*->\s*f32/g, "")
-  .replace(/\blet\b/g, "const")
-  .replace(/\bvar\b/g, "let");
-const evaluate = new Function(
-  "params",
-  "sqrt",
-  "max",
-  "min",
-  `${expressions}; return roundedDistance;`,
-);
 type Corners = [number, number, number, number];
-const vector = ([x, y, z, w]: Corners) => ({ x, y, z, w });
 function shape(
   width: number,
   height: number,
   radius: Corners,
   radiusY: Corners,
 ) {
-  return evaluate(
-    {
-      surface: { x: width, y: height },
-      radii: vector(radius),
-      verticalRadii: vector(radiusY),
-    },
-    Math.sqrt,
-    Math.max,
-    Math.min,
-  ) as (p: { x: number; y: number }) => number;
+  const frame = { width, height, radius, radiusY, strength: 0 };
+  return (p: { x: number; y: number }) => glassRoundedDistance(p.x, p.y, frame);
 }
 function reflect(
   values: Corners,
@@ -82,7 +32,7 @@ function reflect(
   return result;
 }
 
-describe("production WGSL rounded boundary expressions", () => {
+describe("rounded boundary distance", () => {
   const width = 300;
   const height = 64;
   const rx: Corners = [200, 100, 25, 50];
@@ -183,16 +133,12 @@ test("refraction keeps inward background samples ordered at high strength and on
   ]) {
     const bevel = glassBevelWidth(width, height);
     for (const strength of [0, 22, 64]) {
-      const frame: GlassFrame = {
+      const frame: SvgGlassGeometry = {
         width,
         height,
-        margin: 0,
         radius: [height / 2, height / 2, height / 2, height / 2],
         strength,
         blur: 6,
-        tint: [0, 0, 0],
-        tintOpacity: 0,
-        foreground: [1, 1, 1],
       };
       const scale = glassRefractionStrength(strength, width, height);
       let previous = -Infinity;
@@ -207,29 +153,13 @@ test("refraction keeps inward background samples ordered at high strength and on
   }
 });
 
-test("smooth lens retains more bending across the bevel with matching GPU and SVG profiles", () => {
-  const expression = shaderFunction("bevelProfile")
-    .replace(/\bfn\s+/g, "function ")
-    .replace(/:\s*f32/g, "")
-    .replace(/\s*->\s*f32/g, "");
-  const gpuProfile = new Function(
-    "smoothstep",
-    `${expression}; return bevelProfile;`,
-  )((start: number, end: number, value: number) => {
-    const t = Math.max(0, Math.min(1, (value - start) / (end - start)));
-    return t * t * (3 - 2 * t);
-  }) as (depth: number, width: number) => number;
+test("smooth lens retains more bending across the bevel", () => {
   for (const [width, height] of [
     [120, 80],
     [96, 36],
     [24, 24],
   ]) {
     const bevel = glassBevelWidth(width, height);
-    for (let depth = 0; depth <= bevel + 1; depth += 0.25)
-      expect(gpuProfile(depth, bevel)).toBeCloseTo(
-        glassRefractionProfile(depth, bevel),
-        10,
-      );
     const previous = ((bevel * 22) / (bevel + 22)) * 0.45 * 0.25;
     const current =
       glassRefractionStrength(22, width, height) *
@@ -343,75 +273,10 @@ test("mixed corner surfaces keep independent samples ordered at each flat corner
   }
 });
 
-describe("shared media capture region", () => {
-  function viewport<T>(width: number, height: number, read: () => T) {
-    const saved = ["innerWidth", "innerHeight"].map((key) =>
-      Object.getOwnPropertyDescriptor(globalThis, key),
-    );
-    globalThis.innerWidth = width;
-    globalThis.innerHeight = height;
-    try {
-      return read();
-    } finally {
-      for (const [index, key] of ["innerWidth", "innerHeight"].entries()) {
-        const descriptor = saved[index];
-        if (descriptor) Object.defineProperty(globalThis, key, descriptor);
-        else Reflect.deleteProperty(globalThis, key);
-      }
-    }
-  }
-  const request = (
-    left: number,
-    top: number,
-    width: number,
-    height: number,
-  ) => ({
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-  });
-  test("coalesces requested surfaces with the optical margin", () => {
-    viewport(1024, 768, () => {
-      expect(
-        glassMediaBounds([
-          request(100, 200, 100, 80),
-          request(350, 420, 50, 40),
-          request(2000, 2000, 100, 100),
-        ]),
-      ).toEqual({ left: 60, top: 160, right: 440, bottom: 500 });
-      expect(glassMediaBounds([request(-10, -10, 50, 50)])).toEqual({
-        left: 0,
-        top: 0,
-        right: 80,
-        bottom: 80,
-      });
-      expect(glassMediaBounds([])).toBeUndefined();
-      expect(glassMediaBounds([request(-200, 0, 10, 20)])).toBeUndefined();
-    });
-  });
-  test("odd full pixel dimensions retain that Gaussian axis", () => {
-    viewport(2049, 1025, () => {
-      const region = glassMediaBounds([request(800, 400, 160, 100)]);
-      expect(region).toBeDefined();
-      const ratio = glassCaptureRatio();
-      expect(region?.left).toBe(0);
-      expect(Math.round((region?.right ?? 0) * ratio)).toBe(4095);
-      expect(region?.top).toBeGreaterThan(0);
-      expect(Math.round((region?.top ?? 0) * ratio) % 2).toBe(0);
-      expect(Math.round((region?.bottom ?? 0) * ratio) % 2).toBe(0);
-    });
-  });
-  test("both odd axes preserve full-size input under the existing pixel cap", () => {
-    viewport(2100, 1200, () => {
-      const region = glassMediaBounds([request(800, 400, 160, 100)]);
-      const ratio = glassCaptureRatio();
-      expect(region?.left).toBe(0);
-      expect(region?.top).toBe(0);
-      expect(Math.round((region?.right ?? 0) * ratio)).toBe(3831);
-      expect(Math.round((region?.bottom ?? 0) * ratio)).toBe(2189);
-    });
-  });
+test("low-density screens keep less of the aliasing sharp edge layer", () => {
+  expect(glassEdgeDensity(1)).toBe(0.4);
+  expect(glassEdgeDensity(1.5)).toBe(0.4);
+  expect(glassEdgeDensity(2)).toBe(1);
+  expect(glassEdgeDensity(3)).toBe(1);
+  expect(glassEdgeDensity()).toBe(0.4);
 });

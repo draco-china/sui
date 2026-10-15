@@ -555,7 +555,6 @@ for (const enabled of [true, false]) {
     controlsRoot.render(
       <ImageViewer
         glass={enabled}
-        glassConfig={{ mode: "css" }}
         images={gallery}
         open
         labels={{ viewer: "Glass controls" }}

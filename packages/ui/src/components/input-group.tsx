@@ -155,7 +155,8 @@ function InputGroupTextarea({
   );
 }
 
-const InputGroup = withGlass(InputGroupImplementation, "control");
+// A glass input group is one field capsule whose buttons share its material.
+const InputGroup = withGlass(InputGroupImplementation, "field");
 
 export {
   InputGroup,

@@ -4,12 +4,11 @@ import { Button } from "@workspace/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@workspace/ui/components/field";
 import {
   type GlassConfig,
+  type GlassEdge,
   type GlassMaterial,
-  type GlassMode,
   type GlassOptions,
   refreshGlass,
 } from "@workspace/ui/components/glass";
-import { Input } from "@workspace/ui/components/input";
 import {
   Sidebar,
   SidebarContent,
@@ -27,77 +26,48 @@ import {
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group";
 import {
+  glassDefaultEdge,
   glassDefaults,
   glassMaterials,
 } from "@workspace/ui/lib/glass/defaults";
-import { cn } from "cn";
 import {
+  Activity,
   ImageIcon,
   Layers3,
   RotateCcw,
-  Search,
   SlidersHorizontal,
 } from "lucide-react";
 import {
   type ComponentProps,
-  type ComponentType,
   type CSSProperties,
-  lazy,
   type ReactNode,
-  Suspense,
   useEffect,
   useId,
   useRef,
   useState,
 } from "react";
 import { withGlass } from "../../../../packages/ui/src/lib/glass/context";
-import { examples } from "../examples";
 import type { ExampleProps } from "../examples/types";
-import { glassLabCatalog } from "../lib/glass-lab";
-import {
-  GlassStateCases,
-  GlassTabBarCase,
-  GlassToastCase,
-  GlassToggleGroupCase,
-  GlassTooltipCase,
-} from "./glass-lab-cases";
+import { GlassLabBlocks } from "./glass-lab-blocks";
 import { RenderingStatus } from "./glass-lab-rendering";
-import { GlassLabSkeleton } from "./glass-lab-skeleton";
 import { GlassRefractionProbe } from "./glass-refraction-probe";
 
 const Scope = withGlass(
   (props: ComponentProps<"div">) => <div {...props} />,
   "scope",
 );
-const demos = new Map<
-  string,
-  ReturnType<typeof lazy<ComponentType<ExampleProps>>>
->();
-const specialCases: Record<string, ComponentType<ExampleProps>> = {
-  command: lazy(() => import("./glass-command-case")),
-  glass: GlassStateCases,
-  "tab-bar": GlassTabBarCase,
-  toast: GlassToastCase,
-  "toggle-group": GlassToggleGroupCase,
-  tooltip: GlassTooltipCase,
+const defaultOptions: GlassOptions = { strength: glassDefaults.strength };
+type Background = "coast" | "waves";
+const backgrounds: Record<Background, { image: string; video: string }> = {
+  coast: {
+    image: "/playground/backgrounds/coast-poster.jpg",
+    video: "/playground/backgrounds/coast.mp4",
+  },
+  waves: {
+    image: "/playground/backgrounds/waves-poster.jpg",
+    video: "/playground/backgrounds/waves.mp4",
+  },
 };
-const defaultOptions: GlassOptions = {
-  strength: glassDefaults.strength,
-  highlight: glassDefaults.highlight,
-};
-const initialLoaded = ["accordion", "button", "input", "glass"];
-type Background = "coast-video" | "waves-video";
-const mediaBackgrounds: Record<Background, { image: string; video?: string }> =
-  {
-    "coast-video": {
-      image: "/playground/backgrounds/coast-poster.jpg",
-      video: "/playground/backgrounds/coast.mp4",
-    },
-    "waves-video": {
-      image: "/playground/backgrounds/waves-poster.jpg",
-      video: "/playground/backgrounds/waves.mp4",
-    },
-  };
 
 function Controls({ children, title }: { children: ReactNode; title: string }) {
   return (
@@ -136,29 +106,50 @@ function ControlGroup({
   );
 }
 
-function getDemo(entry: (typeof glassLabCatalog)[number]) {
-  if (specialCases[entry.slug]) return specialCases[entry.slug];
-  if (!entry.demo) return undefined;
-  let Demo = demos.get(entry.demo);
-  if (!Demo) {
-    Demo = lazy(examples[entry.demo]);
-    demos.set(entry.demo, Demo);
-  }
-  return Demo;
+function Choice<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: readonly (readonly [T, string])[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <Field>
+      <FieldLabel className="text-xs">{label}</FieldLabel>
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        className="w-full [&>*]:min-w-0 [&>*]:flex-1"
+        value={[value]}
+        onValueChange={(values) => {
+          if (values[0]) onChange(values[0] as T);
+        }}
+        aria-label={label}
+      >
+        {options.map(([option, text]) => (
+          <ToggleGroupItem key={option} value={option}>
+            {text}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </Field>
+  );
 }
 
 function Parameter({
   label,
   value,
   max,
-  step = 1,
   suffix,
   onChange,
 }: {
   label: string;
   value: number;
   max: number;
-  step?: number;
   suffix?: string;
   onChange: (value: number) => void;
 }) {
@@ -179,7 +170,6 @@ function Parameter({
         aria-label={label}
         min={0}
         max={max}
-        step={step}
         value={[value]}
         onValueChange={(next) => onChange(Array.isArray(next) ? next[0] : next)}
       />
@@ -187,277 +177,140 @@ function Parameter({
   );
 }
 
-function LabEntry({
-  entry,
-  locale = "en-US",
+function SwitchField({
+  label,
+  checked,
+  onChange,
 }: {
-  entry: (typeof glassLabCatalog)[number];
-  locale: ExampleProps["locale"];
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
 }) {
-  const section = useRef<HTMLElement>(null);
-  const [loaded, setLoaded] = useState(() =>
-    initialLoaded.includes(entry.slug),
-  );
-  useEffect(() => {
-    if (loaded || !section.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((item) => item.isIntersecting)) {
-          setLoaded(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "320px" },
-    );
-    observer.observe(section.current);
-    return () => observer.disconnect();
-  }, [loaded]);
-  const Demo = loaded ? getDemo(entry) : undefined;
+  const id = useId();
   return (
-    <section
-      ref={section}
-      className="mb-8 inline-block w-full min-w-0 break-inside-avoid align-top"
-      data-lab-component={entry.slug}
-      aria-label={entry.name}
-    >
-      <div
-        className="justify-center-safe flex min-h-24 min-w-0 items-center [&>*]:min-w-0 [&>*]:max-w-full [&>div:not([data-slot])]:py-0"
-        data-lab-preview={loaded ? "loaded" : "deferred"}
-      >
-        <Suspense fallback={<GlassLabSkeleton slug={entry.slug} />}>
-          {Demo ? (
-            <Demo locale={locale} />
-          ) : (
-            <GlassLabSkeleton slug={entry.slug} />
-          )}
-        </Suspense>
-      </div>
-    </section>
+    <Field orientation="horizontal" className="justify-between">
+      <FieldLabel htmlFor={id} className="text-xs">
+        {label}
+      </FieldLabel>
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
+    </Field>
   );
 }
 
-function Gallery({
-  entries,
-  locale = "en-US",
-  enabled,
-  ordinary = false,
-  glassConfig,
-}: {
-  entries: typeof glassLabCatalog;
-  locale: ExampleProps["locale"];
-  enabled: boolean;
-  ordinary?: boolean;
-  glassConfig?: GlassConfig;
-}) {
-  const zh = locale === "zh-CN";
-  const label = ordinary ? "ordinary" : "gallery";
-  const labels = zh
-    ? { ordinary: "普通样式", gallery: "组件展示" }
-    : { ordinary: "Ordinary comparison", gallery: "Component gallery" };
-  return (
-    <div
-      className="@container min-w-0"
-      data-lab-appearance={ordinary ? "ordinary" : "glass"}
-    >
-      {ordinary && (
-        <p className="mb-3 font-medium text-muted-foreground text-xs">
-          {labels[label]}
-        </p>
-      )}
-      <div data-lab-container>
-        <Scope
-          glass={enabled && !ordinary}
-          glassConfig={glassConfig}
-          className="min-w-0 @min-[40rem]:columns-2 @min-[64rem]:columns-3 columns-1 gap-8"
-        >
-          {entries.map((entry) => (
-            <LabEntry key={entry.slug} entry={entry} locale={locale} />
-          ))}
-          {entries.length === 0 && (
-            <p role="status" className="p-6 text-center text-muted-foreground">
-              {zh ? "没有匹配的组件" : "No matching components"}
-            </p>
-          )}
-        </Scope>
-      </div>
-    </div>
-  );
-}
-
+/**
+ * Glass in realistic blocks over live video, in the spirit of the shadcn/ui
+ * themes page: settings on the left, the composed interface on the right.
+ */
 export function GlassLab({ locale = "en-US" }: ExampleProps) {
   const zh = locale === "zh-CN";
   const scene = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const id = useId();
-  const [mode, setMode] = useState<GlassMode>("auto");
-  const [material, setMaterial] = useState<GlassMaterial>("clear");
-  const [options, setOptions] = useState<GlassOptions>(defaultOptions);
-  const glassConfig: GlassConfig = {
-    mode,
-    material,
-    options,
-    captureTarget: scene,
-  };
   const [enabled, setEnabled] = useState(true);
-  const [compare, setCompare] = useState(false);
-  const [showProbe, setShowProbe] = useState(true);
-  const previousStrength = useRef<number>(glassDefaults.strength);
-  const [background, setBackground] = useState<Background>("coast-video");
+  const [material, setMaterial] = useState<GlassMaterial>("clear");
+  const [edge, setEdge] = useState<GlassEdge>(glassDefaultEdge);
+  const [options, setOptions] = useState<GlassOptions>(defaultOptions);
+  const [showProbe, setShowProbe] = useState(false);
+  const [background, setBackground] = useState<Background>("coast");
   const [playing, setPlaying] = useState(true);
-  const media = mediaBackgrounds[background];
-  const videoLabels = zh
-    ? { play: "播放背景视频", pause: "暂停背景视频" }
-    : { play: "Play background video", pause: "Pause background video" };
+  const previousStrength = useRef<number>(glassDefaults.strength);
+  const media = backgrounds[background];
+  const glassConfig: GlassConfig = { material, edge, options };
   useEffect(() => {
-    if (!media?.video) return;
     const player = video.current;
     if (playing) void player?.play().catch(() => setPlaying(false));
     else player?.pause();
-  }, [media?.video, playing]);
-  const [search, setSearch] = useState("");
-  const query = search.trim().toLowerCase();
-  const filtered = glassLabCatalog.filter((entry) => {
-    return `${entry.name} ${entry.slug} ${entry.description[locale]}`
-      .toLowerCase()
-      .includes(query);
-  });
+  }, [playing]);
+  const strength = options.strength ?? glassDefaults.strength;
   const parameter = (name: keyof GlassOptions, value: number) => {
     if (name === "strength" && value > 0) previousStrength.current = value;
     setOptions((current) => ({ ...current, [name]: value }));
   };
+  const title = zh ? "外观设置" : "Appearance settings";
   return (
     <SidebarProvider
       style={{ "--sidebar-width": "19rem" } as CSSProperties}
       className="not-prose grid h-full min-h-0 gap-6 md:grid-cols-[19rem_minmax(0,1fr)] md:gap-5 [&>[data-slot=sidebar]]:min-h-0"
       data-slot="glass-lab"
     >
-      <Controls title={zh ? "外观设置" : "Appearance settings"}>
+      <Controls title={title}>
         <ControlGroup title={zh ? "材质" : "Material"} icon={<Layers3 />}>
-          <Field>
-            <FieldLabel className="sr-only">
-              {zh ? "组件材质" : "Component material"}
-            </FieldLabel>
-            <ToggleGroup
-              variant="outline"
-              className="w-full [&>*]:flex-1"
-              value={[enabled ? "glass" : "ordinary"]}
-              onValueChange={(values) => {
-                if (values[0]) setEnabled(values[0] === "glass");
-              }}
-              aria-label={zh ? "组件材质" : "Component material"}
-            >
-              <ToggleGroupItem value="ordinary">
-                {zh ? "普通" : "Ordinary"}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="glass">Glass</ToggleGroupItem>
-            </ToggleGroup>
-          </Field>
-          <Field>
-            <FieldLabel className="sr-only">
-              {zh ? "玻璃材质" : "Glass material"}
-            </FieldLabel>
-            <ToggleGroup
-              variant="outline"
-              className="w-full [&>*]:flex-1"
-              value={[material]}
-              onValueChange={(values) => {
-                if (values[0]) setMaterial(values[0] as GlassMaterial);
-              }}
-              aria-label={zh ? "玻璃材质" : "Glass material"}
-            >
-              <ToggleGroupItem value="clear">
-                {zh ? "清透" : "Clear"}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="regular">
-                {zh ? "常规" : "Regular"}
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </Field>
-          <Field orientation="horizontal" className="justify-between">
-            <FieldLabel htmlFor={`${id}-compare`} className="text-xs">
-              {zh ? "并排对比普通样式" : "Show ordinary comparison"}
-            </FieldLabel>
-            <Switch
-              id={`${id}-compare`}
-              checked={compare}
-              onCheckedChange={setCompare}
-            />
-          </Field>
-          <Field orientation="horizontal" className="justify-between">
-            <FieldLabel htmlFor={`${id}-probe`} className="text-xs">
-              {zh ? "显示折射镜片" : "Show refraction lens"}
-            </FieldLabel>
-            <Switch
-              id={`${id}-probe`}
-              checked={showProbe}
-              onCheckedChange={setShowProbe}
-            />
-          </Field>
+          <Choice
+            label={zh ? "组件材质" : "Component material"}
+            value={enabled ? "glass" : "ordinary"}
+            options={[
+              ["ordinary", zh ? "普通" : "Ordinary"],
+              ["glass", "Glass"],
+            ]}
+            onChange={(value) => setEnabled(value === "glass")}
+          />
+          <Choice
+            label={zh ? "玻璃材质" : "Glass material"}
+            value={material}
+            options={[
+              ["clear", zh ? "清透" : "Clear"],
+              ["regular", zh ? "常规" : "Regular"],
+            ]}
+            onChange={setMaterial}
+          />
+          <Choice
+            label={zh ? "边缘光" : "Edge light"}
+            value={edge}
+            options={[
+              ["diagonal", zh ? "对角" : "Diagonal"],
+              ["vertical", zh ? "上下" : "Vertical"],
+            ]}
+            onChange={setEdge}
+          />
+          <SwitchField
+            label={zh ? "显示折射镜片" : "Show refraction lens"}
+            checked={showProbe}
+            onChange={setShowProbe}
+          />
         </ControlGroup>
         <ControlGroup title={zh ? "背景" : "Background"} icon={<ImageIcon />}>
-          <Field>
-            <FieldLabel htmlFor={`${id}-background`} className="sr-only">
-              {zh ? "测试背景" : "Test background"}
-            </FieldLabel>
-            <ToggleGroup
-              id={`${id}-background`}
-              aria-label={zh ? "测试背景" : "Test background"}
-              variant="outline"
+          <Choice
+            label={zh ? "测试背景" : "Test background"}
+            value={background}
+            options={[
+              ["coast", zh ? "海岸" : "Coast"],
+              ["waves", zh ? "海浪" : "Waves"],
+            ]}
+            onChange={setBackground}
+          />
+          <div className="relative overflow-hidden rounded-lg">
+            <img
+              src={media.image}
+              alt=""
+              className="aspect-[16/7] w-full object-cover"
+            />
+            <Button
+              variant="secondary"
               size="sm"
-              className="w-full [&>*]:min-w-0 [&>*]:flex-1"
-              value={[background]}
-              onValueChange={(values) => {
-                if (values[0]) setBackground(values[0] as Background);
-              }}
+              className="absolute right-2 bottom-2"
+              onClick={() => setPlaying((value) => !value)}
             >
-              <ToggleGroupItem value="coast-video">
-                {zh ? "海岸 · 视频" : "Coast · Video"}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="waves-video">
-                {zh ? "海浪 · 视频" : "Waves · Video"}
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </Field>
-          {media && (
-            <div className="relative overflow-hidden rounded-lg">
-              <img
-                src={media.image}
-                alt=""
-                className="aspect-[16/7] w-full object-cover"
-              />
-              {media.video && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute right-2 bottom-2"
-                  onClick={() => setPlaying((value) => !value)}
-                >
-                  {videoLabels[playing ? "pause" : "play"]}
-                </Button>
-              )}
-            </div>
-          )}
+              {playing
+                ? zh
+                  ? "暂停背景视频"
+                  : "Pause background video"
+                : zh
+                  ? "播放背景视频"
+                  : "Play background video"}
+            </Button>
+          </div>
         </ControlGroup>
         <ControlGroup
           title={zh ? "光学参数" : "Optical properties"}
           icon={<SlidersHorizontal />}
         >
           <FieldGroup className="gap-4">
-            <Field orientation="horizontal" className="justify-between">
-              <FieldLabel htmlFor={`${id}-refraction`} className="text-xs">
-                {zh ? "启用折射" : "Enable refraction"}
-              </FieldLabel>
-              <Switch
-                id={`${id}-refraction`}
-                checked={(options.strength ?? glassDefaults.strength) > 0}
-                onCheckedChange={(checked) => {
-                  const strength = options.strength ?? glassDefaults.strength;
-                  if (!checked && strength > 0)
-                    previousStrength.current = strength;
-                  parameter("strength", checked ? previousStrength.current : 0);
-                }}
-              />
-            </Field>
+            <SwitchField
+              label={zh ? "启用折射" : "Enable refraction"}
+              checked={strength > 0}
+              onChange={(checked) =>
+                parameter("strength", checked ? previousStrength.current : 0)
+              }
+            />
             <Parameter
               label={zh ? "透明度" : "Transparency"}
               value={Math.round(
@@ -472,16 +325,9 @@ export function GlassLab({ locale = "en-US" }: ExampleProps) {
             />
             <Parameter
               label={zh ? "折射强度" : "Refraction strength"}
-              value={options.strength ?? glassDefaults.strength}
+              value={strength}
               max={64}
               onChange={(value) => parameter("strength", value)}
-            />
-            <Parameter
-              label={zh ? "边缘高光" : "Edge highlight"}
-              value={options.highlight ?? glassDefaults.highlight}
-              max={1}
-              step={0.01}
-              onChange={(value) => parameter("highlight", value)}
             />
           </FieldGroup>
           <Button
@@ -497,29 +343,7 @@ export function GlassLab({ locale = "en-US" }: ExampleProps) {
             {zh ? "恢复默认参数" : "Reset defaults"}
           </Button>
         </ControlGroup>
-        <ControlGroup title={zh ? "渲染" : "Rendering"} icon={<Layers3 />}>
-          <Field>
-            <FieldLabel htmlFor={`${id}-mode`} className="sr-only">
-              {zh ? "渲染方式" : "Rendering mode"}
-            </FieldLabel>
-            <ToggleGroup
-              id={`${id}-mode`}
-              aria-label={zh ? "渲染方式" : "Rendering mode"}
-              variant="outline"
-              size="sm"
-              className="w-full [&>*]:min-w-0 [&>*]:flex-1"
-              value={[mode]}
-              onValueChange={(values) => {
-                if (values[0]) setMode(values[0] as GlassMode);
-              }}
-            >
-              <ToggleGroupItem value="auto">
-                {zh ? "自动" : "Auto"}
-              </ToggleGroupItem>
-              <ToggleGroupItem value="svg">SVG</ToggleGroupItem>
-              <ToggleGroupItem value="css">CSS</ToggleGroupItem>
-            </ToggleGroup>
-          </Field>
+        <ControlGroup title={zh ? "渲染" : "Rendering"} icon={<Activity />}>
           <RenderingStatus scene={scene} zh={zh} />
           <Button
             variant="outline"
@@ -532,89 +356,48 @@ export function GlassLab({ locale = "en-US" }: ExampleProps) {
         </ControlGroup>
       </Controls>
       <div className="flex min-h-0 min-w-0 flex-col gap-4">
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <SidebarTrigger
-              className="md:hidden"
-              aria-label={zh ? "外观设置" : "Appearance settings"}
-            />
-            <div className="flex items-baseline gap-3">
-              <h1 className="font-semibold text-xl tracking-tight">
-                {zh ? "组件体验" : "Playground"}
-              </h1>
-              <span className="shrink-0 text-muted-foreground text-xs tabular-nums">
-                {filtered.length} / {glassLabCatalog.length}
-              </span>
-            </div>
+        <header className="flex min-w-0 items-start gap-3">
+          <SidebarTrigger className="md:hidden" aria-label={title} />
+          <div className="grid min-w-0 gap-1">
+            <h1 className="font-semibold text-xl tracking-tight">
+              {zh ? "组件体验" : "Playground"}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {zh
+                ? "在真实场景中体验玻璃：导航、控件和浮层使用玻璃，内容保持普通。"
+                : "Glass in real scenarios: navigation, controls and floating layers use glass while content stays ordinary."}
+            </p>
           </div>
-          <div className="relative ms-auto w-full min-w-0 sm:w-72">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              aria-label={zh ? "搜索组件" : "Search components"}
-              placeholder={zh ? "搜索组件名称或用途…" : "Search components…"}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="w-full ps-9"
-            />
-          </div>
-        </div>
+        </header>
         <div
           ref={scene}
           className="relative isolate grid min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl border"
           data-slot="glass-lab-scene"
-          data-lab-material="individual"
-          data-glass-capture={media ? "media" : undefined}
         >
-          {media?.video && (
-            <video
-              key={media.video}
-              ref={video}
-              src={media.video}
-              poster={media.image}
-              muted
-              loop
-              playsInline
-              autoPlay={playing}
-              preload="metadata"
-              tabIndex={-1}
-              aria-hidden="true"
-              data-glass-backdrop
-              className="pointer-events-none absolute inset-0 size-full object-cover"
-              onLoadedData={() => refreshGlass(scene)}
-            />
-          )}
-          {media && !media.video && (
-            <img
-              src={media.image}
-              alt=""
-              data-glass-backdrop
-              className="pointer-events-none absolute inset-0 size-full object-cover"
-              onLoad={() => refreshGlass(scene)}
-            />
-          )}
-          <div
-            className={cn(
-              "relative z-10 grid min-h-0 min-w-0 content-start gap-8 overflow-y-auto overscroll-contain p-5 sm:p-8",
-              compare && "lg:grid-cols-2",
-            )}
-          >
-            {compare && (
-              <Gallery
-                entries={filtered}
-                locale={locale}
-                enabled={false}
-                ordinary
-              />
-            )}
-            <Gallery
-              entries={filtered}
-              locale={locale}
-              enabled={enabled}
+          <video
+            key={media.video}
+            ref={video}
+            src={media.video}
+            poster={media.image}
+            muted
+            loop
+            playsInline
+            autoPlay={playing}
+            preload="metadata"
+            tabIndex={-1}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 size-full object-cover"
+            onLoadedData={() => refreshGlass(scene)}
+          />
+          <div className="@container relative z-10 min-h-0 min-w-0 overflow-y-auto overscroll-contain p-5 sm:p-8">
+            <Scope
+              glass={enabled}
               glassConfig={glassConfig}
-            />
+              data-lab-appearance={enabled ? "glass" : "ordinary"}
+              className="mx-auto max-w-6xl @min-[44rem]:columns-2 @min-[72rem]:columns-3 columns-1 gap-6"
+            >
+              <GlassLabBlocks locale={locale} glass={enabled} />
+            </Scope>
           </div>
           {enabled && showProbe && (
             <GlassRefractionProbe

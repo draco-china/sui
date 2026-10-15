@@ -1,17 +1,18 @@
 "use client";
 
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
+import { type ComponentProps, useContext } from "react";
 import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
+import { GlassContext, withGlass } from "../lib/glass/context";
 
-const GlassSliderTrack = withGlass(SliderPrimitive.Track, "control", {
-  mode: "css",
-  material: "regular",
-});
-const GlassSliderThumb = withGlass(SliderPrimitive.Thumb, "control", {
-  mode: "css",
-  material: "regular",
-});
+// As on Apple platforms, a thumb becomes a clear glass lens only while dragged.
+// It grows in layout rather than by transform: scaled SVG backdrops misplace refraction.
+// The lens drops its paint instantly: a fading fill would cover the refraction.
+const GlassThumb = withGlass(
+  (props: ComponentProps<"div">) => <div {...props} />,
+  "control",
+  { material: "clear" },
+);
 
 function SliderImplementation({
   className,
@@ -21,6 +22,8 @@ function SliderImplementation({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
+  const glass = useContext(GlassContext);
+  const lens = glass.enabled && !glass.content;
   const values = value ?? defaultValue ?? min;
   const thumbCount = Array.isArray(values) ? values.length : 1;
 
@@ -39,7 +42,7 @@ function SliderImplementation({
       {...props}
     >
       <SliderPrimitive.Control className="relative flex w-full touch-none select-none items-center data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col data-disabled:opacity-50">
-        <GlassSliderTrack
+        <SliderPrimitive.Track
           data-slot="slider-track"
           className="relative grow select-none overflow-hidden rounded-full bg-input/90 data-horizontal:h-2 data-vertical:h-full data-horizontal:w-full data-vertical:w-2"
         >
@@ -47,16 +50,29 @@ function SliderImplementation({
             data-slot="slider-range"
             className="select-none bg-primary data-horizontal:h-full data-vertical:w-full"
           />
-        </GlassSliderTrack>
+        </SliderPrimitive.Track>
         {Array.from({ length: thumbCount }, (_, index) => (
-          <GlassSliderThumb
+          <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             aria-label={props["aria-label"]}
             aria-labelledby={props["aria-labelledby"]}
             aria-describedby={props["aria-describedby"]}
             // biome-ignore lint/suspicious/noArrayIndexKey: Thumb identity is its position; using its changing value would remount it while dragging.
             key={index}
-            className="block h-4 w-6 shrink-0 select-none rounded-full bg-white not-dark:bg-clip-padding shadow-md ring-1 ring-black/10 transition-[color,box-shadow,background-color] hover:ring-4 hover:ring-ring/30 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-vertical:h-6 data-vertical:w-4"
+            index={index}
+            render={(thumbProps, state) => (
+              <GlassThumb
+                {...thumbProps}
+                glass={
+                  lens &&
+                  state.dragging &&
+                  // Base UI marks the active thumb on focus; a lone thumb is
+                  // always the one being dragged.
+                  (thumbCount === 1 || state.activeThumbIndex === index)
+                }
+              />
+            )}
+            className="block h-4 w-6 shrink-0 select-none rounded-full bg-white not-dark:bg-clip-padding shadow-md ring-1 ring-black/10 transition-[color,box-shadow,background-color] hover:ring-4 hover:ring-ring/30 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-vertical:data-[glass=true]:h-[30px] data-vertical:data-[glass=true]:w-[22px] data-[glass=true]:h-[22px] data-vertical:h-6 data-[glass=true]:w-[30px] data-vertical:w-4 data-[glass=true]:bg-transparent! data-[glass=true]:ring-0 data-[glass=true]:transition-none"
           />
         ))}
       </SliderPrimitive.Control>

@@ -1,8 +1,10 @@
 import { expect, test } from "bun:test";
-import type { GlassFrame } from "../../../packages/ui/src/lib/glass/renderer";
-import { glassDisplacement } from "../../../packages/ui/src/lib/glass/svg-renderer";
+import {
+  glassDisplacement,
+  type SvgGlassGeometry,
+} from "../../../packages/ui/src/lib/glass/svg-renderer";
 
-test("provider capability detection shares initialization and falls through three renderers", () => {
+test("the shared SVG renderer initializes once and falls back to CSS", () => {
   const result = Bun.spawnSync({
     cmd: [
       process.execPath,
@@ -14,21 +16,17 @@ test("provider capability detection shares initialization and falls through thre
   expect(new TextDecoder().decode(result.stderr)).toBe("");
   expect(result.exitCode).toBe(0);
   expect(new TextDecoder().decode(result.stdout)).toContain(
-    "three-tier fallback passed",
+    "SVG renderer and CSS fallback passed",
   );
 });
 
 test("SVG normals refract all four edges while leaving the center still", () => {
-  const frame: GlassFrame = {
+  const frame: SvgGlassGeometry = {
     width: 120,
     height: 80,
-    margin: 0,
     radius: [16, 16, 16, 16],
     strength: 22,
     blur: 0,
-    tint: [0, 0, 0],
-    tintOpacity: 0,
-    foreground: [1, 1, 1],
   };
   expect(glassDisplacement(2, 40, frame)[0]).toBeGreaterThan(0.3);
   expect(glassDisplacement(118, 40, frame)[0]).toBeLessThan(-0.3);

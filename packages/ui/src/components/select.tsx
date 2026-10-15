@@ -201,7 +201,7 @@ function SelectScrollDownButton({
   );
 }
 
-const SelectTrigger = withGlass(SelectTriggerImplementation, "control");
+const SelectTrigger = withGlass(SelectTriggerImplementation, "field");
 const SelectContent = withGlass(SelectContentImplementation, "portal");
 
 export {

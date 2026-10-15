@@ -14,7 +14,7 @@ import {
   getDefaultClassNames,
   type Locale,
 } from "react-day-picker";
-import { withGlass } from "../lib/glass/context";
+import { withoutGlass } from "../lib/glass/context";
 
 const CalendarLocaleContext = React.createContext<Partial<Locale> | undefined>(
   undefined,
@@ -276,6 +276,6 @@ function CalendarDayButton({
   );
 }
 
-const Calendar = withGlass(CalendarImplementation);
+const Calendar = withoutGlass(CalendarImplementation);
 
 export { Calendar, CalendarDayButton };

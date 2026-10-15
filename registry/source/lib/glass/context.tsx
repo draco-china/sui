@@ -4,7 +4,6 @@ import {
   type ComponentType,
   type CSSProperties,
   createContext,
-  type RefObject,
   useContext,
   useEffectEvent,
   useId,
@@ -12,30 +11,27 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { GlassMaterial } from "@/lib/glass/defaults";
+import {
+  type GlassEdge,
+  type GlassMaterial,
+  glassDefaultMaterial,
+} from "@/lib/glass/defaults";
 import { acquireGlass, updateGlassConfiguration } from "@/lib/glass/runtime";
 
-export type { GlassMaterial } from "@/lib/glass/defaults";
-
-export type GlassMode = "css" | "svg" | "auto";
+export type { GlassEdge, GlassMaterial } from "@/lib/glass/defaults";
 
 export type GlassOptions = {
   strength?: number;
   tint?: string;
   tintOpacity?: number;
-  highlight?: number;
 };
 
-export type GlassCaptureTarget =
-  | HTMLElement
-  | null
-  | RefObject<HTMLElement | null>;
-
+/** Native SVG refraction, falling back to the CSS material where unsupported. */
 export type GlassConfig = {
-  mode?: GlassMode;
   material?: GlassMaterial;
+  /** Edge light from the top-left and bottom-right corners, or from the top and bottom. */
+  edge?: GlassEdge;
   options?: GlassOptions;
-  captureTarget?: GlassCaptureTarget;
 };
 
 export type GlassConfiguration = GlassConfig & { id: string };
@@ -44,7 +40,19 @@ type GlassContextValue = {
   configuration?: GlassConfig;
   enabled: boolean;
   surface: boolean;
+  /** Inside a content-layer component: its own controls stay ordinary. */
+  content?: boolean;
 };
+
+/**
+ * Floating layers use the legible Regular material lit from the top and
+ * bottom, as on iOS, whatever their surroundings use. A layer's own
+ * glassConfig still chooses otherwise.
+ */
+const popupConfiguration = {
+  material: "regular",
+  edge: "vertical",
+} as const satisfies GlassConfig;
 
 export const GlassContext = createContext<GlassContextValue>({
   enabled: false,
@@ -53,10 +61,18 @@ export const GlassContext = createContext<GlassContextValue>({
 
 export type GlassProps = { glass?: boolean; glassConfig?: GlassConfig };
 
+/**
+ * - surface: a glass layer; inside another glass surface it shares that one.
+ * - control: like a surface, for interactive controls.
+ * - field: a form field that is glass on its own, like an iOS search field,
+ *   but stays an ordinary field with its focus ring inside a glass surface.
+ * - scope: passes the setting on without becoming glass itself.
+ * - portal: a floating layer that is always its own glass surface.
+ */
 export function withGlass<P extends object>(
   Component: ComponentType<P>,
-  kind: "surface" | "control" | "scope" | "portal" = "surface",
-  overrides?: Pick<GlassConfig, "mode" | "material">,
+  kind: "surface" | "control" | "field" | "scope" | "portal" = "surface",
+  overrides?: Pick<GlassConfig, "material">,
 ) {
   function GlassComponent({ glass, glassConfig, ...props }: P & GlassProps) {
     const context = useContext(GlassContext);
@@ -69,6 +85,7 @@ export function withGlass<P extends object>(
     const configuration = useMemo(() => {
       return {
         ...context.configuration,
+        ...(kind === "portal" ? popupConfiguration : undefined),
         ...glassConfig,
         ...overrides,
         options: {
@@ -78,21 +95,21 @@ export function withGlass<P extends object>(
       };
     }, [context.configuration, glassConfig]);
     const initialConfiguration = useEffectEvent(() => configuration);
-    const mode = configuration?.mode;
     const surface = enabled && kind !== "scope";
     useLayoutEffect(() => {
       if (!surface) return;
       setMounted(true);
-      return acquireGlass({ ...initialConfiguration(), id, mode });
-    }, [surface, id, mode]);
+      return acquireGlass({ ...initialConfiguration(), id });
+    }, [surface, id]);
     useLayoutEffect(() => {
       if (surface && configuration)
-        updateGlassConfiguration({ ...configuration, id, mode });
-    }, [surface, configuration, id, mode]);
+        updateGlassConfiguration({ ...configuration, id });
+    }, [surface, configuration, id]);
     const part =
       glass === undefined &&
       context.enabled &&
       context.surface &&
+      !context.content &&
       (kind === "surface" || kind === "control");
     let childSurface = context.surface || surface;
     if (kind === "scope") childSurface = glass !== true && context.surface;
@@ -107,10 +124,6 @@ export function withGlass<P extends object>(
     if (Number.isFinite(options?.tintOpacity))
       materialStyle["--glass-opacity"] =
         `${Math.min(1, Math.max(0, options?.tintOpacity ?? 0)) * 100}%`;
-    if (options?.highlight === 0) {
-      materialStyle["--glass-edge"] = "none";
-      materialStyle["--glass-initial-edge-shadow"] = "0 0 #0000";
-    }
     let initialStyle = originalStyle;
     if (Object.keys(materialStyle).length) {
       if (typeof originalStyle === "function")
@@ -126,6 +139,9 @@ export function withGlass<P extends object>(
           configuration,
           enabled: enabled || (glass === undefined && context.enabled),
           surface: childSurface,
+          // A real glass layer starts its own controls; scopes pass content on,
+          // and an ordinary field keeps its own buttons ordinary.
+          content: !surface && (kind === "field" || Boolean(context.content)),
         }}
       >
         <Component
@@ -136,7 +152,8 @@ export function withGlass<P extends object>(
                 style: initialStyle,
                 "data-glass": "true",
                 "data-glass-scope": id,
-                "data-glass-material": configuration?.material ?? "clear",
+                "data-glass-material":
+                  configuration?.material ?? glassDefaultMaterial,
                 "data-glass-state": "loading",
                 "data-glass-mounted": mounted,
               }
@@ -147,6 +164,28 @@ export function withGlass<P extends object>(
   }
   GlassComponent.displayName = `Glass(${Component.displayName ?? Component.name})`;
   return GlassComponent;
+}
+
+/**
+ * Content-layer components and their own controls stay ordinary inside an
+ * enabled glass scope, while floating layers they open (menus, popovers,
+ * tooltips) still follow it. Explicit `glass` on a child still wins.
+ */
+export function withoutGlass<P extends object>(Component: ComponentType<P>) {
+  function PlainComponent(props: P) {
+    const context = useContext(GlassContext);
+    const value = useMemo(
+      () => ({ ...context, surface: true, content: true }),
+      [context],
+    );
+    return (
+      <GlassContext.Provider value={value}>
+        <Component {...props} />
+      </GlassContext.Provider>
+    );
+  }
+  PlainComponent.displayName = Component.displayName ?? Component.name;
+  return PlainComponent;
 }
 
 export function useGlassEnabled(glass?: boolean) {

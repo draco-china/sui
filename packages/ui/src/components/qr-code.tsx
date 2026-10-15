@@ -7,6 +7,7 @@ import { cn } from "cn";
 import { CircleAlertIcon } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
+import { type GlassProps, withGlass, withoutGlass } from "../lib/glass/context";
 import { applyQRCodeFinderGeometry } from "../lib/qr-code/finder";
 
 type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
@@ -19,7 +20,7 @@ type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
   size?: number;
 };
 const qrCodeVariants = cva(
-  "relative isolate mx-auto aspect-square w-full overflow-hidden rounded-xl bg-card text-foreground",
+  "group/qr-code relative isolate mx-auto aspect-square w-full overflow-hidden rounded-xl bg-card text-foreground",
 );
 
 type Dot = {
@@ -271,9 +272,13 @@ function DotMatrix({
   );
 }
 
-function QRCode(props: QRCodeProps) {
+// QR codes are content and keep an opaque reading area inside glass. An
+// explicit `glass` prop shows the code on glass instead.
+const GlassQRCodeContent = withoutGlass(withGlass(QRCodeContent));
+
+function QRCode(props: QRCodeProps & GlassProps) {
   return (
-    <QRCodeContent
+    <GlassQRCodeContent
       key={JSON.stringify([props.value ?? "", props.size, props.margin])}
       {...props}
     />
@@ -406,7 +411,7 @@ function QRCodeContent({
         children: (
           <div
             data-slot="qr-code-content"
-            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground"
+            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground group-data-[glass=true]/qr-code:bg-transparent"
           >
             {!ready && !failed && (
               <div

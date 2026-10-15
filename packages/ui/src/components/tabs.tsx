@@ -40,7 +40,7 @@ function TabsImplementation({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list relative isolate inline-flex w-fit min-w-full shrink-0 items-center justify-center p-1 text-muted-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col",
+  "group/tabs-list relative isolate inline-flex w-fit min-w-full shrink-0 items-center justify-center p-1 text-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col",
   {
     variants: {
       variant: {
@@ -337,7 +337,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       data-slot="tabs-trigger"
       className={(state) =>
         cn(
-          "relative z-10 inline-flex h-full flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-muted-foreground text-sm transition-colors not-data-active:hover:text-foreground focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-start]:ps-2 has-data-[icon=inline-end]:pe-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:h-auto group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-1.5 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+          "relative z-10 inline-flex h-full flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-foreground text-sm transition-colors focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-start]:ps-2 has-data-[icon=inline-end]:pe-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:h-auto group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-1.5 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
           "data-active:text-primary-foreground group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=segment]/tabs-list:rounded-md group-data-[variant=line]/tabs-list:data-active:text-accent-foreground motion-reduce:transition-none",
           typeof className === "function" ? className(state) : className,
         )

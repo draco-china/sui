@@ -4,7 +4,7 @@ import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
 import { cn } from "cn";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 
 function AccordionImplementation({
   className,
@@ -22,10 +22,7 @@ function AccordionImplementation({
   );
 }
 
-function AccordionItemImplementation({
-  className,
-  ...props
-}: AccordionPrimitive.Item.Props) {
+function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
@@ -93,7 +90,6 @@ function AccordionContent({
   );
 }
 
-const Accordion = withGlass(AccordionImplementation);
-const AccordionItem = withGlass(AccordionItemImplementation);
+const Accordion = withoutGlass(AccordionImplementation);
 
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

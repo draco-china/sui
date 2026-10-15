@@ -42,16 +42,6 @@ Object.defineProperty(globalThis, "navigator", {
   value: window.navigator,
   configurable: true,
 });
-let gpuAttempts = 0;
-Object.defineProperty(window.navigator, "gpu", {
-  configurable: true,
-  value: {
-    requestAdapter: async () => {
-      gpuAttempts++;
-      return null;
-    },
-  },
-});
 Object.defineProperty(window.HTMLCanvasElement.prototype, "getContext", {
   value: (type: string) => {
     if (type !== "2d") return null;
@@ -91,40 +81,10 @@ Object.defineProperty(window.HTMLElement.prototype, "getBoundingClientRect", {
   },
 });
 
-let captures = 0;
-let fonts = 0;
-let decodes = 0;
 const activeFilters = new Map<HTMLElement, string>();
 const geometry = new Map<HTMLElement, { strength: number }>();
 let nextFilter = 0;
 let svgDestroy = 0;
-Object.defineProperty(window, "Image", {
-  value: class {
-    src = "";
-    decode() {
-      decodes++;
-      return Promise.resolve();
-    }
-  },
-});
-const { glassLayoutSize, GlassResourceError } = await import(
-  "../../../../packages/ui/src/lib/glass/capture"
-);
-mock.module("../../../../packages/ui/src/lib/glass/capture", () => ({
-  GlassResourceError,
-  releaseGlassFrame: (url: string) => URL.revokeObjectURL(url),
-  glassLayoutSize,
-  glassCapturePixelRatio: () => 1,
-  glassCaptureOrigin: () => [0, 0],
-  acquireGlassCaptureFonts: () => {
-    fonts++;
-    return () => {};
-  },
-  captureGlassBackground: async () => {
-    captures++;
-    throw Error("native requests cannot capture backgrounds");
-  },
-}));
 mock.module("../../../../packages/ui/src/lib/glass/svg-renderer", () => ({
   SvgGlassRenderer: {
     create: async () => ({
@@ -168,12 +128,10 @@ const rightRef = createRef<HTMLDivElement>();
 async function render({
   left = true,
   right = true,
-  mode = "svg",
   strength = 22,
 }: {
   left?: boolean;
   right?: boolean;
-  mode?: "svg" | "css";
   strength?: number;
 } = {}) {
   await act(async () =>
@@ -183,20 +141,16 @@ async function render({
           id="left"
           ref={leftRef}
           glass={left}
-          glassConfig={{ mode, options: { strength, highlight: 0 } }}
+          glassConfig={{ options: { strength } }}
           style={{ borderRadius: 9, minHeight: 48 }}
         />
         <GlassSurface
           id="right"
           ref={rightRef}
           glass={right}
-          glassConfig={{
-            mode: "auto",
-            material: "regular",
-            options: { strength: 17 },
-          }}
+          glassConfig={{ material: "regular", options: { strength: 17 } }}
         />
-        <Scope glass={false} glassConfig={{ mode: "auto" }}>
+        <Scope glass={false}>
           <Button id="disabled-child">Plain</Button>
         </Scope>
       </>,
@@ -224,9 +178,8 @@ for (const e of [left, right]) {
   assert.equal(e.dataset.glassRenderer, "svg");
   assert.equal(e.hasAttribute("glassConfig"), false);
 }
-assert.equal(left.style.getPropertyValue("--glass-edge"), "none");
+assert.match(left.style.getPropertyValue("--glass-edge"), /^url\("data:/);
 assert.equal(left.style.borderRadius, "9px");
-assert.deepEqual([captures, fonts, decodes, gpuAttempts], [0, 0, 0, 0]);
 assert.equal(
   document.getElementById("disabled-child")?.hasAttribute("data-glass"),
   false,
@@ -237,13 +190,6 @@ assert.deepEqual([left.dataset.glassScope, right.dataset.glassScope], ids);
 assert.equal(geometry.get(left)?.strength, 31);
 assert.equal(geometry.get(right)?.strength, 17);
 assert.equal(right.style.getPropertyValue("--glass-filter"), rightFilter);
-await render({ mode: "css" });
-assert.equal(left.dataset.glassState, "css");
-assert.equal(left.dataset.glassRenderer, undefined);
-assert.equal(activeFilters.has(left), false);
-assert.equal(right.dataset.glassRenderer, "svg");
-await render();
-assert.equal(left.dataset.glassRenderer, "svg");
 left.style.setProperty(
   "background-color",
   "rgba(10, 20, 30, 0.2)",
@@ -261,9 +207,8 @@ assert.equal(activeFilters.has(right), true);
 await act(async () => root.unmount());
 assert.equal(activeFilters.size, 0);
 assert.equal(svgDestroy, 1);
-assert.deepEqual([captures, fonts, decodes, gpuAttempts], [0, 0, 0, 0]);
 assert.ok(observers.every((o) => o.disconnected));
 await window.happyDOM.abort();
 console.log(
-  "local requests passed: independent settings, native SVG isolation, CSS switch, refs, opt-out and disposal",
+  "local requests passed: independent settings, native SVG isolation, refs, opt-out and disposal",
 );

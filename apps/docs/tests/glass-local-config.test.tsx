@@ -1,9 +1,8 @@
 import { expect, test } from "bun:test";
 import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
 import * as glass from "@workspace/ui/components/glass";
 import { GlassSurface } from "@workspace/ui/components/glass";
-import { Input } from "@workspace/ui/components/input";
+import { Toggle } from "@workspace/ui/components/toggle";
 import { type HTMLElement, Window } from "happy-dom";
 import { renderToString } from "react-dom/server";
 import { GlassContext } from "../../../packages/ui/src/lib/glass/context";
@@ -21,16 +20,14 @@ test("local settings create independent requests without becoming DOM attributes
       <GlassSurface
         id="first"
         glassConfig={{
-          mode: "svg",
           material: "clear",
-          options: { tint: "#163842", tintOpacity: 0, highlight: 0 },
+          options: { tint: "#163842", tintOpacity: 0 },
         }}
         style={{ minHeight: 48 }}
       />
       <GlassSurface
         id="second"
         glassConfig={{
-          mode: "css",
           material: "regular",
           options: { tintOpacity: 0.4 },
         }}
@@ -38,7 +35,7 @@ test("local settings create independent requests without becoming DOM attributes
       <GlassSurface
         id="off"
         glass={false}
-        glassConfig={{ mode: "auto", options: { tintOpacity: 0.8 } }}
+        glassConfig={{ options: { tintOpacity: 0.8 } }}
       />
     </>,
   );
@@ -49,9 +46,7 @@ test("local settings create independent requests without becoming DOM attributes
   expect(second?.dataset.glassScope).not.toBe(first?.dataset.glassScope);
   expect(first?.style.getPropertyValue("--glass-base")).toBe("#163842");
   expect(first?.style.getPropertyValue("--glass-opacity")).toBe("0%");
-  expect(first?.style.getPropertyValue("--glass-initial-edge-shadow")).toBe(
-    "0 0 #0000",
-  );
+  expect(first?.style.getPropertyValue("--glass-initial-edge-shadow")).toBe("");
   expect(first?.style.minHeight).toBe("48px");
   expect(second?.dataset.glassMaterial).toBe("regular");
   expect(second?.style.getPropertyValue("--glass-opacity")).toBe("40%");
@@ -69,28 +64,31 @@ test("local settings inherit options while a sibling keeps its configuration", (
         enabled: true,
         surface: false,
         configuration: {
-          mode: "svg",
           material: "regular",
-          options: { tint: "#123456", tintOpacity: 0.2, highlight: 0 },
+          options: { tint: "#123456", tintOpacity: 0.2 },
         },
       }}
     >
-      <Input
+      <Button
         id="local"
         glassConfig={{ material: "clear", options: { tintOpacity: 0 } }}
-      />
+      >
+        Local
+      </Button>
       <Button id="sibling">Action</Button>
-      <Checkbox id="fixed" glassConfig={{ mode: "auto", material: "clear" }} />
+      <Toggle id="fixed" glassConfig={{ material: "clear" }}>
+        Fixed
+      </Toggle>
     </GlassContext.Provider>,
   );
   const local = window.document.querySelector<HTMLElement>("#local");
   const sibling = window.document.querySelector<HTMLElement>("#sibling");
-  const fixed = window.document.querySelector('[data-slot="checkbox"]');
+  const fixed = window.document.querySelector('[data-slot="toggle"]');
   expect(local?.dataset.glassScope).not.toBe(sibling?.dataset.glassScope);
   expect(local?.dataset.glassMaterial).toBe("clear");
   expect(local?.style.getPropertyValue("--glass-base")).toBe("#123456");
   expect(local?.style.getPropertyValue("--glass-opacity")).toBe("0%");
-  expect(local?.style.getPropertyValue("--glass-edge")).toBe("none");
+  expect(local?.style.getPropertyValue("--glass-edge")).toBe("");
   expect(sibling?.dataset.glassMaterial).toBe("regular");
   expect(sibling?.style.getPropertyValue("--glass-opacity")).toBe("20%");
   expect(fixed?.getAttribute("data-glass-material")).toBe("regular");

@@ -3,12 +3,8 @@
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
 import { CheckIcon } from "lucide-react";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
 
-function CheckboxImplementation({
-  className,
-  ...props
-}: CheckboxPrimitive.Root.Props) {
+function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
@@ -27,10 +23,5 @@ function CheckboxImplementation({
     </CheckboxPrimitive.Root>
   );
 }
-
-const Checkbox = withGlass(CheckboxImplementation, "control", {
-  mode: "css",
-  material: "regular",
-});
 
 export { Checkbox };

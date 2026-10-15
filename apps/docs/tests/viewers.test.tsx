@@ -310,27 +310,23 @@ test("markdown content stays plain while independent editor actions inherit glas
     <MarkdownViewer content={content} />
   );
   const editor = renderToStaticMarkup(
-    <Editor
-      glass
-      value={markdown}
-      height={240}
-      preview={{ component: Preview, defaultMode: "preview" }}
-    />,
+    <GlassContext value={{ enabled: true, surface: false }}>
+      <Editor
+        value={markdown}
+        height={240}
+        preview={{ component: Preview, defaultMode: "preview" }}
+      />
+    </GlassContext>,
   );
-  expect(editor).not.toMatch(
-    /data-slot="editor-(?:surface|toolbar|content|preview|monaco)"[^>]*data-glass="true"/,
-  );
-  expect(editor).not.toMatch(
-    /data-slot="(?:markdown-viewer|code-viewer)"[^>]*data-glass="true"/,
-  );
-  expect(editor).toMatch(/<button[^>]*data-glass="true"/);
+  // Editors are content: neither the surface nor its toolbar actions use glass.
+  expect(editor).not.toContain("data-glass");
   expect(
     renderToStaticMarkup(
       <GlassSurface>
-        <CodeViewer glass={false} code="plain" />
+        <CodeViewer code="plain" />
       </GlassSurface>,
     ),
-  ).not.toMatch(/data-slot="code-viewer"[^>]*data-glass="true"/);
+  ).not.toMatch(/data-slot="code-viewer"[^>]*data-glass/);
 });
 
 test("carousel material belongs only to navigation controls", () => {
@@ -356,33 +352,18 @@ test("carousel material belongs only to navigation controls", () => {
   expect(html).toContain('aria-roledescription="slide"');
 });
 
-test("code tools keep content plain and Glass only on their operation controls", () => {
+test("code tools stay ordinary, including their actions, inside glass scopes", () => {
   const code = "function answer() {\n  return 42;\n}";
-  for (const glass of [undefined, true, false]) {
+  for (const surface of [false, true]) {
     const html = renderToStaticMarkup(
-      <GlassContext value={{ enabled: true, surface: false }}>
-        <CodeViewer glass={glass} code={code} />
-        <CodeViewer glass={glass} code={code} variant="plain" />
-        <DiffViewer
-          glass={glass}
-          oldCode="const answer = 1;"
-          newCode="const answer = 42;"
-        />
-        <Editor glass={glass} value={code} language="typescript" height={240} />
+      <GlassContext value={{ enabled: true, surface }}>
+        <CodeViewer code={code} />
+        <CodeViewer code={code} variant="plain" />
+        <DiffViewer oldCode="const answer = 1;" newCode="const answer = 42;" />
+        <Editor value={code} language="typescript" height={240} />
       </GlassContext>,
     );
-    expect(html).not.toMatch(
-      /data-slot="(?:code-viewer|diff-viewer|editor-(?:surface|toolbar|content|monaco)|(?:code-viewer|diff-viewer)-content)"[^>]*data-glass="true"/,
-    );
-    expect(html).not.toMatch(/<table[^>]*data-glass="true"/);
-    expect(html).not.toMatch(
-      /<button[^>]*aria-label="Collapse"[^>]*data-glass="true"/,
-    );
-    if (glass === false) expect(html).not.toContain('data-glass="true"');
-    else expect(html).toMatch(/<button[^>]*data-glass="true"/);
+    expect(html).not.toContain("data-glass");
+    expect(html).toMatch(/<button\b/);
   }
-  const noActions = renderToStaticMarkup(
-    <Editor glass toolbar={false} value={code} height={240} />,
-  );
-  expect(noActions).not.toContain('data-glass="true"');
 });

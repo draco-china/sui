@@ -33,12 +33,11 @@ import { useClipboard } from "../hooks/use-clipboard";
 import { useFullscreen } from "../hooks/use-fullscreen";
 import { useViewerTheme } from "../hooks/use-viewer-theme";
 import { mergeClassNames } from "../lib/class-name";
-import { type GlassProps, withGlass } from "../lib/glass/context";
+import { withoutGlass } from "../lib/glass/context";
 import type { ViewerThemes } from "../lib/viewer/shiki";
 import { useShikiThemes } from "../lib/viewer/shiki-context";
 import type { Button } from "./button";
 import { CopyIcon } from "./copy-icon";
-import { GlassSurface } from "./glass";
 
 type ButtonSize = ComponentProps<typeof Button>["size"];
 
@@ -124,7 +123,7 @@ function editorLanguageLabel(value: string) {
   return value;
 }
 
-export interface EditorProps extends Readonly<GlassProps> {
+export interface EditorProps {
   readonly value?: string;
   readonly onChange?: (value: string) => void;
   readonly disabled?: boolean;
@@ -804,8 +803,7 @@ function EditorImplementation({
             </div>
           </div>
         )}
-        <GlassSurface
-          glass={false}
+        <div
           data-slot="editor-content"
           className={cn(
             "flex min-h-0",
@@ -930,13 +928,13 @@ function EditorImplementation({
               </Suspense>
             </div>
           )}
-        </GlassSurface>
+        </div>
       </div>
     </div>
   );
 }
 
-export const Editor = withGlass(EditorImplementation, "scope");
+export const Editor = withoutGlass(EditorImplementation);
 
 function HtmlEditorPreview({ content }: Readonly<{ content: string }>) {
   const port = useContext(HtmlPreviewScrollContext);

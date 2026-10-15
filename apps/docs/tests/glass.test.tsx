@@ -117,7 +117,6 @@ describe("glass preserves component semantics", () => {
       "text-fieldset",
       "text-fieldgroup",
       "text-field",
-      "text-buttongroup",
       "plain-fieldlabel",
       "plain-affix",
       "plain-keygroup",
@@ -126,8 +125,12 @@ describe("glass preserves component semantics", () => {
       "plain-marker-button",
     ])
       expect(tag(html, id)).not.toContain("data-glass=");
-    for (const id of ["painted-input", "painted-button"])
-      expect(tag(html, id)).toContain('data-glass="true"');
+    // A button group is one capsule its buttons share; a field on its own in
+    // the scope is a glass field.
+    expect(tag(html, "text-buttongroup")).toContain('data-glass="true"');
+    expect(tag(html, "text-buttongroup")).toContain('role="group"');
+    expect(tag(html, "painted-button")).toContain('data-glass-part="control"');
+    expect(tag(html, "painted-input")).toContain('data-glass="true"');
     expect(tag(html, "plain-fieldlabel")).toMatch(/^<label\b/);
     expect(tag(html, "plain-fieldlabel")).toContain('for="painted-input"');
     expect(tag(html, "plain-affix")).toMatch(/^<label\b/);
@@ -137,12 +140,12 @@ describe("glass preserves component semantics", () => {
     expect(tag(html, "plain-marker-button")).toMatch(/^<button\b/);
     expect(tag(html, "plain-marker-button")).toContain('type="button"');
   });
-  test("server material respects zero tint opacity and disabled highlights", () => {
+  test("server material respects zero tint opacity with built-in highlights", () => {
     const html = renderToString(
       <GlassSurface
         id="initial-options"
         glassConfig={{
-          options: { tint: "#161617", tintOpacity: 0, highlight: 0 },
+          options: { tint: "#161617", tintOpacity: 0 },
         }}
         style={{ minHeight: 48 }}
       />,
@@ -150,8 +153,8 @@ describe("glass preserves component semantics", () => {
     const element = tag(html, "initial-options");
     expect(element).toContain("--glass-opacity:0%");
     expect(element).toContain("--glass-base:#161617");
-    expect(element).toContain("--glass-edge:none");
-    expect(element).toContain("--glass-initial-edge-shadow:0 0 #0000");
+    expect(element).not.toContain("--glass-edge");
+    expect(element).not.toContain("--glass-initial-edge-shadow");
     expect(element).toContain("min-height:48px");
   });
   test("initial lighting follows native radius and suppresses glass focus rings", () => {
@@ -173,10 +176,9 @@ describe("glass preserves component semantics", () => {
       "shadow",
     ])
       expect(css).toContain(`var(--tw-${shadow},`);
-    const html = renderToString(<Input glass id="initial-input" />);
-    expect(html).toMatch(/^<input\b/);
-    expect(tag(html, "initial-input")).toContain("rounded-3xl");
-    expect(tag(html, "initial-input")).toContain('data-glass-state="loading"');
+    const html = renderToString(<Button glass id="initial-button" />);
+    expect(html).toMatch(/^<button\b/);
+    expect(tag(html, "initial-button")).toContain('data-glass-state="loading"');
     expect(html).not.toContain("<svg");
   });
   test("scope enables one surface layer, explicit false overrides and explicit true nests deliberately", () => {
@@ -222,7 +224,7 @@ describe("glass preserves component semantics", () => {
     expect(html).toContain('data-glass-state="loading"');
     expect(html).not.toContain('data-glass-state="ready"');
   });
-  test("container internals stay plain while explicit opt-ins remain independent", () => {
+  test("form fields stay ordinary and keep their actions ordinary inside glass", () => {
     const html = renderToString(
       <GlassSurface>
         <Input id="nested-input" />
@@ -231,23 +233,19 @@ describe("glass preserves component semantics", () => {
           <InputGroupInput id="group-input" />
           <InputGroupButton id="group-action">Clear</InputGroupButton>
         </InputGroup>
-        <Input glass={false} id="plain-input" />
         <GlassSurface glass={false}>
           <Button id="plain-scope-button">Plain</Button>
         </GlassSurface>
       </GlassSurface>,
     );
-    expect(tag(html, "nested-input")).toContain('data-glass-part="control"');
-    expect(tag(html, "group-material")).toContain('data-glass-part="control"');
     for (const id of [
-      "content-wrapper",
       "nested-input",
       "group-material",
       "group-input",
       "group-action",
-      "plain-input",
-      "plain-scope-button",
     ])
+      expect(tag(html, id)).not.toContain("data-glass");
+    for (const id of ["content-wrapper", "plain-scope-button"])
       expect(tag(html, id)).not.toContain("data-glass=");
   });
   test("tooltip trigger shares its container without a second material", () => {
@@ -268,27 +266,31 @@ describe("glass preserves component semantics", () => {
     expect(tag(html, "tooltip-trigger")).not.toContain("data-glass=");
     expect(tag(html, "tooltip-trigger")).toContain('data-glass-part="control"');
   });
-  test("menubar triggers share a surface while explicit false keeps native styling", () => {
+  test("menubar titles stay ordinary inside and outside glass", () => {
     const html = renderToString(
-      <GlassSurface>
-        <Menubar>
-          <MenubarMenu>
-            <MenubarTrigger id="glass-menu-trigger">File</MenubarTrigger>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger id="plain-menu-trigger" glass={false}>
-              Help
-            </MenubarTrigger>
-          </MenubarMenu>
-        </Menubar>
-      </GlassSurface>,
+      <>
+        <GlassSurface>
+          <Menubar>
+            <MenubarMenu>
+              <MenubarTrigger id="inner-menu-trigger">File</MenubarTrigger>
+            </MenubarMenu>
+          </Menubar>
+        </GlassSurface>
+        <GlassContext.Provider
+          value={{ enabled: true, surface: false, configuration: {} }}
+        >
+          <Menubar>
+            <MenubarMenu>
+              <MenubarTrigger id="outer-menu-trigger">Help</MenubarTrigger>
+            </MenubarMenu>
+          </Menubar>
+        </GlassContext.Provider>
+      </>,
     );
-    expect(tag(html, "glass-menu-trigger")).not.toContain("data-glass=");
-    expect(tag(html, "glass-menu-trigger")).toContain(
-      'data-glass-part="control"',
-    );
-    expect(tag(html, "plain-menu-trigger")).not.toContain("data-glass=");
-    expect(tag(html, "plain-menu-trigger")).not.toContain("data-glass-part=");
+    for (const id of ["inner-menu-trigger", "outer-menu-trigger"]) {
+      expect(tag(html, id)).not.toContain("data-glass=");
+      expect(tag(html, id)).not.toContain("data-glass-part=");
+    }
   });
   test("QR shells use a real glass scope and leave the scanner image undecorated", () => {
     const html = renderToString(

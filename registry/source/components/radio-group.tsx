@@ -3,7 +3,7 @@
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 
 function RadioGroupImplementation({
   className,
@@ -18,10 +18,7 @@ function RadioGroupImplementation({
   );
 }
 
-function RadioGroupItemImplementation({
-  className,
-  ...props
-}: RadioPrimitive.Root.Props) {
+function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
   return (
     <RadioPrimitive.Root
       data-slot="radio-group-item"
@@ -41,10 +38,6 @@ function RadioGroupItemImplementation({
   );
 }
 
-const RadioGroup = withGlass(RadioGroupImplementation, "scope");
-const RadioGroupItem = withGlass(RadioGroupItemImplementation, "control", {
-  mode: "css",
-  material: "regular",
-});
+const RadioGroup = withoutGlass(RadioGroupImplementation);
 
 export { RadioGroup, RadioGroupItem };

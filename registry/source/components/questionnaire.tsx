@@ -5,7 +5,7 @@ import { type Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 import type * as React from "react";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 
 function QuestionnaireImplementation({
   className,
@@ -97,7 +97,7 @@ function QuestionnaireChoices({
   );
 }
 
-function QuestionnaireChoiceImplementation({
+function QuestionnaireChoice({
   children,
   className,
   ...props
@@ -308,11 +308,7 @@ function QuestionnaireSubmit({
   );
 }
 
-const Questionnaire = withGlass(QuestionnaireImplementation, "scope");
-const QuestionnaireChoice = withGlass(
-  QuestionnaireChoiceImplementation,
-  "control",
-);
+const Questionnaire = withoutGlass(QuestionnaireImplementation);
 
 export {
   Questionnaire,

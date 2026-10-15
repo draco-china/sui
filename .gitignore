@@ -36,6 +36,7 @@ coverage/
 
 # Local review working notes
 review-plans/
+apps/docs/tests/glass-audit.json
 
 # Local hook overrides
 /lefthook-local.yml

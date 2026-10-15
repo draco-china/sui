@@ -8,6 +8,7 @@ import useEmblaCarousel, {
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 import { mergeClassNames } from "../lib/class-name";
+import { withGlass, withoutGlass } from "../lib/glass/context";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -42,7 +43,7 @@ function useCarousel() {
   return context;
 }
 
-function Carousel({
+function CarouselImplementation({
   orientation = "horizontal",
   opts,
   setApi,
@@ -146,7 +147,10 @@ function Carousel({
   );
 }
 
-function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
+function CarouselContentImplementation({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel();
 
   return (
@@ -249,6 +253,11 @@ function CarouselNext({
     </Button>
   );
 }
+
+// With glass, the previous and next buttons float as glass controls while
+// the slides stay ordinary content.
+const Carousel = withGlass(CarouselImplementation, "scope");
+const CarouselContent = withoutGlass(CarouselContentImplementation);
 
 export {
   Carousel,

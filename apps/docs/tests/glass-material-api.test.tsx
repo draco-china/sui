@@ -2,24 +2,29 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { Button } from "@workspace/ui/components/button";
 import {
+  GlassContent,
   type GlassMaterial,
   GlassSurface,
 } from "@workspace/ui/components/glass";
-import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { type HTMLElement, Window } from "happy-dom";
 import { renderToString } from "react-dom/server";
 import {
+  glassDefaultMaterial,
   glassDefaults,
   glassMaterials,
 } from "../../../packages/ui/src/lib/glass/defaults";
 
-test("clear retains confirmed defaults and regular changes only its base opacity", () => {
-  expect(glassMaterials.clear).toBe(glassDefaults);
-  expect(glassMaterials.regular).toEqual({
-    ...glassDefaults,
-    tintOpacity: 0.35,
-  });
+test("regular is the default and frosts more than the see-through clear", () => {
+  expect(glassDefaultMaterial).toBe("regular");
+  const { clear, regular } = glassMaterials;
+  expect(clear.tintOpacity).toBe(glassDefaults.tintOpacity);
+  expect([clear.tintOpacity, regular.tintOpacity]).toEqual([0.12, 0.3]);
+  expect([clear.blur, regular.blur]).toEqual([
+    { svg: 4, css: 6 },
+    { svg: 14, css: 16 },
+  ]);
+  expect(regular.saturation).toBe(clear.saturation);
 });
 
 test("surface configuration reaches nested controls while siblings stay independent before hydration", () => {
@@ -28,7 +33,9 @@ test("surface configuration reaches nested controls while siblings stay independ
   window.document.body.innerHTML = renderToString(
     <>
       <GlassSurface id="regular-parent" glassConfig={{ material }}>
-        <Input id="regular-input" glass />
+        <Button id="regular-second" glass>
+          Second
+        </Button>
         <Button id="regular-button" glass>
           Action
         </Button>
@@ -36,10 +43,10 @@ test("surface configuration reaches nested controls while siblings stay independ
           Plain
         </Button>
       </GlassSurface>
-      <GlassSurface id="clear-surface" />
+      <GlassSurface id="clear-surface" glassConfig={{ material: "clear" }} />
     </>,
   );
-  for (const id of ["regular-input", "regular-button"])
+  for (const id of ["regular-second", "regular-button"])
     expect(
       window.document.querySelector<HTMLElement>(`#${id}`)?.dataset
         .glassMaterial,
@@ -54,7 +61,7 @@ test("surface configuration reaches nested controls while siblings stay independ
   ).toBeUndefined();
   const ids = [
     "regular-parent",
-    "regular-input",
+    "regular-second",
     "regular-button",
     "clear-surface",
   ].map(
@@ -96,7 +103,7 @@ test("regular SSR fallback preserves explicit opacity and caller layout styles",
   if (!regular || !override) throw new Error("Expected both SSR surfaces");
   expect(
     window.getComputedStyle(regular).getPropertyValue("--glass-opacity"),
-  ).toBe("35%");
+  ).toBe("30%");
   expect(
     window.getComputedStyle(override).getPropertyValue("--glass-opacity"),
   ).toBe("0%");
@@ -105,22 +112,218 @@ test("regular SSR fallback preserves explicit opacity and caller layout styles",
   expect(regular?.style.getPropertyValue("--glass-opacity")).toBe("");
 });
 
-test("CSS-only skeleton keeps fixed Regular under a Clear surface configuration", () => {
-  const window = new Window();
-  window.document.body.innerHTML = renderToString(
-    <GlassSurface glassConfig={{ material: "clear", mode: "auto" }}>
-      <Skeleton glass id="fixed-regular" />
-      <Skeleton glass={false} id="plain-skeleton" />
-      <GlassSurface id="ambient-clear" />
+test("skeletons stay ordinary placeholders inside glass", () => {
+  const html = renderToString(
+    <GlassSurface glassConfig={{ material: "clear" }}>
+      <Skeleton id="placeholder" />
     </GlassSurface>,
   );
-  const fixed = window.document.querySelector<HTMLElement>("#fixed-regular");
-  const ambient = window.document.querySelector<HTMLElement>("#ambient-clear");
-  expect(fixed?.dataset.glassMaterial).toBe("regular");
-  expect(fixed?.dataset.glassScope).not.toBe(ambient?.dataset.glassScope);
-  expect(ambient?.dataset.glassMaterial).toBe("clear");
+  const window = new Window();
+  window.document.body.innerHTML = html;
+  const placeholder = window.document.querySelector("#placeholder");
+  expect(placeholder?.hasAttribute("data-glass")).toBe(false);
+  expect(placeholder?.hasAttribute("data-glass-part")).toBe(false);
+});
+
+test("GlassSurface renders any element and GlassContent keeps its own controls ordinary", () => {
+  const html = renderToString(
+    <GlassSurface id="nav-surface" render={<nav aria-label="Primary" />}>
+      <Button id="surface-action">Share</Button>
+      <GlassContent id="content" render={<section />}>
+        <Button id="content-action">Edit</Button>
+        <Button id="explicit-action" glass>
+          Pin
+        </Button>
+      </GlassContent>
+    </GlassSurface>,
+  );
+  const window = new Window();
+  window.document.body.innerHTML = html;
+  const find = (id: string) => window.document.querySelector(`#${id}`);
+  const surface = find("nav-surface");
+  expect(surface?.tagName).toBe("NAV");
+  expect(surface?.getAttribute("aria-label")).toBe("Primary");
+  expect(surface?.getAttribute("data-slot")).toBe("glass-surface");
+  expect(surface?.getAttribute("data-glass")).toBe("true");
+  expect(find("surface-action")?.getAttribute("data-glass-part")).toBe(
+    "control",
+  );
+  expect(find("content")?.tagName).toBe("SECTION");
+  expect(find("content")?.getAttribute("data-slot")).toBe("glass-content");
+  for (const id of ["content", "content-action"]) {
+    expect(find(id)?.hasAttribute("data-glass")).toBe(false);
+    expect(find(id)?.hasAttribute("data-glass-part")).toBe(false);
+  }
+  expect(find("explicit-action")?.getAttribute("data-glass")).toBe("true");
+});
+
+test("ordinary and glass buttons share the press bloom", () => {
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <>
+      <Button id="ordinary">Ordinary</Button>
+      <Button id="glass" glass>
+        Glass
+      </Button>
+    </>,
+  );
+  for (const id of ["ordinary", "glass"]) {
+    const classes = window.document.getElementById(id)?.className ?? "";
+    expect(classes).toContain(
+      "motion-safe:active:not-aria-[haspopup]:scale-[1.04]",
+    );
+    expect(classes).not.toContain("translate-y-px");
+  }
+});
+
+test("a glass button group is one capsule, and a group of groups only lays them out", async () => {
+  const { ButtonGroup } = await import("@workspace/ui/components/button-group");
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <>
+      <ButtonGroup id="single" glass>
+        <Button variant="outline">One</Button>
+        <Button variant="outline">Two</Button>
+      </ButtonGroup>
+      <ButtonGroup id="outer" glass>
+        <ButtonGroup id="inner">
+          <Button variant="outline">Archive</Button>
+        </ButtonGroup>
+        <ButtonGroup>
+          <Button variant="outline">Snooze</Button>
+        </ButtonGroup>
+      </ButtonGroup>
+    </>,
+  );
+  const single = window.document.getElementById("single");
+  expect(single?.getAttribute("data-glass")).toBe("true");
+  for (const button of single?.querySelectorAll('[data-slot="button"]') ?? []) {
+    expect(button.hasAttribute("data-glass")).toBe(false);
+    expect(button.getAttribute("data-glass-part")).toBe("control");
+  }
   expect(
-    window.document.querySelector<HTMLElement>("#plain-skeleton")?.dataset
-      .glassMaterial,
-  ).toBeUndefined();
+    window.document.getElementById("outer")?.hasAttribute("data-glass"),
+  ).toBe(false);
+  expect(
+    window.document.getElementById("inner")?.getAttribute("data-glass"),
+  ).toBe("true");
+});
+
+test("popups default to Regular with vertical edge light unless configured", () => {
+  const result = Bun.spawnSync({
+    cmd: [
+      process.execPath,
+      new URL("./fixtures/glass-popup-defaults.tsx", import.meta.url).pathname,
+    ],
+    cwd: new URL("..", import.meta.url).pathname,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  expect(new TextDecoder().decode(result.stderr)).toBe("");
+  expect(result.exitCode).toBe(0);
+  expect(new TextDecoder().decode(result.stdout)).toContain(
+    "popup glass defaults passed",
+  );
+});
+
+test("cards and QR codes stay content unless glass is explicit", async () => {
+  const { Card } = await import("@workspace/ui/components/card");
+  const { QRCode } = await import("@workspace/ui/components/qr-code");
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <GlassSurface glassConfig={{ material: "clear" }}>
+      <Card id="content-card">
+        <Button id="content-action">Ordinary</Button>
+      </Card>
+      <Card id="glass-card" glass>
+        <Button id="card-action">Shared</Button>
+      </Card>
+      <QRCode id="content-code" value="sui" />
+      <QRCode id="glass-code" value="sui" glass />
+    </GlassSurface>,
+  );
+  const element = (id: string) => window.document.getElementById(id);
+  expect(element("content-card")?.hasAttribute("data-glass")).toBe(false);
+  expect(element("content-action")?.hasAttribute("data-glass-part")).toBe(
+    false,
+  );
+  expect(element("glass-card")?.getAttribute("data-glass")).toBe("true");
+  expect(element("card-action")?.getAttribute("data-glass-part")).toBe(
+    "control",
+  );
+  expect(element("content-code")?.hasAttribute("data-glass")).toBe(false);
+  expect(element("glass-code")?.getAttribute("data-glass")).toBe("true");
+  expect(element("glass-code")?.getAttribute("data-glass-material")).toBe(
+    "clear",
+  );
+});
+
+test("a glass carousel floats its controls while slides stay content", async () => {
+  const {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+  } = await import("@workspace/ui/components/carousel");
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <Carousel glass>
+      <CarouselContent>
+        <CarouselItem>
+          <Button id="slide-action">Open</Button>
+        </CarouselItem>
+      </CarouselContent>
+      <CarouselPrevious id="previous" />
+      <CarouselNext id="next" />
+    </Carousel>,
+  );
+  const element = (id: string) => window.document.getElementById(id);
+  expect(element("previous")?.getAttribute("data-glass")).toBe("true");
+  expect(element("next")?.getAttribute("data-glass")).toBe("true");
+  expect(element("slide-action")?.hasAttribute("data-glass")).toBe(false);
+  expect(
+    window.document
+      .querySelector('[data-slot="carousel"]')
+      ?.hasAttribute("data-glass"),
+  ).toBe(false);
+});
+
+test("form fields are glass on their own and ordinary inside glass surfaces", async () => {
+  const { Input } = await import("@workspace/ui/components/input");
+  const { Textarea } = await import("@workspace/ui/components/textarea");
+  const { Card } = await import("@workspace/ui/components/card");
+  const { Pagination } = await import("@workspace/ui/components/pagination");
+  const { GlassContext } = await import(
+    "../../../packages/ui/src/lib/glass/context"
+  );
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <GlassContext.Provider value={{ enabled: true, surface: false }}>
+      <Input id="field" />
+      <Textarea id="notes" />
+      <GlassSurface>
+        <Input id="surface-field" />
+      </GlassSurface>
+      <Card>
+        <Input id="card-field" />
+      </Card>
+      <Pagination id="pages" page={2} perPage={10} totalCount={48} />
+    </GlassContext.Provider>,
+  );
+  const element = (id: string) => window.document.getElementById(id);
+  expect(element("field")?.getAttribute("data-glass")).toBe("true");
+  expect(element("notes")?.getAttribute("data-glass")).toBe("true");
+  // Inside a surface or content, a field keeps its own fill and focus ring.
+  for (const id of ["surface-field", "card-field"]) {
+    expect(element(id)?.hasAttribute("data-glass")).toBe(false);
+    expect(element(id)?.hasAttribute("data-glass-part")).toBe(false);
+  }
+  const pages = element("pages");
+  expect(pages?.hasAttribute("data-glass")).toBe(false);
+  expect(
+    pages
+      ?.querySelector('[data-slot="button-group"]')
+      ?.getAttribute("data-glass"),
+  ).toBe("true");
 });

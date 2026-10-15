@@ -10,11 +10,10 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
-import { GlassSurface } from "@/components/ui/glass";
 
 interface DiffLine {
   type: "added" | "removed" | "unchanged";
@@ -48,7 +47,6 @@ export interface DiffViewerProps {
   readonly lang?: string;
   readonly theme?: "light" | "dark";
   readonly className?: string;
-  readonly glass?: boolean;
   readonly labels?: Partial<DiffViewerLabels>;
   readonly status?: "streaming" | "complete";
   readonly maxHeight?: number;
@@ -213,8 +211,7 @@ function DiffViewerImplementation({
         />
         {copyable ? <ViewerCopyButton value={newCode} labels={text} /> : null}
       </div>
-      <GlassSurface
-        glass={false}
+      <div
         data-slot="diff-viewer-content"
         ref={viewportRef}
         tabIndex={0}
@@ -256,12 +253,12 @@ function DiffViewerImplementation({
             />
           </div>
         )}
-      </GlassSurface>
+      </div>
     </div>
   );
 }
 
-export const DiffViewer = withGlass(DiffViewerImplementation, "scope");
+export const DiffViewer = withoutGlass(DiffViewerImplementation);
 
 function SplitDiffPane({
   title,

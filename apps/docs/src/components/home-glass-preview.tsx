@@ -10,6 +10,7 @@ import type { GlassConfig } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Toggle } from "@workspace/ui/components/toggle";
+import { cn } from "cn";
 import { gsap } from "gsap";
 import {
   ArrowUpRight,
@@ -31,7 +32,8 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
   const zh = locale === "zh-CN";
   const { resolvedTheme } = useTheme();
   const scene = useRef<HTMLDivElement>(null);
-  const glassConfig: GlassConfig = { mode: "css", captureTarget: scene };
+  // The home showcase always presents the Clear material.
+  const glassConfig: GlassConfig = { material: "clear" };
   const nameId = useId();
   const updatesId = useId();
   const [glass, setGlass] = useState(true);
@@ -151,7 +153,12 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
             {glass ? "Glass" : labels.default}
           </Toggle>
         </div>
-        <Card glass={glass} glassConfig={glassConfig} className="w-full gap-5">
+        {/* Cards are content, so the showcase opts this one into glass. */}
+        <Card
+          glass={glass}
+          glassConfig={glassConfig}
+          className={cn("w-full gap-5", glass && "shadow-none")}
+        >
           <CardHeader>
             <div className="mb-5 flex items-center justify-between">
               <Logo markOnly className="text-primary" />
@@ -181,8 +188,6 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
                   {zh ? "工作区名称" : "Workspace name"}
                 </label>
                 <Input
-                  glass={glass}
-                  glassConfig={glassConfig}
                   id={nameId}
                   defaultValue="Design studio"
                   required

@@ -43,7 +43,6 @@ function ToggleImplementation({
 }
 
 const Toggle = withGlass(ToggleImplementation, "control", {
-  mode: "css",
   material: "regular",
 });
 

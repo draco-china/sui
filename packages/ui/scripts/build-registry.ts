@@ -333,14 +333,8 @@ export async function createRegistry() {
             visit(join(sourceRoot, "types/worker.d.ts"));
         }
       }
-      for (const dependency of source.typeReferences) {
+      for (const dependency of source.typeReferences)
         devDependencies.add(dependency);
-        // The CLI's TypeScript printer drops /// reference directives. Import a
-        // declaration module explicitly, so even restrictive tsconfig types and
-        // files lists receive the WebGPU globals used by the renderer.
-        if (dependency === "@webgpu/types")
-          visit(join(sourceRoot, "types/webgpu.d.ts"));
-      }
       if (path.endsWith(".css") && available.has(`${path}.d.ts`))
         visit(`${path}.d.ts`);
     }
@@ -362,9 +356,6 @@ export async function createRegistry() {
           canonicalImport(local) +
           query +
           content.slice(reference.end);
-      }
-      if (source.typeReferences.includes("@webgpu/types")) {
-        content = `import type {} from "${canonicalImport(join(sourceRoot, "types/webgpu.d.ts"))}";\n\n${content}`;
       }
       return fileDefinition(path, content);
     });

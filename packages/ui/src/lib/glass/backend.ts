@@ -1,53 +1,23 @@
-import type { GlassMaterial, GlassMode } from "./context";
-import type { GlassRenderer } from "./renderer";
 import type { SvgGlassRenderer } from "./svg-renderer";
 
-type Backend =
-  | { kind: "vgpu"; renderer: GlassRenderer }
-  | { kind: "svg"; renderer: SvgGlassRenderer };
-let gpu: Promise<Backend | undefined> | undefined;
-let svg: Promise<Backend | undefined> | undefined;
-let gpuInstance: GlassRenderer | undefined;
-let svgInstance: SvgGlassRenderer | undefined;
+let svg: Promise<SvgGlassRenderer | undefined> | undefined;
+let instance: SvgGlassRenderer | undefined;
+let failed = false;
 let controller = new AbortController();
-let gpuFailed = false;
-let svgFailed = false;
 
-export function glassBaseOnly(mode: GlassMode = "svg") {
-  return (
-    mode === "css" ||
+/** CSS-only material where reduced transparency or forced colors are preferred. */
+export function glassBaseOnly() {
+  return Boolean(
     window.matchMedia?.(
       "(prefers-reduced-transparency: reduce), (forced-colors: active)",
-    ).matches
+    ).matches,
   );
 }
 
-export async function prepareGlassRenderer(
-  mode: GlassMode = "svg",
-  material: GlassMaterial = "clear",
-) {
-  if (glassBaseOnly(mode)) return;
+/** The shared native SVG renderer, unless the browser cannot paint SVG backdrops. */
+export async function prepareGlassRenderer() {
+  if (glassBaseOnly() || failed) return;
   const session = controller;
-  if (mode === "auto" && material === "clear" && !gpuFailed) {
-    gpu ??= (async () => {
-      try {
-        const { GlassRenderer } = await import("./renderer");
-        const renderer = await GlassRenderer.create(session.signal);
-        if (session.signal.aborted) {
-          renderer.destroy();
-          return;
-        }
-        gpuInstance = renderer;
-        return { kind: "vgpu", renderer } satisfies Backend;
-      } catch {
-        if (!session.signal.aborted) gpuFailed = true;
-      }
-    })();
-    const backend = await gpu;
-    if (session.signal.aborted) return;
-    if (backend && !gpuFailed) return backend;
-  }
-  if (svgFailed) return;
   svg ??= (async () => {
     try {
       const { SvgGlassRenderer } = await import("./svg-renderer");
@@ -56,37 +26,27 @@ export async function prepareGlassRenderer(
         renderer.destroy();
         return;
       }
-      svgInstance = renderer;
-      return { kind: "svg", renderer } satisfies Backend;
+      instance = renderer;
+      return renderer;
     } catch {
-      if (!session.signal.aborted) svgFailed = true;
+      if (!session.signal.aborted) failed = true;
     }
   })();
-  const backend = await svg;
-  if (!session.signal.aborted && !svgFailed) return backend;
+  const renderer = await svg;
+  if (!session.signal.aborted && !failed) return renderer;
 }
 
-export function failGlassRenderer(kind: Backend["kind"]) {
-  if (kind === "vgpu") {
-    gpuFailed = true;
-    gpuInstance?.destroy();
-    gpuInstance = undefined;
-  } else {
-    svgFailed = true;
-    svgInstance?.destroy();
-    svgInstance = undefined;
-  }
+export function failGlassRenderer() {
+  failed = true;
+  instance?.destroy();
+  instance = undefined;
 }
 
 export function releaseGlassRenderers() {
   controller.abort();
-  gpuInstance?.destroy();
-  svgInstance?.destroy();
-  gpuInstance = undefined;
-  svgInstance = undefined;
-  gpu = undefined;
+  instance?.destroy();
+  instance = undefined;
   svg = undefined;
-  gpuFailed = false;
-  svgFailed = false;
+  failed = false;
   controller = new AbortController();
 }

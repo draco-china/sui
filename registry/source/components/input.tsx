@@ -23,6 +23,6 @@ function InputImplementation({
   );
 }
 
-const Input = withGlass(InputImplementation, "control");
+const Input = withGlass(InputImplementation, "field");
 
 export { Input };

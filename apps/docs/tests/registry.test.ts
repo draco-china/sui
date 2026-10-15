@@ -1,13 +1,5 @@
 import { expect, test } from "bun:test";
-import {
-  mkdir,
-  mkdtemp,
-  readdir,
-  readFile,
-  rm,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import ts from "typescript";
@@ -123,7 +115,9 @@ test("Editor includes local Monaco Workers and their TypeScript declarations", (
   expect(
     editor?.files?.some((file) => file.target === "@lib/sui/types/worker.d.ts"),
   ).toBe(true);
-  expect(editor?.devDependencies).toContain("@webgpu/types@^0.1.74");
+  expect(
+    editor?.devDependencies?.some((name) => name.startsWith("@webgpu/")),
+  ).toBeFalsy();
   const table = registry.items.find((item) => item.name === "data-table");
   expect(
     table?.files?.some(
@@ -135,104 +129,6 @@ test("Editor includes local Monaco Workers and their TypeScript declarations", (
       (file) => file.target === "@components/blocks/data-table/table.css.d.ts",
     ),
   ).toBe(true);
-});
-
-test("CLI transformed WebGPU files compile with restrictive consumer types and files lists", async () => {
-  const output = await mkdtemp(join(tmpdir(), "sui-webgpu-consumer-"));
-  try {
-    const uiPackage = join(repositoryRoot, "packages/ui");
-    const cliRoot = dirname(Bun.resolveSync("shadcn", uiPackage));
-    const { transform } = await import(
-      Bun.resolveSync(
-        "@shadcn/registry/internal/utils/transformers/index",
-        cliRoot,
-      )
-    );
-    const config = JSON.parse(
-      await readFile(join(uiPackage, "components.json"), "utf8"),
-    );
-    config.aliases = {
-      components: "#kit/components",
-      ui: "#kit/components/ui",
-      lib: "#kit/lib",
-      hooks: "#kit/hooks",
-      utils: "#kit/lib/utils",
-    };
-    await symlink(
-      join(repositoryRoot, "node_modules"),
-      join(output, "node_modules"),
-      "dir",
-    );
-    const item = registry.items.find((item) => item.name === "glass");
-    const required =
-      item?.files?.filter((file) =>
-        [
-          "@lib/glass/renderer.ts",
-          "@lib/glass/contrast.ts",
-          "@lib/glass/defaults.ts",
-          "@lib/glass/refraction.ts",
-          "@lib/sui/types/webgpu.d.ts",
-        ].includes(file.target ?? ""),
-      ) ?? [];
-    expect(required).toHaveLength(5);
-    for (const file of required) {
-      const content = await transform({
-        filename: file.path,
-        raw: file.content,
-        config,
-        isRemote: true,
-      });
-      const target = join(
-        output,
-        "src",
-        file.target?.replace("@lib/", "lib/") ?? "",
-      );
-      await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, content);
-      if (file.path.endsWith("/renderer.ts")) {
-        expect(content).toContain('from "#kit/lib/sui/types/webgpu"');
-      } else if (file.path.endsWith("/webgpu.d.ts")) {
-        expect(content).toContain('import "@webgpu/types"');
-      }
-    }
-    await writeFile(
-      join(output, "src/probe.ts"),
-      `import { GlassRenderer } from "#kit/lib/glass/renderer";
-export const renderer = GlassRenderer;
-export const buffer = GPUBufferUsage.UNIFORM;
-export const texture = GPUTextureUsage.TEXTURE_BINDING;
-export const mode = GPUMapMode.READ;`,
-    );
-    const parsed = ts.parseJsonConfigFileContent(
-      {
-        files: ["src/probe.ts"],
-        compilerOptions: {
-          target: "ES2022",
-          lib: ["ES2022", "DOM", "DOM.Iterable"],
-          module: "ESNext",
-          moduleResolution: "bundler",
-          strict: true,
-          noEmit: true,
-          skipLibCheck: true,
-          types: ["vite/client"],
-          paths: { "#kit/*": [join(output, "src/*")] },
-        },
-      },
-      ts.sys,
-      output,
-    );
-    expect(parsed.fileNames).toEqual([join(output, "src/probe.ts")]);
-    const diagnostics = ts.getPreEmitDiagnostics(
-      ts.createProgram(parsed.fileNames, parsed.options),
-    );
-    expect(
-      diagnostics.map((diagnostic) =>
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
-      ),
-    ).toEqual([]);
-  } finally {
-    await rm(output, { recursive: true, force: true });
-  }
 });
 
 test("CSS serialization retains !important, nested rules and required global imports", () => {

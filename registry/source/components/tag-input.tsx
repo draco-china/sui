@@ -386,6 +386,7 @@ function TagInputImplementation({
   );
 }
 
+// The setting passes to its chips field, which is the glass field.
 const TagInput = withGlass(TagInputImplementation, "scope");
 
 export { TagInput, type TagInputLabels, type TagInputProps };

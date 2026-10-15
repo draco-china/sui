@@ -1,31 +1,20 @@
 import { Home, Search, Settings } from "lucide-react";
-import { Profiler, useRef, useState } from "react";
+import { Profiler, type ReactNode, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { GlassSurface } from "../../../../packages/ui/src/components/glass";
 import { TabBar } from "../../../../packages/ui/src/components/tab-bar";
-import {
-  type GlassFrame,
-  GlassRenderer,
-} from "../../../../packages/ui/src/lib/glass/renderer";
 import { SvgGlassRenderer } from "../../../../packages/ui/src/lib/glass/svg-renderer";
 import GlassComparison from "../../src/examples/variants/glass-demo";
 import {
-  captureAuditEnabled,
-  instrumentGpu,
-  measure,
+  auditEnabled,
   metrics,
+  recordFrames,
   resetMetrics,
   snapshot,
-  summary,
 } from "./metrics";
 import { svgFilterAudit } from "./svg-audit";
 import "./style.css";
 
-instrumentGpu();
-const render = GlassRenderer.prototype.render;
-GlassRenderer.prototype.render = function (source, frame) {
-  return measure("render", () => render.call(this, source, frame));
-};
 const filterSvg = SvgGlassRenderer.prototype.filter;
 SvgGlassRenderer.prototype.filter = function (element, geometry) {
   const start = performance.now();
@@ -35,6 +24,7 @@ SvgGlassRenderer.prototype.filter = function (element, geometry) {
     metrics.svgFilter.push(performance.now() - start);
   }
 };
+recordFrames();
 const supportsLongTasks =
   PerformanceObserver.supportedEntryTypes.includes("longtask");
 if (supportsLongTasks) {
@@ -46,10 +36,6 @@ if (supportsLongTasks) {
 
 const pause = (milliseconds: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
-const focusedSvg =
-  new URLSearchParams(location.search).get("scenario") === "svg-init";
-const focusedDrag =
-  new URLSearchParams(location.search).get("scenario") === "auto-drag";
 
 const items = [
   { value: "home", label: "Home", icon: <Home /> },
@@ -66,8 +52,7 @@ async function stable(scene: HTMLElement) {
     const pending = surfaces.some(
       (surface) => surface.dataset.glassState === "loading",
     );
-    const next =
-      metrics.capture.length + metrics.render.length + metrics.svgFilter.length;
+    const next = metrics.svgFilter.length;
     if (count !== next) {
       count = next;
       changed = performance.now();
@@ -92,84 +77,12 @@ async function stable(scene: HTMLElement) {
   };
 }
 
-function sourceCanvas() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 960;
-  canvas.height = 540;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas 2D unavailable");
-  for (let y = 0; y < 540; y += 30) {
-    for (let x = 0; x < 960; x += 30) {
-      context.fillStyle = (x + y) % 60 ? "#007aff" : "#34c759";
-      context.fillRect(x, y, 30, 30);
-    }
-  }
-  return canvas;
-}
-
-async function rendererBenchmark() {
-  const start = performance.now();
-  const renderer = await GlassRenderer.create();
-  const initializationMs = performance.now() - start;
-  const frame: GlassFrame = {
-    width: 240,
-    height: 100,
-    margin: 0,
-    origin: [80, 80],
-    radius: [24, 24, 24, 24],
-    strength: 22,
-    blur: 8,
-    tint: [1, 1, 1],
-    tintOpacity: 0.6,
-    foreground: [0, 0, 0],
-    minimumContrast: 0,
-  };
-  try {
-    const cold: number[] = [];
-    const cached: number[] = [];
-    for (let index = 0; index < 8; index++) {
-      const source = sourceCanvas();
-      const sample = performance.now();
-      await renderer.render(source, frame);
-      cold.push(performance.now() - sample);
-    }
-    const shared = sourceCanvas();
-    await renderer.render(shared, frame);
-    const beforeCachedUploads = metrics.uploads;
-    for (let index = 0; index < 12; index++) {
-      const sample = performance.now();
-      await renderer.render(shared, frame);
-      cached.push(performance.now() - sample);
-    }
-    return {
-      initializationMs,
-      newBackground: summary(cold),
-      cachedBackground: summary(cached),
-      cachedUploads: metrics.uploads - beforeCachedUploads,
-      sourcePixels: [960, 540],
-      outputCssPixels: [240, 100],
-      devicePixelRatio: window.devicePixelRatio,
-    };
-  } finally {
-    renderer.destroy();
-  }
-}
-
 const surfaceIds = Array.from({ length: 8 }, (_, index) => `surface-${index}`);
 
-function Scene({
-  count,
-  mode,
-  highlight = 0.3,
-}: {
-  count: number;
-  mode: "auto" | "svg" | "css";
-  highlight?: number;
-}) {
-  const target = useRef<HTMLDivElement>(null);
+function Scene({ count, strength = 22 }: { count: number; strength?: number }) {
   const [value, setValue] = useState("home");
   return (
-    <div className="benchmark-scene" ref={target}>
+    <div className="benchmark-scene">
       <div className="benchmark-background">
         <p>Real DOM text, grid and colored panels behind the material</p>
       </div>
@@ -178,11 +91,7 @@ function Scene({
           <GlassSurface
             className="benchmark-surface"
             key={id}
-            glassConfig={{
-              captureTarget: target,
-              mode,
-              options: { highlight },
-            }}
+            glassConfig={{ options: { strength } }}
           >
             Glass {id}
           </GlassSurface>
@@ -191,7 +100,7 @@ function Scene({
       <TabBar
         aria-label="Benchmark navigation"
         glass
-        glassConfig={{ captureTarget: target, mode, options: { highlight } }}
+        glassConfig={{ options: { strength } }}
         items={items}
         value={value}
         onValueChange={setValue}
@@ -212,7 +121,7 @@ async function drag(scene: HTMLElement) {
   const y = from.y + from.height / 2;
   // Synthetic pointer IDs do not participate in the browser's native capture
   // registry. Emulate only that registry while retaining the real React
-  // handlers, GSAP tweens, geometry, glass renderer and DOM updates.
+  // handlers, GSAP tweens, geometry, glass runtime and DOM updates.
   const captureMethods = {
     setPointerCapture: track.setPointerCapture,
     hasPointerCapture: track.hasPointerCapture,
@@ -249,11 +158,7 @@ async function drag(scene: HTMLElement) {
     await pause(450);
     held = track.dataset.pressed === "true";
     if (!held) throw new Error("Synthetic drag failed to enter held state");
-    const heldBaseline = {
-      capture: metrics.capture.length,
-      render: metrics.render.length,
-      uploads: metrics.uploads,
-    };
+    resetMetrics();
     for (let index = 1; index <= 60; index++) {
       dispatch("pointermove", startX + ((endX - startX) * index) / 60);
       await pause(16);
@@ -267,12 +172,7 @@ async function drag(scene: HTMLElement) {
         }
       }
     }
-    heldWork = {
-      ...snapshot(),
-      capture: summary(metrics.capture.slice(heldBaseline.capture)),
-      render: summary(metrics.render.slice(heldBaseline.render)),
-      uploads: metrics.uploads - heldBaseline.uploads,
-    };
+    heldWork = snapshot();
     dispatch("pointerup", endX);
     await pause(700);
   } finally {
@@ -309,79 +209,47 @@ function Benchmark() {
       label,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
+      devicePixelRatio: window.devicePixelRatio,
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       longTaskSupport: supportsLongTasks,
-      scenario: focusedDrag ? "auto-drag diagnostic reproduction" : "full",
       methodology:
-        "Local Vite development harness, real production source, CSS, SVG refraction and vgpu + WGSL. GPU renderer times include queue, GPU completion, readback and PNG serialization; SVG filter times cover geometric map and DOM definition updates only; live backdrop raster/paint must be measured separately. SVG has no background snapshot or frame encoding. DOM capture measures full captureGlassBackground. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
+        "Local Vite development harness with the real production source. SVG filter times cover the displacement map and DOM definition updates; the browser's backdrop raster and paint show up in frame intervals. No CPU throttling. Dev React Profiler overhead applies equally to both runs.",
     };
+    const profiled = (scene: ReactNode) => (
+      <Profiler
+        id="glass"
+        onRender={(_, __, duration) => {
+          metrics.commits++;
+          metrics.reactMilliseconds += duration;
+        }}
+      >
+        {scene}
+      </Profiler>
+    );
     try {
-      if (!focusedDrag && !focusedSvg) {
+      for (const count of [1, 8]) {
         resetMetrics();
-        setStage("Renderer: new and cached backgrounds");
-        try {
-          data.renderer = await rendererBenchmark();
-        } catch (error) {
-          data.renderer = { error: String(error) };
-        }
-      }
-      let modes: readonly ("css" | "svg" | "auto")[] = ["css", "svg", "auto"];
-      if (focusedDrag) modes = ["auto"];
-      else if (focusedSvg) modes = ["svg"];
-      const counts = focusedDrag || focusedSvg ? [8] : [1, 8];
-      for (const mode of modes) {
-        for (const count of counts) {
-          resetMetrics();
-          setStage(`${mode}: ${count} surfaces`);
-          sceneRoot.render(
-            <Profiler
-              id="glass"
-              onRender={(_, __, duration) => {
-                metrics.commits++;
-                metrics.reactMilliseconds += duration;
-              }}
-            >
-              <Scene key={`${mode}-${count}`} count={count} mode={mode} />
-            </Profiler>,
-          );
-          await pause(100);
-          const ready = await stable(sceneHost.current);
-          data[`${mode}-${count}`] = { ...snapshot(), ready };
-          resetMetrics();
-          await pause(2000);
-          data[`${mode}-${count}-idle2s`] = snapshot();
-          if (count === 8) {
-            resetMetrics();
-            setStage(`${mode}: TabBar long press and 60 moves`);
-            const interaction = await drag(sceneHost.current);
-            const settled = await stable(sceneHost.current);
-            data[`${mode}-drag`] = { ...snapshot(), interaction, settled };
-            resetMetrics();
-            setStage(`${mode}: highlight-only update`);
-            sceneRoot.render(
-              <Profiler
-                id="glass"
-                onRender={(_, __, duration) => {
-                  metrics.commits++;
-                  metrics.reactMilliseconds += duration;
-                }}
-              >
-                <Scene
-                  key={`${mode}-${count}`}
-                  count={count}
-                  mode={mode}
-                  highlight={0.5}
-                />
-              </Profiler>,
-            );
-            await pause(100);
-            const highlightReady = await stable(sceneHost.current);
-            data[`${mode}-highlight-only`] = {
-              ...snapshot(),
-              ready: highlightReady,
-            };
-          }
-        }
+        setStage(`${count} surfaces`);
+        sceneRoot.render(profiled(<Scene key={count} count={count} />));
+        await pause(100);
+        const ready = await stable(sceneHost.current);
+        data[`svg-${count}`] = { ...snapshot(), ready };
+        resetMetrics();
+        await pause(2000);
+        data[`svg-${count}-idle2s`] = snapshot();
+        if (count !== 8) continue;
+        setStage("TabBar long press and 60 moves");
+        const interaction = await drag(sceneHost.current);
+        const settled = await stable(sceneHost.current);
+        data["svg-drag"] = { ...snapshot(), interaction, settled };
+        resetMetrics();
+        setStage("Strength-only update");
+        sceneRoot.render(
+          profiled(<Scene key={count} count={count} strength={34} />),
+        );
+        await pause(100);
+        const strengthReady = await stable(sceneHost.current);
+        data["svg-strength-only"] = { ...snapshot(), ready: strengthReady };
       }
     } catch (error) {
       data.error = String(error);
@@ -414,25 +282,12 @@ function Benchmark() {
   );
 }
 
-function CaptureAudit() {
-  const [mode, setMode] = useState<"auto" | "svg" | "css">("auto");
+function Audit() {
   const [pixels, setPixels] = useState("");
   return (
     <main className="dark">
-      <h1>Glass capture audit</h1>
-      <label>
-        Renderer{" "}
-        <select
-          aria-label="Renderer"
-          value={mode}
-          onChange={(event) => setMode(event.target.value as typeof mode)}
-        >
-          <option value="auto">Auto (vgpu → SVG → CSS)</option>
-          <option value="svg">SVG refraction</option>
-          <option value="css">CSS + SVG highlights</option>
-        </select>
-      </label>
-      <GlassComparison locale="zh-CN" mode={mode} />
+      <h1>Glass SVG audit</h1>
+      <GlassComparison locale="zh-CN" />
       <button
         type="button"
         onClick={() =>
@@ -445,19 +300,10 @@ function CaptureAudit() {
         Inspect native SVG filter
       </button>
       <pre id="svg-filter-audit">{pixels}</pre>
-      <details data-glass-exclude="">
-        <summary>Inspect captured background</summary>
-        <pre id="capture-audit-metadata" />
-        <img
-          id="capture-audit-image"
-          alt="Captured background before rendering"
-          className="w-full"
-        />
-      </details>
     </main>
   );
 }
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Benchmark root missing");
-createRoot(root).render(captureAuditEnabled ? <CaptureAudit /> : <Benchmark />);
+createRoot(root).render(auditEnabled ? <Audit /> : <Benchmark />);

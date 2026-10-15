@@ -55,7 +55,7 @@ function MenubarPortal({
   return <DropdownMenuPortal data-slot="menubar-portal" {...props} />;
 }
 
-function MenubarTriggerImplementation({
+function MenubarTrigger({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuTrigger>) {
@@ -269,7 +269,6 @@ function MenubarSubContentImplementation({
 }
 
 const Menubar = withGlass(MenubarImplementation, "scope");
-const MenubarTrigger = withGlass(MenubarTriggerImplementation, "control");
 const MenubarContent = withGlass(MenubarContentImplementation, "portal");
 const MenubarSubContent = withGlass(MenubarSubContentImplementation, "portal");
 

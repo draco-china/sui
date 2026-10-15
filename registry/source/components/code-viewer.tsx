@@ -9,11 +9,10 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { withGlass } from "@/lib/glass/context";
+import { withoutGlass } from "@/lib/glass/context";
 import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
-import { GlassSurface } from "@/components/ui/glass";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CodeLine {
@@ -44,7 +43,6 @@ export interface CodeViewerProps {
   readonly lang?: string;
   readonly theme?: "light" | "dark";
   readonly className?: string;
-  readonly glass?: boolean;
   readonly title?: ReactNode;
   readonly labels?: Partial<CodeViewerLabels>;
   readonly status?: "streaming" | "complete";
@@ -236,8 +234,7 @@ function CodeViewerImplementation({
           </span>
         </div>
       )}
-      <GlassSurface
-        glass={false}
+      <div
         data-slot="code-viewer-content"
         ref={viewportRef}
         tabIndex={0}
@@ -257,11 +254,7 @@ function CodeViewerImplementation({
               },
               (_, index) => index + 1,
             ).map((lineNumber) => (
-              <Skeleton
-                key={lineNumber}
-                glass={false}
-                className="h-5 w-3/4 rounded-md"
-              />
+              <Skeleton key={lineNumber} className="h-5 w-3/4 rounded-md" />
             ))}
             <pre className="sr-only">{code}</pre>
           </div>
@@ -350,12 +343,12 @@ function CodeViewerImplementation({
             {text.empty}
           </div>
         )}
-      </GlassSurface>
+      </div>
     </div>
   );
 }
 
-export const CodeViewer = withGlass(CodeViewerImplementation, "scope");
+export const CodeViewer = withoutGlass(CodeViewerImplementation);
 
 export type { ShikiProviderProps } from "@/lib/viewer/shiki-context";
 export { ShikiProvider } from "@/lib/viewer/shiki-context";

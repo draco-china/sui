@@ -657,7 +657,6 @@ const markdownComponents: Components = {
     const lang = /language-([\w-]+)/.exec(className)?.[1] ?? "text";
     return (
       <CodeViewer
-        glass={false}
         code={getNodeText(children).replace(/\n$/, "")}
         lang={lang}
         theme={resolvedTheme}

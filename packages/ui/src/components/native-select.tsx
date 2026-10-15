@@ -3,13 +3,12 @@
 import { cn } from "cn";
 import { ChevronDownIcon } from "lucide-react";
 import type * as React from "react";
-import { withGlass } from "../lib/glass/context";
 
 type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
   size?: "sm" | "default";
 };
 
-function NativeSelectImplementation({
+function NativeSelect({
   className,
   size = "default",
   ...props
@@ -63,7 +62,5 @@ function NativeSelectOptGroup({
     />
   );
 }
-
-const NativeSelect = withGlass(NativeSelectImplementation, "control");
 
 export { NativeSelect, NativeSelectOptGroup, NativeSelectOption };
