@@ -185,11 +185,13 @@ function ImageViewerImplementation({
     if (!node) return;
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      // Zoom follows the wheel distance: trackpads glide in small steps, and
+      // a mouse notch (about 100px) still zooms by roughly a quarter.
+      const unit = [1, 16, window.innerHeight][event.deltaMode] ?? 1;
+      const factor = Math.exp((-event.deltaY * unit) / 400);
       setTransform((previous) => ({
         ...previous,
-        scale: clampImageScale(
-          previous.scale + (event.deltaY > 0 ? -0.25 : 0.25),
-        ),
+        scale: clampImageScale(previous.scale * factor),
       }));
     };
     node.addEventListener("wheel", onWheel, { passive: false });

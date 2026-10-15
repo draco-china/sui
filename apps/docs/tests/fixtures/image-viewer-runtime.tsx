@@ -393,11 +393,18 @@ assert.equal(
   true,
   "wheel zoom does not scroll the surrounding page",
 );
-assert.ok(mainImage(panel).style.transform.includes("scale(1.25)"));
+const wheelScale = Number(
+  mainImage(panel).style.transform.match(/scale\(([^)]+)\)/)?.[1],
+);
+assert.ok(
+  wheelScale > 1 && wheelScale < 1.05,
+  "a small wheel delta zooms a little, so trackpads glide",
+);
+await key(panel, "0");
 await key(panel, "+");
-assert.ok(mainImage(panel).style.transform.includes("scale(1.5)"));
-await key(panel, "-");
 assert.ok(mainImage(panel).style.transform.includes("scale(1.25)"));
+await key(panel, "-");
+assert.ok(mainImage(panel).style.transform.includes("scale(1)"));
 await key(panel, "0");
 clean(panel);
 await key(panel, "ArrowRight");
