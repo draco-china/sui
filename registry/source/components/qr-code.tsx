@@ -304,8 +304,11 @@ function QRCodeContent({
     pixels / 2 - 4,
     Math.max(0, Number.isFinite(margin) ? margin : 16),
   );
+  // A result belongs to one value, size and margin; its object URL is
+  // revoked as soon as any of them changes.
+  const resultKey = `${value}\u0000${pixels}\u0000${quietZone}`;
   const [result, setResult] = useState<{
-    value: string;
+    key: string;
     url?: string;
     error?: boolean;
     moduleSize?: number;
@@ -348,17 +351,17 @@ function QRCodeContent({
         if (!active) return;
         if (!(blob instanceof Blob)) throw new Error("QR generation failed");
         objectUrl = URL.createObjectURL(blob);
-        setResult({ value, url: objectUrl, moduleSize });
+        setResult({ key: resultKey, url: objectUrl, moduleSize });
       } catch {
-        if (active) setResult({ value, error: true });
+        if (active) setResult({ key: resultKey, error: true });
       }
     })();
     return () => {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [value, quietZone, pixels]);
-  const current = result?.value === value ? result : undefined;
+  }, [value, quietZone, pixels, resultKey]);
+  const current = result?.key === resultKey ? result : undefined;
   const revealed = !loading && decoded && Boolean(current?.url);
   const failed = !loading && current?.error;
   const ready = revealed && (!animated || settled);
@@ -457,7 +460,7 @@ function QRCodeContent({
                         onLoad={() => setDecoded(true)}
                         onError={() => {
                           setDecoded(false);
-                          setResult({ value: value ?? "", error: true });
+                          setResult({ key: resultKey, error: true });
                         }}
                       />
                     </mask>
