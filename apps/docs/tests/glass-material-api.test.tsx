@@ -18,13 +18,9 @@ import {
 test("regular is the default and frosts more than the see-through clear", () => {
   expect(glassDefaultMaterial).toBe("regular");
   const { clear, regular } = glassMaterials;
-  expect(clear.tintOpacity).toBe(glassDefaults.tintOpacity);
   expect([clear.tintOpacity, regular.tintOpacity]).toEqual([0.12, 0.3]);
-  expect([clear.blur, regular.blur]).toEqual([
-    { svg: 4, css: 6 },
-    { svg: 14, css: 16 },
-  ]);
-  expect(regular.saturation).toBe(clear.saturation);
+  expect([clear.blur, regular.blur]).toEqual([4, 14]);
+  expect(glassDefaults.strength).toBe(22);
 });
 
 test("surface configuration reaches nested controls while siblings stay independent before hydration", () => {

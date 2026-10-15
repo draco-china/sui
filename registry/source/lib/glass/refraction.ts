@@ -1,6 +1,6 @@
 // A narrower band keeps small controls from bending half their height.
-export const glassMaxBevelWidth = 12;
-export const glassBevelFraction = 0.15;
+const glassMaxBevelWidth = 12;
+const glassBevelFraction = 0.15;
 export const glassMaxEdgeClarity = 0.8;
 
 export function glassBevelWidth(width: number, height: number) {

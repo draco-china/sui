@@ -135,11 +135,15 @@ class GlassManager implements GlassObserver {
   leases = 0;
   private readonly surfaces = new Map<HTMLElement, SurfaceState>();
   private timer: ReturnType<typeof setTimeout> | undefined;
+  private resizeTimer: ReturnType<typeof setTimeout> | undefined;
   private queued = false;
   private dirty = false;
   private disposed = false;
+  /** Every material needs reading, or only these surfaces' materials. */
   private materialsDirty = true;
+  private readonly dirtyMaterials = new Set<HTMLElement>();
   private lastRender = 0;
+  private lastResize = 0;
   private configuration: Required<
     Pick<GlassConfiguration, "id" | "material" | "edge">
   > &
@@ -182,14 +186,10 @@ class GlassManager implements GlassObserver {
     releases.push(() => releaseDensity?.());
     if (dom.appearance) listen(dom.appearance, "change", update);
     listen(document, "visibilitychange", () => this.schedule());
-    // Hover, focus and color transitions change a surface's paint.
+    // Hover, focus and color transitions change the paint of the surfaces
+    // around the target only.
     const interaction = (event: Event) => {
-      const target = event.target;
-      if (
-        target instanceof Element &&
-        [...this.surfaces.keys()].some((surface) => surface.contains(target))
-      )
-        update();
+      if (event.target instanceof Element) this.invalidate(event.target);
     };
     for (const type of ["pointerover", "pointerout", "focusin", "focusout"])
       listen(document, type, interaction, true);
@@ -222,7 +222,21 @@ class GlassManager implements GlassObserver {
       const state = this.surfaces.get(target as HTMLElement);
       if (state) state.edgeDirty = true;
     }
-    this.schedule(true);
+    // A single resize updates on the next task. A surface that keeps
+    // resizing, such as an animating sheet, settles first, so its normal map
+    // and edge are rebuilt once instead of on every frame.
+    const now = performance.now();
+    const settling = now - this.lastResize < 150;
+    this.lastResize = now;
+    clearTimeout(this.resizeTimer);
+    if (!settling) {
+      this.schedule(true);
+      return;
+    }
+    this.resizeTimer = setTimeout(() => {
+      this.resizeTimer = undefined;
+      this.schedule(true);
+    }, 150);
   }
 
   onMutation(records: MutationRecord[]) {
@@ -281,13 +295,29 @@ class GlassManager implements GlassObserver {
   }
 
   refresh(target?: HTMLElement) {
-    if (
-      target &&
-      ![...this.surfaces.keys()].some((element) => target.contains(element))
-    )
+    if (!target) {
+      this.materialsDirty = true;
+      this.schedule();
       return;
-    this.materialsDirty = true;
-    this.schedule();
+    }
+    let found = false;
+    for (const surface of this.surfaces.keys()) {
+      if (!target.contains(surface)) continue;
+      this.dirtyMaterials.add(surface);
+      found = true;
+    }
+    if (found) this.schedule();
+  }
+
+  /** Marks the surfaces around an element for a fresh material read. */
+  private invalidate(element: Element) {
+    let found = false;
+    for (const surface of this.surfaces.keys()) {
+      if (!surface.contains(element)) continue;
+      this.dirtyMaterials.add(surface);
+      found = true;
+    }
+    if (found) this.schedule();
   }
 
   private scan() {
@@ -295,6 +325,7 @@ class GlassManager implements GlassObserver {
     const elements = dom.discover(this.configuration.id);
     for (const [element, state] of this.surfaces) {
       if (elements.has(element)) continue;
+      this.dirtyMaterials.delete(element);
       dom.unobserve(element);
       this.release(element, state);
       this.surfaces.delete(element);
@@ -325,6 +356,7 @@ class GlassManager implements GlassObserver {
   private drop(element: HTMLElement) {
     const state = this.surfaces.get(element);
     if (!state) return;
+    this.dirtyMaterials.delete(element);
     glassDom?.unobserve(element);
     this.release(element, state);
     this.surfaces.delete(element);
@@ -423,12 +455,14 @@ class GlassManager implements GlassObserver {
     this.scan();
     const active = [...this.surfaces].filter(([element]) => visible(element));
     if (!active.length) return;
-    const materials = this.materialsDirty;
+    const all = this.materialsDirty;
     this.materialsDirty = false;
     for (const [element, state] of active) {
-      if (materials) this.updateMaterial(element, state);
+      if (all || this.dirtyMaterials.has(element))
+        this.updateMaterial(element, state);
       else if (state.edgeDirty) this.updateEdge(element, state);
     }
+    this.dirtyMaterials.clear();
     if (glassBaseOnly()) {
       for (const [element, state] of active) this.restoreCss(element, state);
       return;
@@ -488,7 +522,7 @@ class GlassManager implements GlassObserver {
         0,
         64,
       ),
-      blur: glassMaterials[this.configuration.material].blur.svg,
+      blur: glassMaterials[this.configuration.material].blur,
     });
     if (state.svg && state.svg !== renderer) state.svg.release(element);
     state.svg = renderer;
@@ -557,6 +591,7 @@ class GlassManager implements GlassObserver {
   destroy() {
     this.disposed = true;
     if (this.timer) clearTimeout(this.timer);
+    clearTimeout(this.resizeTimer);
     this.removeListeners();
     for (const [element, state] of this.surfaces) {
       glassDom?.unobserve(element);

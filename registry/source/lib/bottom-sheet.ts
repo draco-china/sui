@@ -101,7 +101,7 @@ function frameProgress(visible: number, layout: BottomSheetLayout) {
 }
 
 /** Distance below the default size at which a slow release closes. */
-export function bottomSheetCloseDistance(height: number) {
+function bottomSheetCloseDistance(height: number) {
   return Math.min(Math.max(height * 0.35, 48), 180);
 }
 

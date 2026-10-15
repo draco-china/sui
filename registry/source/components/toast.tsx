@@ -34,6 +34,11 @@ type ToastPosition =
   | "bottom-center"
   | "bottom-right";
 
+/** The viewport edge toasts stack from. */
+function toastSide(position: ToastPosition) {
+  return position.startsWith("top") ? "top" : "bottom";
+}
+
 const toastViewportVariants = cva(
   "pointer-events-none fixed inset-x-4 z-50 mx-auto w-auto max-w-sm outline-none",
   {
@@ -64,7 +69,7 @@ function ToastViewport({
   return (
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
-      data-toast-side={position.startsWith("top") ? "top" : "bottom"}
+      data-toast-side={toastSide(position)}
       data-colorful={colorful}
       className={mergeClassNames(
         toastViewportVariants({ position }),
@@ -260,7 +265,7 @@ function Toaster({
       {children}
       <ToastPortal>
         <ToastViewport position={position} colorful={colorful}>
-          <ToastList side={position.startsWith("top") ? "top" : "bottom"} />
+          <ToastList side={toastSide(position)} />
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>

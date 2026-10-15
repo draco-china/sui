@@ -153,21 +153,22 @@ function TabBarImplementation({
       across > far + tolerance
     )
       return null;
-    let nearest: HTMLButtonElement | null = null;
-    let distance = Number.POSITIVE_INFINITY;
-    for (const button of element.querySelectorAll<HTMLButtonElement>(
+    // Past either end, one of the end items is nearest; comparing positions
+    // also covers right-to-left layouts.
+    const items = element.querySelectorAll<HTMLButtonElement>(
       "button[data-tab-bar-item]",
-    )) {
+    );
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (!first || !last) return null;
+    const distance = (button: HTMLButtonElement) => {
       const bounds = button.getBoundingClientRect();
       const center = horizontal
         ? bounds.left + bounds.width / 2
         : bounds.top + bounds.height / 2;
-      if (Math.abs(center - along) < distance) {
-        distance = Math.abs(center - along);
-        nearest = button;
-      }
-    }
-    return nearest;
+      return Math.abs(center - along);
+    };
+    return distance(first) <= distance(last) ? first : last;
   }
   function activateHold() {
     const pending = hold.current;

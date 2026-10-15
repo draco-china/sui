@@ -72,7 +72,7 @@ export function geometryMutation(record: MutationRecord) {
 }
 
 /** Ignores the runtime's own writes and decorations. */
-export function relevantMutation(record: MutationRecord) {
+function relevantMutation(record: MutationRecord) {
   const element =
     record.target instanceof Element
       ? record.target
@@ -140,7 +140,9 @@ export class GlassDom {
       for (const entry of entries) {
         const owner = this.owners.get(entry.target);
         if (!owner) continue;
-        batches.set(owner, [...(batches.get(owner) ?? []), entry]);
+        const batch = batches.get(owner);
+        if (batch) batch.push(entry);
+        else batches.set(owner, [entry]);
       }
       for (const [owner, batch] of batches) owner.onResize(batch);
     });
@@ -156,13 +158,14 @@ export class GlassDom {
     this.mutationObserver = new MutationObserver((records) =>
       this.mutated(records),
     );
+    // Text changes cannot repaint a surface; size changes reach the resize
+    // observer instead.
     this.mutationObserver.observe(document.documentElement, {
       attributes: true,
       attributeOldValue: true,
       attributeFilter: GLASS_ATTRIBUTES,
       childList: true,
       subtree: true,
-      characterData: true,
     });
   }
 

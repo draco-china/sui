@@ -82,18 +82,21 @@ export function withGlass<P extends object>(
       glass ??
       (context.enabled &&
         (kind === "scope" || kind === "portal" || !context.surface));
-    const configuration = useMemo(() => {
-      return {
-        ...context.configuration,
-        ...(kind === "portal" ? popupConfiguration : undefined),
-        ...glassConfig,
-        ...overrides,
-        options: {
-          ...context.configuration?.options,
-          ...glassConfig?.options,
-        },
-      };
-    }, [context.configuration, glassConfig]);
+    const merged: GlassConfig = {
+      ...context.configuration,
+      ...(kind === "portal" ? popupConfiguration : undefined),
+      ...glassConfig,
+      ...overrides,
+      options: {
+        ...context.configuration?.options,
+        ...glassConfig?.options,
+      },
+    };
+    // Inline glassConfig objects are new on every render; keying by content
+    // keeps one configuration, so the runtime only hears about real changes.
+    const key = JSON.stringify(merged);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: the key captures the configuration's content.
+    const configuration = useMemo(() => merged, [key]);
     const initialConfiguration = useEffectEvent(() => configuration);
     const surface = enabled && kind !== "scope";
     useLayoutEffect(() => {
@@ -102,8 +105,7 @@ export function withGlass<P extends object>(
       return acquireGlass({ ...initialConfiguration(), id });
     }, [surface, id]);
     useLayoutEffect(() => {
-      if (surface && configuration)
-        updateGlassConfiguration({ ...configuration, id });
+      if (surface) updateGlassConfiguration({ ...configuration, id });
     }, [surface, configuration, id]);
     const part =
       glass === undefined &&
@@ -113,6 +115,19 @@ export function withGlass<P extends object>(
       (kind === "surface" || kind === "control");
     let childSurface = context.surface || surface;
     if (kind === "scope") childSurface = glass !== true && context.surface;
+    const childEnabled = enabled || (glass === undefined && context.enabled);
+    // A real glass layer starts its own controls; scopes pass content on, and
+    // an ordinary field keeps its own buttons ordinary.
+    const content = !surface && (kind === "field" || Boolean(context.content));
+    const value = useMemo(
+      () => ({
+        configuration,
+        enabled: childEnabled,
+        surface: childSurface,
+        content,
+      }),
+      [configuration, childEnabled, childSurface, content],
+    );
     const options = configuration?.options;
     const originalStyle = (
       props as {
@@ -134,16 +149,7 @@ export function withGlass<P extends object>(
       else initialStyle = { ...originalStyle, ...materialStyle };
     }
     return (
-      <GlassContext.Provider
-        value={{
-          configuration,
-          enabled: enabled || (glass === undefined && context.enabled),
-          surface: childSurface,
-          // A real glass layer starts its own controls; scopes pass content on,
-          // and an ordinary field keeps its own buttons ordinary.
-          content: !surface && (kind === "field" || Boolean(context.content)),
-        }}
-      >
+      <GlassContext.Provider value={value}>
         <Component
           {...(props as P)}
           {...(part ? { "data-glass-part": kind } : {})}
