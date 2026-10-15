@@ -161,7 +161,7 @@
       "accent": "oklch(0.95747203 0.02050834 254.91347)",
       "accent-foreground": "oklch(0.52196619 0.1770896 255.82973)",
       "destructive": "oklch(0.577 0.245 27.325)",
-      "border": "oklch(0.8652421 0.00682863 286.25614)",
+      "border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "input": "oklch(0.83115757 0.00689828 286.24868)",
       "ring": "oklch(0.52196619 0.1770896 255.82973)",
       "chart-1": "oklch(0.52196619 0.1770896 255.82973)",
@@ -176,7 +176,7 @@
       "sidebar-primary-foreground": "oklch(1 0 0)",
       "sidebar-accent": "oklch(0.95747203 0.02050834 254.91347)",
       "sidebar-accent-foreground": "oklch(0.52196619 0.1770896 255.82973)",
-      "sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "sidebar-ring": "oklch(0.52196619 0.1770896 255.82973)"
     },
     "dark": {
@@ -195,7 +195,7 @@
       "accent": "oklch(0.31864243 0.0686499 250.85957)",
       "accent-foreground": "oklch(0.73105965 0.14117014 255.70879)",
       "destructive": "oklch(0.704 0.191 22.216)",
-      "border": "oklch(0.38018166 0.00503884 286.15762)",
+      "border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "input": "oklch(0.40237522 0.00330792 286.25012)",
       "ring": "oklch(0.62425384 0.20557728 255.48612)",
       "chart-1": "oklch(0.62425384 0.20557728 255.48612)",
@@ -209,7 +209,7 @@
       "sidebar-primary-foreground": "oklch(0 0 0)",
       "sidebar-accent": "oklch(0.31864243 0.0686499 250.85957)",
       "sidebar-accent-foreground": "oklch(0.73105965 0.14117014 255.70879)",
-      "sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "sidebar-ring": "oklch(0.62425384 0.20557728 255.48612)"
     }
   },
@@ -233,7 +233,7 @@
       "--accent": "oklch(0.9598286 0.00285002 128.4932)",
       "--accent-foreground": "oklch(0.51538748 0.03624408 129.2751)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.5782686 0.04160174 129.29494)",
       "--chart-1": "oklch(0.34567122 0.03941146 124.02183)",
@@ -247,7 +247,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.9598286 0.00285002 128.4932)",
       "--sidebar-accent-foreground": "oklch(0.51538748 0.03624408 129.2751)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.5782686 0.04160174 129.29494)"
     },
     ":root.dark[data-color=\"bamboo\"],\n.dark [data-color=\"bamboo\"],\n[data-color=\"bamboo\"].dark": {
@@ -266,7 +266,7 @@
       "--accent": "oklch(0.24378851 0.00973209 124.92467)",
       "--accent-foreground": "oklch(0.66802355 0.03280219 129.9279)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.5782686 0.04160174 129.29494)",
       "--chart-1": "oklch(0.34567122 0.03941146 124.02183)",
@@ -280,7 +280,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.24378851 0.00973209 124.92467)",
       "--sidebar-accent-foreground": "oklch(0.66802355 0.03280219 129.9279)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.5782686 0.04160174 129.29494)"
     },
     ":root[data-color=\"mauve\"],\n[data-color=\"mauve\"]": {
@@ -299,7 +299,7 @@
       "--accent": "oklch(0.95508978 0.00696279 304.24047)",
       "--accent-foreground": "oklch(0.52614681 0.07539982 306.84218)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.52959557 0.0752934 306.85577)",
       "--chart-1": "oklch(0.35674111 0.06307047 301.17255)",
@@ -313,7 +313,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.95508978 0.00696279 304.24047)",
       "--sidebar-accent-foreground": "oklch(0.52614681 0.07539982 306.84218)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.52959557 0.0752934 306.85577)"
     },
     ":root.dark[data-color=\"mauve\"],\n.dark [data-color=\"mauve\"],\n[data-color=\"mauve\"].dark": {
@@ -332,7 +332,7 @@
       "--accent": "oklch(0.23190633 0.01854621 309.92791)",
       "--accent-foreground": "oklch(0.67818046 0.04970634 307.64833)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.57368859 0.06767035 307.14102)",
       "--chart-1": "oklch(0.35674111 0.06307047 301.17255)",
@@ -346,7 +346,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.23190633 0.01854621 309.92791)",
       "--sidebar-accent-foreground": "oklch(0.67818046 0.04970634 307.64833)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.57368859 0.06767035 307.14102)"
     },
     ":root[data-color=\"mist\"],\n[data-color=\"mist\"]": {
@@ -365,7 +365,7 @@
       "--accent": "oklch(0.95088694 0.00253758 228.78488)",
       "--accent-foreground": "oklch(0.45987485 0.03155917 246.81258)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.45987485 0.03155917 246.81258)",
       "--chart-1": "oklch(0.31388194 0.03437323 247.35399)",
@@ -379,7 +379,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.95088694 0.00253758 228.78488)",
       "--sidebar-accent-foreground": "oklch(0.45987485 0.03155917 246.81258)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.45987485 0.03155917 246.81258)"
     },
     ":root.dark[data-color=\"mist\"],\n.dark [data-color=\"mist\"],\n[data-color=\"mist\"].dark": {
@@ -398,7 +398,7 @@
       "--accent": "oklch(0.21589727 0.00747453 248.17387)",
       "--accent-foreground": "oklch(0.67155538 0.01876794 248.10759)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.56610265 0.02421944 246.08882)",
       "--chart-1": "oklch(0.31388194 0.03437323 247.35399)",
@@ -412,7 +412,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.21589727 0.00747453 248.17387)",
       "--sidebar-accent-foreground": "oklch(0.67155538 0.01876794 248.10759)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.56610265 0.02421944 246.08882)"
     },
     ":root[data-color=\"sand\"],\n[data-color=\"sand\"]": {
@@ -431,7 +431,7 @@
       "--accent": "oklch(0.97162103 0.005134 67.76383)",
       "--accent-foreground": "oklch(0.52085371 0.04028956 59.78588)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.61984877 0.0489156 62.33286)",
       "--chart-1": "oklch(0.37962483 0.03940287 47.65588)",
@@ -445,7 +445,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.97162103 0.005134 67.76383)",
       "--sidebar-accent-foreground": "oklch(0.52085371 0.04028956 59.78588)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.61984877 0.0489156 62.33286)"
     },
     ":root.dark[data-color=\"sand\"],\n.dark [data-color=\"sand\"],\n[data-color=\"sand\"].dark": {
@@ -464,7 +464,7 @@
       "--accent": "oklch(0.27439792 0.01504691 62.74617)",
       "--accent-foreground": "oklch(0.69714303 0.0565969 61.15525)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.69714303 0.0565969 61.15525)",
       "--chart-1": "oklch(0.37962483 0.03940287 47.65588)",
@@ -478,7 +478,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.27439792 0.01504691 62.74617)",
       "--sidebar-accent-foreground": "oklch(0.69714303 0.0565969 61.15525)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.69714303 0.0565969 61.15525)"
     },
     ":root[data-color=\"pine\"],\n[data-color=\"pine\"]": {
@@ -497,7 +497,7 @@
       "--accent": "oklch(0.95783428 0.00445669 179.73274)",
       "--accent-foreground": "oklch(0.51471518 0.0440378 179.43557)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.54698085 0.04705048 178.8079)",
       "--chart-1": "oklch(0.50424878 0.04427522 175.19005)",
@@ -511,7 +511,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.95783428 0.00445669 179.73274)",
       "--sidebar-accent-foreground": "oklch(0.51471518 0.0440378 179.43557)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.54698085 0.04705048 178.8079)"
     },
     ":root.dark[data-color=\"pine\"],\n.dark [data-color=\"pine\"],\n[data-color=\"pine\"].dark": {
@@ -530,7 +530,7 @@
       "--accent": "oklch(0.23524356 0.01173965 187.08191)",
       "--accent-foreground": "oklch(0.66486022 0.03462254 181.68776)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.56122275 0.04594902 178.56345)",
       "--chart-1": "oklch(0.50424878 0.04427522 175.19005)",
@@ -544,7 +544,7 @@
       "--sidebar-primary-foreground": "oklch(1 0 0)",
       "--sidebar-accent": "oklch(0.23524356 0.01173965 187.08191)",
       "--sidebar-accent-foreground": "oklch(0.66486022 0.03462254 181.68776)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.56122275 0.04594902 178.56345)"
     },
     ":root[data-color=\"rose\"],\n[data-color=\"rose\"]": {
@@ -563,7 +563,7 @@
       "--accent": "oklch(0.96236691 0.01350137 0.26002)",
       "--accent-foreground": "oklch(0.53371482 0.12594022 5.69227)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.63193494 0.15263987 5.70579)",
       "--chart-1": "oklch(0.5669667 0.17877598 7.117)",
@@ -577,7 +577,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.96236691 0.01350137 0.26002)",
       "--sidebar-accent-foreground": "oklch(0.53371482 0.12594022 5.69227)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.63193494 0.15263987 5.70579)"
     },
     ":root.dark[data-color=\"rose\"],\n.dark [data-color=\"rose\"],\n[data-color=\"rose\"].dark": {
@@ -596,7 +596,7 @@
       "--accent": "oklch(0.25315559 0.03949806 1.49009)",
       "--accent-foreground": "oklch(0.68508464 0.1273685 3.76287)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.63193494 0.15263987 5.70579)",
       "--chart-1": "oklch(0.5669667 0.17877598 7.117)",
@@ -610,7 +610,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.25315559 0.03949806 1.49009)",
       "--sidebar-accent-foreground": "oklch(0.68508464 0.1273685 3.76287)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.63193494 0.15263987 5.70579)"
     },
     ":root[data-color=\"lime\"],\n[data-color=\"lime\"]": {
@@ -629,7 +629,7 @@
       "--accent": "oklch(0.99098161 0.01860397 116.56466)",
       "--accent-foreground": "oklch(0.50927135 0.0886971 119.37955)",
       "--destructive": "oklch(0.577 0.245 27.325)",
-      "--border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--input": "oklch(0.83115757 0.00689828 286.24868)",
       "--ring": "oklch(0.60965815 0.10716355 119.13757)",
       "--chart-1": "oklch(0.36472698 0.06938881 127.49401)",
@@ -643,7 +643,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.99098161 0.01860397 116.56466)",
       "--sidebar-accent-foreground": "oklch(0.50927135 0.0886971 119.37955)",
-      "--sidebar-border": "oklch(0.8652421 0.00682863 286.25614)",
+      "--sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
       "--sidebar-ring": "oklch(0.60965815 0.10716355 119.13757)"
     },
     ":root.dark[data-color=\"lime\"],\n.dark [data-color=\"lime\"],\n[data-color=\"lime\"].dark": {
@@ -662,7 +662,7 @@
       "--accent": "oklch(0.32824543 0.04425552 117.48913)",
       "--accent-foreground": "oklch(0.91309009 0.1668858 119.72192)",
       "--destructive": "oklch(0.704 0.191 22.216)",
-      "--border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--input": "oklch(0.40237522 0.00330792 286.25012)",
       "--ring": "oklch(0.91309009 0.1668858 119.72192)",
       "--chart-1": "oklch(0.36472698 0.06938881 127.49401)",
@@ -676,7 +676,7 @@
       "--sidebar-primary-foreground": "oklch(0 0 0)",
       "--sidebar-accent": "oklch(0.32824543 0.04425552 117.48913)",
       "--sidebar-accent-foreground": "oklch(0.91309009 0.1668858 119.72192)",
-      "--sidebar-border": "oklch(0.38018166 0.00503884 286.15762)",
+      "--sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
       "--sidebar-ring": "oklch(0.91309009 0.1668858 119.72192)"
     },
     "@property --otp-focus-angle": {
