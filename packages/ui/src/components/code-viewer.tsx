@@ -35,6 +35,8 @@ export type CodeViewerLabels = {
   ready: string;
   copied: string;
   copyFailed: string;
+  /** Text of the button that unfolds a folded block. */
+  foldedLines: (count: number) => string;
 };
 
 export interface CodeViewerProps {
@@ -64,6 +66,7 @@ const DEFAULT_CODE_VIEWER_LABELS: CodeViewerLabels = {
   ready: "Ready",
   copied: "Copied",
   copyFailed: "Copy failed",
+  foldedLines: (count) => `${count} ${count === 1 ? "line" : "lines"}`,
 };
 
 const EMPTY_LINES: number[] = [];
@@ -165,9 +168,11 @@ function CodeViewerImplementation({
     [collapsed, lines],
   );
 
+  // New code unfolds everything; streaming chunks keep the same empty set,
+  // so they do not cause an extra render each.
   useEffect(() => {
     void code;
-    setCollapsed(new Set());
+    setCollapsed((current) => (current.size ? new Set() : current));
   }, [code]);
 
   useStreamingScroll(viewportRef, code, streaming);
@@ -328,7 +333,7 @@ function CodeViewerImplementation({
                           onClick={() => toggleFold(line.index)}
                           className="ml-2 h-4 rounded-xs px-1 text-muted-foreground text-sm"
                         >
-                          {line.foldEnd - line.index} lines
+                          {text.foldedLines(line.foldEnd - line.index)}
                         </Button>
                       ) : null}
                     </td>

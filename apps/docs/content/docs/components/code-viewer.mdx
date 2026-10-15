@@ -37,7 +37,7 @@ Pass `status="streaming"` while appending code, then switch to `"complete"`. The
 
 Copy writes the original complete code, including folded lines, and provides success or failure feedback. Set `copyable={false}` to remove the action. Highlighting loads asynchronously with a bounded skeleton; streaming updates keep incoming text visible while tokens are prepared. If loading is pending, the complete source remains available to copy and to assistive technology; if highlighting fails, readable plain code remains available. An empty string displays the empty-state label.
 
-The viewer follows the surrounding light or dark theme unless `theme` is supplied. Translate `labels` for copy, loading, empty, folding, writing, ready, copied, and copy failure.
+The viewer follows the surrounding light or dark theme unless `theme` is supplied. Translate `labels` for copy, loading, empty, folding, writing, ready, copied, and copy failure; `foldedLines(count)` names a folded block's line count.
 
 ## Plain style and highlighting configuration [#plain]
 
