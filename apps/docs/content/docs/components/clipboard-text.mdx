@@ -26,6 +26,20 @@ import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 
 The displayed text remains selectable. A long value truncates visually; its full value is available on hover and the copy action always copies the complete value.
 
+## Variants
+
+`variant` follows the shadcn/ui naming: `default` follows the theme color with a light tint, `outline` is a bordered field for cards and panels with their own background, `secondary` uses the neutral secondary fill, and `ghost` drops the fill and border so the text aligns with surrounding content in lists and tables. The root exposes `data-variant`, and `clipboardTextVariants` is exported for custom compositions.
+
+<ComponentPreview name="clipboard-text-variants" />
+
+## Glass
+
+Like other form fields, ClipboardText is a glass capsule on its own in a glass scope or with `glass`, tinted by its variant's fill, and its copy button shares the capsule. Inside a glass surface such as a dialog or panel it stays an ordinary field.
+
+```tsx
+<ClipboardText glass text="bun run dev" />
+```
+
 ## Display and copy different values
 
 Use `textToCopy` for a full address while showing a shorter label. `size` accepts `sm`, `default`, and `lg`.
@@ -46,7 +60,10 @@ The component uses the browser Clipboard API. If it is unavailable or permission
 | --- | --- | --- |
 | `text` | `string` | Required |
 | `textToCopy` | `string` | `text` |
+| `variant` | `"default" \| "outline" \| "secondary" \| "ghost"` | `"default"` |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
+| `glass` | `boolean` | Inherited |
+| `glassConfig` | `GlassConfig` | — |
 | `disabled` | `boolean` | `false` |
 | `resetDelay` | `number`, milliseconds | `1500` |
 | `onCopy` | `(value: string) => void` | — |

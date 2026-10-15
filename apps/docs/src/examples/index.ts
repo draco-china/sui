@@ -158,6 +158,7 @@ export const examples = {
   "checkbox-rtl": () => import("./variants/checkbox-rtl"),
   "checkbox-table": () => import("./variants/checkbox-table"),
   "clipboard-text-demo": () => import("./variants/clipboard-text-demo"),
+  "clipboard-text-variants": () => import("./variants/clipboard-text-variants"),
   "color-picker-demo": () => import("./variants/color-picker-demo"),
   "color-picker-alpha": () => import("./variants/color-picker-alpha"),
   "color-picker-swatches": () => import("./variants/color-picker-swatches"),
@@ -771,6 +772,8 @@ export const sourceFiles = {
   "checkbox-rtl": () => import("./variants/checkbox-rtl.tsx?raw"),
   "checkbox-table": () => import("./variants/checkbox-table.tsx?raw"),
   "clipboard-text-demo": () => import("./variants/clipboard-text-demo.tsx?raw"),
+  "clipboard-text-variants": () =>
+    import("./variants/clipboard-text-variants.tsx?raw"),
   "color-picker-demo": () => import("./variants/color-picker-demo.tsx?raw"),
   "color-picker-alpha": () => import("./variants/color-picker-alpha.tsx?raw"),
   "color-picker-swatches": () =>

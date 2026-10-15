@@ -300,56 +300,62 @@ function SensitiveInputImplementation({
       )}
       {copyable && (
         <Tooltip>
+          {/* The tooltip anchors to a wrapper around the button, so it stays
+              open while the button turns busy and changes its label. */}
           <TooltipTrigger
-            data-slot="sensitive-input-copy"
-            render={
-              <Button
-                data-slot="sensitive-input-copy"
-                type="button"
-                size="sm"
-                disabled={disabled || status === "pending"}
-                aria-label={feedback || copyLabel}
-                aria-busy={status === "pending"}
-                aria-controls={inputId}
-                className="absolute end-2 -top-px h-auto min-h-0 -translate-y-full rounded-t-md rounded-b-none border-0 px-2 py-0.5 text-xs leading-4 opacity-0 shadow-none transition-opacity focus-visible:opacity-100 active:-translate-y-full! group-focus-within/sensitive-input:opacity-100 group-hover/sensitive-input:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  if (inputRef.current) void copy(inputRef.current.value);
-                }}
-              />
-            }
+            data-slot="sensitive-input-copy-anchor"
+            render={<span />}
+            className="absolute end-2 -top-px -translate-y-full opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/sensitive-input:opacity-100 group-hover/sensitive-input:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100"
           >
-            <CopyIcon
-              status={status}
-              className={cn("size-3", status === "error" && "text-destructive")}
-            />
-            <span className="grid text-center">
-              <span
-                aria-hidden="true"
-                className="invisible col-start-1 row-start-1"
-              >
-                {labels?.copy ?? "Copy"}
+            <Button
+              data-slot="sensitive-input-copy"
+              type="button"
+              size="sm"
+              disabled={disabled || status === "pending"}
+              aria-label={feedback || copyLabel}
+              aria-busy={status === "pending"}
+              aria-controls={inputId}
+              className="h-auto min-h-0 rounded-t-md rounded-b-none border-0 px-2 py-0.5 text-xs leading-4 shadow-none"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                if (inputRef.current) void copy(inputRef.current.value);
+              }}
+            >
+              <CopyIcon
+                status={status}
+                className={cn(
+                  "size-3",
+                  status === "error" && "text-destructive",
+                )}
+              />
+              <span className="grid text-center">
+                <span
+                  aria-hidden="true"
+                  className="invisible col-start-1 row-start-1"
+                >
+                  {labels?.copy ?? "Copy"}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="invisible col-start-1 row-start-1"
+                >
+                  {labels?.copied ?? "Copied"}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="invisible col-start-1 row-start-1"
+                >
+                  {labels?.pending ?? "Copying…"}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="invisible col-start-1 row-start-1"
+                >
+                  {labels?.failed ?? "Copy failed"}
+                </span>
+                <span className="col-start-1 row-start-1">{copyText}</span>
               </span>
-              <span
-                aria-hidden="true"
-                className="invisible col-start-1 row-start-1"
-              >
-                {labels?.copied ?? "Copied"}
-              </span>
-              <span
-                aria-hidden="true"
-                className="invisible col-start-1 row-start-1"
-              >
-                {labels?.pending ?? "Copying…"}
-              </span>
-              <span
-                aria-hidden="true"
-                className="invisible col-start-1 row-start-1"
-              >
-                {labels?.failed ?? "Copy failed"}
-              </span>
-              <span className="col-start-1 row-start-1">{copyText}</span>
-            </span>
+            </Button>
           </TooltipTrigger>
           <TooltipContent>{feedback || copyLabel}</TooltipContent>
         </Tooltip>
@@ -363,6 +369,7 @@ function SensitiveInputImplementation({
   );
 }
 
+// The setting passes to its input group, which is the glass field.
 const SensitiveInput = withGlass(SensitiveInputImplementation, "scope");
 
 export { SensitiveInput, type SensitiveInputProps };

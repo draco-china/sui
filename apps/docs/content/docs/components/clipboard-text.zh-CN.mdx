@@ -26,6 +26,20 @@ import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 
 展示的文本仍可手动选择。长文本仅在视觉上截断，悬停可查看完整值，复制按钮始终复制完整文本。
 
+## 变体 [#variants]
+
+`variant` 沿用 shadcn/ui 的命名：`default` 跟随主题色，使用主题色浅底与主题色文字；`outline` 为带边框字段，适合自带背景的卡片和面板；`secondary` 使用中性的次要色填充；`ghost` 去掉填充和边框，让文字与列表、表格中的其他内容对齐。根节点提供 `data-variant`，并导出 `clipboardTextVariants` 供自定义组合使用。
+
+<ComponentPreview name="clipboard-text-variants" />
+
+## 玻璃 [#glass]
+
+与其他表单字段一样，ClipboardText 在玻璃范围内独立出现或设置 `glass` 时成为玻璃胶囊，并以变体的填充色作为色调，复制按钮共用该胶囊。在对话框、面板等玻璃表面内，它保持为普通字段。
+
+```tsx
+<ClipboardText glass text="bun run dev" />
+```
+
 ## 分别设置展示值与复制值 [#display-and-copy-different-values]
 
 使用 `textToCopy` 展示简短标签，同时复制完整地址。`size` 支持 `sm`、`default` 和 `lg`。
@@ -46,7 +60,10 @@ import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 | --- | --- | --- |
 | `text` | `string` | 必填 |
 | `textToCopy` | `string` | `text` |
+| `variant` | `"default" \| "outline" \| "secondary" \| "ghost"` | `"default"` |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
+| `glass` | `boolean` | 继承 |
+| `glassConfig` | `GlassConfig` | — |
 | `disabled` | `boolean` | `false` |
 | `resetDelay` | `number`，毫秒 | `1500` |
 | `onCopy` | `(value: string) => void` | — |
