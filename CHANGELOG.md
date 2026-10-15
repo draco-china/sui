@@ -1,3 +1,35 @@
+## [2.0.0](https://github.com/draco-china/sui/compare/v1.3.0...v2.0.0) (2026-10-15)
+
+### ⚠ BREAKING CHANGES
+
+* **glass:** GlassConfig no longer accepts mode or captureTarget, and
+the vgpu, html-to-image and @webgpu/types dependencies are removed.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **bottom-sheet:** add a bottom sheet with default and lg sizes ([d525885](https://github.com/draco-china/sui/commit/d525885a4ef514ce16c9bf39da75effd28fc098d))
+* **clipboard-text:** add variants, glass and steady copy tooltips ([7de93fd](https://github.com/draco-china/sui/commit/7de93fd8d9e595d0fc04d2af355f0a060090526f))
+* **glass:** render glass with SVG refraction and a CSS fallback ([a405e62](https://github.com/draco-china/sui/commit/a405e622bd6310c40448f00387d5c52832c465ec))
+* **separator:** place text between two lines ([bb3d315](https://github.com/draco-china/sui/commit/bb3d315b59677ee1fde3d100db5ab2fa85c3edee))
+* **tab-bar:** share equal widths, a neutral pill and a rubber-band lens ([0da090e](https://github.com/draco-china/sui/commit/0da090e95ace74e4632f333af6b471825c91f973))
+* **theme:** draw borders with the translucent foreground color ([2eba822](https://github.com/draco-china/sui/commit/2eba8225bfd77e78c5f412ce4cdfef77e7372c8d))
+* **toast:** show colorful toasts at the top center by default ([67f2466](https://github.com/draco-china/sui/commit/67f2466a890c8922e7eeb1987e8873c0d209cbc5))
+
+### Bug Fixes
+
+* **code-viewer:** translate folded line counts and skip empty resets ([9325fcf](https://github.com/draco-china/sui/commit/9325fcf05519c9a962676710654c9d9f2618d226))
+* **image-viewer:** zoom by the wheel distance ([7350c46](https://github.com/draco-china/sui/commit/7350c46ffb0322d72d349d5bbf3f021d7cbabee3))
+* **markdown-viewer:** keep raw HTML from restyling the page ([480a4ed](https://github.com/draco-china/sui/commit/480a4edd08fa503d803b5e32b2edd5a3c3ff126d))
+* **qr-code:** keep the shown code until its replacement is ready ([1a77afd](https://github.com/draco-china/sui/commit/1a77afd4455835d730b14159981e891caa32d68d))
+
+### Performance Improvements
+
+* **editor:** keep Monaco options and the HTML preview port stable ([ef841f2](https://github.com/draco-china/sui/commit/ef841f2e8c5f49a42f0a4fab2f628ae2456d7a37))
+* **glass:** recompute only the surfaces that change ([46e8739](https://github.com/draco-china/sui/commit/46e873979302cfe25fa5fa8f77e1c9573a6932c9))
+* **navigation-menu:** keep the content's glass override stable ([abd51ea](https://github.com/draco-china/sui/commit/abd51ea96e00fb8c73c611049a40a6916080e24e))
+
 ## [1.3.0](https://github.com/draco-china/sui/compare/v1.2.0...v1.3.0) (2026-10-15)
 
 ### Features
