@@ -4,7 +4,7 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import { ChevronDownIcon } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { mergeClassNames } from "../lib/class-name";
 import { GlassContext, withGlass } from "../lib/glass/context";
 
@@ -93,8 +93,11 @@ function NavigationMenuContentImplementation({
   ...props
 }: NavigationMenuPrimitive.Content.Props) {
   const glass = useContext(GlassContext);
+  // Content inside the menu stays ordinary; a stable value keeps its glass
+  // consumers from re-rendering with every menu render.
+  const plain = useMemo(() => ({ ...glass, enabled: false }), [glass]);
   return (
-    <GlassContext.Provider value={{ ...glass, enabled: false }}>
+    <GlassContext.Provider value={plain}>
       <NavigationMenuPrimitive.Content
         data-slot="navigation-menu-content"
         className={mergeClassNames(
