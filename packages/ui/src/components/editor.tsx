@@ -26,23 +26,21 @@ import {
   useContext,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { useClipboard } from "../hooks/use-clipboard";
+import { useEditorModelPath, useEditorValue } from "../hooks/use-editor-state";
 import { useFullscreen } from "../hooks/use-fullscreen";
 import { useViewerTheme } from "../hooks/use-viewer-theme";
 import { mergeClassNames } from "../lib/class-name";
 import { withoutGlass } from "../lib/glass/context";
+import { ViewerButton as TooltipButton } from "../lib/viewer/controls";
 import type { ViewerThemes } from "../lib/viewer/shiki";
 import { useShikiThemes } from "../lib/viewer/shiki-context";
 import type { Button } from "./button";
 import { CopyIcon } from "./copy-icon";
-
-type ButtonSize = ComponentProps<typeof Button>["size"];
-
-import { useEditorModelPath, useEditorValue } from "../hooks/use-editor-state";
-import { ViewerButton as TooltipButton } from "../lib/viewer/controls";
 import { HtmlViewer } from "./html-viewer";
 import { MarkdownViewer } from "./markdown-viewer";
 import {
@@ -53,8 +51,11 @@ import {
   SelectValue,
 } from "./select";
 
+type ButtonSize = ComponentProps<typeof Button>["size"];
+
 type EditorTheme = "light" | "dark";
 type MonacoEditorInstance = editor.IStandaloneCodeEditor;
+type MonacoEditorOptions = editor.IStandaloneEditorConstructionOptions;
 export type EditorViewMode = "edit" | "preview" | "split";
 export type EditorFullscreenMode = "fixed" | "screen";
 
@@ -629,6 +630,28 @@ function EditorImplementation({
   const themeName = `editor-${instanceId}`;
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  // Stable options, so Monaco does not re-apply them on every keystroke.
+  const monacoOptions = useMemo<MonacoEditorOptions>(
+    () => ({
+      minimap: { enabled: false },
+      fontSize: 14,
+      lineNumbers: "on",
+      roundedSelection: false,
+      scrollBeyondLastLine: false,
+      scrollbar: {
+        vertical: "auto",
+        horizontal: "auto",
+        useShadows: false,
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+      },
+      automaticLayout: true,
+      readOnly: disabled,
+      domReadOnly: disabled,
+      padding: { top: 8, bottom: 8 },
+    }),
+    [disabled],
+  );
   const editor = useEditorState({
     value,
     defaultValue,
@@ -653,6 +676,19 @@ function EditorImplementation({
       }[language],
   });
   const { status: copyStatus, copy } = useClipboard(editor.resolvedValue);
+  const { setPreviewScrollElement, syncEditorFromPreview } =
+    editor.previewScroll;
+  const editorRef = editor.editorRef;
+  // A stable port, so the HTML preview keeps its scroll listeners while
+  // the content changes.
+  const previewPort = useMemo(
+    () => ({
+      setElement: setPreviewScrollElement,
+      onScroll: (element: HTMLElement) =>
+        syncEditorFromPreview(element, editorRef.current),
+    }),
+    [setPreviewScrollElement, syncEditorFromPreview, editorRef],
+  );
   const PreviewComponent = editor.PreviewComponent;
   const defaultToolbarTitle = editorLanguageLabel(language);
   const previewModeActive = editor.effectiveMode === "preview";
@@ -849,24 +885,7 @@ function EditorImplementation({
                     onChange={(nextValue) =>
                       editor.handleChange(nextValue ?? "")
                     }
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      lineNumbers: "on",
-                      roundedSelection: false,
-                      scrollBeyondLastLine: false,
-                      scrollbar: {
-                        vertical: "auto",
-                        horizontal: "auto",
-                        useShadows: false,
-                        verticalScrollbarSize: 10,
-                        horizontalScrollbarSize: 10,
-                      },
-                      automaticLayout: true,
-                      readOnly: disabled,
-                      domReadOnly: disabled,
-                      padding: { top: 8, bottom: 8 },
-                    }}
+                    options={monacoOptions}
                   />
                 </Suspense>
               ) : (
@@ -901,16 +920,7 @@ function EditorImplementation({
                   </div>
                 }
               >
-                <HtmlPreviewScrollContext.Provider
-                  value={{
-                    setElement: editor.previewScroll.setPreviewScrollElement,
-                    onScroll: (element) =>
-                      editor.previewScroll.syncEditorFromPreview(
-                        element,
-                        editor.editorRef.current,
-                      ),
-                  }}
-                >
+                <HtmlPreviewScrollContext.Provider value={previewPort}>
                   <PreviewComponent
                     content={editor.resolvedValue}
                     language={language}
