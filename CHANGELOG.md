@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/draco-china/sui/compare/v1.2.0...v1.3.0) (2026-10-15)
+
+### Features
+
+* **glass:** add local materials and component playground ([8040f36](https://github.com/draco-china/sui/commit/8040f36794d2221b7e4a40ef8cc9a4e7b72202f4))
+
 ## [1.2.0](https://github.com/draco-china/sui/compare/v1.1.0...v1.2.0) (2026-10-12)
 
 ### Features
