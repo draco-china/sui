@@ -54,66 +54,28 @@ function getMarkdownTableAlignClass(align: string | undefined) {
   return undefined;
 }
 
+const alertTypes = /^(?:note|tip|important|warning|caution)$/;
+
+// Raw HTML keeps the GitHub defaults; only what the remark plugins emit is
+// added. Classes stay restricted, so content cannot apply app utilities such
+// as `fixed inset-0` to cover the page.
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [
-    ...(defaultSchema.tagNames ?? []),
-    "details",
-    "summary",
-    "kbd",
-    "sub",
-    "sup",
-  ],
   attributes: {
     ...defaultSchema.attributes,
-    a: [...(defaultSchema.attributes?.a ?? []), "className", "target", "rel"],
-    code: [...(defaultSchema.attributes?.code ?? []), "className"],
-    div: [...(defaultSchema.attributes?.div ?? []), "className", "data-alert"],
-    input: [
-      ...(defaultSchema.attributes?.input ?? []),
-      "type",
-      "checked",
-      "disabled",
+    code: [["className", /^language-./, "math-inline", "math-display"]],
+    div: [
+      ...(defaultSchema.attributes?.div ?? []),
+      [
+        "className",
+        /^markdown-alert(?:-title)?(?:-(?:note|tip|important|warning|caution))?$/,
+      ],
+      ["dataAlert", alertTypes],
     ],
-    span: [
-      ...(defaultSchema.attributes?.span ?? []),
-      "className",
-      "aria-hidden",
-    ],
-    svg: [
-      ...(defaultSchema.attributes?.svg ?? []),
-      "className",
-      "height",
-      "role",
-      "style",
-      "viewBox",
-      "width",
-      "xmlns",
-    ],
-    path: [...(defaultSchema.attributes?.path ?? []), "d", "fill", "stroke"],
-    g: [...(defaultSchema.attributes?.g ?? []), "fill", "stroke", "transform"],
-    line: [
-      ...(defaultSchema.attributes?.line ?? []),
-      "stroke",
-      "strokeWidth",
-      "x1",
-      "x2",
-      "y1",
-      "y2",
-    ],
-    rect: [
-      ...(defaultSchema.attributes?.rect ?? []),
-      "fill",
-      "height",
-      "rx",
-      "ry",
-      "stroke",
-      "width",
-      "x",
-      "y",
-    ],
-    td: [...(defaultSchema.attributes?.td ?? []), "align"],
-    th: [...(defaultSchema.attributes?.th ?? []), "align"],
+    // Task list checkboxes only, which may be checked.
+    input: [["disabled", true], ["type", "checkbox"], "checked"],
+    td: [["align", "left", "center", "right"]],
+    th: [["align", "left", "center", "right"]],
   },
 };
 
@@ -273,7 +235,6 @@ export function MarkdownViewer({
           resolvedTheme === "dark" && "dark",
           "[&_.contains-task-list]:list-none [&_.contains-task-list]:pl-0 [&_.task-list-item]:my-1 [&_.task-list-item]:flex [&_.task-list-item]:items-start [&_.task-list-item]:gap-2 [&_.task-list-item_input]:mt-1",
           "[&_.footnotes]:mt-10 [&_.footnotes]:border-t [&_.footnotes]:pt-4 [&_.footnotes]:text-sm",
-          "[&_.math-display]:my-4 [&_.math-display]:overflow-x-auto [&_.math-inline_svg]:inline-block",
           className,
         )}
       >
