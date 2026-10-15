@@ -89,6 +89,18 @@ export const components: ComponentEntry[] = [
       "https://github.com/shadcn-ui/ui/blob/f56bbd7282f0116a925a601cb6d7e0c3fede448b/apps/v4/content/docs/components/base/badge.mdx",
   },
   {
+    slug: "bottom-sheet",
+    name: "BottomSheet",
+    description: {
+      "en-US":
+        "A bottom sheet with default and lg sizes, drag gestures, keyboard handling and optional glass material.",
+      "zh-CN":
+        "带 default 与 lg 两档尺寸、拖拽手势、键盘处理和可选玻璃材质的底部面板",
+    },
+    sourceUrl:
+      "https://developer.apple.com/design/human-interface-guidelines/sheets",
+  },
+  {
     slug: "breadcrumb",
     name: "Breadcrumb",
     description: {

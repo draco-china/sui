@@ -256,6 +256,7 @@
    in place of stacked utility shadows. */
 [data-glass="true"]:is(
   [data-slot="alert-dialog-content"],
+  [data-slot="bottom-sheet-popup"],
   [data-slot="combobox-content"],
   [data-slot="context-menu-content"],
   [data-slot="context-menu-sub-content"],
@@ -282,6 +283,7 @@
 .dark
   [data-glass="true"]:is(
     [data-slot="alert-dialog-content"],
+    [data-slot="bottom-sheet-popup"],
     [data-slot="combobox-content"],
     [data-slot="context-menu-content"],
     [data-slot="context-menu-sub-content"],

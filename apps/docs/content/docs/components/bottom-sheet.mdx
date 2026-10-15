@@ -1,0 +1,156 @@
+---
+title: BottomSheet
+description: A bottom sheet with default and lg sizes, drag gestures, keyboard handling and optional glass material.
+---
+
+BottomSheet presents supporting content from the bottom edge, following iOS sheets: the `default` size rests at up to half the available height, like the iOS medium detent, and the `lg` size fills it, like the large detent. It builds on the Base UI [Drawer](/docs/components/drawer) for modality, focus, Escape and outside presses, and runs its own sizing gestures.
+
+<ComponentPreview name="bottom-sheet-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/bottom-sheet
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx showLineNumbers
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetClose,
+  BottomSheetContent,
+  BottomSheetDescription,
+  BottomSheetFooter,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetTrigger,
+} from "@workspace/ui/components/bottom-sheet"
+```
+
+```tsx showLineNumbers
+<BottomSheet>
+  <BottomSheetTrigger render={<Button variant="outline" />}>Open</BottomSheetTrigger>
+  <BottomSheetContent>
+    <BottomSheetHeader>
+      <BottomSheetTitle>Language</BottomSheetTitle>
+      <BottomSheetDescription>Drag up to see more.</BottomSheetDescription>
+    </BottomSheetHeader>
+    <BottomSheetBody>{/* Content */}</BottomSheetBody>
+    <BottomSheetFooter>
+      <BottomSheetClose render={<Button variant="secondary" />}>
+        Close
+      </BottomSheetClose>
+    </BottomSheetFooter>
+  </BottomSheetContent>
+</BottomSheet>
+```
+
+## Composition [#composition]
+
+```text
+BottomSheet
+├── BottomSheetTrigger
+└── BottomSheetContent
+    ├── BottomSheetHeader
+    │   ├── BottomSheetTitle
+    │   └── BottomSheetDescription
+    ├── BottomSheetBody
+    │   └── BottomSheetExpandedContent
+    └── BottomSheetFooter
+        └── BottomSheetClose
+```
+
+`BottomSheetContent` composes the portal, overlay, viewport and popup, and adds a grabber unless `showGrabber={false}`. `BottomSheetPortal`, `BottomSheetOverlay` and `BottomSheetGrabber` are also exported.
+
+## Sizes [#sizes]
+
+The sheet sizes to its content. The `default` size takes at most half the available height, which excludes the top safe area and the software keyboard. When content outgrows it, the sheet becomes expandable to the `lg` size, which uses the full available height.
+
+- `detents="auto"` (default): one size while content fits `default`, and `lg` once it does not.
+- `detents="always"`: keeps `lg` even for short content.
+- `detents={false}`: a single size fitted to content; when space runs out it uses the full height and the body scrolls.
+
+When the `default` size cannot hold the header, the footer and at least 80px of body, the sheet uses the full height instead. Control the size with `size`, `defaultSize` and `onSizeChange`, or read and change it with `useBottomSheet()`.
+
+<ComponentPreview name="bottom-sheet-detents" />
+
+## Gestures [#gestures]
+
+| Action | Result |
+| --- | --- |
+| Press the grabber | Toggles an expandable sheet between `default` and `lg`. |
+| Drag the header up | Expands; the sheet stops at `lg`. |
+| Drag the header down from `lg` | Returns to `default`. |
+| Drag down from `default`, or a single-size sheet | Closes past the close distance or with a downward flick, otherwise springs back. |
+| Swipe up on the body at `default` | Expands, consuming the gesture without scrolling or pressing an item. |
+| Scroll the wheel down on the body at `default` | Expands and absorbs the rest of that wheel gesture. |
+| Pull down from the top of the body at `lg` | Returns to `default`, as with the header. |
+
+A press becomes a drag after 6px of mostly vertical movement. Release chooses the size from the position, the final direction and the velocity: a flick moves one size in its direction, a pause drops the momentum, and reversing direction counts the last direction. A drag never presses the control it started on. Fields, sliders, the footer and elements marked `data-bottom-sheet-no-drag` keep their own gestures.
+
+At `default` the body of an expandable sheet does not scroll. Scrolling starts once the sheet reaches `lg` and its animation has finished, and returning to `default` resets the scroll position.
+
+## Buttons and modality [#buttons]
+
+Following Apple's [sheet guidelines](https://developer.apple.com/design/human-interface-guidelines/sheets), put Cancel on the leading edge of the header and Done on the trailing edge, and pair Done with Cancel, or with Back in the later steps of a multi-step flow. Close dismisses without saving and can stand alone. When people swipe away a sheet with unsaved changes, decline the close in `onOpenChange` and confirm first.
+
+Set `modal={false}` for a nonmodal sheet, such as a formatting panel: it shows no overlay and leaves the page behind it usable. Add `disablePointerDismissal` to keep it open while people work behind it.
+
+## Header and footer [#header-and-footer]
+
+The body scrolls between the header and the footer. While there is more to scroll, its content fades out under the header and above the footer, so neither needs a background or a divider. Set `collapseOnScroll` on `BottomSheetHeader` to fold its description while scrolling and restore it at the top. With `footerMode="adaptive"` (default) the footer scrolls with the body once both no longer fit; `footerMode="fixed"` always keeps it in place. `BottomSheetExpandedContent` renders only while the sheet is expanded.
+
+## Keyboard and fields [#keyboard]
+
+A text field that takes focus expands an expandable sheet to `lg`, unless `expandOnInputFocus={false}`. With `keyboard="resize"` (default) the sizes fit the space above a software keyboard; `keyboard="lift"` keeps the sheet's own height and raises it above the keyboard. Pass `initialFocus={false}` to `BottomSheetContent` to keep the keyboard closed when the sheet opens. In this example, closing also waits until the name is saved.
+
+<ComponentPreview name="bottom-sheet-form" />
+
+## Closing and content [#closing]
+
+Swipes, Escape, outside presses, `BottomSheetClose` and the platform back gesture all ask to close through `onOpenChange`. With a controlled `open`, the application can decline, for example while a request is busy, and the sheet returns to its size. An application's own back button can close the sheet by setting `open` to `false`.
+
+While animating out, the sheet keeps its last content, so clearing data in the parent cannot flash an empty sheet. The next opening starts at `defaultSize`. Changing `contentKey` returns the sheet to `default` with its body at the top, which suits steps within one sheet.
+
+<ComponentPreview name="bottom-sheet-steps" />
+
+## Material [#material]
+
+The sheet spans the full width within the safe area. At `default` it floats with an 8px margin on each side and below; the margin fades out gradually while the sheet expands, following a drag, so at `lg` it meets the edges. With `glass`, the sheet at `default` uses the Regular [Glass](/docs/components/glass) material with vertical edge light by default, like other popups; its own `glassConfig` chooses otherwise. It turns opaque as it expands, so a full-height sheet reads as a solid page. Override `--bottom-sheet-gap`, `--bottom-sheet-radius` and `--bottom-sheet-max-width` through `className`; a maximum width centers the sheet on large screens.
+
+<ComponentPreview name="bottom-sheet-glass" />
+
+## API reference [#api-reference]
+
+### BottomSheet [#api-bottom-sheet]
+
+Accepts Base UI Drawer Root props, except snap points and swipe direction.
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `open`, `defaultOpen`, `onOpenChange` | Base UI | Open state; `onOpenChange` can decline a close. |
+| `detents` | `"auto" \| "always" \| false` | `"auto"`. |
+| `size`, `defaultSize` | `"default" \| "lg"` | `"default"`. |
+| `onSizeChange` | `(size) => void` | Called when the size changes. |
+| `expandOnInputFocus` | `boolean` | `true`. |
+| `keyboard` | `"resize" \| "lift"` | `"resize"`. |
+| `footerMode` | `"adaptive" \| "fixed"` | `"adaptive"`. |
+| `contentKey` | `React.Key` | Resets the size and scroll position when it changes. |
+| `labels` | `{ expand?: string; collapse?: string }` | Grabber labels. |
+| `glass`, `glassConfig` | Glass | Optional glass material. |
+
+### BottomSheetContent [#api-content]
+
+Accepts Base UI Drawer Popup props, such as `initialFocus` and `finalFocus`, plus `showGrabber` (default `true`).
+
+### BottomSheetHeader [#api-header]
+
+Accepts div props plus `collapseOnScroll` (default `false`).
+
+### useBottomSheet [#api-hook]
+
+Returns `open`, `size`, `expandable`, `expanded`, `setSize` and `toggle` for the surrounding sheet.

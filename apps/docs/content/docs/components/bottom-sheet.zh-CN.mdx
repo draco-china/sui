@@ -1,0 +1,156 @@
+---
+title: BottomSheet
+description: 带 default 与 lg 两档尺寸、拖拽手势、键盘处理和可选玻璃材质的底部面板。
+---
+
+BottomSheet 从屏幕底部呈现辅助内容，参考 iOS 的 Sheet：`default` 档与 iOS 的 medium 档一样最高为可用高度的一半，`lg` 档与 large 档一样占满可用高度。它基于 Base UI [Drawer](/zh-CN/docs/components/drawer) 处理模态、焦点、Esc 和外部点击，档位与手势由自身实现。
+
+<ComponentPreview name="bottom-sheet-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/bottom-sheet
+```
+
+可以通过 shadcn CLI 安装，也可以使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 用法 [#usage]
+
+```tsx showLineNumbers
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetClose,
+  BottomSheetContent,
+  BottomSheetDescription,
+  BottomSheetFooter,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetTrigger,
+} from "@workspace/ui/components/bottom-sheet"
+```
+
+```tsx showLineNumbers
+<BottomSheet>
+  <BottomSheetTrigger render={<Button variant="outline" />}>打开</BottomSheetTrigger>
+  <BottomSheetContent>
+    <BottomSheetHeader>
+      <BottomSheetTitle>语言</BottomSheetTitle>
+      <BottomSheetDescription>向上拖动查看更多。</BottomSheetDescription>
+    </BottomSheetHeader>
+    <BottomSheetBody>{/* 内容 */}</BottomSheetBody>
+    <BottomSheetFooter>
+      <BottomSheetClose render={<Button variant="secondary" />}>
+        关闭
+      </BottomSheetClose>
+    </BottomSheetFooter>
+  </BottomSheetContent>
+</BottomSheet>
+```
+
+## 组成 [#composition]
+
+```text
+BottomSheet
+├── BottomSheetTrigger
+└── BottomSheetContent
+    ├── BottomSheetHeader
+    │   ├── BottomSheetTitle
+    │   └── BottomSheetDescription
+    ├── BottomSheetBody
+    │   └── BottomSheetExpandedContent
+    └── BottomSheetFooter
+        └── BottomSheetClose
+```
+
+`BottomSheetContent` 组合了 portal、遮罩、viewport 和弹层，默认带顶部横条，可用 `showGrabber={false}` 关闭。同时导出 `BottomSheetPortal`、`BottomSheetOverlay` 和 `BottomSheetGrabber`。
+
+## 尺寸档位 [#sizes]
+
+面板按内容高度展示。`default` 档最高占可用高度的一半，可用高度会扣除顶部安全区和软键盘占用的空间。内容超出 `default` 档时，面板可以展开到占满可用高度的 `lg` 档。
+
+- `detents="auto"`（默认）：内容放得下时只有一档，放不下时增加 `lg` 档。
+- `detents="always"`：即使内容较少，也保留 `lg` 档。
+- `detents={false}`：单档、按内容自适应；空间不足时使用最大高度，正文滚动。
+
+如果 `default` 档连头部、底部操作和至少 80px 正文都容纳不下，直接使用最大高度。可以通过 `size`、`defaultSize` 和 `onSizeChange` 控制档位，或用 `useBottomSheet()` 读取和切换。
+
+<ComponentPreview name="bottom-sheet-detents" />
+
+## 手势 [#gestures]
+
+| 操作 | 结果 |
+| --- | --- |
+| 点击顶部横条 | 可展开的面板在 `default` 与 `lg` 档之间切换。 |
+| 向上拖动头部 | 展开，到 `lg` 档后不再继续上移。 |
+| 从 `lg` 档向下拖动头部 | 回到 `default` 档。 |
+| 从 `default` 档或单档面板向下拖 | 超过关闭距离或快速下滑时关闭，否则回弹。 |
+| 在 `default` 档正文上滑 | 展开，本次手势被消耗，不会同时滚动或点击列表项。 |
+| 在 `default` 档正文上向下滚动滚轮 | 展开，并吸收这一轮连续滚轮事件。 |
+| 在 `lg` 档正文顶部下拉 | 与拖动头部一样回到 `default` 档。 |
+
+纵向移动超过 6px 且纵向占优时才接管为拖拽。松手时综合位置、末段方向和速度决定停靠点：快速滑动会朝该方向移动一档，停顿会削弱惯性，反向拖动按最后方向计算。拖拽结束不会误触起点处的控件。输入框、滑块、底部操作区以及标记了 `data-bottom-sheet-no-drag` 的元素保留自身手势。
+
+可展开面板在 `default` 档时正文不直接滚动。面板到达 `lg` 档且动画到位后，正文才开启滚动；回到 `default` 档时滚动位置归零。
+
+## 按钮与模态 [#buttons]
+
+参照 Apple 的 [Sheet 设计规范](https://developer.apple.com/design/human-interface-guidelines/sheets)，取消放在头部前缘，完成放在头部后缘；完成需与取消搭配，多步流程的后续步骤则与返回搭配。关闭按钮不保存更改，可以单独使用。面板中有未保存的更改时，在 `onOpenChange` 中拒绝下滑关闭并先确认。
+
+设置 `modal={false}` 可得到非模态面板（例如格式面板）：不显示遮罩，背后的页面仍可操作。配合 `disablePointerDismissal` 可在操作背后页面时保持面板打开。
+
+## 头部与底部 [#header-and-footer]
+
+正文在头部与底部之间滚动。仍有内容可滚动时，正文在头部下方和底部上方渐隐（Scroll fade），头部和底部因此不需要背景或分割线。给 `BottomSheetHeader` 设置 `collapseOnScroll` 后，描述随滚动折叠，回到顶部恢复。`footerMode="adaptive"`（默认）在内容与完整底部放不下时让底部随正文一起滚动，`footerMode="fixed"` 始终保持底部位置。`BottomSheetExpandedContent` 仅在展开时显示。
+
+## 键盘与输入 [#keyboard]
+
+可展开面板中的输入框获得焦点时默认展开到 `lg` 档，可用 `expandOnInputFocus={false}` 关闭。`keyboard="resize"`（默认）让档位适应键盘上方的空间；`keyboard="lift"` 保持面板自身高度，整体抬到键盘上方。给 `BottomSheetContent` 传入 `initialFocus={false}` 可避免打开时弹出键盘。示例中保存完成前也会拦截关闭。
+
+<ComponentPreview name="bottom-sheet-form" />
+
+## 关闭与内容 [#closing]
+
+下滑、Esc、外部点击、`BottomSheetClose` 和平台返回手势都会通过 `onOpenChange` 请求关闭。受控 `open` 时，应用可以拒绝关闭（例如请求进行中），面板会回到原档位。应用自身的返回按钮可以通过把 `open` 设为 `false` 关闭面板。
+
+退场动画期间保留最后一次的内容，父组件清空数据也不会闪出空白。下次打开从 `defaultSize` 开始。切换 `contentKey` 会回到 `default` 档并把正文滚动到顶部，适合同一面板内的分步流程。
+
+<ComponentPreview name="bottom-sheet-steps" />
+
+## 材质 [#material]
+
+面板在安全区内按 100% 宽度展示。`default` 档在左右和底部保留 8px 外边距悬浮显示；展开过程中外边距随拖动逐渐归零，`lg` 档贴合屏幕边缘。设置 `glass` 后，`default` 档与其他弹出层一样默认使用常规 [Glass](/zh-CN/docs/components/glass) 材质和上下边缘光，自身的 `glassConfig` 可以另行选择；展开过程中逐渐变为不透明，全高面板读起来就像一个完整页面。可以通过 `className` 覆盖 `--bottom-sheet-gap`、`--bottom-sheet-radius` 和 `--bottom-sheet-max-width`；设置最大宽度后面板在大屏上居中。
+
+<ComponentPreview name="bottom-sheet-glass" />
+
+## API 参考 [#api-reference]
+
+### BottomSheet [#api-bottom-sheet]
+
+接受 Base UI Drawer Root 的属性，停靠点和滑动方向除外。
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `open`、`defaultOpen`、`onOpenChange` | Base UI | 打开状态；`onOpenChange` 可以拒绝关闭。 |
+| `detents` | `"auto" \| "always" \| false` | `"auto"`。 |
+| `size`、`defaultSize` | `"default" \| "lg"` | `"default"`。 |
+| `onSizeChange` | `(size) => void` | 档位变化时调用。 |
+| `expandOnInputFocus` | `boolean` | `true`。 |
+| `keyboard` | `"resize" \| "lift"` | `"resize"`。 |
+| `footerMode` | `"adaptive" \| "fixed"` | `"adaptive"`。 |
+| `contentKey` | `React.Key` | 变化时重置档位和滚动位置。 |
+| `labels` | `{ expand?: string; collapse?: string }` | 顶部横条的标签。 |
+| `glass`、`glassConfig` | Glass | 可选玻璃材质。 |
+
+### BottomSheetContent [#api-content]
+
+接受 Base UI Drawer Popup 的属性（例如 `initialFocus` 和 `finalFocus`），以及 `showGrabber`（默认 `true`）。
+
+### BottomSheetHeader [#api-header]
+
+接受 div 属性，以及 `collapseOnScroll`（默认 `false`）。
+
+### useBottomSheet [#api-hook]
+
+返回所在面板的 `open`、`size`、`expandable`、`expanded`、`setSize` 和 `toggle`。
