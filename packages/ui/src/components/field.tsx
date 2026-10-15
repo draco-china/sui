@@ -155,20 +155,18 @@ function FieldSeparator({
       data-slot="field-separator"
       data-content={!!children}
       className={cn(
-        "relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2",
+        "-my-2 flex h-5 items-center text-sm group-data-[variant=outline]/field-group:-mb-2",
         className,
       )}
       {...props}
     >
-      <Separator className="absolute inset-0 top-1/2" />
-      {children && (
-        <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
-          data-slot="field-separator-content"
-        >
-          {children}
-        </span>
-      )}
+      {/* Lines on both sides of the text, with no background patch behind it,
+          so the separator also works on glass. */}
+      <Separator className="text-sm">
+        {children && (
+          <span data-slot="field-separator-content">{children}</span>
+        )}
+      </Separator>
     </div>
   );
 }

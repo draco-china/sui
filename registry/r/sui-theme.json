@@ -770,6 +770,9 @@
     "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
       "background-image": "var(--glass-edge, none)"
     },
+    ":is([data-glass=\"true\"], [data-glass-part])\n:is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n  [data-slot=\"resizable-handle\"]\n)": {
+      "background-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+    },
     "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
       "[data-slot=\"select-content\"][data-glass=\"true\"]\n    > :is(\n      [data-slot=\"select-scroll-up-button\"],\n      [data-slot=\"select-scroll-down-button\"]\n    ),\n  [data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n  [data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
         "background-color": "revert-layer"
@@ -788,6 +791,9 @@
         "--glass-initial-edge-shadow": "0 0 #0000",
         "-webkit-backdrop-filter": "none",
         "backdrop-filter": "none"
+      },
+      ":is([data-glass=\"true\"], [data-glass-part])\n    :is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n      [data-slot=\"resizable-handle\"]\n    )": {
+        "background-color": "revert-layer"
       }
     },
     "html[data-appearance-transition]::view-transition-old(root)": {

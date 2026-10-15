@@ -230,7 +230,7 @@
     },
     {
       "path": "packages/ui/src/components/separator.tsx",
-      "content": "\"use client\";\n\nimport { Separator as SeparatorPrimitive } from \"@base-ui/react/separator\";\nimport { mergeClassNames } from \"@/lib/class-name\";\n\nfunction Separator({\n  className,\n  orientation = \"horizontal\",\n  ...props\n}: SeparatorPrimitive.Props) {\n  return (\n    <SeparatorPrimitive\n      data-slot=\"separator\"\n      orientation={orientation}\n      className={mergeClassNames(\n        \"shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { Separator };\n",
+      "content": "\"use client\";\n\nimport { Separator as SeparatorPrimitive } from \"@base-ui/react/separator\";\nimport { cn } from \"cn\";\nimport type * as React from \"react\";\nimport { mergeClassNames } from \"@/lib/class-name\";\n\nconst lineClassName =\n  \"shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch\";\n\nfunction Separator({\n  className,\n  orientation = \"horizontal\",\n  children,\n  ...props\n}: SeparatorPrimitive.Props & { children?: React.ReactNode }) {\n  if (children == null || children === false)\n    return (\n      <SeparatorPrimitive\n        data-slot=\"separator\"\n        orientation={orientation}\n        className={mergeClassNames(lineClassName, className)}\n        {...props}\n      />\n    );\n  // Text sits between two lines instead of masking one line with a\n  // background, so the separator works on any surface, including glass. The\n  // text stays readable to assistive technology outside the separator role.\n  const vertical = orientation === \"vertical\";\n  const line = cn(\n    \"shrink-0 bg-border\",\n    vertical ? \"w-px flex-1\" : \"h-px min-w-4 flex-1\",\n  );\n  return (\n    <div\n      data-slot=\"separator\"\n      data-orientation={orientation}\n      data-content=\"\"\n      className={cn(\n        \"flex shrink-0 items-center gap-3 text-muted-foreground text-xs\",\n        vertical ? \"flex-col self-stretch\" : \"w-full\",\n        typeof className === \"string\" ? className : undefined,\n      )}\n    >\n      <SeparatorPrimitive\n        data-slot=\"separator-line\"\n        orientation={orientation}\n        className={line}\n        {...props}\n      />\n      {/* Vertical text runs along a vertical separator: CJK stays upright and\n          Latin text turns with the line. */}\n      <span\n        data-slot=\"separator-content\"\n        className={cn(\"shrink-0\", vertical && \"[writing-mode:vertical-rl]\")}\n      >\n        {children}\n      </span>\n      <span\n        aria-hidden=\"true\"\n        data-slot=\"separator-line\"\n        data-orientation={orientation}\n        className={line}\n      />\n    </div>\n  );\n}\n\nexport { Separator };\n",
       "type": "registry:ui",
       "target": "@ui/separator.tsx"
     },
@@ -1095,6 +1095,9 @@
     "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
       "background-image": "var(--glass-edge, none)"
     },
+    ":is([data-glass=\"true\"], [data-glass-part])\n:is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n  [data-slot=\"resizable-handle\"]\n)": {
+      "background-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+    },
     "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
       "[data-slot=\"select-content\"][data-glass=\"true\"]\n    > :is(\n      [data-slot=\"select-scroll-up-button\"],\n      [data-slot=\"select-scroll-down-button\"]\n    ),\n  [data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n  [data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
         "background-color": "revert-layer"
@@ -1113,6 +1116,9 @@
         "--glass-initial-edge-shadow": "0 0 #0000",
         "-webkit-backdrop-filter": "none",
         "backdrop-filter": "none"
+      },
+      ":is([data-glass=\"true\"], [data-glass-part])\n    :is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n      [data-slot=\"resizable-handle\"]\n    )": {
+        "background-color": "revert-layer"
       }
     },
     "html[data-appearance-transition]::view-transition-old(root)": {

@@ -168,6 +168,15 @@
   background-image: var(--glass-edge, none);
 }
 
+/* Separators inside glass use a translucent foreground line that follows the
+   material, instead of an opaque border color. Resize handles keep theirs. */
+:is([data-glass="true"], [data-glass-part])
+:is([role="separator"], [data-slot="separator-line"]):not(
+  [data-slot="resizable-handle"]
+) {
+  background-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
 @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
   [data-slot="select-content"][data-glass="true"]
     > :is(
@@ -203,5 +212,12 @@
     --glass-initial-edge-shadow: 0 0 #0000;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+
+  :is([data-glass="true"], [data-glass-part])
+    :is([role="separator"], [data-slot="separator-line"]):not(
+      [data-slot="resizable-handle"]
+    ) {
+    background-color: revert-layer;
   }
 }

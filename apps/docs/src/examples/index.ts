@@ -475,6 +475,7 @@ export const examples = {
   "separator-menu": () => import("./variants/separator-menu"),
   "separator-rtl": () => import("./variants/separator-rtl"),
   "separator-vertical": () => import("./variants/separator-vertical"),
+  "separator-text": () => import("./variants/separator-text"),
   "sheet-demo": () => import("./variants/sheet-demo"),
   "sheet-no-close-button": () => import("./variants/sheet-no-close-button"),
   "sheet-rtl": () => import("./variants/sheet-rtl"),
@@ -1133,6 +1134,7 @@ export const sourceFiles = {
   "separator-menu": () => import("./variants/separator-menu.tsx?raw"),
   "separator-rtl": () => import("./variants/separator-rtl.tsx?raw"),
   "separator-vertical": () => import("./variants/separator-vertical.tsx?raw"),
+  "separator-text": () => import("./variants/separator-text.tsx?raw"),
   "sheet-demo": () => import("./variants/sheet-demo.tsx?raw"),
   "sheet-no-close-button": () =>
     import("./variants/sheet-no-close-button.tsx?raw"),
