@@ -207,10 +207,11 @@ test("square corners keep background samples ordered across the diagonal", () =>
               const y = vertical ? height - yDepth : yDepth;
               const [dx, dy] = glassDisplacement(x, y, frame);
               const samples = [x + dx * scale, y + dy * scale];
-              const sample = axis === 0 ? samples[0] : samples[1];
-              const ordered = (axis === 0 ? horizontal : vertical)
-                ? (axis === 0 ? width : height) - sample
-                : sample;
+              const sample = samples[axis];
+              const flipped = axis === 0 ? horizontal : vertical;
+              const size = axis === 0 ? width : height;
+              // Distance from the edge the bevel bends toward.
+              const ordered = flipped ? size - sample : sample;
               expect(ordered).toBeGreaterThan(previous);
               expect(samples[0]).toBeGreaterThanOrEqual(0);
               expect(samples[0]).toBeLessThanOrEqual(width);

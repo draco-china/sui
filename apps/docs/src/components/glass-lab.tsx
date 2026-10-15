@@ -212,6 +212,9 @@ export function GlassLab({ locale = "en-US" }: ExampleProps) {
   const [showProbe, setShowProbe] = useState(false);
   const [background, setBackground] = useState<Background>("coast");
   const [playing, setPlaying] = useState(true);
+  const videoLabels = zh
+    ? { play: "播放背景视频", pause: "暂停背景视频" }
+    : { play: "Play background video", pause: "Pause background video" };
   const previousStrength = useRef<number>(glassDefaults.strength);
   const media = backgrounds[background];
   const glassConfig: GlassConfig = { material, edge, options };
@@ -289,13 +292,7 @@ export function GlassLab({ locale = "en-US" }: ExampleProps) {
               className="absolute right-2 bottom-2"
               onClick={() => setPlaying((value) => !value)}
             >
-              {playing
-                ? zh
-                  ? "暂停背景视频"
-                  : "Pause background video"
-                : zh
-                  ? "播放背景视频"
-                  : "Play background video"}
+              {playing ? videoLabels.pause : videoLabels.play}
             </Button>
           </div>
         </ControlGroup>

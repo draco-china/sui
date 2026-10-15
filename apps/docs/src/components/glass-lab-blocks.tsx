@@ -203,6 +203,9 @@ function Block({
 function NowPlaying({ zh }: { zh: boolean }) {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(38);
+  const playback = zh
+    ? { play: "播放", pause: "暂停" }
+    : { play: "Play", pause: "Pause" };
   const minutes = (value: number) =>
     `${Math.floor((value * 2.4) / 60)}:${String(Math.round(value * 2.4) % 60).padStart(2, "0")}`;
   return (
@@ -248,9 +251,7 @@ function NowPlaying({ zh }: { zh: boolean }) {
           </Button>
           <Button
             size="icon-lg"
-            aria-label={
-              playing ? (zh ? "暂停" : "Pause") : zh ? "播放" : "Play"
-            }
+            aria-label={playing ? playback.pause : playback.play}
             onClick={() => setPlaying((value) => !value)}
           >
             {playing ? <PauseIcon /> : <PlayIcon />}
