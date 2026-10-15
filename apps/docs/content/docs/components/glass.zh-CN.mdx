@@ -1,11 +1,11 @@
 ---
 title: Glass
-description: 共享高光、SVG 折射与 CSS 回退的玻璃表面。
+description: 以 SVG 折射呈现清透与常规材质的玻璃表面，并以 CSS 回退。
 ---
 
 ## 预览 [#preview]
 
-在同一场景切换 CSS、SVG 折射和自动回退，对比普通与玻璃表面。演示显式使用 `mode="auto"`：清透按 WebGPU → SVG → CSS 回退，常规使用 SVG → CSS。可以切换站点明暗主题。
+在同一场景对比普通表面和玻璃表面，并切换清透与常规材质。状态行显示浏览器当前使用 SVG 折射还是 CSS 回退。切换站点外观可对比浅色和深色主题。
 
 <ComponentPreview name="glass-demo" />
 
@@ -15,7 +15,7 @@ description: 共享高光、SVG 折射与 CSS 回退的玻璃表面。
 bunx --bun shadcn@latest add @sui/glass
 ```
 
-## 使用 [#usage]
+## 用法 [#usage]
 
 ```tsx
 import { GlassSurface } from "@workspace/ui/components/glass";
@@ -25,73 +25,98 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 </GlassSurface>
 ```
 
-通过组件的 `glassConfig` 单独选择材质和渲染方式；`glass` 仍只负责开关。局部配置保留 `strength`、`tint`、`tintOpacity` 和 `highlight` 四个参数，不开放模糊或最低文字对比度。局部配置不会写成 HTML 属性，显式 `glass={false}` 始终关闭效果。
+所有支持玻璃的组件都使用布尔开关 `glass`。`glassConfig` 选择材质 `material`、边缘光 `edge` 和三个参数 `options`：`strength`、`tint`、`tintOpacity`。模糊、饱和度和边缘高光强度均为内置。配置不会成为 HTML 属性，显式 `glass={false}` 始终关闭效果。
 
 ```tsx
 import { Button } from "@workspace/ui/components/button";
 import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface glassConfig={{ mode: "svg", material: "clear" }} />
-<Button glass glassConfig={{ material: "regular" }}>操作</Button>
+<GlassSurface glassConfig={{ material: "clear", edge: "vertical" }} />
+<Button glass glassConfig={{ material: "regular" }}>Action</Button>
 ```
 
-每个启用的表面使用独立请求，内部共享观察器、事件监听、渲染器与能力检测。复合组件的根可传递配置给操作控件和浮层；布局根自身不创建渲染请求，无需公开 Provider。
+传入 `render` 可保留原生语义，例如 `<GlassSurface render={<nav />} />`。每个启用的表面都是独立请求；观察器、事件监听和 SVG 渲染器在内部共享，无需 Provider。Dialog、Popover、Tabs 等根组件把设置传给自己的控件和弹出层，本身不会成为玻璃。
 
-## 表面如何渲染 [#rendering]
+## 渲染方式 [#rendering]
 
-首屏使用 CSS 模糊和圆角内侧柔光。测量后使用 SVG 边缘高光。原生 SVG 直接处理浏览器背后的实时画面，只有 WebGPU 使用解码后的采样帧替换背景。组件库默认 SVG → CSS，只有清透材质显式使用 `mode="auto"` 才请求 WebGPU；常规材质在自动模式下也使用 SVG → CSS。SVG 折射使用原生 `feDisplacementMap`；模糊与更清晰的折射边缘由 SVG 滤镜节点合成。两种渲染器保留随尺寸适配的平滑折射带。WebGPU 背景最高 2 倍采样，受 8 百万像素上限约束，坐标仍使用 CSS 像素。SVG 只生成几何位移图，不抓取背景。
+Glass 使用原生 SVG 折射：几何位移贴图通过 `feDisplacementMap` 在边缘弯折浏览器背后的实时画面，再进行模糊和饱和。不采集背景，因此视频、滚动和动画都按显示器帧率实时呈现。
 
-Glass 保留布尔开关，通过 `glassConfig.material` 选择 `"clear"` 或 `"regular"` 材质。默认清透（Clear）的色调不透明度为 `10%`，常规（Regular）为 `35%`。使用 `<GlassSurface glassConfig={{ material: "regular" }} />` 选择常规材质。显式设置 `options.tintOpacity` 会覆盖材质默认值。Playground 的透明度在手动调节前跟随所选材质，恢复默认参数后回到当前材质的默认值。
-
-骨架的 Glass 内部固定为 Regular＋CSS，不请求增强渲染器，外部仍只使用 `glass` 开关。其他需要折射的组件沿用局部或继承配置；组件只在确有固定材质需求时使用内部策略。
-
-两种材质名称对应 [Apple 的 Clear 与 Regular 变体](https://developer.apple.com/design/human-interface-guidelines/materials)，这里的数值是 Web 近似参数，并非 Apple 官方规格。两种材质均保留折射强度 `22`、高光 `0.3`。模糊仍为内置值：WebGPU `2px`、SVG `4px`、CSS `6px`，不提供公开参数。
-
-从底到顶依次合成背景折射、玻璃底色、组件填充色、边缘高光和内容。`tintOpacity` 控制玻璃底色，不会同时降低组件填充和高光的透明度。不透明主色保留实色，删除态保留自身填充的透明度；高光独立叠在填充之上。CSS、SVG 与 WebGPU 使用同一份材质合成结果。
-
-完全不透底的填充使用 CSS 绘制并保留 SVG 高光，省去被填充覆盖的背景采样和折射计算。透光表面按所选模式增强；渲染状态会显示实际使用的模式。
-
-## 输入、预览与浮层 [#composition]
-
-通过 `glass` 为有材质表面的容器和操作控件启用效果。Card、Accordion 和 Toolbar 等容器使用一个连续表面，内部行、标签和分割线不单独绘制材质。玻璃容器内的控件默认复用所属表面，显式开启后可拥有独立材质；浮动菜单和 Tooltip 可拥有自己的表面。`glass={false}` 关闭当前组件及其继承设置，子组件可显式重新启用。Glass 视觉生效时不添加聚焦 ring，普通组件保留原有主题和焦点样式。
-
-标签、面包屑、布局辅助、状态指示、表格和二维码保持普通样式。Markdown 和 HTML Viewer 的内容不使用 Glass；编辑器、代码与对比查看器、图片查看器、轮播和附件仅为操作控件提供 Glass，内容区保持普通样式，编辑器沿用既有 Monaco 生命周期。小型状态控件与骨架内部固定使用 Regular＋CSS。组件体验页同时展示普通组件和适合玻璃的表面，不为每个示例额外套一张玻璃卡片。
-
-<ComponentPreview name="glass-composition" />
-
-## WebGPU 采样与实时 SVG [#webgpu]
-
-WebGPU 使用组件的 `glassConfig.captureTarget` 限定采样区域。相同目标、场景版本和遮挡集合共用快照；采样时排除自身、同绘制层级的 Glass 及上方遮挡，保留下层画面。层级结合所属玻璃表面和 CSS 堆叠上下文判断；真实 DOM 不被隐藏或移除。下层 Glass 更新后，使用它的上层请求重新采样。如果下层使用无法被 DOM 快照完整保留的原生背景滤镜，上层局部回退到 SVG，再回退到 CSS；其他请求仍可使用 WebGPU。
-
-每个请求按自身光学范围过滤普通节点，并为折射和模糊预留边距。阴影、滤镜和可见伪元素可能越过元素矩形，因此保守保留。排除的图片在截图副本里先换成布局占位，再嵌入资源；排除的 canvas 在像素序列化前跳过，并在副本中补回等尺寸占位。实际保留的资源无法读取或嵌入时，该表面局部回退到 SVG，再回退到 CSS；独立请求仍可使用 WebGPU。不可读取资源使用现有快照条目记录失败，场景失效或刷新后重新尝试；临时采样失败则保留旧帧并允许重试。
-
-自动模式在滚动或标记的运动期间优先使用可用的原生 SVG，停止后重新尝试 WebGPU。播放中的视频与其他保留的 DOM 绘制内容混合时也使用原生路径，暂停后尝试恢复 WebGPU；纯视频纹理仍可由 GPU 渲染，避免实时背景依赖反复过期的 DOM 截图。
-
-DOM 采样最高 `5Hz`，原生 SVG 不可用时的运动采样最高 `10Hz`，不是 `60/120Hz` 实时渲染。`refreshGlass(target)` 为使用该目标的已挂载表面请求更新；不传目标时刷新所有已挂载请求。Playground 的两个视频背景保留；原生 SVG 与 CSS 由浏览器跟随视频和滚动画面，不使用 JS 背景快照，实际帧率仍需根据浏览器绘制与显示设备实测。
+CSS 材质作为回退：表面完成测量前、浏览器不支持 SVG 背景滤镜（Safari）、`prefers-reduced-transparency` 或强制颜色模式下，以及渲染器失败时使用。完全不透明的填充会遮住背景，因此这类表面保持 CSS 并保留共享的边缘高光。减少透明度和强制颜色模式下显示不透明底色，并保留原生焦点样式。
 
 <ComponentPreview name="glass-dynamic" />
 
-## 主题与回退 [#themes]
+`refreshGlass(target?)` 重新测量元素或 ref 内已挂载表面的材质和边缘，不传目标时刷新全部。修改运行时无法观察到的填充后调用它。
 
-默认主题 token 不变，材质从组件自身背景读取颜色。最低文字对比度维持内置 `0`，不开放参数；组件自身文字色保持不变。无法完成增强时回退到 SVG 或 CSS。降低透明度偏好和强制颜色模式停用增强、显示不透明基础表面，并保留原生焦点样式。CSS 与 SVG 回退仍需检查实际背景上的文字可读性。
+## 材质 [#materials]
 
-## 采样限制 [#limits]
+两种材质对应 [Apple 的 Clear 与 Regular 变体](https://developer.apple.com/design/human-interface-guidelines/materials)，数值是 Web 近似，不是 Apple 规范。
 
-这些限制针对 WebGPU 背景采样；原生 SVG 使用浏览器背后的画面，不进入 DOM 截图路径。DOM 快照不是浏览器合成器截图。跨域图像需要 CORS；iframe、复杂变换及浏览器管理的绘制内容可能无法准确采样。排除 canvas 时，如果无法可靠还原 Shadow DOM 插槽的布局，该表面局部使用原生 SVG，再回退到 CSS。过大的采样区域、快速动画和大量浮层会增加成本。WebGPU 保持原有快照结构，不包含额外的实时画布、嵌套合成层或全局主题备份。
+| 材质 | 着色 | SVG 模糊 | CSS 模糊 | 用途 |
+| --- | --- | --- | --- | --- |
+| `"clear"` 清透 | `12%` | `4px` | `6px` | 媒体之上的通透玻璃，背景仍可辨认。 |
+| `"regular"` 常规（默认） | `30%` | `14px` | `16px` | 磨砂玻璃，在繁杂内容上保持文字清晰。 |
+
+两者折射强度均为 `22`、饱和度 `1.3`，并使用相同的边缘光。`options.tintOpacity` 覆盖材质的着色。着色取自组件自身的背景，因此主色和危险色填充保留原有颜色。表面从底到顶依次合成折射后的背景、着色、组件填充、边缘高光和内容。
+
+<ComponentPreview name="glass-materials" />
+
+## 边缘光 [#edge]
+
+`glassConfig.edge` 选择光线落在边缘的方式：
+
+- `"diagonal"`（默认）：细边从左上和右下角照亮，沿两侧渐隐。
+- `"vertical"`：斜面光照，反光位于上下边缘。
+
+<ComponentPreview name="glass-edges" />
+
+高光强度为内置，并随像素密度连续变化（`0.15 × 设备像素比`，范围 `0.15` 到 `0.3`），因此 1x 屏幕边缘更淡，手机上更细。
+
+## 弹出层 [#popups]
+
+开启玻璃时，菜单、弹出框、选择器、提示、悬停卡片、对话框、侧边面板、抽屉和通知默认使用清晰可读的常规材质和上下边缘光，与周围设置无关，与 Apple 平台一致。它们自身的 `glassConfig` 仍可另行选择。浮层共用一层柔和的扩散阴影。
+
+<ComponentPreview name="glass-popups" />
+
+## 控件与内容 [#composition]
+
+玻璃用于导航、控件和浮层，内容保持普通。
+
+- 玻璃表面内的控件共用该表面的材质，不会各自成为玻璃，除非显式开启。
+- `ButtonGroup` 是一个胶囊，组内按钮共用其材质；嵌套分组时每个内层分组各自成为一个胶囊。`Pagination` 的控件也组成同样的胶囊。
+- 表单字段（`Input`、`Textarea`、`InputGroup`、`Select` 与 `Combobox` 触发器、`TagInput`、`SensitiveInput`、`ClipboardText`）在玻璃范围内独立出现时成为玻璃，与 iOS 搜索框一致，获得焦点时轻微提亮。在对话框、面板等玻璃表面内，它们保持为普通字段并保留焦点环。
+- Switch 和 Slider 的滑块只在拖动时成为玻璃镜片。按下按钮时会轻微放大，玻璃按钮同时提亮。
+- 玻璃 `Carousel` 的上一张、下一张按钮浮于画面之上，幻灯片保持为内容。
+- Card、二维码、Accordion、Calendar、编辑器和查看器属于内容：在玻璃中它们自身的控件保持普通，打开的菜单和弹出层仍使用玻璃。`Card` 和 `QRCode` 支持显式 `glass` 属性，例如用于媒体之上的小组件。
+- 用 `GlassContent` 包裹自定义内容区域，可让其中的控件在玻璃表面内保持普通。
+
+<ComponentPreview name="glass-controls" />
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+import { GlassContent, GlassSurface } from "@workspace/ui/components/glass";
+
+<GlassSurface>
+  <GlassContent>{/* 普通表单字段 */}</GlassContent>
+</GlassSurface>
+<Card glass>{/* 玻璃小组件 */}</Card>
+```
+
+<ComponentPreview name="glass-composition" />
+
+玻璃焦点不添加焦点环；普通组件保留主题和焦点样式。玻璃会透出背景，清透材质尤甚，因此两种材质中的文字和图标都带有与材质色调一致的柔和光晕，就像紧贴其后多了一层磨砂，次要文字也更接近前景色。光晕只在背景与文字冲突时显现，因此浅色和深色模式下都能在明亮繁杂的内容上保持清晰。普通按钮和输入框保持清晰的文字，减少透明度时，这些处理与玻璃一同关闭。
 
 ## API 参考 [#api-reference]
 
-| Prop | Type | 默认值 / 行为 |
+| 属性 | 类型 | 默认值 / 行为 |
 | --- | --- | --- |
-| Config `mode` | `"css" \| "svg" \| "auto"` | `"svg"`；SVG → CSS。Clear `auto`：WebGPU → SVG → CSS；Regular：SVG → CSS。 |
-| Config `material` | `"clear" \| "regular"` | `"clear"`；色调不透明度 `10%` / `35%`。 |
+| Config `material` | `"clear" \| "regular"` | `"regular"`；弹出层默认 `"regular"`。 |
+| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`；弹出层默认 `"vertical"`。 |
 | Config `options` | `GlassOptions` | 局部材质参数。 |
-| Config `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | 可选 WebGPU 采样范围，SVG 与 CSS 不使用。 |
-| `refreshGlass(target?)` | `(target?: GlassCaptureTarget) => void` | 刷新使用该目标的已挂载请求，不传目标时刷新全部。 |
 | Options `strength` | `number` | `22` |
-| Options `tint` | `string` | 组件自身背景。 |
-| Options `tintOpacity` | `number` | 材质默认值 `0.1` / `0.35`；显式值优先。 |
-| Options `highlight` | `number` | `0.3` |
-| Surface `glass` | `boolean` | `true` |
-| Component `glassConfig` | `GlassConfig` | 局部 `mode`、`material`、`options`、可选 WebGPU `captureTarget`；不包含开关或请求 ID。 |
-| Surface other props | Native div props | `className`, `style`, `ref` |
+| Options `tint` | `string` | 组件背景色。 |
+| Options `tintOpacity` | `number` | 材质默认值：`0.12` / `0.3`。 |
+| `refreshGlass(target?)` | `(target?: GlassTarget) => void` | 重新测量目标内的表面，不传目标时刷新全部。 |
+| 组件 `glass` | `boolean` | 开启或关闭玻璃；`GlassSurface` 默认 `true`。 |
+| 组件 `glassConfig` | `GlassConfig` | 局部 `material`、`edge` 和 `options`。 |
+| `GlassSurface` | `useRender` 属性 | 原生 div 属性，可用 `render` 更换元素。 |
+| `GlassContent` | `useRender` 属性 | 玻璃中的普通内容区域。 |

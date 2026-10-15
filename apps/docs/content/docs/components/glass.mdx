@@ -1,11 +1,11 @@
 ---
 title: Glass
-description: Glass surfaces with shared highlights, SVG refraction, and CSS fallback.
+description: Glass surfaces with SVG refraction, Clear and Regular materials, and a CSS fallback.
 ---
 
 ## Preview [#preview]
 
-Compare ordinary and glass surfaces in one scene. The demo explicitly uses `mode="auto"`: Clear falls back through WebGPU → SVG → CSS; Regular uses SVG → CSS. Switch the site appearance to compare light and dark themes.
+Compare an ordinary and a glass surface in one scene, and switch between the Clear and Regular materials. The status line reports whether the browser renders SVG refraction or the CSS fallback. Switch the site appearance to compare light and dark themes.
 
 <ComponentPreview name="glass-demo" />
 
@@ -25,73 +25,98 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 </GlassSurface>
 ```
 
-Use the component's `glassConfig` to choose its material and rendering mode; `glass` remains a boolean switch. Local configuration retains the four options `strength`, `tint`, `tintOpacity`, and `highlight`. Blur and minimum text contrast remain internal. Configuration never becomes an HTML attribute, and explicit `glass={false}` always disables the effect.
+`glass` is a boolean switch on every glass-capable component. `glassConfig` chooses the `material`, the `edge` light and three `options`: `strength`, `tint` and `tintOpacity`. Blur, saturation and the edge highlight strength are built in. Configuration never becomes an HTML attribute, and an explicit `glass={false}` always turns the effect off.
 
 ```tsx
 import { Button } from "@workspace/ui/components/button";
 import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface glassConfig={{ mode: "svg", material: "clear" }} />
+<GlassSurface glassConfig={{ material: "clear", edge: "vertical" }} />
 <Button glass glassConfig={{ material: "regular" }}>Action</Button>
 ```
 
-Each enabled surface uses an independent request. Internal observers, event listeners, renderers and capability probes are shared. Compound roots pass settings to their controls and popups without acquiring a renderer themselves; no public Provider is required.
+Pass `render` to keep native semantics, for example `<GlassSurface render={<nav />} />`. Each enabled surface is an independent request; observers, listeners and the SVG renderer are shared internally, so no Provider is required. Roots such as Dialog, Popover or Tabs pass their setting to their controls and popups without becoming glass themselves.
 
-## How the surface is rendered [#rendering]
+## Rendering [#rendering]
 
-The initial surface uses CSS backdrop blur and an inset highlight following its native radius. Measured SVG highlights replace the initial glow. Native SVG filters the live browser backdrop; only WebGPU replaces the background with a decoded sampled frame. The library defaults to SVG → CSS; only Clear with explicit `mode="auto"` requests WebGPU. Regular uses SVG → CSS even in automatic mode. SVG refraction uses native `feDisplacementMap`; Gaussian blur and a sharper displaced edge are composed by SVG filter primitives. Both renderers retain the size-aware smooth refraction band. WebGPU background sampling uses up to 2x resolution, capped at 8 megapixels, with CSS coordinates preserved. SVG generates only a geometric displacement map and does not capture the background.
+Glass renders native SVG refraction: a geometric displacement map bends the live backdrop along the edges with `feDisplacementMap`, then blurs and saturates it. Nothing is captured, so video, scrolling and animation stay live at the display's frame rate.
 
-Glass keeps its boolean switch; `glassConfig.material` selects `"clear"` or `"regular"`. Clear is the default, with `10%` tint opacity; Regular uses `35%`. Select Regular with `<GlassSurface glassConfig={{ material: "regular" }} />`. Explicit `options.tintOpacity` overrides either material's default. The Playground follows the selected default until you adjust transparency; Reset defaults restores the selected material's value.
-
-Skeleton fixes its glass material to Regular with CSS internally and never requests an enhanced renderer. Its public API remains the boolean `glass` switch. Components that need refraction follow their local or inherited configuration; fixed material policies are reserved for components with that requirement.
-
-The two material names follow [Apple's Clear and Regular variants](https://developer.apple.com/design/human-interface-guidelines/materials). Their numeric settings here are Web approximations, not Apple specifications. Both retain refraction strength `22` and highlight `0.3`. Blur remains built in: WebGPU `2px`, SVG `4px`, CSS `6px`.
-
-Surfaces compose background refraction, glass tint, component paint, edge highlights, and content in that order. `tintOpacity` controls the glass tint independently of component paint and highlights. Opaque primary paint remains solid, and translucent destructive paint retains its own alpha. Highlights sit above the paint. CSS, SVG, and WebGPU use the same composed material.
-
-Fully opaque paint uses CSS with the shared SVG highlight, avoiding background capture and refraction that the paint would cover. Translucent surfaces use the selected enhancement mode. Rendering status reports the mode actually used.
-
-## Inputs, viewers, overlays [#composition]
-
-Enable material-bearing surfaces and operation controls with `glass`. Containers such as Card, Accordion and Toolbar use one continuous surface; their rows, labels and dividers do not acquire separate material. Controls inside a glass surface reuse that surface unless explicitly enabled. Floating menus and tooltips can have their own surface. `glass={false}` disables the component and its inherited setting; descendants can explicitly opt back in. Glass focus adds no ring. Ordinary components retain their native theme and focus styling.
-
-Labels, breadcrumbs, layout helpers, status indicators, tables, and QR codes keep ordinary styles. Markdown and HTML viewers stay plain. Editors, code and diff viewers, image viewers, carousels, and attachments apply Glass only to operation controls. Their content remains ordinary, and the editor retains its existing Monaco lifecycle. Small state controls and skeletons use Regular with CSS internally. The Playground shows these ordinary components alongside eligible surfaces without adding a glass card around every example.
-
-<ComponentPreview name="glass-composition" />
-
-## WebGPU sampling and live SVG [#webgpu]
-
-For WebGPU, use `glassConfig.captureTarget` to limit the sampling area. Matching targets, scene revisions, and occlusion sets share snapshots. Capture excludes the surface itself, Glass peers on the same paint level, and higher occluders, while retaining lower painted layers. Levels follow the owning Glass surface and CSS stacking context; the live DOM is never hidden or removed. Changes to a retained lower Glass layer refresh its upper consumers. If a lower native backdrop filter cannot be preserved by DOM capture, the upper surface locally falls back to SVG, then CSS; independent requests can still use WebGPU.
-
-Each request filters ordinary nodes against its optical footprint, with padding for refraction and blur. Shadows, filters and visible pseudo-elements can paint beyond element rectangles, so they are conservatively retained. Excluded images become layout placeholders in the detached clone before resource embedding. Excluded canvases are skipped before pixel serialization, then replaced with equally sized layout placeholders in the clone. A retained resource that cannot be read or embedded falls back locally to SVG, then CSS; independent requests retain WebGPU. Unsupported resources share the existing snapshot failure entry until scene invalidation or refresh; transient capture failures keep the previous frame and remain retryable.
-
-Automatic surfaces use native SVG during scrolling or marked motion when it is available, then retry WebGPU after movement stops. A playing video mixed with other retained DOM paint also stays native; pausing retries WebGPU, while media-only video textures remain eligible for GPU rendering. This keeps live backgrounds from depending on repeatedly discarded DOM snapshots.
-
-DOM capture is capped at `5Hz`, or `10Hz` during movement when native SVG is unavailable; this is not live `60/120Hz` rendering. `refreshGlass(target)` requests new frames for mounted surfaces using the target; omit the target to refresh all mounted requests. The Playground retains both video backgrounds. Native SVG and CSS follow browser playback and scrolling without JS background snapshots; their actual frame rate depends on browser paint and the display.
+The CSS material is the fallback. It applies before a surface is measured, in browsers that cannot paint SVG backdrops (Safari), under `prefers-reduced-transparency` or forced colors, and if the renderer fails. Fully opaque paint covers the backdrop, so such surfaces keep CSS with the shared edge highlight. Reduced transparency and forced colors show an opaque base with native focus styles.
 
 <ComponentPreview name="glass-dynamic" />
 
-## Themes and fallback [#themes]
+`refreshGlass(target?)` re-measures materials and edges of mounted surfaces inside an element or ref, or all of them when the target is omitted. Call it after changing paint the runtime cannot observe.
 
-Default theme tokens remain unchanged, and tint comes from the component background. Minimum text contrast remains internal at `0`, with no public option. Component text colors stay unchanged. Rendering failures fall back through the selected backend chain. Reduced-transparency and forced-color preferences disable enhancement, show an opaque base, and retain native focus styles. Check text readability against the actual scene in CSS and SVG fallback.
+## Materials [#materials]
 
-## Snapshot limitations [#limits]
+Two materials follow [Apple's Clear and Regular variants](https://developer.apple.com/design/human-interface-guidelines/materials); the values are Web approximations, not Apple specifications.
 
-These limitations apply to WebGPU background capture. Native SVG uses the browser backdrop and does not enter this DOM capture path. DOM capture is not a browser compositor screenshot. Cross-origin images need CORS; iframes, complex transforms, and browser-managed content may not sample accurately. If excluding a canvas cannot reliably preserve a Shadow DOM slot layout, that surface uses native SVG, then CSS. Large capture areas, fast animations, and many overlays increase cost. WebGPU retains the existing snapshot structure without additional live canvases, nested composition layers, or global theme backups.
+| Material | Tint | SVG blur | CSS blur | Use |
+| --- | --- | --- | --- | --- |
+| `"clear"` | `12%` | `4px` | `6px` | See-through glass over media; the backdrop stays recognizable. |
+| `"regular"` (default) | `30%` | `14px` | `16px` | Frosted glass that keeps text legible over busy content. |
+
+Both use refraction strength `22`, saturation `1.3` and the same edge light. `options.tintOpacity` overrides a material's tint. The tint comes from the component's own background, so primary and destructive paint keep their color. From bottom to top, a surface composes the refracted backdrop, the tint, component paint, the edge highlight and content.
+
+<ComponentPreview name="glass-materials" />
+
+## Edge light [#edge]
+
+`glassConfig.edge` chooses how light falls on the rim:
+
+- `"diagonal"` (default): a thin rim lit from the top-left and bottom-right corners, fading along the sides.
+- `"vertical"`: a lit bevel with reflections along the top and bottom edges.
+
+<ComponentPreview name="glass-edges" />
+
+The highlight strength is built in and follows pixel density continuously (`0.15 × device pixel ratio`, from `0.15` to `0.3`), so 1x screens draw a fainter edge and phones a finer one.
+
+## Popups [#popups]
+
+With glass on, menus, popovers, selects, tooltips, hover cards, dialogs, sheets, drawers and toasts use the legible Regular material with vertical edge light, whatever their surroundings use, as on Apple platforms. Their own `glassConfig` still chooses otherwise. Floating layers share one soft, diffuse shadow.
+
+<ComponentPreview name="glass-popups" />
+
+## Controls and content [#composition]
+
+Glass belongs to navigation, controls and floating layers; content stays ordinary.
+
+- Controls inside a glass surface share its material instead of becoming separate glass, unless they explicitly opt in.
+- A `ButtonGroup` is one capsule whose buttons share its material; a group of groups keeps one capsule per inner group. `Pagination` controls form the same capsule.
+- Form fields (`Input`, `Textarea`, `InputGroup`, `Select` and `Combobox` triggers, `TagInput`, `SensitiveInput`, `ClipboardText`) are glass on their own in a glass scope, like iOS search fields, and brighten slightly while focused. Inside a glass surface such as a dialog or panel, they stay ordinary fields with their focus rings.
+- Switch and Slider thumbs become a glass lens only while dragged. Pressed buttons bloom slightly, and glass buttons also brighten.
+- A glass `Carousel` floats its previous and next buttons as glass while the slides stay content.
+- Card, QR code, Accordion, Calendar, editors and viewers are content: their own controls stay ordinary inside glass, while menus and popovers they open still use glass. `Card` and `QRCode` accept an explicit `glass` prop, for example for a widget over media.
+- Wrap your own content regions in `GlassContent` to keep their controls ordinary inside a glass surface.
+
+<ComponentPreview name="glass-controls" />
+
+```tsx
+import { Card } from "@workspace/ui/components/card";
+import { GlassContent, GlassSurface } from "@workspace/ui/components/glass";
+
+<GlassSurface>
+  <GlassContent>{/* ordinary form fields */}</GlassContent>
+</GlassSurface>
+<Card glass>{/* a glass widget */}</Card>
+```
+
+<ComponentPreview name="glass-composition" />
+
+Glass focus adds no ring; ordinary components keep their theme and focus styling. Glass shows the backdrop through, most of all with Clear, so text and icons on both materials carry a soft glow in the material's own tint, like a little extra frost right behind them, and secondary text moves toward the foreground. The glow only shows where the backdrop fights the text, so they stay legible over bright, busy content in light and dark mode. Ordinary buttons and fields keep crisp labels, and reduced transparency turns both off along with the glass.
 
 ## API reference [#api-reference]
 
 | Prop | Type | Default / behavior |
 | --- | --- | --- |
-| Config `mode` | `"css" \| "svg" \| "auto"` | `"svg"`; SVG → CSS. Clear `auto`: WebGPU → SVG → CSS; Regular: SVG → CSS. |
-| Config `material` | `"clear" \| "regular"` | `"clear"`; tint opacity `10%` / `35%`. |
+| Config `material` | `"clear" \| "regular"` | `"regular"`; popups default to `"regular"`. |
+| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`; popups default to `"vertical"`. |
 | Config `options` | `GlassOptions` | Local material settings. |
-| Config `captureTarget` | `HTMLElement \| null \| RefObject<HTMLElement \| null>` | Optional WebGPU capture area. SVG and CSS do not use it. |
-| `refreshGlass(target?)` | `(target?: GlassCaptureTarget) => void` | Refresh mounted requests for the target, or all requests when omitted. |
 | Options `strength` | `number` | `22` |
 | Options `tint` | `string` | Component background. |
-| Options `tintOpacity` | `number` | Material default: `0.1` / `0.35`; explicit values override. |
-| Options `highlight` | `number` | `0.3` |
-| Surface `glass` | `boolean` | `true` |
-| Component `glassConfig` | `GlassConfig` | Local `mode`, `material`, `options`, and optional WebGPU `captureTarget`; no enable flag or request ID. |
-| Surface other props | Native div props | `className`, `style`, `ref` |
+| Options `tintOpacity` | `number` | Material default: `0.12` / `0.3`. |
+| `refreshGlass(target?)` | `(target?: GlassTarget) => void` | Re-measure surfaces inside the target, or all when omitted. |
+| Component `glass` | `boolean` | Enables or disables glass; `GlassSurface` defaults to `true`. |
+| Component `glassConfig` | `GlassConfig` | Local `material`, `edge` and `options`. |
+| `GlassSurface` | `useRender` props | Native div props, plus `render` to change the element. |
+| `GlassContent` | `useRender` props | An ordinary content region inside glass. |

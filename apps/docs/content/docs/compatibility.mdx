@@ -23,11 +23,11 @@ CodeViewer and DiffViewer can still show and copy raw content if syntax highligh
 | --- | --- |
 | Clipboard | Browser permissions and a secure context determine availability; the components provide failure feedback. |
 | Fullscreen | Browser fullscreen is optional; permission or platform restrictions can prevent entry. |
-| Glass | CSS + SVG is the default. Optional WebGPU enhancement falls back when capabilities or capture fail. |
+| Glass | SVG refraction by default, with a CSS material where SVG backdrops are unsupported (Safari), under reduced transparency or forced colors, or when rendering fails. |
 | Theme transitions | The toggle respects reduced motion and can apply the theme without a view transition. |
 | HTML preview | HtmlViewer defaults to a sandbox with scripts allowed and without same-origin permission. Editor's built-in HTML preview disables scripts. |
 
-See [Glass limitations](/docs/components/glass#limits) for cross-origin images, frames, video, Canvas, and capture cadence. A transparent surface needs to remain readable over its actual background; use an ordinary or denser surface when needed.
+Glass refracts the live backdrop with SVG and captures nothing, so cross-origin images, frames, video and Canvas behind it need no special handling; see [Glass rendering](/docs/components/glass#rendering). A transparent surface needs to remain readable over its actual background; use the Regular material or an ordinary surface when needed.
 
 ## Accessibility and direction [#accessibility-and-direction]
 

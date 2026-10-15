@@ -23,11 +23,11 @@ SUI 使用 React 19、Tailwind CSS 4 和 Base UI 基础交互。源码安装复�
 | --- | --- |
 | 复制 | 是否可用由浏览器权限与安全上下文决定，组件提供失败反馈 |
 | 全屏 | 浏览器全屏是可选能力，权限或平台限制可能阻止进入 |
-| Glass | 默认使用 CSS + SVG，可选 WebGPU 增强在能力不足或取样失败时降级 |
+| Glass | 默认使用 SVG 折射；浏览器不支持 SVG 背景滤镜（Safari）、减少透明度或强制颜色模式下，以及渲染失败时使用 CSS 材质 |
 | 主题转场 | 切换组件遵循减少动态效果设置，也可直接更新主题 |
 | HTML 预览 | HtmlViewer 默认允许脚本且不允许同源权限，Editor 内置 HTML 预览禁用脚本 |
 
-跨域图片、iframe、视频、Canvas 与取样频率见 [Glass 限制](/zh-CN/docs/components/glass#limits)。透明表面应在实际背景上保持可读，必要时使用普通表面或更浓的材质。
+Glass 使用 SVG 折射浏览器背后的实时画面，不采集背景，因此其后的跨域图片、iframe、视频和 Canvas 无需特殊处理，见 [Glass 渲染方式](/zh-CN/docs/components/glass#rendering)。透明表面应在实际背景上保持可读，必要时使用常规材质或普通表面。
 
 ## 无障碍与方向 [#accessibility-and-direction]
 

@@ -342,10 +342,11 @@ export const components: ComponentEntry[] = [
     name: "Glass",
     description: {
       "en-US":
-        "Glass surfaces with shared highlights and progressive vgpu, SVG refraction, and CSS fallback.",
-      "zh-CN": "共用边缘高光，按能力通过 vgpu、SVG 折射和 CSS 回退呈现玻璃表面",
+        "Glass surfaces with SVG refraction, Clear and Regular materials, and a CSS fallback.",
+      "zh-CN": "以 SVG 折射呈现清透与常规材质的玻璃表面，并以 CSS 回退",
     },
-    sourceUrl: "https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API",
+    sourceUrl:
+      "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter",
   },
   {
     slug: "hover-card",
