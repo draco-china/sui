@@ -1,0 +1,44 @@
+[data-slot="toast"] {
+  &[data-type="success"] {
+    --toast-accent: oklch(0.696 0.17 162.48);
+  }
+
+  &[data-type="info"] {
+    --toast-accent: oklch(0.685 0.169 237.323);
+  }
+
+  &[data-type="warning"] {
+    --toast-accent: oklch(0.769 0.188 70.08);
+  }
+
+  &[data-type="error"] {
+    --toast-accent: var(--destructive);
+  }
+}
+
+/* Utilities, so the status color replaces the default popover paint. Glass
+   toasts read it as their material tint. */
+@layer utilities {
+  [data-slot="toast"][data-type="error"] [data-slot="toast-icon"] {
+    color: var(--toast-accent);
+  }
+
+  [data-slot="toast-viewport"][data-colorful="true"]
+    [data-slot="toast"]:is(
+      [data-type="success"],
+      [data-type="info"],
+      [data-type="warning"],
+      [data-type="error"]
+    ) {
+    border-color: color-mix(in oklab, var(--toast-accent) 35%, transparent);
+    background-color: color-mix(
+      in oklab,
+      var(--toast-accent) 12%,
+      var(--popover)
+    );
+
+    & :is([data-slot="toast-icon"], [data-slot="toast-title"]) {
+      color: color-mix(in oklab, var(--toast-accent) 85%, var(--foreground));
+    }
+  }
+}

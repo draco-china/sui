@@ -2,6 +2,7 @@
 
 import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 import { Button } from "@workspace/ui/components/button";
+import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import {
   CircleCheckIcon,
@@ -25,12 +26,48 @@ function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
   return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />;
 }
 
-function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
+type ToastPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+const toastViewportVariants = cva(
+  "pointer-events-none fixed inset-x-4 z-50 mx-auto w-auto max-w-sm outline-none",
+  {
+    variants: {
+      position: {
+        "top-left": "top-4 sm:start-4 sm:end-auto sm:mx-0 sm:w-full",
+        "top-center": "top-4",
+        "top-right": "top-4 sm:start-auto sm:end-4 sm:mx-0 sm:w-full",
+        "bottom-left": "bottom-4 sm:start-4 sm:end-auto sm:mx-0 sm:w-full",
+        "bottom-center": "bottom-4",
+        "bottom-right": "bottom-4 sm:start-auto sm:end-4 sm:mx-0 sm:w-full",
+      },
+    },
+    defaultVariants: { position: "top-center" },
+  },
+);
+
+function ToastViewport({
+  className,
+  position = "top-center",
+  colorful = true,
+  ...props
+}: ToastPrimitive.Viewport.Props & {
+  position?: ToastPosition;
+  /** Tints toasts with their status color. */
+  colorful?: boolean;
+}) {
   return (
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
+      data-toast-side={position.startsWith("top") ? "top" : "bottom"}
+      data-colorful={colorful}
       className={mergeClassNames(
-        "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-sm outline-none sm:start-auto sm:end-4 sm:mx-0 sm:w-full",
+        toastViewportVariants({ position }),
         className,
       )}
       {...props}
@@ -48,12 +85,14 @@ function ToastImplementation({
       className={mergeClassNames(
         cn(
           "group/toast pointer-events-auto absolute end-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom select-none rounded-2xl border bg-popover text-popover-foreground shadow-lg outline-none will-change-transform focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-          "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
-          "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
-          "after:absolute after:start-0 after:top-full after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
+          // Stacks grow away from the viewport edge: up from the bottom, down from the top.
+          "in-data-[toast-side=top]:top-0 in-data-[toast-side=top]:bottom-auto in-data-[toast-side=top]:origin-top [--toast-dir:-1] in-data-[toast-side=top]:[--toast-dir:1]",
+          "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-dir)*(var(--toast-offset-y)+var(--toast-index)*var(--gap))+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
+          "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+var(--toast-dir)*(var(--toast-index)*var(--peek)+var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
+          "after:absolute after:start-0 after:top-full in-data-[toast-side=top]:after:top-auto in-data-[toast-side=top]:after:bottom-full after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
           "data-expanded:h-(--toast-height) data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(var(--offset-y))]",
-          "data-limited:opacity-0 data-starting-style:[transform:translateY(150%)]",
-          "[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(150%)]",
+          "data-limited:opacity-0 data-starting-style:[transform:translateY(calc(var(--toast-dir)*-150%))]",
+          "[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(calc(var(--toast-dir)*-150%))]",
           "data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]",
           "data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
           "data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
@@ -159,7 +198,7 @@ function ToastIcon({ type }: { type: string | undefined }) {
   }
 
   if (type === "error") {
-    icon = <OctagonXIcon className="text-destructive" aria-hidden="true" />;
+    icon = <OctagonXIcon aria-hidden="true" />;
   }
 
   if (type === "loading") {
@@ -180,11 +219,17 @@ function ToastIcon({ type }: { type: string | undefined }) {
   );
 }
 
-function ToastList() {
+function ToastList({ side = "top" }: { side?: "top" | "bottom" }) {
   const { toasts } = ToastPrimitive.useToastManager();
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem}>
+    <Toast
+      key={toastItem.id}
+      toast={toastItem}
+      data-type={toastItem.type}
+      // Dismiss toward the nearest edge or sideways.
+      swipeDirection={side === "top" ? ["up", "right"] : ["down", "right"]}
+    >
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -201,14 +246,21 @@ function ToastList() {
 function Toaster({
   children,
   toastManager = toast,
+  position = "top-center",
+  colorful = true,
   ...props
-}: ToastPrimitive.Provider.Props) {
+}: ToastPrimitive.Provider.Props & {
+  /** Where toasts appear; top center by default. */
+  position?: ToastPosition;
+  /** Tints success, info, warning and error toasts with their status color. */
+  colorful?: boolean;
+}) {
   return (
     <ToastProvider toastManager={toastManager} {...props}>
       {children}
       <ToastPortal>
-        <ToastViewport>
-          <ToastList />
+        <ToastViewport position={position} colorful={colorful}>
+          <ToastList side={position.startsWith("top") ? "top" : "bottom"} />
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>
@@ -218,8 +270,10 @@ function Toaster({
 const createToastManager = ToastPrimitive.createToastManager;
 const useToastManager = ToastPrimitive.useToastManager;
 
-const Toast = withGlass(ToastImplementation);
+// Toasts float above content like other popups.
+const Toast = withGlass(ToastImplementation, "portal");
 
+export type { ToastPosition };
 export {
   createToastManager,
   Toast,
@@ -233,5 +287,6 @@ export {
   ToastTitle,
   ToastViewport,
   toast,
+  toastViewportVariants,
   useToastManager,
 };

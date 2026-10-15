@@ -937,6 +937,32 @@
       "mask-image": "repeating-linear-gradient(\n    90deg,\n    #000 0 calc(var(--appearance-reveal) * 72px),\n    transparent calc(var(--appearance-reveal) * 72px) 72px\n  )",
       "animation": "appearance-blinds 700ms ease-out"
     },
+    "[data-slot=\"toast\"]": {
+      "&[data-type=\"success\"]": {
+        "--toast-accent": "oklch(0.696 0.17 162.48)"
+      },
+      "&[data-type=\"info\"]": {
+        "--toast-accent": "oklch(0.685 0.169 237.323)"
+      },
+      "&[data-type=\"warning\"]": {
+        "--toast-accent": "oklch(0.769 0.188 70.08)"
+      },
+      "&[data-type=\"error\"]": {
+        "--toast-accent": "var(--destructive)"
+      }
+    },
+    "@layer utilities": {
+      "[data-slot=\"toast\"][data-type=\"error\"] [data-slot=\"toast-icon\"]": {
+        "color": "var(--toast-accent)"
+      },
+      "[data-slot=\"toast-viewport\"][data-colorful=\"true\"]\n    [data-slot=\"toast\"]:is(\n      [data-type=\"success\"],\n      [data-type=\"info\"],\n      [data-type=\"warning\"],\n      [data-type=\"error\"]\n    )": {
+        "border-color": "color-mix(in oklab, var(--toast-accent) 35%, transparent)",
+        "background-color": "color-mix(\n      in oklab,\n      var(--toast-accent) 12%,\n      var(--popover)\n    )",
+        "& :is([data-slot=\"toast-icon\"], [data-slot=\"toast-title\"])": {
+          "color": "color-mix(in oklab, var(--toast-accent) 85%, var(--foreground))"
+        }
+      }
+    },
     "@custom-variant dark (&:is(.dark *))": {},
     "@layer base": {
       "*": {

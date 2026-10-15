@@ -61,6 +61,21 @@ loading, success, and error states.
 
 <ComponentPreview name="toast-promise" />
 
+## Position and colors
+
+`Toaster` shows toasts at the top center by default; stacks grow away from that edge and swipe toward it to dismiss. Success, info, warning and error toasts are tinted with their status color; with glass, the color becomes the material tint. Set `position` or `colorful={false}` to change either.
+
+```tsx
+<Toaster position="bottom-right" colorful={false}>
+  {children}
+</Toaster>
+```
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `position` | `"top-left" \| "top-center" \| "top-right" \| "bottom-left" \| "bottom-center" \| "bottom-right"` | `"top-center"` |
+| `colorful` | `boolean` | `true` |
+
 ## API Reference
 
 See the [Base UI Toast documentation](https://base-ui.com/react/components/toast)
