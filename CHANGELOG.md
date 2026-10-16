@@ -1,3 +1,11 @@
+## [2.0.1](https://github.com/draco-china/sui/compare/v2.0.0...v2.0.1) (2026-10-16)
+
+### Bug Fixes
+
+* **glass:** keep content layered on glass free of the text glow ([cfdfb22](https://github.com/draco-china/sui/commit/cfdfb22c41a4aad8d9e9f2f4c80265395feb2cc5))
+* **glass:** keep edge clarity exact on wide-gamut screens ([173a0d7](https://github.com/draco-china/sui/commit/173a0d71c7efc78ad380a37d351703a99d0fec8a))
+* **glass:** tighten the text glow so it hugs the glyphs ([bfa137d](https://github.com/draco-china/sui/commit/bfa137d0ddf2c1df591942153cd193e32137e4f5))
+
 ## [2.0.0](https://github.com/draco-china/sui/compare/v1.3.0...v2.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
