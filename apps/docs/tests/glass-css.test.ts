@@ -62,9 +62,10 @@ test("production CSS keeps fallback blur and layers live SVG refraction", () => 
   expect(code).toContain(
     "[data-glass=true][data-glass-state] :where(button,input,select,textarea):not([data-glass-state]){text-shadow:none}",
   );
-  // Content on its own fill, such as a copy field or code, never glows.
+  // Content on its own fill, such as a copy field, code or a primary
+  // button's icon, never glows.
   const layered =
-    /\[data-glass=true\]\[data-glass-state\] :where\(code,kbd,pre,\[data-slot=badge\],\[data-slot=clipboard-text\],[^)]*\):not\(\[data-glass-state\]\)/;
+    /\[data-glass=true\]\[data-glass-state\] :where\(code,kbd,pre,\.text-accent-foreground,\.text-primary-foreground,\.text-secondary-foreground,\[data-slot=badge\],[^)]*\):not\(\[data-glass-state\]\)/;
   expect(code).toMatch(new RegExp(`${layered.source}\\{text-shadow:none\\}`));
   expect(code).toMatch(
     new RegExp(

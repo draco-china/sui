@@ -185,12 +185,16 @@
 
   /* Content layered on the glass, such as fields, keys, badges and code,
      sits on its own fill, where a glow in the glass tint would only smudge
-     its text and icons, so they stay crisp. */
+     its text and icons, so they stay crisp. So does anything colored for a
+     fill, like a primary button or an icon tile. */
   &
     :where(
       code,
       kbd,
       pre,
+      .text-accent-foreground,
+      .text-primary-foreground,
+      .text-secondary-foreground,
       [data-slot="badge"],
       [data-slot="clipboard-text"],
       [data-slot="code-viewer"],
