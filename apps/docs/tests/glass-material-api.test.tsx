@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { Button } from "@workspace/ui/components/button";
 import {
   GlassContent,
@@ -14,6 +15,15 @@ import {
   glassDefaults,
   glassMaterials,
 } from "../../../packages/ui/src/lib/glass/defaults";
+
+// Load the stylesheet as Tailwind compiles it, with nesting flattened.
+const tailwindPlugin = Bun.resolveSync(
+  "@tailwindcss/vite",
+  new URL("../src", import.meta.url).pathname,
+);
+const { optimize } = await import(
+  Bun.resolveSync("@tailwindcss/node", dirname(tailwindPlugin))
+);
 
 test("regular is the default and frosts more than the see-through clear", () => {
   expect(glassDefaultMaterial).toBe("regular");
@@ -71,13 +81,15 @@ test("surface configuration reaches nested controls while siblings stay independ
 test("regular SSR fallback preserves explicit opacity and caller layout styles", () => {
   const window = new Window();
   const style = window.document.createElement("style");
-  style.textContent = readFileSync(
-    new URL(
-      "../../../packages/ui/src/styles/components/glass.css",
-      import.meta.url,
+  style.textContent = optimize(
+    readFileSync(
+      new URL(
+        "../../../packages/ui/src/styles/components/glass.css",
+        import.meta.url,
+      ),
+      "utf8",
     ),
-    "utf8",
-  );
+  ).code;
   window.document.head.append(style);
   window.document.body.innerHTML = renderToString(
     <>

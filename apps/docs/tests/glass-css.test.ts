@@ -78,14 +78,18 @@ test("production CSS keeps fallback blur and layers live SVG refraction", () => 
   expect(code).toContain(
     "[data-glass=true][data-glass-state] :where(svg.lucide){filter:drop-shadow(0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)) drop-shadow(",
   );
-  const reduced = code.slice(
-    code.lastIndexOf("@media (prefers-reduced-transparency"),
-  );
-  expect(reduced).toContain("text-shadow:none");
-  expect(reduced).toMatch(
-    /:where\(\.text-muted-foreground\)\{color:revert-layer\}/,
-  );
-  expect(reduced).toMatch(/:where\(svg\.lucide\)\{filter:revert-layer\}/);
+  // Each rule undoes itself under reduced transparency or forced colors, with
+  // a positive query that stays safe where the feature is unsupported.
+  const reduced =
+    "@media (prefers-reduced-transparency:reduce),(forced-colors:active){";
+  for (const revert of [
+    "[data-glass=true][data-glass-state]{--glass-initial-edge-shadow:0 0 #0000;background-color:var(--glass-base,var(--popover));",
+    "[data-glass=true][data-glass-state]{text-shadow:none}",
+    "[data-glass=true][data-glass-state] :where(.text-muted-foreground){color:revert-layer}",
+    "[data-glass=true][data-glass-state] :where(svg.lucide){filter:revert-layer}",
+  ])
+    expect(code).toContain(reduced + revert);
+  expect(code).not.toContain("prefers-reduced-transparency:no-preference");
   // Grouped buttons share the group's capsule, with a light wash on hover.
   expect(code).toMatch(
     /\[data-slot=button-group\]:is\(\[data-glass=true\],\[data-glass-part=surface\]\)>:is\(\[data-variant=outline\][^{]*\{background-color:#0000;border-color:#0000\}/,
@@ -112,7 +116,7 @@ test("production CSS keeps fallback blur and layers live SVG refraction", () => 
     /transition-property:color,background-color,box-shadow,scale/,
   );
   const lens = code.match(
-    /\[data-slot=tab-bar-indicator\]\[data-glass=true\]\{[^}]*\}/,
+    /\[data-glass=true\]\[data-glass-state\]:where\(\[data-slot=tab-bar-indicator\]\)\{[^}]*\}/,
   )?.[0];
   expect(lens).toContain("background-color:#0000");
   expect(lens).toMatch(/(?:^|;)backdrop-filter:none/);

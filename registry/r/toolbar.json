@@ -766,46 +766,36 @@
       }
     },
     "@layer components.glass": {
-      ":where(\n      [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    )\n    > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"])": {
-        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+      ":where(\n      [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    )\n    > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"]),\n  :where(\n      [data-slot=\"accordion\"]:is(\n        [data-glass=\"true\"],\n        [data-glass-part=\"surface\"]\n      )\n    )\n    > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)",
+        "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+          "border-color": "revert-layer"
+        }
       },
       ":where([data-slot=\"accordion\"]):has(\n    > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
-        "border-color": "transparent"
-      },
-      ":where(\n      [data-slot=\"accordion\"]:is(\n        [data-glass=\"true\"],\n        [data-glass-part=\"surface\"]\n      )\n    )\n    > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
-        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
+        "border-color": "transparent",
+        "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+          "border-color": "revert-layer"
+        }
       },
       ":where(\n    [data-slot=\"accordion\"] > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n  )": {
         "&:first-child": {
           "border-top-left-radius": "inherit",
-          "border-top-right-radius": "inherit"
+          "border-top-right-radius": "inherit",
+          "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+            "border-top-left-radius": "revert-layer",
+            "border-top-right-radius": "revert-layer"
+          }
         },
         "&:last-child": {
           "border-bottom-left-radius": "inherit",
-          "border-bottom-right-radius": "inherit"
-        }
-      },
-      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
-        ":where(\n        [data-slot=\"card\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n      )\n      > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"]),\n    :where([data-slot=\"accordion\"]):has(\n        > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      ),\n    :where(\n        [data-slot=\"accordion\"]:is(\n          [data-glass=\"true\"],\n          [data-glass-part=\"surface\"]\n        )\n      )\n      > :where([data-slot=\"accordion-item\"][data-glass-part=\"surface\"])": {
-          "border-color": "revert-layer"
-        },
-        ":where(\n        [data-slot=\"accordion\"]\n          > [data-slot=\"accordion-item\"][data-glass=\"true\"]\n      )": {
-          "&:first-child": {
-            "border-top-left-radius": "revert-layer",
-            "border-top-right-radius": "revert-layer"
-          },
-          "&:last-child": {
+          "border-bottom-right-radius": "inherit",
+          "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
             "border-bottom-left-radius": "revert-layer",
             "border-bottom-right-radius": "revert-layer"
           }
         }
       }
-    },
-    "[data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n[data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
-      "background-color": "transparent"
-    },
-    "[data-slot=\"select-content\"][data-glass=\"true\"]\n  > :is(\n    [data-slot=\"select-scroll-up-button\"],\n    [data-slot=\"select-scroll-down-button\"]\n  )": {
-      "background-color": "transparent"
     },
     "[data-glass=\"true\"],\n[data-glass-part=\"control\"],\n[data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n[data-slot=\"accordion-item\"]:is(\n    [data-glass=\"true\"],\n    [data-glass-part=\"surface\"]\n  )\n  > *\n  > [data-slot=\"accordion-trigger\"]": {
       "border-color": "transparent",
@@ -813,35 +803,73 @@
       "--tw-ring-color": "transparent",
       "--tw-inset-ring-shadow": "0 0 #0000",
       "--tw-ring-shadow": "0 0 #0000",
-      "--tw-ring-offset-shadow": "0 0 #0000"
+      "--tw-ring-offset-shadow": "0 0 #0000",
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+        "border-color": "revert-layer",
+        "outline": "revert-layer",
+        "--tw-ring-color": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer",
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-ring-offset-shadow": "revert-layer"
+      }
     },
     "[data-glass=\"true\"][data-glass-state]": {
       "--glass-edge": "none",
       "--glass-initial-edge-shadow": "initial",
       "--glass-backdrop-blur": "6px",
-      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover)) var(--glass-opacity, 12%),\n    transparent\n  )",
       "--glass-initial-edge-color": "color-mix(\n    in srgb,\n    color-mix(in srgb, var(--foreground) 12%, white) 28%,\n    transparent\n  )",
-      "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px\n        color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),\n      0 1px 3px -1px rgb(0 0 0 / 0.1)\n    ),\n    var(--glass-press, 0 0 #0000), var(--tw-inset-shadow, 0 0 #0000),\n    var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
+      "background-color": "color-mix(\n    in srgb,\n    var(--glass-base, var(--popover)) var(--glass-opacity, 12%),\n    transparent\n  )",
       "background-image": "var(--glass-edge, none)",
       "background-size": "100% 100%",
       "background-repeat": "no-repeat",
       "background-origin": "border-box",
       "background-clip": "border-box",
+      "box-shadow": "var(\n      --glass-initial-edge-shadow,\n      inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color),\n      inset -0.8px -0.8px 0.4px -0.6px\n        color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent),\n      0 1px 3px -1px rgb(0 0 0 / 0.1)\n    ),\n    var(--glass-press, 0 0 #0000), var(--tw-inset-shadow, 0 0 #0000),\n    var(--tw-inset-ring-shadow, 0 0 #0000),\n    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),\n    var(--tw-shadow, 0 0 #0000)",
       "-webkit-backdrop-filter": "blur(var(--glass-backdrop-blur)) saturate(1.3)",
       "backdrop-filter": "blur(var(--glass-backdrop-blur)) saturate(1.3)",
+      "&[data-glass-material=\"regular\"]": {
+        "--glass-opacity": "30%",
+        "--glass-backdrop-blur": "16px"
+      },
+      "&:where([data-slot=\"tab-bar-indicator\"])": {
+        "background-color": "transparent",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none"
+      },
+      "&:where([data-glass-state=\"ready\"][data-glass-renderer=\"svg\"])": {
+        "-webkit-backdrop-filter": "var(--glass-filter) saturate(1.3)",
+        "backdrop-filter": "var(--glass-filter) saturate(1.3)"
+      },
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+        "--glass-initial-edge-shadow": "0 0 #0000",
+        "background-color": "var(--glass-base, var(--popover))",
+        "background-image": "none",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none",
+        "text-shadow": "none"
+      },
       "--glass-halo": "var(--glass-base, var(--popover))",
       "text-shadow": "0 0 0.08em color-mix(in srgb, var(--glass-halo) 90%, transparent),\n    0 0 0.25em color-mix(in srgb, var(--glass-halo) 60%, transparent)",
       "& :where(button, input, select, textarea):not([data-glass-state])": {
         "text-shadow": "none"
       },
       "& :where(.text-muted-foreground)": {
-        "color": "color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))"
+        "color": "color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))",
+        "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+          "color": "revert-layer"
+        }
       },
       "&::placeholder,\n  & ::placeholder": {
-        "color": "color-mix(in oklab, var(--muted-foreground) 65%, var(--foreground))"
+        "color": "color-mix(in oklab, var(--muted-foreground) 65%, var(--foreground))",
+        "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+          "color": "revert-layer"
+        }
       },
       "& :where(svg.lucide)": {
-        "filter": "drop-shadow(\n        0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)\n      )\n      drop-shadow(\n        0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent)\n      )"
+        "filter": "drop-shadow(\n        0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)\n      )\n      drop-shadow(\n        0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent)\n      )",
+        "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+          "filter": "revert-layer"
+        }
       },
       "&\n    :where(\n      code,\n      kbd,\n      pre,\n      .text-accent-foreground,\n      .text-primary-foreground,\n      .text-secondary-foreground,\n      [data-slot=\"badge\"],\n      [data-slot=\"clipboard-text\"],\n      [data-slot=\"code-viewer\"],\n      [data-slot=\"combobox-chips\"],\n      [data-slot=\"diff-viewer\"],\n      [data-slot=\"input-group\"],\n      [data-slot=\"sensitive-input\"],\n      [data-slot=\"tag-input\"]\n    ):not([data-glass-state])": {
         "text-shadow": "none",
@@ -849,20 +877,6 @@
           "filter": "revert-layer"
         }
       }
-    },
-    "[data-glass=\"true\"][data-glass-state][data-glass-material=\"regular\"]": {
-      "--glass-opacity": "30%",
-      "--glass-backdrop-blur": "16px"
-    },
-    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n> :is(\n  [data-variant=\"outline\"],\n  [data-variant=\"secondary\"],\n  [data-variant=\"ghost\"],\n  [data-slot=\"button-group-text\"],\n  [data-slot=\"input\"],\n  [data-slot=\"select-trigger\"]\n)": {
-      "background-color": "transparent",
-      "border-color": "transparent"
-    },
-    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > :is(\n    [data-variant=\"outline\"],\n    [data-variant=\"secondary\"],\n    [data-variant=\"ghost\"],\n    [data-slot=\"input\"],\n    [data-slot=\"select-trigger\"]\n  ):is(:hover, :focus-visible, [aria-expanded=\"true\"]):not(:disabled),\n[data-slot=\"pagination-content\"][data-glass=\"true\"]\n  [data-slot=\"pagination-link\"]:not([data-active=\"true\"]):hover": {
-      "background-color": "color-mix(in srgb, var(--foreground) 8%, transparent)"
-    },
-    ":is([data-glass=\"true\"], [data-glass-part])\n:is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n  [data-slot=\"resizable-handle\"]\n)": {
-      "background-color": "color-mix(in srgb, var(--foreground) 12%, transparent)"
     },
     "[data-glass=\"true\"]:is(\n  [data-slot=\"input\"],\n  [data-slot=\"textarea\"],\n  [data-slot=\"input-group\"],\n  [data-slot=\"sensitive-input\"],\n  [data-slot=\"select-trigger\"],\n  [data-slot=\"combobox-chips\"],\n  [data-slot=\"tag-input\"]\n):focus-within": {
       "--glass-press": "inset 0 0 0 100vmax rgb(255 255 255 / 0.08)"
@@ -876,54 +890,28 @@
       }
     },
     "[data-glass=\"true\"]:is(\n  [data-slot=\"alert-dialog-content\"],\n  [data-slot=\"bottom-sheet-popup\"],\n  [data-slot=\"combobox-content\"],\n  [data-slot=\"context-menu-content\"],\n  [data-slot=\"context-menu-sub-content\"],\n  [data-slot=\"dialog-content\"],\n  [data-slot=\"drawer-content\"],\n  [data-slot=\"drawer-popup\"],\n  [data-slot=\"dropdown-menu-content\"],\n  [data-slot=\"dropdown-menu-sub-content\"],\n  [data-slot=\"hover-card-content\"],\n  [data-slot=\"menubar-content\"],\n  [data-slot=\"menubar-sub-content\"],\n  [data-slot=\"navigation-menu-popup\"],\n  [data-slot=\"popover-content\"],\n  [data-slot=\"select-content\"],\n  [data-slot=\"sheet-content\"],\n  [data-slot=\"tab-bar-list\"],\n  [data-slot=\"toast\"],\n  [data-slot=\"tooltip-content\"]\n)": {
-      "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.24), 0 2px 8px -4px rgb(0 0 0 / 0.08)"
+      "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.24), 0 2px 8px -4px rgb(0 0 0 / 0.08)",
+      ":where(.dark) &": {
+        "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.5), 0 2px 8px -4px rgb(0 0 0 / 0.2)"
+      }
     },
-    ".dark\n  [data-glass=\"true\"]:is(\n    [data-slot=\"alert-dialog-content\"],\n    [data-slot=\"bottom-sheet-popup\"],\n    [data-slot=\"combobox-content\"],\n    [data-slot=\"context-menu-content\"],\n    [data-slot=\"context-menu-sub-content\"],\n    [data-slot=\"dialog-content\"],\n    [data-slot=\"drawer-content\"],\n    [data-slot=\"drawer-popup\"],\n    [data-slot=\"dropdown-menu-content\"],\n    [data-slot=\"dropdown-menu-sub-content\"],\n    [data-slot=\"hover-card-content\"],\n    [data-slot=\"menubar-content\"],\n    [data-slot=\"menubar-sub-content\"],\n    [data-slot=\"navigation-menu-popup\"],\n    [data-slot=\"popover-content\"],\n    [data-slot=\"select-content\"],\n    [data-slot=\"sheet-content\"],\n    [data-slot=\"tab-bar-list\"],\n    [data-slot=\"toast\"],\n    [data-slot=\"tooltip-content\"]\n  )": {
-      "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.5), 0 2px 8px -4px rgb(0 0 0 / 0.2)"
-    },
-    "[data-slot=\"tab-bar-indicator\"][data-glass=\"true\"]": {
+    "[data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n[data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"],\n[data-slot=\"select-content\"][data-glass=\"true\"]\n  > :is(\n    [data-slot=\"select-scroll-up-button\"],\n    [data-slot=\"select-scroll-down-button\"]\n  )": {
       "background-color": "transparent",
-      "-webkit-backdrop-filter": "none",
-      "backdrop-filter": "none"
-    },
-    "[data-glass=\"true\"][data-glass-state=\"ready\"]:where(\n  [data-glass-renderer=\"svg\"]\n)": {
-      "-webkit-backdrop-filter": "var(--glass-filter) saturate(1.3)",
-      "backdrop-filter": "var(--glass-filter) saturate(1.3)"
-    },
-    "[data-glass=\"true\"][data-glass-state=\"fallback\"]": {
-      "background-image": "var(--glass-edge, none)"
-    },
-    "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
-      "[data-slot=\"select-content\"][data-glass=\"true\"]\n    > :is(\n      [data-slot=\"select-scroll-up-button\"],\n      [data-slot=\"select-scroll-down-button\"]\n    ),\n  [data-slot=\"command\"][data-glass-part=\"surface\"][class~=\"bg-popover\"],\n  [data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n    > [data-slot=\"accordion-item\"][data-glass-part=\"surface\"][data-open][class~=\"data-open:bg-muted/50\"]": {
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
         "background-color": "revert-layer"
-      },
-      "[data-glass=\"true\"],\n  [data-glass-part=\"control\"],\n  [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n  [data-slot=\"accordion-item\"]:is(\n      [data-glass=\"true\"],\n      [data-glass-part=\"surface\"]\n    )\n    > *\n    > [data-slot=\"accordion-trigger\"]": {
-        "border-color": "revert-layer",
-        "outline": "revert-layer",
-        "--tw-ring-color": "revert-layer",
-        "--tw-inset-ring-shadow": "revert-layer",
-        "--tw-ring-shadow": "revert-layer",
-        "--tw-ring-offset-shadow": "revert-layer"
-      },
-      "[data-glass=\"true\"][data-glass-state]": {
-        "background-color": "var(--glass-base, var(--popover))",
-        "background-image": "none",
-        "--glass-initial-edge-shadow": "0 0 #0000",
-        "-webkit-backdrop-filter": "none",
-        "backdrop-filter": "none",
-        "text-shadow": "none"
-      },
-      "[data-glass=\"true\"][data-glass-state] :where(.text-muted-foreground)": {
-        "color": "revert-layer"
-      },
-      "[data-glass=\"true\"][data-glass-state] :where(svg.lucide)": {
-        "filter": "revert-layer"
-      },
-      ":is([data-glass=\"true\"], [data-glass-part])\n    :is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n      [data-slot=\"resizable-handle\"]\n    )": {
+      }
+    },
+    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n> :is(\n  [data-variant=\"outline\"],\n  [data-variant=\"secondary\"],\n  [data-variant=\"ghost\"],\n  [data-slot=\"button-group-text\"],\n  [data-slot=\"input\"],\n  [data-slot=\"select-trigger\"]\n)": {
+      "background-color": "transparent",
+      "border-color": "transparent"
+    },
+    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-glass-part=\"surface\"])\n  > :is(\n    [data-variant=\"outline\"],\n    [data-variant=\"secondary\"],\n    [data-variant=\"ghost\"],\n    [data-slot=\"input\"],\n    [data-slot=\"select-trigger\"]\n  ):is(:hover, :focus-visible, [aria-expanded=\"true\"]):not(:disabled),\n[data-slot=\"pagination-content\"][data-glass=\"true\"]\n  [data-slot=\"pagination-link\"]:not([data-active=\"true\"]):hover": {
+      "background-color": "color-mix(in srgb, var(--foreground) 8%, transparent)"
+    },
+    ":is([data-glass=\"true\"], [data-glass-part])\n:is([role=\"separator\"], [data-slot=\"separator-line\"]):not(\n  [data-slot=\"resizable-handle\"]\n)": {
+      "background-color": "color-mix(in srgb, var(--foreground) 12%, transparent)",
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
         "background-color": "revert-layer"
-      },
-      "[data-glass=\"true\"][data-glass-state]::placeholder,\n  [data-glass=\"true\"][data-glass-state] ::placeholder": {
-        "color": "revert-layer"
       }
     },
     "html[data-appearance-transition]::view-transition-old(root)": {
