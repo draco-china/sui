@@ -757,6 +757,12 @@
       },
       "& :where(svg.lucide)": {
         "filter": "drop-shadow(\n        0 0 3px color-mix(in srgb, var(--glass-halo) 80%, transparent)\n      )\n      drop-shadow(\n        0 0 6px color-mix(in srgb, var(--glass-halo) 50%, transparent)\n      )"
+      },
+      "&\n    :where(\n      code,\n      kbd,\n      pre,\n      [data-slot=\"badge\"],\n      [data-slot=\"clipboard-text\"],\n      [data-slot=\"code-viewer\"],\n      [data-slot=\"combobox-chips\"],\n      [data-slot=\"diff-viewer\"],\n      [data-slot=\"input-group\"],\n      [data-slot=\"sensitive-input\"],\n      [data-slot=\"tag-input\"]\n    ):not([data-glass-state])": {
+        "text-shadow": "none",
+        "& :where(svg.lucide)": {
+          "filter": "revert-layer"
+        }
       }
     },
     "[data-glass=\"true\"][data-glass-state][data-glass-material=\"regular\"]": {

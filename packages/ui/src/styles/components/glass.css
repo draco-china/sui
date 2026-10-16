@@ -183,6 +183,30 @@
         0 0 6px color-mix(in srgb, var(--glass-halo) 50%, transparent)
       );
   }
+
+  /* Content layered on the glass, such as fields, keys, badges and code,
+     sits on its own fill, where a glow in the glass tint would only smudge
+     its text and icons, so they stay crisp. */
+  &
+    :where(
+      code,
+      kbd,
+      pre,
+      [data-slot="badge"],
+      [data-slot="clipboard-text"],
+      [data-slot="code-viewer"],
+      [data-slot="combobox-chips"],
+      [data-slot="diff-viewer"],
+      [data-slot="input-group"],
+      [data-slot="sensitive-input"],
+      [data-slot="tag-input"]
+    ):not([data-glass-state]) {
+    text-shadow: none;
+
+    & :where(svg.lucide) {
+      filter: revert-layer;
+    }
+  }
 }
 
 /* Grouped buttons share their group's capsule: plain segments and fields
