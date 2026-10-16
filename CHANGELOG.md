@@ -1,3 +1,9 @@
+## [2.0.2](https://github.com/draco-china/sui/compare/v2.0.1...v2.0.2) (2026-10-16)
+
+### Bug Fixes
+
+* **glass:** keep glyphs colored for a fill free of the text glow ([3ed2498](https://github.com/draco-china/sui/commit/3ed24987e1721afce652ca4e641eda1b8a614177))
+
 ## [2.0.1](https://github.com/draco-china/sui/compare/v2.0.0...v2.0.1) (2026-10-16)
 
 ### Bug Fixes
