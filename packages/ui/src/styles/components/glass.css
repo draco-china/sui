@@ -146,17 +146,16 @@
 }
 
 /* Glass shows the backdrop through, so bright, busy content can wash out its
-   text, most of all through Clear. Text carries a soft glow in the
-   material's own tint, like a little extra frost right behind the glyphs:
+   text, most of all through Clear. Text carries a tight glow in the
+   material's own tint that hugs the glyphs instead of fogging the line:
    dark behind light text, light behind dark text. It stays invisible where
    the backdrop already matches the tint and only shows where the backdrop
    fights the text. Secondary text also moves toward the foreground. */
 [data-glass="true"][data-glass-state] {
   --glass-halo: var(--glass-base, var(--popover));
   text-shadow:
-    0 0 0.2em color-mix(in srgb, var(--glass-halo) 90%, transparent),
-    0 0 0.5em color-mix(in srgb, var(--glass-halo) 70%, transparent),
-    0 0 1em color-mix(in srgb, var(--glass-halo) 50%, transparent);
+    0 0 0.08em color-mix(in srgb, var(--glass-halo) 90%, transparent),
+    0 0 0.25em color-mix(in srgb, var(--glass-halo) 60%, transparent);
 
   /* Ordinary buttons and fields keep crisp labels, as most browser styles
      already set, so a filled button's label never glows. */
@@ -177,10 +176,10 @@
   /* Icons take the same glow; only icons, so QR codes and charts stay crisp. */
   & :where(svg.lucide) {
     filter: drop-shadow(
-        0 0 3px color-mix(in srgb, var(--glass-halo) 80%, transparent)
+        0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)
       )
       drop-shadow(
-        0 0 6px color-mix(in srgb, var(--glass-halo) 50%, transparent)
+        0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent)
       );
   }
 

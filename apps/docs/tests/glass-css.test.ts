@@ -56,7 +56,7 @@ test("production CSS keeps fallback blur and layers live SVG refraction", () => 
   )?.[0];
   expect(legible).toContain("--glass-halo:var(--glass-base,var(--popover))");
   expect(legible).toContain(
-    "text-shadow:0 0 .2em color-mix(in srgb, var(--glass-halo) 90%, transparent),",
+    "text-shadow:0 0 .08em color-mix(in srgb, var(--glass-halo) 90%, transparent),",
   );
   expect(code).not.toContain("[data-glass-material=clear]");
   expect(code).toContain(
@@ -75,7 +75,7 @@ test("production CSS keeps fallback blur and layers live SVG refraction", () => 
     "[data-glass=true][data-glass-state] :where(.text-muted-foreground){color:color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))}",
   );
   expect(code).toContain(
-    "[data-glass=true][data-glass-state] :where(svg.lucide){filter:drop-shadow(0 0 3px color-mix(in srgb, var(--glass-halo) 80%, transparent)) drop-shadow(",
+    "[data-glass=true][data-glass-state] :where(svg.lucide){filter:drop-shadow(0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)) drop-shadow(",
   );
   const reduced = code.slice(
     code.lastIndexOf("@media (prefers-reduced-transparency"),
