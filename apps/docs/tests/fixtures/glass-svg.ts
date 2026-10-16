@@ -161,14 +161,28 @@ assert.equal(
   firstFilter.querySelector("feDisplacementMap")?.getAttribute("scale"),
   String(glassRefractionStrength(22, 36, 36)),
 );
-assert.equal(maps[0].width, 72);
-assert.equal(maps[0].height, 72);
-assert.ok(maps[0].data.some((value, index) => index % 4 === 2 && value === 0));
-assert.ok(maps[0].data.some((value, index) => index % 4 === 2 && value > 200));
-assert.equal(encodes, 1);
+const [normalMap, clarityMap] = maps;
+assert.equal(normalMap.width, 72);
+assert.equal(normalMap.height, 72);
+assert.ok(
+  normalMap.data.every((value, index) => index % 4 !== 2 || value === 0),
+  "the normal map carries displacement only",
+);
+// Clarity is gray, which wide-gamut color management leaves unchanged.
+assert.ok(
+  clarityMap.data.every(
+    (value, index) =>
+      index % 4 === 3 || value === clarityMap.data[index - (index % 4)],
+  ),
+);
+assert.ok(clarityMap.data.some((value, index) => index % 4 === 0 && !value));
+assert.ok(
+  clarityMap.data.some((value, index) => index % 4 === 0 && value > 200),
+);
+assert.equal(encodes, 2);
 assert.equal(renderer.filter(first, { ...geometry }), firstUrl);
 assert.equal(document.querySelectorAll("filter").length, 1);
-assert.equal(encodes, 1, "stable geometry never re-encodes its normal map");
+assert.equal(encodes, 2, "stable geometry never re-encodes its maps");
 
 const secondUrl = renderer.filter(second, geometry);
 assert.notEqual(
@@ -177,7 +191,7 @@ assert.notEqual(
   "different elements own independent definitions",
 );
 assert.equal(document.querySelectorAll("filter").length, 2);
-assert.equal(encodes, 1, "same shapes share a geometry map across elements");
+assert.equal(encodes, 2, "same shapes share geometry maps across elements");
 assert.equal(renderer.filter(first, { ...geometry, strength: 0 }), firstUrl);
 assert.equal(
   definition(firstUrl)
@@ -185,7 +199,7 @@ assert.equal(
     ?.getAttribute("scale"),
   "0",
 );
-assert.equal(encodes, 1, "strength changes reuse the normal map");
+assert.equal(encodes, 2, "strength changes reuse the geometry maps");
 assert.equal(
   definition(firstUrl)
     .querySelector("feGaussianBlur")
@@ -199,9 +213,9 @@ const changed = {
   radiusY: [12, 12, 12, 12] as [number, number, number, number],
 };
 assert.equal(renderer.filter(first, changed), firstUrl);
-assert.equal(encodes, 2, "dimensions and elliptical radii update geometry");
-assert.equal(maps[1].width, 80);
-assert.equal(maps[1].height, 72);
+assert.equal(encodes, 4, "dimensions and elliptical radii update geometry");
+assert.equal(maps[2].width, 80);
+assert.equal(maps[2].height, 72);
 const shapes = Array.from({ length: 5 }, (_, index) => ({
   ...geometry,
   width: 45 + index,

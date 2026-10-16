@@ -144,7 +144,10 @@ async function decodedSvg(svg: string) {
 
 export class SvgGlassRenderer {
   private disposed = false;
-  private readonly maps = new Map<string, string>();
+  private readonly maps = new Map<
+    string,
+    { normal: string; clarity: string }
+  >();
   private root: SVGSVGElement | undefined;
   private readonly filters = new Map<
     HTMLElement,
@@ -174,7 +177,7 @@ export class SvgGlassRenderer {
     return new SvgGlassRenderer();
   }
 
-  private normalMap(frame: SvgGlassGeometry) {
+  private geometryMaps(frame: SvgGlassGeometry) {
     const key = JSON.stringify([
       frame.width,
       frame.height,
@@ -189,21 +192,29 @@ export class SvgGlassRenderer {
     canvas.height = Math.max(1, Math.ceil(frame.height * scale));
     const context = canvas.getContext("2d");
     if (!context) throw new Error("SVG displacement map unavailable");
-    const pixels = context.createImageData(canvas.width, canvas.height);
+    const normal = context.createImageData(canvas.width, canvas.height);
+    // Edge clarity gets its own gray map: wide-gamut screens convert the
+    // normal map's colors, which would leak displacement into a third
+    // channel, while gray converts to itself.
+    const clarity = context.createImageData(canvas.width, canvas.height);
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
         const px = ((x + 0.5) * frame.width) / canvas.width;
         const py = ((y + 0.5) * frame.height) / canvas.height;
-        const [dx, dy, clarity] = glassOptics(px, py, frame);
+        const [dx, dy, edge] = glassOptics(px, py, frame);
         const offset = (y * canvas.width + x) * 4;
-        pixels.data[offset] = Math.round(128 + dx * 256);
-        pixels.data[offset + 1] = Math.round(128 + dy * 256);
-        pixels.data[offset + 2] = Math.round(clarity * 255);
-        pixels.data[offset + 3] = 255;
+        normal.data[offset] = Math.round(128 + dx * 256);
+        normal.data[offset + 1] = Math.round(128 + dy * 256);
+        normal.data[offset + 3] = 255;
+        clarity.data.fill(Math.round(edge * 255), offset, offset + 3);
+        clarity.data[offset + 3] = 255;
       }
     }
-    context.putImageData(pixels, 0, 0);
-    const result = canvas.toDataURL("image/png");
+    const encode = (pixels: ImageData) => {
+      context.putImageData(pixels, 0, 0);
+      return canvas.toDataURL("image/png");
+    };
+    const result = { normal: encode(normal), clarity: encode(clarity) };
     if (this.maps.size >= 32)
       this.maps.delete(this.maps.keys().next().value ?? "");
     this.maps.set(key, result);
@@ -265,7 +276,7 @@ export class SvgGlassRenderer {
     }
     if (entry.key !== key) {
       const { width, height } = frame;
-      const normal = this.normalMap(frame);
+      const maps = this.geometryMaps(frame);
       const strength = glassRefractionStrength(frame.strength, width, height);
       const clarity =
         Math.min(strength / glassBevelWidth(width, height), 1) *
@@ -280,10 +291,10 @@ export class SvgGlassRenderer {
       filter.setAttribute("width", String(width + margin * 2));
       filter.setAttribute("height", String(height + margin * 2));
       filter.setAttribute("color-interpolation-filters", "sRGB");
-      // SourceGraphic is the live browser backdrop. Only the geometric normal
-      // map is encoded; there is no DOM snapshot or background PNG here.
+      // SourceGraphic is the live browser backdrop. Only the geometric maps are
+      // encoded; there is no DOM snapshot or background PNG here.
       // Material saturation follows in CSS after this filter.
-      filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="blurred"/><feImage href="${normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feDisplacementMap in="SourceGraphic" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="sharp"/><feColorMatrix in="encoded" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0" result="clarity"/><feComposite in="sharp" in2="clarity" operator="in" result="edge"/><feComposite in="edge" in2="refracted" operator="over"/>`;
+      filter.innerHTML = `<feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="blurred"/><feImage href="${maps.normal}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="encoded"/><feImage href="${maps.clarity}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" result="bevel"/><feComponentTransfer in="encoded" result="normal"><feFuncR type="linear" slope="0.99609375"/><feFuncG type="linear" slope="0.99609375"/></feComponentTransfer><feDisplacementMap in="blurred" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="refracted"/><feDisplacementMap in="SourceGraphic" in2="normal" scale="${strength}" xChannelSelector="R" yChannelSelector="G" result="sharp"/><feColorMatrix in="bevel" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0 0 0" result="clarity"/><feComposite in="sharp" in2="clarity" operator="in" result="edge"/><feComposite in="edge" in2="refracted" operator="over"/>`;
       entry.key = key;
     }
     return `url("#${entry.filter.id}")`;
