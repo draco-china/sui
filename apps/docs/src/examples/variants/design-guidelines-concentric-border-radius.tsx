@@ -24,38 +24,11 @@ function AvoidSample({ locale }: ExampleProps) {
 }
 
 export default function Example({ locale }: ExampleProps) {
-  const zh = locale === "zh-CN";
-  const [radius, setRadius] = useState(10);
   return (
-    <div
-      className="w-full space-y-4"
-      style={{ "--radius": `${radius}px` } as CSSProperties}
-    >
-      <fieldset className="flex flex-wrap items-center gap-2">
-        <legend className="mb-2 text-sm">
-          {zh ? "基准圆角" : "Base radius"}
-        </legend>
-        {[0, 4, 10, 16].map((value) => (
-          <Button
-            key={value}
-            type="button"
-            size="sm"
-            variant={radius === value ? "default" : "outline"}
-            aria-pressed={radius === value}
-            onClick={() => setRadius(value)}
-          >
-            {value}px
-          </Button>
-        ))}
-      </fieldset>
-      <DesignComparison
-        locale={locale}
-        recommended={<RecommendedSample locale={locale} />}
-        avoid={<AvoidSample locale={locale} />}
-      />
-    </div>
+    <DesignComparison
+      locale={locale}
+      recommended={<RecommendedSample locale={locale} />}
+      avoid={<AvoidSample locale={locale} />}
+    />
   );
 }
-
-import { Button } from "@workspace/ui/components/button";
-import { type CSSProperties, useState } from "react";

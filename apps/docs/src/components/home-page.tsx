@@ -65,7 +65,6 @@ export function HomePage({ locale }: { locale: Locale }) {
           <div className="hero-actions">
             <Button
               glass
-              glassConfig={{ material: "clear" }}
               nativeButton={false}
               size="lg"
               render={<Link to={localePath(locale, "/docs/installation")} />}

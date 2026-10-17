@@ -8,9 +8,9 @@ export function ChartTooltipDemo() {
   const previewId = usePreviewId();
 
   return (
-    <div className="grid aspect-video w-full max-w-md justify-center text-foreground md:grid-cols-2 [&>div]:relative [&>div]:flex [&>div]:h-[137px] [&>div]:w-[224px] [&>div]:items-center [&>div]:justify-center [&>div]:p-4">
+    <div className="grid aspect-video w-full max-w-md justify-center text-foreground md:grid-cols-2 [&>div]:relative [&>div]:flex [&>div]:h-34.25 [&>div]:w-56 [&>div]:items-center [&>div]:justify-center [&>div]:p-4">
       <div>
-        <div className="absolute top-[45px] left-[-35px] z-10 font-medium text-sm">
+        <div className="absolute top-11.25 -left-8.75 z-10 font-medium text-sm">
           Label
         </div>
         <svg
@@ -20,7 +20,7 @@ export function ChartTooltipDemo() {
           width="50"
           height="12"
           fill="none"
-          className="absolute top-[50px] left-[5px] z-10"
+          className="absolute top-12.5 left-1.25 z-10"
         >
           <g clipPath="url(#a)">
             <path
@@ -40,11 +40,11 @@ export function ChartTooltipDemo() {
             { name: "Desktop", value: 186, fill: "var(--chart-1)" },
             { name: "Mobile", value: 80, fill: "var(--chart-2)" },
           ]}
-          className="w-[8rem]"
+          className="w-32"
         />
       </div>
       <div className="items-end">
-        <div className="absolute top-[0px] left-[122px] z-10 font-medium text-sm">
+        <div className="absolute top-0 left-30.5 z-10 font-medium text-sm">
           Name
         </div>
         <svg
@@ -54,7 +54,7 @@ export function ChartTooltipDemo() {
           height="42"
           fill="none"
           viewBox="0 0 122 148"
-          className="absolute top-[10px] left-[85px] z-10 -scale-x-100"
+          className="absolute top-2.5 left-21.25 z-10 -scale-x-100"
         >
           <g clipPath="url(#ab)">
             <path
@@ -76,19 +76,19 @@ export function ChartTooltipDemo() {
             { name: "Firefox", value: 1000, fill: "var(--chart-4)" },
           ]}
           indicator="dashed"
-          className="w-[8rem]"
+          className="w-32"
         />
       </div>
       <div className="hidden! md:flex!">
         <TooltipDemo
           label="Page Views"
           payload={[{ name: "Desktop", value: 12486, fill: "var(--chart-3)" }]}
-          className="w-[9rem]"
+          className="w-36"
           indicator="line"
         />
       </div>
       <div className="items-start! justify-start!">
-        <div className="absolute top-[60px] left-[50px] z-10 font-medium text-sm">
+        <div className="absolute top-15 left-12.5 z-10 font-medium text-sm">
           Indicator
         </div>
         <TooltipDemo
@@ -96,7 +96,7 @@ export function ChartTooltipDemo() {
           hideLabel
           payload={[{ name: "Chrome", value: 1286, fill: "var(--chart-1)" }]}
           indicator="dot"
-          className="w-[8rem]"
+          className="w-32"
         />
         <svg
           aria-hidden="true"
@@ -105,7 +105,7 @@ export function ChartTooltipDemo() {
           height="34"
           fill="none"
           viewBox="0 0 75 175"
-          className="absolute top-[38px] left-[30px] z-10 rotate-[-40deg]"
+          className="absolute top-9.5 left-7.5 z-10 rotate-[-40deg]"
         >
           <g clipPath="url(#abc)">
             <path
@@ -157,7 +157,7 @@ function TooltipDemo({
   return (
     <div
       className={cn(
-        "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl transition-all ease-in-out hover:-translate-y-0.5",
+        "grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl transition-all ease-in-out hover:-translate-y-0.5",
         className,
       )}
     >
@@ -177,7 +177,7 @@ function TooltipDemo({
               {!hideIndicator && (
                 <div
                   className={cn(
-                    "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+                    "shrink-0 rounded-xs border-border bg-(--color-bg)",
                     {
                       "h-2.5 w-2.5": indicator === "dot",
                       "w-1": indicator === "line",

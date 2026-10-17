@@ -12,7 +12,8 @@ export default function Example({ locale }: ExampleProps) {
     vertical: zh ? "上下：上下边缘反光" : "Vertical: lit from top and bottom",
   };
   return (
-    // A calm, dark backdrop with soft color makes edge light easy to compare.
+    // Edge light belongs to Clear. A calm, dark backdrop with soft color
+    // makes it easy to compare.
     <div className="grid w-full gap-6 overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_20%_30%,#3b82f680,transparent_45%),radial-gradient(circle_at_80%_70%,#f9731670,transparent_45%),linear-gradient(135deg,#27272a,#18181b)] p-6 sm:grid-cols-2">
       {edges.map((edge) => (
         <div key={edge} className="grid justify-items-center gap-4">
@@ -20,16 +21,13 @@ export default function Example({ locale }: ExampleProps) {
             {labels[edge]}
           </p>
           <div className="flex items-center gap-4">
-            <GlassSurface
-              glassConfig={{ edge, material: "clear" }}
-              className="size-16 rounded-2xl"
-            />
-            <Button glass glassConfig={{ edge }} variant="outline">
+            <GlassSurface glass={{ edge }} className="size-16 rounded-2xl" />
+            <Button glass={{ edge }} variant="outline">
               {zh ? "按钮" : "Button"}
             </Button>
           </div>
           <GlassSurface
-            glassConfig={{ edge }}
+            glass={{ edge }}
             className="h-20 w-full max-w-60 rounded-3xl"
           />
         </div>

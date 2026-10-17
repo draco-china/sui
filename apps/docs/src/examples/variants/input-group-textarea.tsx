@@ -35,7 +35,7 @@ export default function InputGroupTextareaExample() {
           aria-label="Script source"
           value={code}
           onChange={(event) => setCode(event.target.value)}
-          className="min-h-[200px]"
+          className="min-h-50"
         />
         <InputGroupAddon align="block-start" className="border-b">
           <InputGroupText className="font-medium font-mono">

@@ -1,11 +1,11 @@
 ---
 title: Glass
-description: 以 SVG 折射呈现清透与常规材质的玻璃表面，并以 CSS 回退。
+description: 带 SVG 折射与 CSS 回退的清透液态玻璃，以及纯 CSS 的磨砂材质。
 ---
 
 ## 预览 [#preview]
 
-在同一场景对比普通表面和玻璃表面，并切换清透与常规材质。状态行显示浏览器当前使用 SVG 折射还是 CSS 回退。切换站点外观可对比浅色和深色主题。
+在同一场景中比较普通表面与玻璃表面，并在清透玻璃与磨砂玻璃之间切换。状态行显示浏览器当前使用 SVG 折射还是 CSS 回退。切换站点外观可比较浅色与深色主题。
 
 <ComponentPreview name="glass-demo" />
 
@@ -25,98 +25,115 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 </GlassSurface>
 ```
 
-所有支持玻璃的组件都使用布尔开关 `glass`。`glassConfig` 选择材质 `material`、边缘光 `edge` 和三个参数 `options`：`strength`、`tint`、`tintOpacity`。模糊、饱和度和边缘高光强度均为内置。配置不会成为 HTML 属性，显式 `glass={false}` 始终关闭效果。
+所有支持玻璃的组件都有两个属性，且只描述组件自身：
+
+| 属性 | 效果 |
+| --- | --- |
+| 不写 | 普通组件。 |
+| `glass` | 使用默认值的清透液态玻璃。 |
+| `glass={{ edge, strength, tint, tintOpacity, textGlow }}` | 使用这些设置的清透液态玻璃。 |
+| `frosted` | 纯 CSS 绘制的磨砂玻璃。 |
+
+没有任何继承：组件只有自己写了才是玻璃，与周围无关，设置也不会从父级传给子级。两者同时写时 `glass` 优先。`glass={false}` 等同于不写，因此可以直接写 `glass={enabled}`。
 
 ```tsx
 import { Button } from "@workspace/ui/components/button";
 import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface glassConfig={{ material: "clear", edge: "vertical" }} />
-<Button glass glassConfig={{ material: "regular" }}>Action</Button>
+<GlassSurface glass={{ edge: "vertical" }} />
+<GlassSurface frosted />
+<Button glass>Action</Button>
 ```
 
-传入 `render` 可保留原生语义，例如 `<GlassSurface render={<nav />} />`。每个启用的表面都是独立请求；观察器、事件监听和 SVG 渲染器在内部共享，无需 Provider。Dialog、Popover、Tabs 等根组件把设置传给自己的控件和弹出层，本身不会成为玻璃。
+传入 `render` 可保留原生语义，例如 `<GlassSurface render={<nav />} />`。`GlassSurface` 默认是清透玻璃，写了 `frosted` 时为磨砂。每个玻璃组件都是独立请求；观察器、监听器和 SVG 渲染器在内部共享，无需 Provider。
 
-## 渲染方式 [#rendering]
+## 渲染 [#rendering]
 
-Glass 使用原生 SVG 折射：几何位移贴图通过 `feDisplacementMap` 在边缘弯折浏览器背后的实时画面，再进行模糊和饱和。不采集背景，因此视频、滚动和动画都按显示器帧率实时呈现。
+清透玻璃使用原生 SVG 折射：几何位移贴图通过 `feDisplacementMap` 沿边缘弯折实时背景，再进行模糊和饱和处理。整个过程不截取画面，因此视频、滚动和动画都能以显示器帧率保持实时。
 
-CSS 材质作为回退：表面完成测量前、浏览器不支持 SVG 背景滤镜（Safari）、`prefers-reduced-transparency` 或强制颜色模式下，以及渲染器失败时使用。完全不透明的填充会遮住背景，因此这类表面保持 CSS 并保留共享的边缘高光。减少透明度和强制颜色模式下显示不透明底色，并保留原生焦点样式。
+CSS 材质是它的回退：在表面完成测量前、浏览器无法绘制 SVG 背景时（Safari）、`prefers-reduced-transparency` 或强制颜色模式下，以及渲染器失败时生效。完全不透明的填充会遮住背景，这类表面保留 CSS 和共享的边缘高光。减少透明度与强制颜色模式显示不透明底色和原生焦点样式。
+
+磨砂玻璃从不运行 JavaScript，也不加载渲染器：它只是作用在组件自身元素上的样式规则。
 
 <ComponentPreview name="glass-dynamic" />
 
-`refreshGlass(target?)` 重新测量元素或 ref 内已挂载表面的材质和边缘，不传目标时刷新全部。修改运行时无法观察到的填充后调用它。
+`refreshGlass(target?)` 重新测量元素或 ref 内已挂载的清透表面，不传目标时刷新全部。修改运行时无法观察到的填充后调用。
 
 ## 材质 [#materials]
 
-两种材质对应 [Apple 的 Clear 与 Regular 变体](https://developer.apple.com/design/human-interface-guidelines/materials)，数值是 Web 近似，不是 Apple 规范。
+两种材质参照 [Apple 的 Clear 与 Regular 变体](https://developer.apple.com/design/human-interface-guidelines/materials)；数值是 Web 上的近似实现，而非 Apple 规范。
 
-| 材质 | 着色 | SVG 模糊 | CSS 模糊 | 用途 |
+| 属性 | 着色 | 模糊 | 折射与边缘光 | 用途 |
 | --- | --- | --- | --- | --- |
-| `"clear"` 清透 | `12%` | `4px` | `6px` | 媒体之上的通透玻璃，背景仍可辨认。 |
-| `"regular"` 常规（默认） | `30%` | `14px` | `16px` | 磨砂玻璃，在繁杂内容上保持文字清晰。 |
+| `glass` | `12%` | SVG `4px`，CSS 回退 `6px` | 有 | 媒体之上的通透玻璃，背景仍可辨认。 |
+| `frosted` | `65%` | CSS `24px` | 无 | 磨砂玻璃，文字在繁杂内容上依然清晰。 |
 
-两者折射强度均为 `22`、饱和度 `1.3`，并使用相同的边缘光。`options.tintOpacity` 覆盖材质的着色。着色取自组件自身的背景，因此主色和危险色填充保留原有颜色。表面从底到顶依次合成折射后的背景、着色、组件填充、边缘高光和内容。
+清透玻璃折射强度为 `22`；两者饱和度均为 `1.3`。着色取自组件自身的背景，因此主色和危险色填充保留原有颜色。`glass={{ tintOpacity }}` 覆盖清透玻璃的着色。磨砂玻璃的着色取自组件的表面色；可在 CSS 中设置 `--frosted-base`、`--frosted-opacity` 或 `--frosted-blur` 调整。表面从底到顶依次合成模糊或折射后的背景、着色、组件填充、清透玻璃的边缘高光和内容。
 
 <ComponentPreview name="glass-materials" />
 
 ## 边缘光 [#edge]
 
-`glassConfig.edge` 选择光线落在边缘的方式：
+`glass={{ edge }}` 选择光线落在清透玻璃边缘的方式：
 
-- `"diagonal"`（默认）：细边从左上和右下角照亮，沿两侧渐隐。
-- `"vertical"`：斜面光照，反光位于上下边缘。
+- `"diagonal"`（默认）：从左上角和右下角照亮的细边，沿两侧渐隐。
+- `"vertical"`：上下边缘带反光的斜面。
 
 <ComponentPreview name="glass-edges" />
 
-高光强度为内置，并随像素密度连续变化（`0.15 × 设备像素比`，范围 `0.15` 到 `0.3`），因此 1x 屏幕边缘更淡，手机上更细。
+高光强度为内置值，随像素密度连续变化（`0.15 × 设备像素比`，范围 `0.15` 到 `0.3`），因此 1x 屏幕上的边缘更淡。边缘线宽在所有屏幕上都是 0.9px。
+
+边缘光属于清透玻璃，它会隐藏组件自身的边框、描边和焦点环。磨砂玻璃没有边缘光。与 iOS 一致，它靠材质反差和阴影勾勒轮廓，因此同样隐藏组件自身的边框和装饰描边；焦点环保留，开启增强对比度（`prefers-contrast: more`）时边框恢复。
 
 ## 弹出层 [#popups]
 
-开启玻璃时，菜单、弹出框、选择器、提示、悬停卡片、对话框、侧边面板、底部面板、抽屉和通知默认使用清晰可读的常规材质和上下边缘光，与周围设置无关，与 Apple 平台一致。它们自身的 `glassConfig` 仍可另行选择。浮层共用一层柔和的扩散阴影。
+弹出层和其他组件一样自己选择材质：把 `glass` 或 `frosted` 写在内容组件上，例如 `PopoverContent`、`SelectContent` 或 `DialogContent`。`Popover`、`Select`、`Dialog` 等根组件没有玻璃属性。与 Apple 平台一致，繁杂内容上的菜单和对话框适合使用磨砂玻璃。浮层共用一层柔和的扩散阴影。
+
+```tsx
+<Select>
+  <SelectTrigger glass />
+  <SelectContent frosted>{/* 选项 */}</SelectContent>
+</Select>
+```
 
 <ComponentPreview name="glass-popups" />
 
 ## 控件与内容 [#composition]
 
-玻璃用于导航、控件和浮层，内容保持普通。
+玻璃属于导航、控件和浮层；内容保持普通。
 
-- 玻璃表面内的控件共用该表面的材质，不会各自成为玻璃，除非显式开启。
-- `ButtonGroup` 是一个胶囊，组内按钮共用其材质；嵌套分组时每个内层分组各自成为一个胶囊。`Pagination` 的控件也组成同样的胶囊。
-- 表单字段（`Input`、`Textarea`、`InputGroup`、`Select` 与 `Combobox` 触发器、`TagInput`、`SensitiveInput`、`ClipboardText`）在玻璃范围内独立出现时成为玻璃，与 iOS 搜索框一致，获得焦点时轻微提亮。在对话框、面板等玻璃表面内，它们保持为普通字段并保留焦点环。
-- Switch 和 Slider 的滑块只在拖动时成为玻璃镜片。按下按钮时会轻微放大，玻璃按钮同时提亮。
-- 玻璃 `Carousel` 的上一张、下一张按钮浮于画面之上，幻灯片保持为内容。
-- Card、二维码、Accordion、Calendar、编辑器和查看器属于内容：在玻璃中它们自身的控件保持普通，打开的菜单和弹出层仍使用玻璃。`Card` 和 `QRCode` 支持显式 `glass` 属性，例如用于媒体之上的小组件。
-- 用 `GlassContent` 包裹自定义内容区域，可让其中的控件在玻璃表面内保持普通。
+- 玻璃表面内的控件保持普通。在玻璃上优先使用 ghost 或 outline 变体，它们没有实色填充，直接落在材质上。
+- 玻璃不会重复模糊：玻璃层里的玻璃或磨砂组件保留自己的着色和边缘光，但不再模糊或折射背景，因为嵌套的背景滤镜只会把外层内容再磨砂一次。弹出层不在触发器所在的层里，所以从玻璃工具栏打开的玻璃菜单仍是完整的独立一层。
+- 玻璃 `ButtonGroup` 是一个胶囊，按钮落在它的材质上；组中组需要给每个内层组单独写 `glass`。`Toolbar`、`TabsList`、`PaginationContent` 和 `Command` 同理。
+- 写了玻璃的表单字段（`Input`、`Textarea`、`InputGroup`、`SelectTrigger`、`ComboboxChips`、`TagInput`、`SensitiveInput`、`ClipboardText`）像 iOS 搜索框一样呈胶囊状，聚焦时略微提亮。
+- 写了 `glass` 的 `Switch` 和 `Slider` 只在拖动时把滑块变成清透镜片。按下的按钮会轻微放大，玻璃按钮还会提亮。
+- 自己渲染玻璃部件的组件会把属性传下去：`TabBar`（标签栏和镜片）、`NavigationMenu`（弹出层）、`Toaster`（通知）、`ImageViewer`（控件）、`ColorPicker`（触发器和弹出层）、`PaginationControls` 和 `PaginationPageSize`。
+- Card、二维码、Accordion、Calendar、编辑器和查看器属于内容。`Card` 和 `QRCode` 接受 `glass` 或 `frosted`，例如用于媒体上的小组件。
 
 <ComponentPreview name="glass-controls" />
 
 ```tsx
 import { Card } from "@workspace/ui/components/card";
-import { GlassContent, GlassSurface } from "@workspace/ui/components/glass";
+import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface>
-  <GlassContent>{/* 普通表单字段 */}</GlassContent>
-</GlassSurface>
+<GlassSurface>{/* 普通内容与 ghost 控件 */}</GlassSurface>
 <Card glass>{/* 玻璃小组件 */}</Card>
 ```
 
 <ComponentPreview name="glass-composition" />
 
-玻璃焦点不添加焦点环；普通组件保留主题和焦点样式。玻璃会透出背景，清透材质尤甚，因此两种材质中的文字和图标都带有与材质色调一致、紧贴字形的收敛光晕，次要文字也更接近前景色。光晕只在背景与文字冲突时显现，因此浅色和深色模式下都能在明亮繁杂的内容上保持清晰。普通按钮和输入框保持清晰的文字，复制框、按键、徽章和代码等自带底色的内容也一样；减少透明度时，这些处理与玻璃一同关闭。
+清透玻璃聚焦时不添加焦点环，磨砂玻璃保留组件自身的焦点环；普通组件保留主题和焦点样式。玻璃会透出背景，因此次要文字更接近前景色。在明亮繁杂的背景上，`glass={{ textGlow: true }}` 可为文字和图标加上与材质色调一致、紧贴字形的收敛光晕；默认关闭。光晕只在背景与文字冲突时显现，因此浅色和深色模式下都能保持清晰。磨砂玻璃更浓的着色无需光晕即可保持文字清晰。减少透明度时，光晕和次要文字处理与玻璃一同关闭。
 
 ## API 参考 [#api-reference]
 
 | 属性 | 类型 | 默认值 / 行为 |
 | --- | --- | --- |
-| Config `material` | `"clear" \| "regular"` | `"regular"`；弹出层默认 `"regular"`。 |
-| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`；弹出层默认 `"vertical"`。 |
-| Config `options` | `GlassOptions` | 局部材质参数。 |
-| Options `strength` | `number` | `22` |
-| Options `tint` | `string` | 组件背景色。 |
-| Options `tintOpacity` | `number` | 材质默认值：`0.12` / `0.3`。 |
+| 组件 `glass` | `boolean \| GlassConfig` | 让该组件成为清透液态玻璃；`GlassSurface` 默认 `true`。 |
+| 组件 `frosted` | `boolean` | 让该组件成为磨砂玻璃；与 `glass` 同时写时 `glass` 优先。 |
+| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`。 |
+| Config `strength` | `number` | `22`。 |
+| Config `tint` | `string` | 组件背景色。 |
+| Config `tintOpacity` | `number` | `0.12`。 |
+| Config `textGlow` | `boolean` | `false`。 |
 | `refreshGlass(target?)` | `(target?: GlassTarget) => void` | 重新测量目标内的表面，不传目标时刷新全部。 |
-| 组件 `glass` | `boolean` | 开启或关闭玻璃；`GlassSurface` 默认 `true`。 |
-| 组件 `glassConfig` | `GlassConfig` | 局部 `material`、`edge` 和 `options`。 |
 | `GlassSurface` | `useRender` 属性 | 原生 div 属性，可用 `render` 更换元素。 |
-| `GlassContent` | `useRender` 属性 | 玻璃中的普通内容区域。 |

@@ -41,7 +41,7 @@ OKLCH accepts values such as `oklch(62.8% 0.2577 29.23 / 50%)`. Lightness accept
 
 ## Swatches and glass [#swatches]
 
-Provide `swatches` as HEX values. Invalid and duplicate normalized colors are excluded. `glass` applies to the popup surface; the saturation field and sliders keep their color encoding, and individual swatches do not create nested glass surfaces.
+Provide `swatches` as HEX values. Invalid and duplicate normalized colors are excluded. `glass` and `frosted` apply to the trigger and the popup surface; the saturation field and sliders keep their color encoding, and individual swatches do not create nested glass surfaces.
 
 <ComponentPreview name="color-picker-swatches" />
 
@@ -66,7 +66,7 @@ The same module exports `ColorPickerArea`, `ColorPickerSlider` and `ColorPickerS
 | `swatches` | `readonly string[]` | `[]` |
 | `disabled` | `boolean` | Disables all interactions |
 | `inline` | `boolean` | `false`; renders controls without popup |
-| `glass` | `boolean` | `false`; popup material |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; trigger and popup material |
 | `eyeDropper` | `boolean` | `true`; depends on browser support |
 | `labels` | `Partial<ColorPickerLabels>` | Accessible labels and feedback |
 | `contentClassName` | `string` | Popup classes |

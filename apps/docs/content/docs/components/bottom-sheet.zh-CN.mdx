@@ -120,7 +120,7 @@ BottomSheet
 
 ## 材质 [#material]
 
-面板在安全区内按 100% 宽度展示。`default` 档在左右和底部保留 8px 外边距悬浮显示；展开过程中外边距随拖动逐渐归零，`lg` 档贴合屏幕边缘。设置 `glass` 后，`default` 档与其他弹出层一样默认使用常规 [Glass](/zh-CN/docs/components/glass) 材质和上下边缘光，自身的 `glassConfig` 可以另行选择；展开过程中逐渐变为不透明，全高面板读起来就像一个完整页面。可以通过 `className` 覆盖 `--bottom-sheet-gap`、`--bottom-sheet-radius` 和 `--bottom-sheet-max-width`；设置最大宽度后面板在大屏上居中。
+面板在安全区内按 100% 宽度展示。`default` 档在左右和底部保留 8px 外边距悬浮显示；展开过程中外边距随拖动逐渐归零，`lg` 档贴合屏幕边缘。给 `BottomSheetContent` 传入 `frosted` 或 `glass`，可让 `default` 档使用 [Glass](/zh-CN/docs/components/glass) 材质，磨砂玻璃在繁杂内容上更易读；展开过程中逐渐变为不透明，全高面板读起来就像一个完整页面。可以通过 `className` 覆盖 `--bottom-sheet-gap`、`--bottom-sheet-radius` 和 `--bottom-sheet-max-width`；设置最大宽度后面板在大屏上居中。
 
 <ComponentPreview name="bottom-sheet-glass" />
 
@@ -141,7 +141,7 @@ BottomSheet
 | `footerMode` | `"adaptive" \| "fixed"` | `"adaptive"`。 |
 | `contentKey` | `React.Key` | 变化时重置档位和滚动位置。 |
 | `labels` | `{ expand?: string; collapse?: string }` | 顶部横条的标签。 |
-| `glass`、`glassConfig` | Glass | 可选玻璃材质。 |
+| `BottomSheetContent` `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 可选玻璃材质。 |
 
 ### BottomSheetContent [#api-content]
 

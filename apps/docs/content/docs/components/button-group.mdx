@@ -131,7 +131,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## Glass
 
-With glass, from its own `glass` prop or an enclosing glass scope, a group is one capsule whose buttons share its material, like grouped iOS toolbar items. Plain segments drop their own fill and show a light wash on hover; primary actions keep theirs. A group of groups only lays them out, so each inner group keeps its own capsule.
+With `glass` or `frosted`, a group is one capsule its buttons sit on, like grouped iOS toolbar items. Plain segments drop their own fill and show a light wash on hover; primary actions keep theirs. A group of groups only lays them out, so give each inner group its own `glass`.
 
 ```tsx
 <ButtonGroup glass>
@@ -149,8 +149,7 @@ The `ButtonGroup` component is a container that groups related buttons together 
 | Prop          | Type                         | Default        |
 | ------------- | ---------------------------- | -------------- |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
-| `glass`       | `boolean`                    | Inherited      |
-| `glassConfig` | `GlassConfig`                | -              |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Ordinary when omitted. |
 
 ```tsx
 <ButtonGroup>

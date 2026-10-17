@@ -89,7 +89,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## Glass
 
-Cards are content and stay ordinary inside glass, so their own controls keep their styles while menus they open still use glass. Pass `glass` to make a card a glass surface, such as a widget over media; its controls then share the card's material.
+Cards are content and stay ordinary unless they ask for glass. Pass `glass` or `frosted` to make a card a glass surface, such as a widget over media; its own controls stay ordinary.
 
 ```tsx
 <Card glass>
@@ -108,8 +108,7 @@ The `Card` component is the root container for card content.
 | Prop        | Type                | Default     |
 | ----------- | ------------------- | ----------- |
 | `size`      | `"default" \| "sm"` | `"default"` |
-| `glass`     | `boolean`           | `false`     |
-| `glassConfig` | `GlassConfig`     | -           |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false` |
 | `className` | `string`            | -           |
 
 ### CardHeader

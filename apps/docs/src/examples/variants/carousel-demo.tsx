@@ -12,7 +12,7 @@ import {
 export default function CarouselDemo() {
   return (
     <div className="flex w-full justify-center px-12">
-      <Carousel className="w-full max-w-[12rem] sm:max-w-xs">
+      <Carousel className="w-full max-w-48 sm:max-w-xs">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
             <CarouselItem key={index}>

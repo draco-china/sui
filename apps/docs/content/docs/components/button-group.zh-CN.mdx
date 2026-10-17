@@ -131,7 +131,7 @@ ButtonGroup
 
 ## 玻璃 [#glass]
 
-开启玻璃时（来自自身 `glass` 属性或外层玻璃范围），分组成为一个胶囊，组内按钮共用其材质，与 iOS 工具栏中的分组按钮一致。普通分段去掉自身填充，悬停时显示浅色叠加；主要操作保留填充。嵌套分组只负责布局，每个内层分组各自成为一个胶囊。
+设置 `glass` 或 `frosted` 时，分组成为一个胶囊，组内按钮落在它的材质上，与 iOS 工具栏中的分组按钮一致。普通分段去掉自身填充，悬停时显示浅色叠加；主要操作保留填充。嵌套分组只负责布局，需要给每个内层分组单独写 `glass`。
 
 ```tsx
 <ButtonGroup glass>
@@ -149,8 +149,7 @@ ButtonGroup
 | 属性 |类型 |默认 |
 | ------------- | ---------------------------- | -------------- |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
-| `glass` | `boolean` | 继承 |
-| `glassConfig` | `GlassConfig` | - |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | 不写时为普通样式 |
 
 ```tsx
 <ButtonGroup>

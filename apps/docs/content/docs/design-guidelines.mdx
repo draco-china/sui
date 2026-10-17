@@ -218,9 +218,9 @@ import { Card } from "@workspace/ui/components/card";
 
 When borders or rings are 8px or less apart, their corner radii must be mathematically concentric: outer radius = inner radius + padding.
 
-At the default SUI radius, `rounded-lg` is 10px, `rounded-xl` is 14px, and `p-1` is 4px. The radius scale uses fixed offsets: `xl` adds `0.25rem`, `2xl` adds `0.5rem`, `3xl` adds `0.75rem`, and `4xl` adds `1rem` to the base radius. Changing `--radius` preserves those gaps. `sm` and `md` subtract `0.25rem` and `0.125rem`, clamped at zero.
+Components use the same radius steps as shadcn/ui base-luma, and every step is a multiple of `--radius`, so overriding it on the root or on a container rescales every corner in proportion, as in shadcn/ui. SUI's multipliers run from 0.25 to 4 with `--radius` at `0.5rem`, which gives Tailwind's default values in whole pixels: `rounded-sm` is 4px, `rounded-md` 6px, `rounded-lg` 8px, `rounded-xl` 12px, `rounded-2xl` 16px, `rounded-3xl` 24px and `rounded-4xl` 32px. SUI adds two larger steps that luma does not have, `rounded-5xl` (40px) and `rounded-6xl` (48px), for full-screen surfaces such as BottomSheet.
 
-Pair `rounded-xl` outside with `rounded-lg` inside and `p-1`; use `rounded-2xl` outside with `p-2`. For other padding values, calculate the outer radius as the inner radius plus that padding. The scale alone does not make arbitrary combinations concentric. Change the base radius below to compare the two examples.
+Pair `rounded-xl` outside with `rounded-lg` inside and `p-1`; use `rounded-2xl` outside with `p-2`. For other padding values, calculate the outer radius as the inner radius plus that padding. A corner larger than half the element's height becomes a capsule, which stays concentric on its own.
 
 If the outer container uses a `border`, include its width in the distance between the two boxes. A `ring` does not occupy layout space.
 

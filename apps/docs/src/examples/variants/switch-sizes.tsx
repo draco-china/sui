@@ -6,7 +6,7 @@ export function SwitchSizes() {
   const previewId = usePreviewId();
 
   return (
-    <FieldGroup className="w-full max-w-[10rem]">
+    <FieldGroup className="w-full max-w-40">
       <Field orientation="horizontal">
         <Switch id={`${previewId}-switch-size-sm`} size="sm" />
         <FieldLabel htmlFor={`${previewId}-switch-size-sm`}>Small</FieldLabel>

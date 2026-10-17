@@ -32,7 +32,7 @@ export default function CarouselDApiDemo() {
   }, [api]);
 
   return (
-    <div className="mx-auto max-w-[10rem] sm:max-w-xs">
+    <div className="mx-auto max-w-40 sm:max-w-xs">
       <Carousel setApi={setApi} className="w-full max-w-xs">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (

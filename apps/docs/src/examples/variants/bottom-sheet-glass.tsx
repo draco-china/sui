@@ -35,11 +35,11 @@ export default function Example({ locale }: ExampleProps) {
       ];
   return (
     <div className="grid w-full justify-items-center overflow-hidden rounded-2xl bg-[url(/playground/backgrounds/coast-poster.jpg)] bg-center bg-cover px-6 py-16">
-      <BottomSheet glass detents="always">
+      <BottomSheet detents="always">
         <BottomSheetTrigger render={<Button />}>
           {chinese ? "查看地点" : "View place"}
         </BottomSheetTrigger>
-        <BottomSheetContent>
+        <BottomSheetContent frosted>
           <BottomSheetHeader collapseOnScroll className="pe-14">
             <BottomSheetTitle className="text-xl">
               {chinese ? "海岸瞭望台" : "Coast Lookout"}
@@ -55,7 +55,7 @@ export default function Example({ locale }: ExampleProps) {
                 <Button
                   variant="secondary"
                   size="icon-sm"
-                  className="absolute end-4 top-5 rounded-full"
+                  className="absolute inset-e-4 top-5 rounded-full"
                 />
               }
             >

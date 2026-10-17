@@ -120,7 +120,7 @@ While animating out, the sheet keeps its last content, so clearing data in the p
 
 ## Material [#material]
 
-The sheet spans the full width within the safe area. At `default` it floats with an 8px margin on each side and below; the margin fades out gradually while the sheet expands, following a drag, so at `lg` it meets the edges. With `glass`, the sheet at `default` uses the Regular [Glass](/docs/components/glass) material with vertical edge light by default, like other popups; its own `glassConfig` chooses otherwise. It turns opaque as it expands, so a full-height sheet reads as a solid page. Override `--bottom-sheet-gap`, `--bottom-sheet-radius` and `--bottom-sheet-max-width` through `className`; a maximum width centers the sheet on large screens.
+The sheet spans the full width within the safe area. At `default` it floats with an 8px margin on each side and below; the margin fades out gradually while the sheet expands, following a drag, so at `lg` it meets the edges. Pass `frosted` or `glass` to `BottomSheetContent` to put the sheet at `default` on [Glass](/docs/components/glass); frosted glass keeps it legible over busy content. It turns opaque as it expands, so a full-height sheet reads as a solid page. Override `--bottom-sheet-gap`, `--bottom-sheet-radius` and `--bottom-sheet-max-width` through `className`; a maximum width centers the sheet on large screens.
 
 <ComponentPreview name="bottom-sheet-glass" />
 
@@ -141,7 +141,7 @@ Accepts Base UI Drawer Root props, except snap points and swipe direction.
 | `footerMode` | `"adaptive" \| "fixed"` | `"adaptive"`. |
 | `contentKey` | `React.Key` | Resets the size and scroll position when it changes. |
 | `labels` | `{ expand?: string; collapse?: string }` | Grabber labels. |
-| `glass`, `glassConfig` | Glass | Optional glass material. |
+| `BottomSheetContent` `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Optional glass material. |
 
 ### BottomSheetContent [#api-content]
 

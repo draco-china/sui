@@ -24,7 +24,6 @@ export default function Example({ locale }: ExampleProps) {
             key={image}
             variant="ghost"
             type="button"
-            glass={false}
             className="h-auto w-full overflow-hidden rounded-xl p-0"
             aria-label={
               chinese
@@ -43,7 +42,7 @@ export default function Example({ locale }: ExampleProps) {
                   ? `几何图案 ${imageIndex + 1}`
                   : `Geometric pattern ${imageIndex + 1}`
               }
-              className="aspect-[3/2] w-full object-cover"
+              className="aspect-3/2 w-full object-cover"
             />
           </Button>
         ))}

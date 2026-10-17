@@ -1,12 +1,9 @@
 "use client";
 import { Button } from "@workspace/ui/components/button";
-import {
-  type GlassMaterial,
-  GlassSurface,
-} from "@workspace/ui/components/glass";
+import { GlassSurface } from "@workspace/ui/components/glass";
 import type { ExampleProps } from "../types";
 
-const materials: GlassMaterial[] = ["clear", "regular"];
+const materials = ["clear", "frosted"] as const;
 
 export default function Example({ locale }: ExampleProps) {
   const zh = locale === "zh-CN";
@@ -17,11 +14,11 @@ export default function Example({ locale }: ExampleProps) {
         ? "着色 12%，模糊 4px：背景仍可辨认，适合媒体之上。"
         : "12% tint, 4px blur: the backdrop stays recognizable, for media.",
     },
-    regular: {
-      title: zh ? "常规" : "Regular",
+    frosted: {
+      title: zh ? "磨砂" : "Frosted",
       body: zh
-        ? "着色 30%，模糊 14px：磨砂背景，文字在繁杂内容上依然清晰。"
-        : "30% tint, 14px blur: frosted, so text stays legible over busy content.",
+        ? "着色 65%，CSS 模糊 24px，无折射：磨砂背景，文字在繁杂内容上依然清晰。"
+        : "65% tint, 24px CSS blur, no refraction: frosted, so text stays legible over busy content.",
     },
   };
   return (
@@ -29,7 +26,7 @@ export default function Example({ locale }: ExampleProps) {
       {materials.map((material) => (
         <GlassSurface
           key={material}
-          glassConfig={{ material }}
+          frosted={material === "frosted"}
           className="grid content-start gap-4 rounded-3xl p-5 text-foreground"
         >
           <div className="grid gap-1">

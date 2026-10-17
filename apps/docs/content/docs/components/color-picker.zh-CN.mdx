@@ -41,7 +41,7 @@ OKLCH 可输入 `oklch(62.8% 0.2577 29.23 / 50%)`，亮度接受百分比或 0�
 
 ## 色板与玻璃 [#swatches]
 
-通过 `swatches` 提供 HEX 色板，无效颜色和规范化后重复的颜色会被排除。`glass` 用于弹出层表面，饱和度区域与滑条保留颜色编码，色板按钮不重复嵌套玻璃效果
+通过 `swatches` 提供 HEX 色板，无效颜色和规范化后重复的颜色会被排除。`glass` 与 `frosted` 用于触发器和弹出层表面，饱和度区域与滑条保留颜色编码，色板按钮不重复嵌套玻璃效果
 
 <ComponentPreview name="color-picker-swatches" />
 
@@ -66,7 +66,7 @@ OKLCH 可输入 `oklch(62.8% 0.2577 29.23 / 50%)`，亮度接受百分比或 0�
 | `swatches` | `readonly string[]` | `[]` |
 | `disabled` | `boolean` | 禁用全部交互 |
 | `inline` | `boolean` | `false`，无需弹出层直接显示控件 |
-| `glass` | `boolean` | `false`，弹出层材质 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | `false`，触发器与弹出层材质 |
 | `eyeDropper` | `boolean` | `true`，取决于浏览器支持 |
 | `labels` | `Partial<ColorPickerLabels>` | 可访问标签与反馈 |
 | `contentClassName` | `string` | 弹出层样式 |

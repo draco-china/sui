@@ -34,7 +34,7 @@ The displayed text remains selectable. A long value truncates visually; its full
 
 ## Glass
 
-Like other form fields, ClipboardText is a glass capsule on its own in a glass scope or with `glass`, tinted by its variant's fill, and its copy button shares the capsule. Inside a glass surface such as a dialog or panel it stays an ordinary field.
+Like other form fields, ClipboardText with `glass` or `frosted` is a glass capsule tinted by its variant's fill, and its copy button sits on the capsule. Without them it stays an ordinary field.
 
 ```tsx
 <ClipboardText glass text="bun run dev" />
@@ -62,8 +62,7 @@ The component uses the browser Clipboard API. If it is unavailable or permission
 | `textToCopy` | `string` | `text` |
 | `variant` | `"default" \| "outline" \| "secondary" \| "ghost"` | `"default"` |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
-| `glass` | `boolean` | Inherited |
-| `glassConfig` | `GlassConfig` | — |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Ordinary when omitted. |
 | `disabled` | `boolean` | `false` |
 | `resetDelay` | `number`, milliseconds | `1500` |
 | `onCopy` | `(value: string) => void` | — |

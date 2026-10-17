@@ -1,11 +1,11 @@
 ---
 title: Glass
-description: Glass surfaces with SVG refraction, Clear and Regular materials, and a CSS fallback.
+description: Clear liquid glass with SVG refraction and a CSS fallback, and a CSS-only frosted material.
 ---
 
 ## Preview [#preview]
 
-Compare an ordinary and a glass surface in one scene, and switch between the Clear and Regular materials. The status line reports whether the browser renders SVG refraction or the CSS fallback. Switch the site appearance to compare light and dark themes.
+Compare an ordinary and a glass surface in one scene, and switch between Clear glass and frosted glass. The status line reports whether the browser renders SVG refraction or the CSS fallback. Switch the site appearance to compare light and dark themes.
 
 <ComponentPreview name="glass-demo" />
 
@@ -25,55 +25,76 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 </GlassSurface>
 ```
 
-`glass` is a boolean switch on every glass-capable component. `glassConfig` chooses the `material`, the `edge` light and three `options`: `strength`, `tint` and `tintOpacity`. Blur, saturation and the edge highlight strength are built in. Configuration never becomes an HTML attribute, and an explicit `glass={false}` always turns the effect off.
+Every glass-capable component takes two props, and describes only itself:
+
+| Prop | Result |
+| --- | --- |
+| omitted | An ordinary component. |
+| `glass` | Clear liquid glass with the defaults. |
+| `glass={{ edge, strength, tint, tintOpacity, textGlow }}` | Clear liquid glass with these settings. |
+| `frosted` | Frosted glass, drawn by CSS alone. |
+
+Nothing is inherited: a component is glass only when it says so, whatever surrounds it, and settings never pass from a parent to its children. When both are set, `glass` wins. `glass={false}` is the same as omitting it, so `glass={enabled}` works.
 
 ```tsx
 import { Button } from "@workspace/ui/components/button";
 import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface glassConfig={{ material: "clear", edge: "vertical" }} />
-<Button glass glassConfig={{ material: "regular" }}>Action</Button>
+<GlassSurface glass={{ edge: "vertical" }} />
+<GlassSurface frosted />
+<Button glass>Action</Button>
 ```
 
-Pass `render` to keep native semantics, for example `<GlassSurface render={<nav />} />`. Each enabled surface is an independent request; observers, listeners and the SVG renderer are shared internally, so no Provider is required. Roots such as Dialog, Popover or Tabs pass their setting to their controls and popups without becoming glass themselves.
+Pass `render` to keep native semantics, for example `<GlassSurface render={<nav />} />`. `GlassSurface` is Clear unless `frosted` is set. Each glass component is an independent request; observers, listeners and the SVG renderer are shared internally, so no Provider is required.
 
 ## Rendering [#rendering]
 
-Glass renders native SVG refraction: a geometric displacement map bends the live backdrop along the edges with `feDisplacementMap`, then blurs and saturates it. Nothing is captured, so video, scrolling and animation stay live at the display's frame rate.
+Clear glass renders native SVG refraction: a geometric displacement map bends the live backdrop along the edges with `feDisplacementMap`, then blurs and saturates it. Nothing is captured, so video, scrolling and animation stay live at the display's frame rate.
 
-The CSS material is the fallback. It applies before a surface is measured, in browsers that cannot paint SVG backdrops (Safari), under `prefers-reduced-transparency` or forced colors, and if the renderer fails. Fully opaque paint covers the backdrop, so such surfaces keep CSS with the shared edge highlight. Reduced transparency and forced colors show an opaque base with native focus styles.
+The CSS material is its fallback. It applies before a surface is measured, in browsers that cannot paint SVG backdrops (Safari), under `prefers-reduced-transparency` or forced colors, and if the renderer fails. Fully opaque paint covers the backdrop, so such surfaces keep CSS with the shared edge highlight. Reduced transparency and forced colors show an opaque base with native focus styles.
+
+Frosted glass never runs JavaScript or loads the renderer: it is a stylesheet rule on the component's own element.
 
 <ComponentPreview name="glass-dynamic" />
 
-`refreshGlass(target?)` re-measures materials and edges of mounted surfaces inside an element or ref, or all of them when the target is omitted. Call it after changing paint the runtime cannot observe.
+`refreshGlass(target?)` re-measures Clear surfaces inside an element or ref, or all of them when the target is omitted. Call it after changing paint the runtime cannot observe.
 
 ## Materials [#materials]
 
-Two materials follow [Apple's Clear and Regular variants](https://developer.apple.com/design/human-interface-guidelines/materials); the values are Web approximations, not Apple specifications.
+The two materials follow [Apple's Clear and Regular variants](https://developer.apple.com/design/human-interface-guidelines/materials); the values are Web approximations, not Apple specifications.
 
-| Material | Tint | SVG blur | CSS blur | Use |
+| Prop | Tint | Blur | Refraction and edge light | Use |
 | --- | --- | --- | --- | --- |
-| `"clear"` | `12%` | `4px` | `6px` | See-through glass over media; the backdrop stays recognizable. |
-| `"regular"` (default) | `30%` | `14px` | `16px` | Frosted glass that keeps text legible over busy content. |
+| `glass` | `12%` | `4px` SVG, `6px` CSS fallback | Yes | See-through glass over media; the backdrop stays recognizable. |
+| `frosted` | `65%` | `24px` CSS | No | Frosted glass that keeps text legible over busy content. |
 
-Both use refraction strength `22`, saturation `1.3` and the same edge light. `options.tintOpacity` overrides a material's tint. The tint comes from the component's own background, so primary and destructive paint keep their color. From bottom to top, a surface composes the refracted backdrop, the tint, component paint, the edge highlight and content.
+Clear refracts with strength `22`; both saturate by `1.3`. The tint comes from the component's own background, so primary and destructive paint keep their color. `glass={{ tintOpacity }}` overrides Clear's tint. Frosted glass reads its tint from the component's surface color; set `--frosted-base`, `--frosted-opacity` or `--frosted-blur` in CSS to restyle it. From bottom to top, a surface composes the blurred or refracted backdrop, the tint, component paint, Clear's edge highlight and content.
 
 <ComponentPreview name="glass-materials" />
 
 ## Edge light [#edge]
 
-`glassConfig.edge` chooses how light falls on the rim:
+`glass={{ edge }}` chooses how light falls on a Clear rim:
 
 - `"diagonal"` (default): a thin rim lit from the top-left and bottom-right corners, fading along the sides.
 - `"vertical"`: a lit bevel with reflections along the top and bottom edges.
 
 <ComponentPreview name="glass-edges" />
 
-The highlight strength is built in and follows pixel density continuously (`0.15 × device pixel ratio`, from `0.15` to `0.3`), so 1x screens draw a fainter edge and phones a finer one.
+The highlight strength is built in and follows pixel density continuously (`0.15 × device pixel ratio`, from `0.15` to `0.3`), so 1x screens draw a fainter edge. The rim itself is 0.9px wide on every screen.
+
+Edge light belongs to Clear glass, which hides the component's own borders, rings and focus rings in its favor. Frosted glass has no edge light. As on iOS, its contrast and shadow outline it, so the component's own border and decorative ring step aside too; it keeps focus rings, and Increase Contrast (`prefers-contrast: more`) brings the border back.
 
 ## Popups [#popups]
 
-With glass on, menus, popovers, selects, tooltips, hover cards, dialogs, sheets, bottom sheets, drawers and toasts use the legible Regular material with vertical edge light, whatever their surroundings use, as on Apple platforms. Their own `glassConfig` still chooses otherwise. Floating layers share one soft, diffuse shadow.
+Popups choose their material like any other component: put `glass` or `frosted` on the content, such as `PopoverContent`, `SelectContent` or `DialogContent`. Roots like `Popover`, `Select` or `Dialog` take no glass prop. Frosted glass suits menus and dialogs over busy content, as on Apple platforms. Floating layers share one soft, diffuse shadow.
+
+```tsx
+<Select>
+  <SelectTrigger glass />
+  <SelectContent frosted>{/* items */}</SelectContent>
+</Select>
+```
 
 <ComponentPreview name="glass-popups" />
 
@@ -81,42 +102,38 @@ With glass on, menus, popovers, selects, tooltips, hover cards, dialogs, sheets,
 
 Glass belongs to navigation, controls and floating layers; content stays ordinary.
 
-- Controls inside a glass surface share its material instead of becoming separate glass, unless they explicitly opt in.
-- A `ButtonGroup` is one capsule whose buttons share its material; a group of groups keeps one capsule per inner group. `Pagination` controls form the same capsule.
-- Form fields (`Input`, `Textarea`, `InputGroup`, `Select` and `Combobox` triggers, `TagInput`, `SensitiveInput`, `ClipboardText`) are glass on their own in a glass scope, like iOS search fields, and brighten slightly while focused. Inside a glass surface such as a dialog or panel, they stay ordinary fields with their focus rings.
-- Switch and Slider thumbs become a glass lens only while dragged. Pressed buttons bloom slightly, and glass buttons also brighten.
-- A glass `Carousel` floats its previous and next buttons as glass while the slides stay content.
-- Card, QR code, Accordion, Calendar, editors and viewers are content: their own controls stay ordinary inside glass, while menus and popovers they open still use glass. `Card` and `QRCode` accept an explicit `glass` prop, for example for a widget over media.
-- Wrap your own content regions in `GlassContent` to keep their controls ordinary inside a glass surface.
+- Controls inside a glass surface stay ordinary. Prefer ghost or outline variants on glass, which sit on the material without a solid fill.
+- Glass never blurs twice: a glass or frosted component inside another glass layer keeps its tint and edge light but does not blur or refract the backdrop again, because a nested backdrop filter would only frost the outer layer's content. A popup is not inside its trigger's layer, so a glass menu opened from a glass bar is its own full layer.
+- A glass `ButtonGroup` is one capsule its buttons sit on; in a group of groups, give each inner group its own `glass`. `Toolbar`, `TabsList`, `PaginationContent` and `Command` work the same way.
+- Form fields (`Input`, `Textarea`, `InputGroup`, `SelectTrigger`, `ComboboxChips`, `TagInput`, `SensitiveInput`, `ClipboardText`) with glass are capsules like iOS search fields, and brighten slightly while focused.
+- `Switch` and `Slider` with `glass` turn their thumb into a Clear lens only while dragged. Pressed buttons bloom slightly, and glass buttons also brighten.
+- Components that render their glass pieces themselves pass the prop on: `TabBar` (its bar and lens), `NavigationMenu` (its popup), `Toaster` (its toasts), `ImageViewer` (its controls), `ColorPicker` (its trigger and popup), `PaginationControls` and `PaginationPageSize`.
+- Card, QR code, Accordion, Calendar, editors and viewers are content. `Card` and `QRCode` accept `glass` or `frosted`, for example for a widget over media.
 
 <ComponentPreview name="glass-controls" />
 
 ```tsx
 import { Card } from "@workspace/ui/components/card";
-import { GlassContent, GlassSurface } from "@workspace/ui/components/glass";
+import { GlassSurface } from "@workspace/ui/components/glass";
 
-<GlassSurface>
-  <GlassContent>{/* ordinary form fields */}</GlassContent>
-</GlassSurface>
+<GlassSurface>{/* ordinary content and ghost controls */}</GlassSurface>
 <Card glass>{/* a glass widget */}</Card>
 ```
 
 <ComponentPreview name="glass-composition" />
 
-Glass focus adds no ring; ordinary components keep their theme and focus styling. Glass shows the backdrop through, most of all with Clear, so text and icons on both materials carry a tight glow in the material's own tint that hugs the glyphs, and secondary text moves toward the foreground. The glow only shows where the backdrop fights the text, so they stay legible over bright, busy content in light and dark mode. Ordinary buttons and fields keep crisp labels, as does content on its own fill such as copy fields, keys, badges and code, and reduced transparency turns both off along with the glass.
+Clear glass focus adds no ring, while frosted glass keeps the component's focus ring; ordinary components keep their theme and focus styling. Glass shows the backdrop through, so secondary text moves toward the foreground. Over bright, busy backdrops, `glass={{ textGlow: true }}` adds a tight glow in the material's own tint that hugs text and icons; it is off by default. The glow only shows where the backdrop fights the text, so it stays legible in light and dark mode. Frosted glass's denser tint keeps text legible without a glow. Reduced transparency turns the glow and secondary text change off along with the glass.
 
 ## API reference [#api-reference]
 
 | Prop | Type | Default / behavior |
 | --- | --- | --- |
-| Config `material` | `"clear" \| "regular"` | `"regular"`; popups default to `"regular"`. |
-| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`; popups default to `"vertical"`. |
-| Config `options` | `GlassOptions` | Local material settings. |
-| Options `strength` | `number` | `22` |
-| Options `tint` | `string` | Component background. |
-| Options `tintOpacity` | `number` | Material default: `0.12` / `0.3`. |
+| Component `glass` | `boolean \| GlassConfig` | Clear liquid glass on this component; `GlassSurface` defaults to `true`. |
+| Component `frosted` | `boolean` | Frosted glass on this component; `glass` wins when both are set. |
+| Config `edge` | `"diagonal" \| "vertical"` | `"diagonal"`. |
+| Config `strength` | `number` | `22`. |
+| Config `tint` | `string` | Component background. |
+| Config `tintOpacity` | `number` | `0.12`. |
+| Config `textGlow` | `boolean` | `false`. |
 | `refreshGlass(target?)` | `(target?: GlassTarget) => void` | Re-measure surfaces inside the target, or all when omitted. |
-| Component `glass` | `boolean` | Enables or disables glass; `GlassSurface` defaults to `true`. |
-| Component `glassConfig` | `GlassConfig` | Local `material`, `edge` and `options`. |
 | `GlassSurface` | `useRender` props | Native div props, plus `render` to change the element. |
-| `GlassContent` | `useRender` props | An ordinary content region inside glass. |

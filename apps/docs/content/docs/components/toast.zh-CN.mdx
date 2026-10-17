@@ -63,7 +63,7 @@ const id = toast.add({
 
 ## 位置与颜色 [#position]
 
-`Toaster` 默认在顶部居中显示通知；堆叠方向背离该边缘，向该边缘滑动即可关闭。成功、信息、警告和错误通知使用对应的状态色着色；开启玻璃时，该颜色成为材质色调。设置 `position` 或 `colorful={false}` 可分别调整。
+`Toaster` 默认在顶部居中显示通知；堆叠方向背离该边缘，向该边缘滑动即可关闭。成功、信息、警告和错误通知使用对应的状态色着色；在 `Toaster` 上设置 `glass` 或 `frosted` 时，该颜色成为材质色调。设置 `position` 或 `colorful={false}` 可分别调整。
 
 ```tsx
 <Toaster position="bottom-right" colorful={false}>

@@ -20,7 +20,7 @@ export default function ButtonGroupInputGroup() {
   const [voiceEnabled, setVoiceEnabled] = React.useState(false);
 
   return (
-    <ButtonGroup className="[--radius:9999rem]">
+    <ButtonGroup>
       <ButtonGroup>
         <Button variant="outline" size="icon">
           <PlusIcon />

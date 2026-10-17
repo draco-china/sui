@@ -10,6 +10,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
+import {
+  BottomSheet,
+  BottomSheetBody,
+  BottomSheetClose,
+  BottomSheetContent,
+  BottomSheetDescription,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetTrigger,
+} from "@workspace/ui/components/bottom-sheet";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
@@ -129,6 +139,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { type GlassProps, withGlass } from "@workspace/ui/lib/glass/with-glass";
 import { cn } from "cn";
 import {
   ArchiveIcon,
@@ -158,21 +169,42 @@ import {
   Volume2Icon,
   WifiIcon,
 } from "lucide-react";
-import { type ComponentProps, type ReactNode, useState } from "react";
-import { withGlass } from "../../../../packages/ui/src/lib/glass/context";
+import {
+  type ComponentProps,
+  createContext,
+  type ReactNode,
+  useContext,
+  useState,
+} from "react";
 import type { ExampleProps } from "../examples/types";
 
-// Panels follow the Playground switch: glass in Glass mode, ordinary otherwise.
-const Panel = withGlass(({ className, ...props }: ComponentProps<"div">) => (
-  <div
-    data-slot="glass-lab-panel"
-    className={cn(
-      "rounded-3xl border bg-popover p-4 text-popover-foreground shadow-sm",
-      className,
-    )}
-    {...props}
-  />
-));
+// The Playground's material. Glass is never inherited, so each block passes it
+// to the components that are glass on their own: panels, bars, groups,
+// fields and popups. Controls inside a panel stay ordinary.
+const LabMaterial = createContext<GlassProps>({});
+const useMaterial = () => useContext(LabMaterial);
+// Switch and Slider thumbs become a Clear lens while dragged.
+const useLens = () => {
+  const material = useMaterial();
+  return Boolean(material.glass || material.frosted);
+};
+
+const GlassPanel = withGlass(
+  ({ className, ...props }: ComponentProps<"div">) => (
+    <div
+      data-slot="glass-lab-panel"
+      className={cn(
+        "rounded-3xl border bg-popover p-4 text-popover-foreground shadow-sm",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
+
+function Panel(props: ComponentProps<typeof GlassPanel>) {
+  return <GlassPanel {...useMaterial()} {...props} />;
+}
 
 function Block({
   title,
@@ -201,6 +233,7 @@ function Block({
 }
 
 function NowPlaying({ zh }: { zh: boolean }) {
+  const lens = useLens();
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(38);
   const playback = zh
@@ -230,6 +263,7 @@ function NowPlaying({ zh }: { zh: boolean }) {
         </div>
         <div className="grid gap-1.5">
           <Slider
+            glass={lens}
             aria-label={zh ? "播放进度" : "Playback position"}
             value={[progress]}
             onValueChange={(value) =>
@@ -270,6 +304,7 @@ function NowPlaying({ zh }: { zh: boolean }) {
 }
 
 function ControlCenter({ zh }: { zh: boolean }) {
+  const lens = useLens();
   return (
     <Block title={zh ? "控制中心" : "Control center"}>
       <div className="grid grid-cols-2 gap-3">
@@ -298,7 +333,11 @@ function ControlCenter({ zh }: { zh: boolean }) {
             <MoonIcon className="size-4" />
             {zh ? "专注" : "Focus"}
           </span>
-          <Switch defaultChecked aria-label={zh ? "专注模式" : "Focus mode"} />
+          <Switch
+            glass={lens}
+            defaultChecked
+            aria-label={zh ? "专注模式" : "Focus mode"}
+          />
         </Panel>
         <Panel className="col-span-2 grid gap-4">
           {[
@@ -315,7 +354,7 @@ function ControlCenter({ zh }: { zh: boolean }) {
           ].map(({ label, icon: Icon, value }) => (
             <div key={label} className="flex items-center gap-3">
               <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <Slider aria-label={label} defaultValue={[value]} />
+              <Slider glass={lens} aria-label={label} defaultValue={[value]} />
             </div>
           ))}
         </Panel>
@@ -325,18 +364,20 @@ function ControlCenter({ zh }: { zh: boolean }) {
 }
 
 function Navigation({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   const [value, setValue] = useState("home");
   return (
     <Block title={zh ? "导航" : "Navigation"}>
       <div className="grid justify-items-center gap-4">
         <Tabs defaultValue="week">
-          <TabsList aria-label={zh ? "时间范围" : "Time range"}>
+          <TabsList {...material} aria-label={zh ? "时间范围" : "Time range"}>
             <TabsTrigger value="day">{zh ? "日" : "Day"}</TabsTrigger>
             <TabsTrigger value="week">{zh ? "周" : "Week"}</TabsTrigger>
             <TabsTrigger value="month">{zh ? "月" : "Month"}</TabsTrigger>
           </TabsList>
         </Tabs>
         <TabBar
+          {...material}
           aria-label={zh ? "应用导航" : "App navigation"}
           value={value}
           onValueChange={setValue}
@@ -361,6 +402,7 @@ function Navigation({ zh }: { zh: boolean }) {
 }
 
 function Editing({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "工具栏与菜单" : "Toolbar and menus"}>
       <div className="grid justify-items-center gap-4">
@@ -374,7 +416,7 @@ function Editing({ zh }: { zh: boolean }) {
           ).map(([key, label]) => (
             <MenubarMenu key={key}>
               <MenubarTrigger>{label}</MenubarTrigger>
-              <MenubarContent>
+              <MenubarContent {...material}>
                 <MenubarItem>
                   {zh ? "新建" : "New"}
                   <MenubarShortcut>⌘N</MenubarShortcut>
@@ -389,7 +431,7 @@ function Editing({ zh }: { zh: boolean }) {
             </MenubarMenu>
           ))}
         </Menubar>
-        <Toolbar aria-label={zh ? "文本格式" : "Text formatting"}>
+        <Toolbar {...material} aria-label={zh ? "文本格式" : "Text formatting"}>
           {[
             { label: zh ? "粗体" : "Bold", icon: BoldIcon },
             { label: zh ? "斜体" : "Italic", icon: ItalicIcon },
@@ -409,7 +451,7 @@ function Editing({ zh }: { zh: boolean }) {
           </ToolbarButton>
         </Toolbar>
         <ButtonGroup aria-label={zh ? "邮件操作" : "Mail actions"}>
-          <ButtonGroup>
+          <ButtonGroup {...material}>
             <Button
               variant="outline"
               size="icon"
@@ -418,14 +460,14 @@ function Editing({ zh }: { zh: boolean }) {
               <ArrowLeftIcon />
             </Button>
           </ButtonGroup>
-          <ButtonGroup>
+          <ButtonGroup {...material}>
             <Button variant="outline">
               <ArchiveIcon />
               {zh ? "归档" : "Archive"}
             </Button>
             <Button variant="outline">{zh ? "举报" : "Report"}</Button>
           </ButtonGroup>
-          <ButtonGroup>
+          <ButtonGroup {...material}>
             <Button variant="outline">{zh ? "稍后提醒" : "Snooze"}</Button>
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -439,7 +481,7 @@ function Editing({ zh }: { zh: boolean }) {
               >
                 <ChevronDownIcon />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent {...material} align="end">
                 <DropdownMenuItem>
                   {zh ? "标为未读" : "Mark as unread"}
                 </DropdownMenuItem>
@@ -459,6 +501,7 @@ const fruits = ["Apple", "Banana", "Blueberry", "Grapes", "Pineapple"];
 const cities = ["Shanghai", "Tokyo", "Lisbon", "San Francisco", "Reykjavík"];
 
 function Popups({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "弹出菜单" : "Popups"}>
       <Panel className="grid gap-3">
@@ -473,7 +516,7 @@ function Popups({ zh }: { zh: boolean }) {
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent {...material}>
               {fruits.map((value) => (
                 <SelectItem key={value} value={value}>
                   {value}
@@ -486,7 +529,7 @@ function Popups({ zh }: { zh: boolean }) {
               placeholder={zh ? "城市" : "City"}
               aria-label={zh ? "城市" : "City"}
             />
-            <ComboboxContent>
+            <ComboboxContent {...material}>
               <ComboboxEmpty>{zh ? "没有结果" : "No results"}</ComboboxEmpty>
               <ComboboxList>
                 {(item: string) => (
@@ -504,7 +547,7 @@ function Popups({ zh }: { zh: boolean }) {
               <UserIcon />
               {zh ? "账户" : "Account"}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
+            <DropdownMenuContent {...material} align="start" className="w-44">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>
                   {zh ? "我的账户" : "My account"}
@@ -529,7 +572,7 @@ function Popups({ zh }: { zh: boolean }) {
               <CalendarIcon />
               {zh ? "提醒" : "Reminder"}
             </PopoverTrigger>
-            <PopoverContent className="w-64">
+            <PopoverContent {...material} className="w-64">
               <p className="font-medium text-sm">
                 {zh ? "明天 9:00" : "Tomorrow at 9:00"}
               </p>
@@ -551,7 +594,9 @@ function Popups({ zh }: { zh: boolean }) {
               >
                 <SettingsIcon />
               </TooltipTrigger>
-              <TooltipContent>{zh ? "偏好设置" : "Preferences"}</TooltipContent>
+              <TooltipContent {...material}>
+                {zh ? "偏好设置" : "Preferences"}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -561,6 +606,7 @@ function Popups({ zh }: { zh: boolean }) {
 }
 
 function Overlays({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "对话框与面板" : "Dialogs and sheets"}>
       <Panel className="flex flex-wrap gap-2">
@@ -568,7 +614,7 @@ function Overlays({ zh }: { zh: boolean }) {
           <DialogTrigger render={<Button variant="outline" />}>
             {zh ? "对话框" : "Dialog"}
           </DialogTrigger>
-          <DialogContent className="sm:max-w-sm">
+          <DialogContent {...material} className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>{zh ? "重命名项目" : "Rename project"}</DialogTitle>
               <DialogDescription>
@@ -595,7 +641,7 @@ function Overlays({ zh }: { zh: boolean }) {
           <AlertDialogTrigger render={<Button variant="outline" />}>
             {zh ? "确认操作" : "Confirm"}
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent {...material}>
             <AlertDialogHeader>
               <AlertDialogTitle>
                 {zh ? "删除这段录音？" : "Delete this recording?"}
@@ -616,7 +662,7 @@ function Overlays({ zh }: { zh: boolean }) {
           <SheetTrigger render={<Button variant="outline" />}>
             {zh ? "侧边面板" : "Sheet"}
           </SheetTrigger>
-          <SheetContent>
+          <SheetContent {...material}>
             <SheetHeader>
               <SheetTitle>{zh ? "详情" : "Details"}</SheetTitle>
               <SheetDescription>
@@ -627,16 +673,42 @@ function Overlays({ zh }: { zh: boolean }) {
             </SheetHeader>
           </SheetContent>
         </Sheet>
+        <BottomSheet>
+          <BottomSheetTrigger render={<Button variant="outline" />}>
+            {zh ? "底部面板" : "Bottom sheet"}
+          </BottomSheetTrigger>
+          <BottomSheetContent {...material}>
+            <BottomSheetHeader>
+              <BottomSheetTitle>
+                {zh ? "分享录音" : "Share recording"}
+              </BottomSheetTitle>
+              <BottomSheetDescription>
+                {zh
+                  ? "面板从底部升起，拖动把手即可调整高度。"
+                  : "The sheet rises from the bottom; drag the grabber to resize it."}
+              </BottomSheetDescription>
+            </BottomSheetHeader>
+            <BottomSheetBody className="gap-2">
+              <BottomSheetClose render={<Button />}>
+                {zh ? "复制链接" : "Copy link"}
+              </BottomSheetClose>
+              <BottomSheetClose render={<Button variant="outline" />}>
+                {zh ? "取消" : "Cancel"}
+              </BottomSheetClose>
+            </BottomSheetBody>
+          </BottomSheetContent>
+        </BottomSheet>
       </Panel>
     </Block>
   );
 }
 
 function Notifications({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   const [manager] = useState(() => ToastPrimitive.createToastManager());
   return (
     <Block title={zh ? "通知" : "Notifications"}>
-      <Toaster toastManager={manager}>
+      <Toaster {...material} toastManager={manager}>
         <Panel className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <BellIcon className="size-4" />
@@ -677,9 +749,10 @@ function Notifications({ zh }: { zh: boolean }) {
 }
 
 function CommandPalette({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "命令面板" : "Command palette"}>
-      <Command className="rounded-3xl">
+      <Command {...material} className="rounded-3xl">
         <CommandInput placeholder={zh ? "搜索命令…" : "Search commands…"} />
         <CommandList>
           <CommandEmpty>{zh ? "没有结果" : "No results"}</CommandEmpty>
@@ -740,14 +813,14 @@ function Share({ zh }: { zh: boolean }) {
   );
 }
 
-// Fields on their own in a glass scope are glass, like iOS search fields;
-// inside a glass panel they stay ordinary.
+// Fields on their own are glass, like iOS search fields.
 function Forms({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   const [page, setPage] = useState(2);
   return (
     <Block title={zh ? "搜索与表单" : "Search and forms"}>
       <div className="grid gap-3">
-        <InputGroup>
+        <InputGroup {...material}>
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
@@ -758,6 +831,7 @@ function Forms({ zh }: { zh: boolean }) {
         </InputGroup>
         <div className="grid grid-cols-2 gap-3">
           <Input
+            {...material}
             aria-label={zh ? "名称" : "Name"}
             defaultValue={zh ? "海岸计划" : "Coastline"}
           />
@@ -766,12 +840,13 @@ function Forms({ zh }: { zh: boolean }) {
             defaultValue="Blueberry"
           >
             <SelectTrigger
+              {...material}
               className="w-full"
               aria-label={zh ? "水果" : "Fruit"}
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent {...material}>
               {fruits.map((value) => (
                 <SelectItem key={value} value={value}>
                   {value}
@@ -781,19 +856,23 @@ function Forms({ zh }: { zh: boolean }) {
           </Select>
         </div>
         <TagInput
+          {...material}
           defaultValue={zh ? ["设计", "工程"] : ["design", "engineering"]}
           placeholder={zh ? "添加标签…" : "Add a tag…"}
           labels={{ input: zh ? "标签" : "Tags" }}
         />
         <ClipboardText
+          {...material}
           text="bun add @workspace/ui"
           labels={{ copy: zh ? "复制安装命令" : "Copy install command" }}
         />
         <SensitiveInput
+          {...material}
           aria-label={zh ? "访问令牌" : "Access token"}
           defaultValue="sk-live-coastline-2026"
         />
         <Textarea
+          {...material}
           aria-label={zh ? "备注" : "Notes"}
           placeholder={zh ? "写点什么…" : "Write something…"}
         />
@@ -805,7 +884,7 @@ function Forms({ zh }: { zh: boolean }) {
           controls="full"
           className="justify-center"
         >
-          <PaginationControls />
+          <PaginationControls {...material} />
         </Pagination>
       </div>
     </Block>
@@ -818,8 +897,9 @@ const photos = [
   "from-emerald-300 via-teal-500 to-cyan-600",
 ];
 
-// Carousel controls float over the photos as glass; the slides stay content.
+// Carousel controls float over the photos as glass; the slides are content.
 function Photos({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "照片" : "Photos"}>
       <Carousel opts={{ loop: true }}>
@@ -829,25 +909,26 @@ function Photos({ zh }: { zh: boolean }) {
               <div
                 role="img"
                 aria-label={`${zh ? "照片" : "Photo"} ${index + 1}`}
-                className={`aspect-[4/3] rounded-3xl bg-linear-to-br ${gradient}`}
+                className={`aspect-4/3 rounded-3xl bg-linear-to-br ${gradient}`}
               />
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="start-3" />
-        <CarouselNext className="end-3" />
+        <CarouselPrevious {...material} className="inset-s-3" />
+        <CarouselNext {...material} className="inset-e-3" />
       </Carousel>
     </Block>
   );
 }
 
-// Cards and QR codes are content; glass is an explicit opt-in for widgets.
-function Widgets({ zh, glass }: { zh: boolean; glass: boolean }) {
+// Cards and QR codes are content; widgets opt into glass.
+function Widgets({ zh }: { zh: boolean }) {
+  const material = useMaterial();
   return (
     <Block title={zh ? "小组件" : "Widgets"}>
       {/* The code is a square as tall as the card beside it. */}
       <div className="grid grid-cols-[1fr_auto] items-stretch gap-3">
-        <Card glass={glass} size="sm">
+        <Card {...material} size="sm">
           <CardHeader>
             <CardDescription className="flex items-center gap-1.5">
               <CloudSunIcon className="size-4" />
@@ -860,7 +941,7 @@ function Widgets({ zh, glass }: { zh: boolean; glass: boolean }) {
           </CardContent>
         </Card>
         <QRCode
-          glass={glass}
+          {...material}
           value="https://sui.dev"
           size={160}
           label={zh ? "打开 SUI" : "Open SUI"}
@@ -874,11 +955,11 @@ function Widgets({ zh, glass }: { zh: boolean; glass: boolean }) {
 
 export function GlassLabBlocks({
   locale,
-  glass = true,
-}: ExampleProps & { glass?: boolean }) {
+  material = { glass: true },
+}: ExampleProps & { material?: GlassProps }) {
   const zh = locale === "zh-CN";
   return (
-    <>
+    <LabMaterial.Provider value={material}>
       <NowPlaying zh={zh} />
       <ControlCenter zh={zh} />
       <Navigation zh={zh} />
@@ -888,9 +969,9 @@ export function GlassLabBlocks({
       <Overlays zh={zh} />
       <CommandPalette zh={zh} />
       <Share zh={zh} />
-      <Widgets zh={zh} glass={glass} />
+      <Widgets zh={zh} />
       <Photos zh={zh} />
       <Forms zh={zh} />
-    </>
+    </LabMaterial.Provider>
   );
 }

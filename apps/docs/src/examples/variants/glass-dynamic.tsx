@@ -58,7 +58,7 @@ export default function Example({ locale }: ExampleProps) {
   }, []);
   const [text, setText] = useState("SUI / REFRACTION");
   const [strength, setStrength] = useState(22);
-  const glassConfig: GlassConfig = { options: { strength } };
+  const settings: GlassConfig = { strength };
   const controls = [
     {
       key: "strength",
@@ -144,7 +144,7 @@ export default function Example({ locale }: ExampleProps) {
           </div>
         </ScrollArea>
         <GlassSurface
-          glassConfig={glassConfig}
+          glass={settings}
           className="absolute top-20 left-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
         >
           <p>{chinese ? "文字与图片背景" : "Text and image background"}</p>
@@ -155,7 +155,7 @@ export default function Example({ locale }: ExampleProps) {
           </p>
         </GlassSurface>
         <GlassSurface
-          glassConfig={glassConfig}
+          glass={settings}
           className="absolute top-20 right-6 w-[calc(50%-2rem)] rounded-2xl bg-background p-4 text-foreground"
         >
           <p>

@@ -34,7 +34,7 @@ import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 
 ## 玻璃 [#glass]
 
-与其他表单字段一样，ClipboardText 在玻璃范围内独立出现或设置 `glass` 时成为玻璃胶囊，并以变体的填充色作为色调，复制按钮共用该胶囊。在对话框、面板等玻璃表面内，它保持为普通字段。
+与其他表单字段一样，ClipboardText 设置 `glass` 或 `frosted` 时成为玻璃胶囊，并以变体的填充色作为色调，复制按钮落在胶囊上。不写时保持为普通字段。
 
 ```tsx
 <ClipboardText glass text="bun run dev" />
@@ -62,8 +62,7 @@ import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 | `textToCopy` | `string` | `text` |
 | `variant` | `"default" \| "outline" \| "secondary" \| "ghost"` | `"default"` |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
-| `glass` | `boolean` | 继承 |
-| `glassConfig` | `GlassConfig` | — |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | 不写时为普通样式 |
 | `disabled` | `boolean` | `false` |
 | `resetDelay` | `number`，毫秒 | `1500` |
 | `onCopy` | `(value: string) => void` | — |

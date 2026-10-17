@@ -55,6 +55,6 @@ Every option has a full locale `value` and readable `label`. The ghost button ha
 | `options` | `readonly LocaleOption[]` | Required options: `value`, `label`, optional `indicatorPath`. |
 | `mode` | `"auto" \| "toggle" \| "select"` | `"auto"`. |
 | `label` | `string` | `"Change language"`. |
-| `glass` | `boolean` | `false`. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`. |
 
 The module exports `LocaleToggleProps` and `LocaleOption`. The multi-language selector uses the [Base UI Select API](https://base-ui.com/react/components/select).

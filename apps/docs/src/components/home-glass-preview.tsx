@@ -6,10 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import type { GlassConfig } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
-import { Toggle } from "@workspace/ui/components/toggle";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@workspace/ui/components/toggle-group";
 import { cn } from "cn";
 import { gsap } from "gsap";
 import {
@@ -18,7 +20,6 @@ import {
   Check,
   Folder,
   Home,
-  Layers,
   Settings,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -28,15 +29,24 @@ import { defaultThemePalette, themePresets } from "../lib/theme";
 import { HomeTabBarPreview } from "./home-tab-bar-preview";
 import { Logo } from "./logo";
 
+type Material = "ordinary" | "glass" | "frosted";
+
+/** The props a showcase component takes for the chosen material. */
+function materialProps(material: Material) {
+  if (material === "glass") return { glass: true };
+  if (material === "frosted") return { frosted: true };
+  return {};
+}
+
 export function HomeGlassPreview({ locale }: { locale: Locale }) {
   const zh = locale === "zh-CN";
   const { resolvedTheme } = useTheme();
   const scene = useRef<HTMLDivElement>(null);
-  // The home showcase always presents the Clear material.
-  const glassConfig: GlassConfig = { material: "clear" };
   const nameId = useId();
   const updatesId = useId();
-  const [glass, setGlass] = useState(true);
+  const [material, setMaterial] = useState<Material>("glass");
+  const surface = material !== "ordinary";
+  const glass = materialProps(material);
   const [value, setValue] = useState("home");
   const [saved, setSaved] = useState(false);
   const saveLabel = saved ? "saved" : "save";
@@ -45,13 +55,15 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
         saved: "已保存",
         save: "保存设置",
         feedback: "设置已在此预览中更新",
-        default: "默认",
+        ordinary: "普通",
+        frosted: "磨砂",
       }
     : {
         saved: "Saved",
         save: "Save changes",
         feedback: "Your preview preferences are updated",
-        default: "Default",
+        ordinary: "Ordinary",
+        frosted: "Frosted",
       };
   const items = [
     { value: "home", label: zh ? "首页" : "Home", icon: <Home /> },
@@ -138,26 +150,35 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
       <div className="home-glass-stack">
         <div className="flex items-center justify-between gap-3 px-2">
           <span className="font-medium text-muted-foreground text-xs tracking-wide">
-            {zh ? "同一界面，两种质感" : "One interface. Two textures."}
+            {zh ? "同一界面，三种质感" : "One interface. Three textures."}
           </span>
-          <Toggle
+          <ToggleGroup
+            {...glass}
             variant="outline"
             size="sm"
-            glass={glass}
-            glassConfig={glassConfig}
-            pressed={glass}
-            onPressedChange={setGlass}
-            aria-label={zh ? "玻璃材质" : "Glass material"}
+            spacing={0}
+            value={[material]}
+            onValueChange={(values) => {
+              if (values[0]) setMaterial(values[0] as Material);
+            }}
+            aria-label={zh ? "组件材质" : "Component material"}
           >
-            <Layers />
-            {glass ? "Glass" : labels.default}
-          </Toggle>
+            <ToggleGroupItem value="ordinary" className="text-xs">
+              {labels.ordinary}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="glass" className="text-xs">
+              Glass
+            </ToggleGroupItem>
+            <ToggleGroupItem value="frosted" className="text-xs">
+              {labels.frosted}
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        {/* Cards are content, so the showcase opts this one into glass. */}
+        {/* Cards are content, so the showcase opts this one into glass. Its
+            glass buttons keep their tint and edge light on the card. */}
         <Card
-          glass={glass}
-          glassConfig={glassConfig}
-          className={cn("w-full gap-5", glass && "shadow-none")}
+          {...glass}
+          className={cn("w-full gap-5", surface && "shadow-none")}
         >
           <CardHeader>
             <div className="mb-5 flex items-center justify-between">
@@ -189,6 +210,10 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
                 </label>
                 <Input
                   id={nameId}
+                  className={cn(
+                    surface &&
+                      "border-transparent bg-foreground/5 dark:bg-foreground/10",
+                  )}
                   defaultValue="Design studio"
                   required
                   onChange={() => setSaved(false)}
@@ -204,16 +229,15 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
                   </p>
                 </div>
                 <Switch
-                  glass={false}
                   id={updatesId}
+                  glass={material === "glass"}
                   defaultChecked
                   onCheckedChange={() => setSaved(false)}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Button
-                  glass={glass}
-                  glassConfig={glassConfig}
+                  {...glass}
                   type="button"
                   variant="outline"
                   onClick={() => {
@@ -224,7 +248,7 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
                   <Folder />
                   {zh ? "我的项目" : "Projects"}
                 </Button>
-                <Button type="submit" glass={glass} glassConfig={glassConfig}>
+                <Button {...glass} type="submit">
                   {saved ? <Check /> : <ArrowUpRight />}
                   {labels[saveLabel]}
                 </Button>
@@ -233,8 +257,7 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
           </CardContent>
         </Card>
         <HomeTabBarPreview
-          glass={glass}
-          glassConfig={glassConfig}
+          {...glass}
           size="sm"
           aria-label={zh ? "首页组件预览导航" : "Homepage preview navigation"}
           items={items}

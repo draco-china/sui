@@ -21,10 +21,10 @@ type Drag = Position & { pointer: number; originX: number; originY: number };
 export function GlassRefractionProbe({
   scene,
   locale,
-  glassConfig,
+  settings,
 }: ExampleProps & {
   scene: RefObject<HTMLDivElement | null>;
-  glassConfig?: GlassConfig;
+  settings?: GlassConfig;
 }) {
   const zh = locale === "zh-CN";
   const lens = useRef<HTMLButtonElement>(null);
@@ -126,13 +126,12 @@ export function GlassRefractionProbe({
     <Button
       ref={lens}
       variant="outline"
-      glass
-      glassConfig={glassConfig}
+      glass={settings ?? true}
       aria-label={zh ? "折射镜片" : "Refraction lens"}
       aria-describedby={description}
       aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       data-slot="glass-refraction-probe"
-      className="absolute z-20 h-[170px] w-60 max-w-[calc(100%-2rem)] touch-none flex-col justify-between gap-4 whitespace-normal rounded-[2rem] bg-background p-5 text-center shadow-none hover:bg-background active:translate-y-0"
+      className="absolute z-20 h-42.5 w-60 max-w-[calc(100%-2rem)] touch-none flex-col justify-between gap-4 whitespace-normal rounded-4xl bg-background p-5 text-center shadow-none hover:bg-background active:translate-y-0"
       style={
         coordinates
           ? { left: coordinates.x, top: coordinates.y }

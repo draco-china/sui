@@ -53,7 +53,7 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 
 ## 玻璃 [#glass]
 
-二维码属于内容，在玻璃中保持不透明的识别区域。传入 `glass` 可把二维码放在玻璃上，识别区域变为透明，并使用继承或配置的材质。在繁杂背景上建议使用常规材质，以保证可扫描。
+二维码属于内容，在玻璃中保持不透明的识别区域。传入 `glass` 可把二维码放在玻璃上，识别区域变为透明，并使用二维码自身的材质。在繁杂背景上建议使用 `frosted`，以保证可扫描。
 
 ## API 参考 [#api-reference]
 
@@ -66,8 +66,7 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 | `label` | `string` | `"QR code"`；可访问描述 |
 | `margin` | `number` | `16`；四周留白，按目标尺寸的 CSS 像素计 |
 | `logo` | `ReactNode` | 可选中心覆盖内容 |
-| `glass` | `boolean` | `false`；在玻璃上显示二维码 |
-| `glassConfig` | `GlassConfig` | 局部材质、边缘光和参数 |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | 在清透或磨砂玻璃上显示二维码 |
 | `render`、`ref`、其他属性 | div／useRender 属性 | 透传到根节点 |
 
 模块导出 `QRCode`、`QRCodeProps` 和 `qrCodeVariants`。生成基于 [qr-code-styling](https://github.com/kozakdenys/qr-code-styling)。

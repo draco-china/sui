@@ -51,7 +51,7 @@ export default function InputGroupButtonExample() {
           </p>
         )}
       </div>
-      <InputGroup className="[--radius:9999px]">
+      <InputGroup>
         <InputGroupInput
           id={addressId}
           aria-label="Website address"

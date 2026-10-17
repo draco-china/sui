@@ -23,7 +23,6 @@ export default function Example({ locale }: ExampleProps) {
           <Button
             key={image}
             type="button"
-            glass={false}
             variant="ghost"
             className="h-auto w-full overflow-hidden rounded-xl p-0"
             aria-label={
@@ -43,7 +42,7 @@ export default function Example({ locale }: ExampleProps) {
                   ? `示例图案 ${index + 1}`
                   : `Example pattern ${index + 1}`
               }
-              className="aspect-[3/2] w-full object-cover"
+              className="aspect-3/2 w-full object-cover"
             />
           </Button>
         ))}

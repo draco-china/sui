@@ -50,11 +50,11 @@ export default function Example({ locale }: ExampleProps) {
             <PopoverTrigger render={<Button variant="outline" glass />}>
               {chinese ? "玻璃浮层" : "Glass popover"}
             </PopoverTrigger>
-            <PopoverContent glass>
+            <PopoverContent frosted>
               <p className="text-sm">
                 {chinese
-                  ? "浮层保留 SVG 高光与 CSS 磨砂，内容维持清晰"
-                  : "The popover keeps SVG highlights and CSS frosting while its content stays clear."}
+                  ? "浮层使用 CSS 磨砂，内容维持清晰"
+                  : "The popover frosts with CSS while its content stays clear."}
               </p>
             </PopoverContent>
           </Popover>

@@ -193,26 +193,43 @@ export function RenderingStatus({
       ref={root}
       data-slot="glass-lab-rendering"
       data-glass-decoration="true"
-      className="space-y-3 text-xs"
+      className="space-y-2 text-xs"
     >
       <p className="sr-only">{zh ? "当前可见组件" : "Visible components"}</p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 divide-x rounded-lg bg-muted/50 py-2 text-center">
         {(
           [
             ["SVG", counts.svg],
             ["CSS", counts.css],
           ] as const
         ).map(([label, count]) => (
-          <div
-            key={label}
-            className="rounded-lg bg-muted/50 px-2 py-2 text-center"
-          >
-            <span className="block text-muted-foreground">{label}</span>
-            <span className="mt-1 block font-semibold text-base tabular-nums">
+          <div key={label}>
+            <span className="block font-semibold text-sm tabular-nums">
               {count}
+            </span>
+            <span className="block text-[11px] text-muted-foreground">
+              {label}
             </span>
           </div>
         ))}
+        <div
+          aria-live="off"
+          title={
+            zh
+              ? "根据约一秒内的 requestAnimationFrame 回调估算，不代表物理显示器刷新率。"
+              : "Estimated from requestAnimationFrame callbacks over about one second; this does not certify the display refresh rate."
+          }
+        >
+          <output
+            aria-live="off"
+            className="block font-semibold text-sm tabular-nums"
+          >
+            {rate ?? "—"}
+          </output>
+          <span className="block text-[11px] text-muted-foreground">
+            {zh ? "帧率" : "FPS"}
+          </span>
+        </div>
       </div>
       {(counts.loading > 0 || counts.fallback > 0) && (
         <div
@@ -237,24 +254,6 @@ export function RenderingStatus({
           )}
         </div>
       )}
-      <div className="space-y-1.5 border-t pt-3" aria-live="off">
-        <div
-          className="flex items-center justify-between gap-2"
-          title={
-            zh
-              ? "根据约一秒内的 requestAnimationFrame 回调估算，不代表物理显示器刷新率。"
-              : "Estimated from requestAnimationFrame callbacks over about one second; this does not certify the display refresh rate."
-          }
-        >
-          <span className="text-muted-foreground">
-            {zh ? "页面帧率" : "Page frame rate"}
-          </span>
-          <output aria-live="off" className="font-medium tabular-nums">
-            {rate ?? "—"}{" "}
-            <span className="text-[10px] text-muted-foreground">FPS</span>
-          </output>
-        </div>
-      </div>
     </div>
   );
 }

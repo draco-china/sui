@@ -52,7 +52,7 @@ The bar can scroll when destinations exceed its available space. Set `orientatio
 
 ## Material [#material]
 
-TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` to apply shared glass material to the outer bar, using its local `glassConfig` or inherited [Glass](/docs/components/glass) material and edge settings. Items share equal widths, as in iOS tab bars. Both modes use a neutral selection pill, as on iOS; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the theme primary color. The glass material stays continuous without separate label backplates. A floating glass lens appears only while holding. Its background is fully transparent, with shared SVG highlights and outer shadows but no blur or refraction.
+TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` (optionally with settings, `glass={{ … }}`) or `frosted` to apply [Glass](/docs/components/glass) to the outer bar. Items share equal widths, as in iOS tab bars. Both modes use a neutral selection pill, as on iOS; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the theme primary color. The glass material stays continuous without separate label backplates. A floating glass lens appears only while holding. Its background is fully transparent, with shared SVG highlights and outer shadows but no blur or refraction.
 
 Keep the surrounding container ordinary to avoid nested glass. The example compares both modes using the same controlled destinations and background.
 
@@ -71,8 +71,7 @@ Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a
 | Item `disabled` | `boolean` | Prevents selection. |
 | `value` | `string` | Controlled current destination. |
 | `onValueChange` | `(value: string) => void` | Called when selecting an enabled destination. |
-| `glass` | `boolean` | `false`; optional glass treatment. |
-| `glassConfig` | `GlassConfig` | Local material, edge and options. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; glass for the bar and its lens. |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"`. |
 | `onItemActivate` | `(value: string) => void` | Optional activation notification. |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"`. |

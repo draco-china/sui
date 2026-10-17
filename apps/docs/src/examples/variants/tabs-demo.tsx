@@ -14,7 +14,7 @@ import {
 
 export function TabsDemo() {
   return (
-    <Tabs defaultValue="overview" className="w-[400px] max-w-full">
+    <Tabs defaultValue="overview" className="w-100 max-w-full">
       <TabsList>
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>

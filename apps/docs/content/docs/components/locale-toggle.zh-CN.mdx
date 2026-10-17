@@ -55,6 +55,6 @@ export function Language() {
 | `options` | `readonly LocaleOption[]` | 必填选项，包含 `value`、`label` 和可选 `indicatorPath` |
 | `mode` | `"auto" \| "toggle" \| "select"` | `"auto"` |
 | `label` | `string` | `"Change language"` |
-| `glass` | `boolean` | `false` |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | `false` |
 
 模块导出 `LocaleToggleProps` 和 `LocaleOption`。多语言选择器使用 [Base UI Select API](https://base-ui.com/react/components/select)。

@@ -52,7 +52,7 @@ export function ApplicationNavigation() {
 
 ## 材质 [#material]
 
-TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass` 后仅外层启用共享玻璃材质，通过局部 `glassConfig` 或继承的 [Glass](/zh-CN/docs/components/glass) 设置选择材质和边缘光。各项宽度相等，与 iOS 标签栏一致。两种模式的选中背景均使用中性胶囊（与 iOS 一致），玻璃模式额外使用约 `7px` 的 CSS 高斯模糊，选中图标和文字使用主题色。玻璃背景保持连续，不在文字后叠加独立遮罩。长按时才出现悬浮玻璃镜片，使用完全透明的背景与共享 SVG 边缘高光与外侧阴影，不模糊也不折射。
+TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass`（可带设置 `glass={{ … }}`）或 `frosted` 后，仅外层使用 [Glass](/zh-CN/docs/components/glass) 材质。各项宽度相等，与 iOS 标签栏一致。两种模式的选中背景均使用中性胶囊（与 iOS 一致），玻璃模式额外使用约 `7px` 的 CSS 高斯模糊，选中图标和文字使用主题色。玻璃背景保持连续，不在文字后叠加独立遮罩。长按时才出现悬浮玻璃镜片，使用完全透明的背景与共享 SVG 边缘高光与外侧阴影，不模糊也不折射。
 
 保持外层容器为普通表面，避免玻璃嵌套。示例使用同一受控目的地列表与背景对比默认、玻璃两种模式。
 
@@ -71,8 +71,7 @@ TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass` 后仅�
 | Item `disabled` | `boolean` | 禁止选中 |
 | `value` | `string` | 受控的当前目的地 |
 | `onValueChange` | `(value: string) => void` | 选择可用目的地时触发 |
-| `glass` | `boolean` | `false`；可选玻璃材质 |
-| `glassConfig` | `GlassConfig` | 局部材质、边缘光和参数 |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`；标签栏及其镜片的玻璃 |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
 | `onItemActivate` | `(value: string) => void` | 可选的激活通知 |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |

@@ -34,7 +34,7 @@ export function DrawerDialogDemo() {
         <DialogTrigger render={<Button variant="outline" />}>
           Edit Profile
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>

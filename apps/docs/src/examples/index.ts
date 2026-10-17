@@ -597,7 +597,7 @@ export const examples = {
     import("./variants/markdown-viewer-sanitized"),
   "qr-code-animated": () => import("./variants/qr-code-animated"),
   "qr-code-demo": () => import("./variants/qr-code-demo"),
-  "qr-code-margin": () => import("./variants/qr-code-margin.tsx"),
+  "qr-code-margin": () => import("./variants/qr-code-margin"),
   "qr-code-logo": () => import("./variants/qr-code-logo"),
   "qr-code-states": () => import("./variants/qr-code-states"),
   "theme-toggle-demo": () => import("./variants/theme-toggle-demo"),

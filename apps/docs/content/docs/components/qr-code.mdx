@@ -53,7 +53,7 @@ Finder patterns use concentric rounded outer rings and rounded solid centers. Th
 
 ## Glass [#glass]
 
-QR codes are content and keep their opaque reading area inside glass. Pass `glass` to place the code on glass instead; its reading area turns transparent and takes the inherited or configured material. Prefer Regular over busy backgrounds so the code stays scannable.
+QR codes are content and keep their opaque reading area inside glass. Pass `glass` to place the code on glass instead; its reading area turns transparent and takes the code's own material. Prefer `frosted` over busy backgrounds so the code stays scannable.
 
 ## API reference [#api-reference]
 
@@ -66,8 +66,7 @@ QR codes are content and keep their opaque reading area inside glass. Pass `glas
 | `label` | `string` | `"QR code"`; accessible description. |
 | `margin` | `number` | `16`; quiet space in CSS pixels at the requested size. |
 | `logo` | `ReactNode` | Optional center overlay. |
-| `glass` | `boolean` | `false`; shows the code on glass. |
-| `glassConfig` | `GlassConfig` | Local material, edge and options. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Shows the code on Clear or frosted glass. |
 | `render`, `ref`, other props | Div / useRender props | Forwarded to the root. |
 
 The module exports `QRCode`, `QRCodeProps`, and `qrCodeVariants`. Generation uses [qr-code-styling](https://github.com/kozakdenys/qr-code-styling).

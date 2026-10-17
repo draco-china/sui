@@ -67,7 +67,7 @@ export function Gallery() {
 
 查看器使用共享的 [Dialog](/zh-CN/docs/components/dialog) 管理模态焦点和关闭行为。`alt` 描述图片，`labels` 可定制对话框、导航、缩放、旋转、缩略图和位置提示。函数形式的文案收到从 1 开始的图片位置，而 `index` 和 `onIndexChange` 使用从 0 开始的索引。
 
-在局部主题区域嵌入查看器时，可以用 `container` 指定 Portal 容器。`glass` 仅作用于全屏中的缩放、旋转、切换等操作控件；弹层、图片和缩略图保持普通样式。
+在局部主题区域嵌入查看器时，可以用 `container` 指定 Portal 容器。`glass` 与 `frosted` 仅作用于全屏中的缩放、旋转、切换等操作控件；弹层、图片和缩略图保持普通样式。
 
 ## API 参考 [#api-reference]
 
@@ -82,6 +82,6 @@ export function Gallery() {
 | `alt` | `string` | `labels.defaultAlt` 或 `"Image"` |
 | `container` | `HTMLElement \| ShadowRoot \| RefObject<HTMLElement \| ShadowRoot \| null> \| null` | 可选 Portal 容器 |
 | `labels` | `Partial<ImageViewerLabels>` | 英文操作和图片文案 |
-| `glass` | `boolean` | `false` |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | `false` |
 
 模块导出 `ImageViewerProps` 和 `ImageViewerLabels`。底层模态交互见 [Base UI Dialog API](https://base-ui.com/react/components/dialog)。
