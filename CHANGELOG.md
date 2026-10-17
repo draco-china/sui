@@ -1,3 +1,26 @@
+## [3.0.0](https://github.com/draco-china/sui/compare/v2.0.2...v3.0.0) (2026-10-17)
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** mergeClassNames and className callbacks are gone;
+pass a string className, and style state with data attributes.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **glass:** glassConfig, GlassContent, withoutGlass, the glass
+context and the material option are gone; set `glass` or `frosted` on
+each component that should use a material.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **glass:** split glass and frosted, with no inheritance ([09cdd35](https://github.com/draco-china/sui/commit/09cdd3555e023f17c46337231f50e8fd6957be7a))
+* **theme:** scale the radius steps from --radius by Tailwind's defaults ([2fe0484](https://github.com/draco-china/sui/commit/2fe0484f201547498788cfd39b9054965648ac79))
+
+### Code Refactoring
+
+* **ui:** adopt withGlass and Tailwind v4 classes across components ([d3412d6](https://github.com/draco-china/sui/commit/d3412d66e59cc8f693c3be92347162fcf4799c8d))
+
 ## [2.0.2](https://github.com/draco-china/sui/compare/v2.0.1...v2.0.2) (2026-10-16)
 
 ### Bug Fixes
