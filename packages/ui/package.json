@@ -61,6 +61,7 @@
   "exports": {
     "./globals.css": "./src/styles/globals.css",
     "./lib/*": "./src/lib/*.ts",
+    "./lib/glass/with-glass": "./src/lib/glass/with-glass.tsx",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./themes/*.css": "./src/styles/themes/*.css",

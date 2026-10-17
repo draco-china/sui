@@ -6,16 +6,11 @@ import {
   releaseGlassRenderers,
 } from "./backend";
 import { parseGlassColor as parseColor } from "./color";
-import type {
-  GlassConfiguration,
-  GlassMaterial,
-  GlassOptions,
-} from "./context";
 import {
+  type GlassConfig,
+  type GlassConfiguration,
   glassDefaultEdge,
-  glassDefaultMaterial,
   glassDefaults,
-  glassMaterials,
 } from "./defaults";
 import { GlassDom, type GlassObserver, geometryMutation } from "./dom";
 import { glassEdge, glassHighlight, glassRadii, glassShadow } from "./edge";
@@ -56,11 +51,7 @@ function visible(element: Element) {
 }
 
 /** Resolves tint and paint from a hidden clone, so live states stay untouched. */
-function nativeMaterial(
-  element: HTMLElement,
-  options: GlassOptions,
-  material: GlassMaterial,
-) {
+function nativeMaterial(element: HTMLElement, configuration: GlassConfig) {
   const probe = element.cloneNode(false) as HTMLElement;
   probe.removeAttribute("data-glass-state");
   probe.removeAttribute("id");
@@ -78,8 +69,8 @@ function nativeMaterial(
       paint: parseColor(style.backgroundColor),
       tint: parseColor(style.getPropertyValue("--popover").trim() || "#fff"),
       opacity: clamp(
-        options.tintOpacity,
-        glassMaterials[material].tintOpacity,
+        configuration.tintOpacity,
+        glassDefaults.tintOpacity,
         0,
         1,
       ),
@@ -101,7 +92,9 @@ function nativeMaterial(
       background: token("--background"),
       text: parseColor(style.color),
       overrideTint:
-        options.tint === undefined ? undefined : parseColor(options.tint),
+        configuration.tint === undefined
+          ? undefined
+          : parseColor(configuration.tint),
     });
   } finally {
     probe.remove();
@@ -144,9 +137,7 @@ class GlassManager implements GlassObserver {
   private readonly dirtyMaterials = new Set<HTMLElement>();
   private lastRender = 0;
   private lastResize = 0;
-  private configuration: Required<
-    Pick<GlassConfiguration, "id" | "material" | "edge">
-  > &
+  private configuration: Required<Pick<GlassConfiguration, "id" | "edge">> &
     GlassConfiguration;
   private readonly removeListeners: () => void;
 
@@ -212,7 +203,6 @@ class GlassManager implements GlassObserver {
   private resolve(configuration: GlassConfiguration) {
     return {
       ...configuration,
-      material: configuration.material ?? glassDefaultMaterial,
       edge: configuration.edge ?? glassDefaultEdge,
     };
   }
@@ -283,11 +273,10 @@ class GlassManager implements GlassObserver {
     );
     const previous = this.configuration;
     const same =
-      previous.material === next.material &&
       previous.edge === next.edge &&
-      (["strength", "tint", "tintOpacity"] as const).every(
-        (key) => previous.options?.[key] === next.options?.[key],
-      );
+      previous.strength === next.strength &&
+      previous.tint === next.tint &&
+      previous.tintOpacity === next.tintOpacity;
     this.configuration = next;
     if (!same) this.materialsDirty = true;
     this.scan();
@@ -363,11 +352,7 @@ class GlassManager implements GlassObserver {
   }
 
   private updateMaterial(element: HTMLElement, state: SurfaceState) {
-    const material = nativeMaterial(
-      element,
-      this.configuration.options ?? {},
-      this.configuration.material,
-    );
+    const material = nativeMaterial(element, this.configuration);
     state.tint = material.tint;
     state.opacity = material.opacity;
     this.writeStyle(
@@ -395,9 +380,12 @@ class GlassManager implements GlassObserver {
     );
     const pixelRatio = window.devicePixelRatio || 1;
     const highlight = glassHighlight(pixelRatio);
+    // Sub-pixel layout jitter must not redraw the edge.
+    const width = Math.round(rect.width * 100) / 100;
+    const height = Math.round(rect.height * 100) / 100;
     const key = JSON.stringify([
-      rect.width,
-      rect.height,
+      width,
+      height,
       radii,
       color,
       state.tint,
@@ -416,7 +404,7 @@ class GlassManager implements GlassObserver {
       element,
       state,
       "--glass-edge",
-      glassEdge(rect.width, rect.height, radii, {
+      glassEdge(width, height, radii, {
         highlight,
         style: this.configuration.edge,
         color,
@@ -455,39 +443,46 @@ class GlassManager implements GlassObserver {
     this.scan();
     const active = [...this.surfaces].filter(([element]) => visible(element));
     if (!active.length) return;
-    const all = this.materialsDirty;
+    // Surfaces out of view keep their pending read until they come into view.
+    if (this.materialsDirty)
+      for (const element of this.surfaces.keys())
+        this.dirtyMaterials.add(element);
     this.materialsDirty = false;
     for (const [element, state] of active) {
-      if (all || this.dirtyMaterials.has(element))
+      if (this.dirtyMaterials.delete(element))
         this.updateMaterial(element, state);
       else if (state.edgeDirty) this.updateEdge(element, state);
     }
-    this.dirtyMaterials.clear();
     if (glassBaseOnly()) {
       for (const [element, state] of active) this.restoreCss(element, state);
       return;
     }
+    // Opaque paint covers the backdrop and a disabled backdrop has nothing to
+    // refract (the TabBar lens), so they keep CSS with their shared highlight
+    // and never load the SVG renderer on their own.
+    const refracting = active.filter(([element, state]) => {
+      if (element.dataset.glassFrozen === "true") return false;
+      if (
+        state.opacity !== 1 &&
+        getComputedStyle(element).backdropFilter !== "none"
+      )
+        return true;
+      this.restoreCss(element, state);
+      return false;
+    });
+    if (!refracting.length) return;
     const renderer = await prepareGlassRenderer();
     if (this.disposed) return;
     if (!renderer) {
       this.fallback();
       return;
     }
-    for (const [element, state] of active) {
+    for (const [element, state] of refracting) {
       if (
         element.dataset.glassFrozen === "true" ||
         this.surfaces.get(element) !== state
       )
         continue;
-      // Opaque paint covers the backdrop and a disabled backdrop has nothing to
-      // refract (the TabBar lens); their shared highlight remains visible.
-      if (
-        state.opacity === 1 ||
-        getComputedStyle(element).backdropFilter === "none"
-      ) {
-        this.restoreCss(element, state);
-        continue;
-      }
       try {
         this.applySvg(element, state, renderer);
       } catch {
@@ -517,12 +512,12 @@ class GlassManager implements GlassObserver {
       radius: [corners[0].x, corners[1].x, corners[2].x, corners[3].x],
       radiusY: [corners[0].y, corners[1].y, corners[2].y, corners[3].y],
       strength: clamp(
-        this.configuration.options?.strength,
+        this.configuration.strength,
         glassDefaults.strength,
         0,
         64,
       ),
-      blur: glassMaterials[this.configuration.material].blur,
+      blur: glassDefaults.blur,
     });
     if (state.svg && state.svg !== renderer) state.svg.release(element);
     state.svg = renderer;
@@ -608,11 +603,7 @@ export function acquireGlass(configuration?: GlassConfiguration) {
     glassDom ??= new GlassDom(() => managers.values());
     manager = new GlassManager(resolved);
     managers.set(resolved.id, manager);
-  } else if (
-    "material" in resolved ||
-    "edge" in resolved ||
-    "options" in resolved
-  )
+  } else if (Object.keys(resolved).some((key) => key !== "id"))
     manager.update(resolved, true);
   manager.leases++;
   let released = false;

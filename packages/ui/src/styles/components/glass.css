@@ -1,52 +1,65 @@
-/* Glass surfaces, set by withGlass and the glass runtime.
+/* biome-ignore-all lint/suspicious/noDuplicateCustomProperties: @variant glass-off is a media query, so its overrides only apply there. */
+/* Clear glass, set by withGlass and the glass runtime, and the rules it
+   shares with frosted glass (frosted.css).
 
    Defaults that callers may restyle live in a cascade layer. Everything else
    is unlayered, so it wins over component utilities. Each rule undoes itself
-   under reduced transparency or forced colors right where it is declared:
-   the media query is repeated on purpose, because a positive
-   "prefers-reduced-transparency: reduce" query stays safe in browsers that
-   do not support the feature, while "not reduce" would turn glass off there.
-   Reverting with revert-layer lets component styles show through again. */
+   under `glass-off` right where it is declared; reverting with revert-layer
+   lets component styles show through again. */
+
+/* Any glass material on the element itself, Clear or frosted: `glass:`
+   utilities style both, such as `glass:rounded-4xl`. */
+@custom-variant glass (&:is([data-glass="true"], [data-frosted="true"]));
+
+/* Reduced transparency and forced colors turn glass back into ordinary
+   paint: `@variant glass-off` holds each rule's undo. A positive query stays
+   safe in browsers without the feature, while "not reduce" would turn glass
+   off there. */
+@custom-variant glass-off {
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    @slot;
+  }
+}
 
 /* Containers drawn on glass keep their dividers translucent, and a glass
    accordion item's corners follow its container. */
 @layer components.glass {
-  :where(
-      [data-slot="card"]:is([data-glass="true"], [data-glass-part="surface"])
-    )
+  :where([data-slot="card"]:is([data-glass="true"], [data-frosted="true"]))
     > :where([data-slot="card-header"], [data-slot="card-footer"]),
-  :where(
-      [data-slot="accordion"]:is(
-        [data-glass="true"],
-        [data-glass-part="surface"]
-      )
-    )
-    > :where([data-slot="accordion-item"][data-glass-part="surface"]) {
+  :where([data-slot="accordion"]:is([data-glass="true"], [data-frosted="true"]))
+    > :where([data-slot="accordion-item"]) {
     border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
 
-    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    @variant glass-off {
       border-color: revert-layer;
     }
   }
 
   :where([data-slot="accordion"]):has(
-    > [data-slot="accordion-item"][data-glass="true"]
+    > [data-slot="accordion-item"]:is(
+        [data-glass="true"],
+        [data-frosted="true"]
+      )
   ) {
     border-color: transparent;
 
-    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    @variant glass-off {
       border-color: revert-layer;
     }
   }
 
   :where(
-    [data-slot="accordion"] > [data-slot="accordion-item"][data-glass="true"]
+    [data-slot="accordion"]
+      > [data-slot="accordion-item"]:is(
+        [data-glass="true"],
+        [data-frosted="true"]
+      )
   ) {
     &:first-child {
       border-top-left-radius: inherit;
       border-top-right-radius: inherit;
 
-      @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+      @variant glass-off {
         border-top-left-radius: revert-layer;
         border-top-right-radius: revert-layer;
       }
@@ -56,7 +69,7 @@
       border-bottom-left-radius: inherit;
       border-bottom-right-radius: inherit;
 
-      @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+      @variant glass-off {
         border-bottom-left-radius: revert-layer;
         border-bottom-right-radius: revert-layer;
       }
@@ -64,14 +77,12 @@
   }
 }
 
-/* Glass draws its own edge, so borders, outlines and focus rings step aside. */
+/* Clear draws its own edge light, so borders, outlines and focus rings step
+   aside. Frosted glass keeps each component's own borders, rings and focus
+   styles. */
 [data-glass="true"],
-[data-glass-part="control"],
 [data-slot="tabs-list"][data-glass="true"] [data-slot="tabs-trigger"],
-[data-slot="accordion-item"]:is(
-    [data-glass="true"],
-    [data-glass-part="surface"]
-  )
+[data-slot="accordion-item"][data-glass="true"]
   > *
   > [data-slot="accordion-trigger"] {
   border-color: transparent;
@@ -81,7 +92,7 @@
   --tw-ring-shadow: 0 0 #0000;
   --tw-ring-offset-shadow: 0 0 #0000;
 
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  @variant glass-off {
     border-color: revert-layer;
     outline: revert-layer;
     --tw-ring-color: revert-layer;
@@ -91,10 +102,9 @@
   }
 }
 
-/* The material: a tint over the blurred backdrop, the runtime's edge light
-   and a soft drop shadow. The CSS blur is the fallback; once SVG refraction
-   is ready, its filter replaces the blur. Clear is the base and Regular
-   frosts more by changing variables only, so SVG refraction still applies. */
+/* The material: a tint over the blurred backdrop, an edge light and a soft
+   drop shadow. The CSS blur is the fallback until SVG refraction is ready,
+   and the runtime paints the edge light. */
 [data-glass="true"][data-glass-state] {
   --glass-edge: none;
   --glass-initial-edge-shadow: initial;
@@ -129,11 +139,6 @@
   -webkit-backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.3);
   backdrop-filter: blur(var(--glass-backdrop-blur)) saturate(1.3);
 
-  &[data-glass-material="regular"] {
-    --glass-opacity: 30%;
-    --glass-backdrop-blur: 16px;
-  }
-
   /* The TabBar lens only magnifies; it has no tint or backdrop of its own. */
   &:where([data-slot="tab-bar-indicator"]) {
     background-color: transparent;
@@ -147,7 +152,7 @@
   }
 
   /* Without transparency the surface becomes its solid base color. */
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  @variant glass-off {
     --glass-initial-edge-shadow: 0 0 #0000;
     background-color: var(--glass-base, var(--popover));
     background-image: none;
@@ -161,27 +166,47 @@
    material's own tint that hugs the glyphs instead of fogging the line:
    dark behind light text, light behind dark text. It stays invisible where
    the backdrop already matches the tint and only shows where the backdrop
-   fights the text. Secondary text also moves toward the foreground. */
+   fights the text. Secondary text also moves toward the foreground.
+   The textGlow setting turns the glow on; it is off by default, and frosted
+   glass's denser tint keeps text legible without it. Everything inside a
+   glowing surface glows, so the switch alone decides. */
 [data-glass="true"][data-glass-state] {
   --glass-halo: var(--glass-base, var(--popover));
+  --glass-icon-glow: drop-shadow(
+      0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)
+    )
+    drop-shadow(
+      0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent)
+    );
   text-shadow:
     0 0 0.08em color-mix(in srgb, var(--glass-halo) 90%, transparent),
     0 0 0.25em color-mix(in srgb, var(--glass-halo) 60%, transparent);
 
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  &[data-glass-text-glow="false"] {
+    --glass-icon-glow: none;
     text-shadow: none;
   }
 
-  /* Ordinary buttons and fields keep crisp labels, as most browser styles
-     already set, so a filled button's label never glows. */
-  & :where(button, input, select, textarea):not([data-glass-state]) {
+  @variant glass-off {
     text-shadow: none;
   }
 
+  /* Icons take the same glow; only icons, so QR codes and charts stay crisp. */
+  & :where(svg.lucide) {
+    filter: var(--glass-icon-glow);
+
+    @variant glass-off {
+      filter: revert-layer;
+    }
+  }
+}
+
+/* Secondary text on either material moves toward the foreground. */
+:is([data-glass="true"], [data-frosted="true"]) {
   & :where(.text-muted-foreground) {
     color: color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground));
 
-    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    @variant glass-off {
       color: revert-layer;
     }
   }
@@ -191,56 +216,14 @@
   & ::placeholder {
     color: color-mix(in oklab, var(--muted-foreground) 65%, var(--foreground));
 
-    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+    @variant glass-off {
       color: revert-layer;
-    }
-  }
-
-  /* Icons take the same glow; only icons, so QR codes and charts stay crisp. */
-  & :where(svg.lucide) {
-    filter: drop-shadow(
-        0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)
-      )
-      drop-shadow(
-        0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent)
-      );
-
-    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
-      filter: revert-layer;
-    }
-  }
-
-  /* Content layered on the glass, such as fields, keys, badges and code,
-     sits on its own fill, where a glow in the glass tint would only smudge
-     its text and icons, so they stay crisp. So does anything colored for a
-     fill, like a primary button or an icon tile. */
-  &
-    :where(
-      code,
-      kbd,
-      pre,
-      .text-accent-foreground,
-      .text-primary-foreground,
-      .text-secondary-foreground,
-      [data-slot="badge"],
-      [data-slot="clipboard-text"],
-      [data-slot="code-viewer"],
-      [data-slot="combobox-chips"],
-      [data-slot="diff-viewer"],
-      [data-slot="input-group"],
-      [data-slot="sensitive-input"],
-      [data-slot="tag-input"]
-    ):not([data-glass-state]) {
-    text-shadow: none;
-
-    & :where(svg.lucide) {
-      filter: revert-layer;
     }
   }
 }
 
 /* Glass fields brighten slightly while focused instead of drawing a ring. */
-[data-glass="true"]:is(
+:is([data-glass="true"], [data-frosted="true"]):is(
   [data-slot="input"],
   [data-slot="textarea"],
   [data-slot="input-group"],
@@ -254,10 +237,11 @@
 
 /* Pressed glass controls also brighten briefly, like Apple glass buttons;
    Button's press bloom applies with or without glass. */
-[data-glass="true"]:is(button, [role="button"], a[href]):not(
-  :disabled,
-  [aria-disabled="true"]
-) {
+:is([data-glass="true"], [data-frosted="true"]):is(
+  button,
+  [role="button"],
+  a[href]
+):not(:disabled, [aria-disabled="true"]) {
   transition-property: color, background-color, box-shadow, scale;
   transition-duration: 160ms;
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -269,7 +253,7 @@
 
 /* Floating glass layers cast one soft, diffuse shadow, as on Apple platforms,
    in place of stacked utility shadows; it deepens in dark mode. */
-[data-glass="true"]:is(
+:is([data-glass="true"], [data-frosted="true"]):is(
   [data-slot="alert-dialog-content"],
   [data-slot="bottom-sheet-popup"],
   [data-slot="combobox-content"],
@@ -300,41 +284,51 @@
   }
 }
 
-/* Parts that sit on a glass container reuse its material instead of
-   painting their own; explicit caller paint wins. */
-[data-slot="command"][data-glass-part="surface"][class~="bg-popover"],
-[data-slot="accordion"]:is([data-glass="true"], [data-glass-part="surface"])
-  > [data-slot="accordion-item"][data-glass-part="surface"][data-open][class~="data-open:bg-muted/50"],
-[data-slot="select-content"][data-glass="true"]
+/* Pieces of a glass container sit on its material instead of painting their
+   own. */
+[data-slot="accordion"]:is([data-glass="true"], [data-frosted="true"])
+> [data-slot="accordion-item"][data-open][class~="data-open:bg-muted/50"],
+[data-slot="select-content"]:is([data-glass="true"], [data-frosted="true"])
   > :is(
     [data-slot="select-scroll-up-button"],
     [data-slot="select-scroll-down-button"]
   ) {
   background-color: transparent;
 
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  @variant glass-off {
     background-color: revert-layer;
   }
 }
 
-/* Grouped buttons share their group's capsule: plain segments and fields
-   drop their own fill and border, and hover, focus or an open menu shows a
-   light wash instead of a solid block. Primary actions keep theirs. Variants,
-   not slots, identify buttons rendered as menu or popover triggers. */
-[data-slot="button-group"]:is([data-glass="true"], [data-glass-part="surface"])
-> :is(
-  [data-variant="outline"],
-  [data-variant="secondary"],
-  [data-variant="ghost"],
-  [data-slot="button-group-text"],
-  [data-slot="input"],
-  [data-slot="select-trigger"]
-) {
+/* Grouped buttons and toggles share their group's capsule: plain segments
+   and fields drop their own fill and border, and hover, focus, an open menu
+   or a pressed toggle shows a light wash instead of a solid block. Primary
+   actions keep theirs. Variants, not slots, identify buttons rendered as
+   menu or popover triggers. */
+[data-slot="toggle-group"]:is([data-glass="true"], [data-frosted="true"])
+> [data-slot="toggle-group-item"][data-variant="outline"],
+[data-slot="button-group"]:is([data-glass="true"], [data-frosted="true"])
+  > :is(
+    [data-variant="outline"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-slot="button-group-text"],
+    [data-slot="input"],
+    [data-slot="select-trigger"]
+  ) {
   background-color: transparent;
   border-color: transparent;
 }
 
-[data-slot="button-group"]:is([data-glass="true"], [data-glass-part="surface"])
+[data-slot="toggle-group"]:is([data-glass="true"], [data-frosted="true"])
+  > [data-slot="toggle-group-item"][data-variant="outline"]:is(
+    [data-pressed],
+    :hover
+  ):not(:disabled) {
+  background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+[data-slot="button-group"]:is([data-glass="true"], [data-frosted="true"])
   > :is(
     [data-variant="outline"],
     [data-variant="secondary"],
@@ -342,20 +336,61 @@
     [data-slot="input"],
     [data-slot="select-trigger"]
   ):is(:hover, :focus-visible, [aria-expanded="true"]):not(:disabled),
-[data-slot="pagination-content"][data-glass="true"]
+[data-slot="pagination-content"]:is([data-glass="true"], [data-frosted="true"])
   [data-slot="pagination-link"]:not([data-active="true"]):hover {
   background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
+/* Adjacent plain segments show a short divider, like an iOS segmented
+   control, so one capsule still reads as separate actions. */
+[data-slot="button-group"]:is([data-glass="true"], [data-frosted="true"])
+  > :is(
+    [data-variant="outline"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-slot="button-group-text"],
+    [data-slot="input"],
+    [data-slot="select-trigger"]
+  )
+  + :is(
+    [data-variant="outline"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-slot="button-group-text"],
+    [data-slot="input"],
+    [data-slot="select-trigger"]
+  ) {
+  --glass-divider: color-mix(in srgb, var(--foreground) 16%, transparent);
+  background-image: linear-gradient(var(--glass-divider), var(--glass-divider));
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 1px 50%;
+
+  &:dir(rtl) {
+    background-position: right center;
+  }
+}
+
 /* Separators inside glass use a translucent foreground line that follows the
    material, instead of an opaque border color. Resize handles keep theirs. */
-:is([data-glass="true"], [data-glass-part])
+:is([data-glass="true"], [data-frosted="true"])
 :is([role="separator"], [data-slot="separator-line"]):not(
   [data-slot="resizable-handle"]
 ) {
   background-color: color-mix(in srgb, var(--foreground) 12%, transparent);
 
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  @variant glass-off {
     background-color: revert-layer;
   }
+}
+
+/* Glass inside another glass layer keeps its tint and edge light but does
+   not blur the backdrop again: a backdrop filter nested in another only
+   samples the outer layer's content, so it would frost twice. Without a
+   backdrop filter, the runtime paints its edge and never refracts it.
+   Lenses are meant to magnify over glass. */
+:is([data-glass="true"], [data-frosted="true"])
+:is([data-glass="true"], [data-frosted="true"]):not([data-glass-lens]) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }

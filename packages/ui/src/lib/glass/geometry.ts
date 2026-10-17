@@ -46,8 +46,10 @@ export function glassSurfaceRadii(
     style.borderBottomRightRadius,
     style.borderBottomLeftRadius,
   ]);
+  // Hundredths of a pixel keep sub-pixel layout jitter from redrawing edges.
+  const round = (value: number) => Math.round(value * 100) / 100;
   return corners.map(
     ({ x, y }) =>
-      `${(x * rect.width) / size.width}px ${(y * rect.height) / size.height}px`,
+      `${round((x * rect.width) / size.width)}px ${round((y * rect.height) / size.height)}px`,
   ) as [string, string, string, string];
 }
