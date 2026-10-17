@@ -54,17 +54,21 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: max(0px, calc(var(--radius) - 0.25rem));
-  --radius-md: max(0px, calc(var(--radius) - 0.125rem));
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 0.25rem);
-  --radius-2xl: calc(var(--radius) + 0.5rem);
-  --radius-3xl: calc(var(--radius) + 0.75rem);
-  --radius-4xl: calc(var(--radius) + 1rem);
   --font-sans: "Inter Variable", sans-serif;
+  --radius-xs: calc(var(--radius) * 0.25);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 3);
+  --radius-4xl: calc(var(--radius) * 4);
+  --radius-5xl: calc(var(--radius) * 5);
+  --radius-6xl: calc(var(--radius) * 6);
 }
 
 :root {
+  --radius: 0.5rem;
   --background: oklch(0.97071377 0.00265048 286.35036);
   --foreground: oklch(0.23157626 0.00380518 286.09885);
   --card: oklch(1 0 0);
@@ -88,7 +92,6 @@
   --chart-3: oklch(0.51857386 0.16637669 312.97461);
   --chart-4: oklch(0.57335411 0.13071559 63.06154);
   --chart-5: oklch(0.56125302 0.18494209 12.58196);
-  --radius: 0.625rem;
   --sidebar: oklch(0.97071377 0.00265048 286.35036);
   --sidebar-foreground: oklch(0.23157626 0.00380518 286.09885);
   --sidebar-primary: oklch(0.52196619 0.1770896 255.82973);
