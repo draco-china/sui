@@ -7,8 +7,6 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
-import { mergeClassNames } from "../lib/class-name";
-import { withGlass, withoutGlass } from "../lib/glass/context";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -43,7 +41,7 @@ function useCarousel() {
   return context;
 }
 
-function CarouselImplementation({
+function Carousel({
   orientation = "horizontal",
   opts,
   setApi,
@@ -147,10 +145,7 @@ function CarouselImplementation({
   );
 }
 
-function CarouselContentImplementation({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel();
 
   return (
@@ -203,12 +198,12 @@ function CarouselPrevious({
       data-slot="carousel-previous"
       variant={variant}
       size={size}
-      className={mergeClassNames(
+      className={cn(
         cn(
           "absolute touch-manipulation rounded-full",
           orientation === "horizontal"
-            ? "inset-y-0 -start-12 my-auto"
-            : "start-1/2 -top-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+            ? "-inset-s-12 inset-y-0 my-auto"
+            : "inset-s-1/2 -top-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
         ),
         className,
       )}
@@ -235,12 +230,12 @@ function CarouselNext({
       data-slot="carousel-next"
       variant={variant}
       size={size}
-      className={mergeClassNames(
+      className={cn(
         cn(
           "absolute touch-manipulation rounded-full",
           orientation === "horizontal"
-            ? "inset-y-0 -end-12 my-auto"
-            : "start-1/2 -bottom-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
+            ? "-inset-e-12 inset-y-0 my-auto"
+            : "inset-s-1/2 -bottom-12 -translate-x-1/2 rotate-90 rtl:translate-x-1/2",
         ),
         className,
       )}
@@ -253,11 +248,6 @@ function CarouselNext({
     </Button>
   );
 }
-
-// With glass, the previous and next buttons float as glass controls while
-// the slides stay ordinary content.
-const Carousel = withGlass(CarouselImplementation, "scope");
-const CarouselContent = withoutGlass(CarouselContentImplementation);
 
 export {
   Carousel,

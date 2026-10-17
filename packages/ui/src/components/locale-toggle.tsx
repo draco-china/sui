@@ -18,7 +18,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { mergeClassNames } from "../lib/class-name";
 import { createMorph, type Morph, morphToCompletion } from "./morph-icon";
 import {
   Tooltip,
@@ -37,7 +36,6 @@ type LocaleToggleProps = Omit<
   options: readonly LocaleOption[];
   label?: string;
   mode?: "auto" | "toggle" | "select";
-  glass?: boolean;
 };
 const localeToggleVariants = cva("text-foreground", {
   variants: { glass: { true: "", false: "" } },
@@ -143,6 +141,7 @@ function LocaleToggle({
   label = "Change language",
   disabled = false,
   glass,
+  frosted,
   className,
   onClick,
   size = "icon",
@@ -209,9 +208,10 @@ function LocaleToggle({
                 variant="ghost"
                 size={size}
                 glass={glass}
-                className={mergeClassNames(
+                frosted={frosted}
+                className={cn(
                   cn(
-                    localeToggleVariants({ glass }),
+                    localeToggleVariants({ glass: Boolean(glass) }),
                     changing && !disabled && "disabled:opacity-100",
                   ),
                   className,
@@ -239,7 +239,6 @@ function LocaleToggle({
   const name = props["aria-label"] ?? `${label}: ${selected?.label ?? value}`;
   return (
     <Select
-      glass={glass}
       value={value}
       disabled={disabled || changing || unique.length === 0}
       items={Object.fromEntries(
@@ -258,12 +257,13 @@ function LocaleToggle({
                 {...props}
                 type="button"
                 glass={glass}
+                frosted={frosted}
                 aria-label={name}
                 aria-busy={changing}
                 onClick={onClick}
-                className={mergeClassNames(
+                className={cn(
                   cn(
-                    localeToggleVariants({ glass }),
+                    localeToggleVariants({ glass: Boolean(glass) }),
                     "size-9 justify-center bg-transparent p-0 hover:bg-muted/50 [&>svg:last-child]:hidden",
                     changing && !disabled && "disabled:opacity-100",
                   ),
@@ -277,7 +277,7 @@ function LocaleToggle({
           <TooltipContent>{name}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <SelectContent>
+      <SelectContent glass={glass} frosted={frosted}>
         <SelectGroup>
           {unique.map((option) => (
             <SelectItem key={option.value} value={option.value}>

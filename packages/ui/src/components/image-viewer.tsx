@@ -21,8 +21,7 @@ import {
   useState,
 } from "react";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
-import { type GlassProps, withGlass } from "../lib/glass/context";
-import { ViewerButton } from "../lib/viewer/controls";
+import type { GlassProps } from "../lib/glass/with-glass";
 import {
   clampImageScale,
   defaultImageTransform,
@@ -31,6 +30,7 @@ import {
 } from "../lib/viewer/image-transform";
 import { Button } from "./button";
 import { Dialog, DialogOverlay, DialogTitle } from "./dialog";
+import { ViewerButton } from "./viewer/controls";
 
 export type ImageViewerLabels = {
   defaultAlt: string;
@@ -82,7 +82,7 @@ const defaultLabels: ImageViewerLabels = {
   thumbnail: (alt, index) => `${alt} thumbnail ${index}`,
   position: (index, total) => `Image ${index} of ${total}`,
 };
-function ImageViewerImplementation({
+function ImageViewer({
   images,
   open,
   onClose,
@@ -92,9 +92,12 @@ function ImageViewerImplementation({
   alt,
   container,
   className,
-  glass: _glass,
+  glass,
+  frosted,
   labels,
 }: ImageViewerProps) {
+  // glass and frosted apply to the toolbar and navigation buttons.
+  const material = { glass, frosted };
   const text = { ...defaultLabels, ...labels };
   const list = Array.isArray(images) ? images : [images];
   const [localIndex, setIndex] = useState(initialIndex);
@@ -282,6 +285,7 @@ function ImageViewerImplementation({
           <DialogTitle className="sr-only">{text.viewer}</DialogTitle>
           <div className="flex shrink-0 flex-wrap items-center gap-1 px-3 py-2">
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.zoomOut}
@@ -293,6 +297,7 @@ function ImageViewerImplementation({
               {Math.round(transform.scale * 100)}%
             </span>
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.zoomIn}
@@ -301,6 +306,7 @@ function ImageViewerImplementation({
               <ZoomIn aria-hidden="true" />
             </ViewerButton>
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.rotateCounterclockwise}
@@ -309,6 +315,7 @@ function ImageViewerImplementation({
               <RotateCcw aria-hidden="true" />
             </ViewerButton>
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.rotateClockwise}
@@ -317,6 +324,7 @@ function ImageViewerImplementation({
               <RotateCw aria-hidden="true" />
             </ViewerButton>
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.reset}
@@ -334,6 +342,7 @@ function ImageViewerImplementation({
               {index + 1} / {list.length}
             </span>
             <ViewerButton
+              {...material}
               size="icon-sm"
               variant="ghost"
               tooltip={text.close}
@@ -396,18 +405,20 @@ function ImageViewerImplementation({
             {list.length > 1 && (
               <>
                 <Button
+                  {...material}
                   variant="ghost"
                   size="icon"
-                  className="absolute start-3 z-10 bg-background/80"
+                  className="absolute inset-s-3 z-10 bg-background/80"
                   onClick={() => select(index - 1)}
                   aria-label={text.previous}
                 >
                   <ChevronLeft aria-hidden="true" />
                 </Button>
                 <Button
+                  {...material}
                   variant="ghost"
                   size="icon"
-                  className="absolute end-3 z-10 bg-background/80"
+                  className="absolute inset-e-3 z-10 bg-background/80"
                   onClick={() => select(index + 1)}
                   aria-label={text.next}
                 >
@@ -426,7 +437,6 @@ function ImageViewerImplementation({
                   <Button
                     // biome-ignore lint/suspicious/noArrayIndexKey: Repeated URLs are distinct numbered gallery entries.
                     key={`${src}-${imageIndex}`}
-                    glass={false}
                     variant="ghost"
                     size="icon"
                     className={cn(
@@ -454,7 +464,5 @@ function ImageViewerImplementation({
     </Dialog>
   );
 }
-
-const ImageViewer = withGlass(ImageViewerImplementation, "scope");
 
 export { ImageViewer };

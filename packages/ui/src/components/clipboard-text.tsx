@@ -9,7 +9,7 @@ import {
   type ClipboardOptions,
   useClipboard,
 } from "../hooks/use-clipboard";
-import { withGlass } from "../lib/glass/context";
+import type { GlassProps } from "../lib/glass/with-glass";
 import { CopyIcon } from "./copy-icon";
 import { InputGroup, InputGroupAddon, InputGroupButton } from "./input-group";
 import {
@@ -45,9 +45,9 @@ type ClipboardTextProps = Omit<
     text: string;
     textToCopy?: string;
     labels?: ClipboardLabels;
-  };
+  } & GlassProps;
 
-function ClipboardTextImplementation({
+function ClipboardText({
   text,
   textToCopy,
   variant = "default",
@@ -59,6 +59,8 @@ function ClipboardTextImplementation({
   labels,
   className,
   render,
+  glass,
+  frosted,
   ...props
 }: ClipboardTextProps) {
   const { status, copy } = useClipboard(textToCopy ?? text, {
@@ -76,7 +78,7 @@ function ClipboardTextImplementation({
   const label = labels?.copy ?? "Copy to clipboard";
   return useRender({
     defaultTagName: "div",
-    render: render ?? <InputGroup />,
+    render: render ?? <InputGroup glass={glass} frosted={frosted} />,
     state: {
       slot: "clipboard-text",
       variant: variant ?? "default",
@@ -139,10 +141,5 @@ function ClipboardTextImplementation({
 }
 
 export type { ClipboardTextProps };
-
-// The setting passes to its input group, which is the glass field: on its
-// own in a glass scope it is a capsule tinted by its variant's fill, and
-// inside a glass surface it stays an ordinary field.
-const ClipboardText = withGlass(ClipboardTextImplementation, "scope");
 
 export { ClipboardText, clipboardTextVariants };

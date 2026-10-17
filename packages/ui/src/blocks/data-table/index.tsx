@@ -604,7 +604,7 @@ export function DataTable<TData extends RowData, TValue>({
           data-slot="ui-table-scroll-area"
           inert={overlayLoading}
           className={cn(
-            "w-full max-w-full overflow-auto rounded-2xl border [&>[data-slot=table-container]]:overflow-visible",
+            "w-full max-w-full overflow-auto rounded-2xl border *:data-[slot=table-container]:overflow-visible",
             isFullLayout && "h-full min-h-0",
           )}
         >

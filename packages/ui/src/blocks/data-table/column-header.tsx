@@ -83,7 +83,7 @@ export function DataTableColumnHeader<TData extends RowData, TValue>({
           <SortIcon
             className={cn(
               "size-3.5 shrink-0",
-              align === "center" && "absolute -end-3.5",
+              align === "center" && "absolute -inset-e-3.5",
             )}
           />
         </DropdownMenuTrigger>

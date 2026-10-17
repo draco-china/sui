@@ -9,8 +9,7 @@ import type {
   BottomSheetLayout,
   BottomSheetSize,
 } from "../lib/bottom-sheet";
-import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
+import { withGlass } from "../lib/glass/with-glass";
 
 type BottomSheetShape = Pick<BottomSheetLayout, "expandable" | "full">;
 
@@ -70,7 +69,7 @@ type BottomSheetProps = Omit<
   labels?: { expand?: string; collapse?: string };
 };
 
-function BottomSheetImplementation({
+function BottomSheet({
   open: openProp,
   defaultOpen = false,
   modal = true,
@@ -185,17 +184,17 @@ function BottomSheetImplementation({
   );
 }
 
-function BottomSheetTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
+function BottomSheetTrigger(props: DrawerPrimitive.Trigger.Props) {
   return (
     <DrawerPrimitive.Trigger data-slot="bottom-sheet-trigger" {...props} />
   );
 }
 
-function BottomSheetPortal({ ...props }: DrawerPrimitive.Portal.Props) {
+function BottomSheetPortal(props: DrawerPrimitive.Portal.Props) {
   return <DrawerPrimitive.Portal data-slot="bottom-sheet-portal" {...props} />;
 }
 
-function BottomSheetClose({ ...props }: DrawerPrimitive.Close.Props) {
+function BottomSheetClose(props: DrawerPrimitive.Close.Props) {
   return <DrawerPrimitive.Close data-slot="bottom-sheet-close" {...props} />;
 }
 
@@ -206,7 +205,7 @@ function BottomSheetOverlay({
   return (
     <DrawerPrimitive.Backdrop
       data-slot="bottom-sheet-overlay"
-      className={mergeClassNames(
+      className={cn(
         "fixed inset-0 z-50 min-h-dvh select-none bg-black/30 opacity-[calc((0.6+0.4*var(--bottom-sheet-progress,0))*(1-var(--bottom-sheet-dismiss,0)))] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-dragging:duration-0 data-ending-style:duration-300 supports-[-webkit-touch-callout:none]:absolute supports-backdrop-filter:backdrop-blur-xs motion-reduce:duration-0",
         className,
       )}
@@ -252,18 +251,18 @@ function BottomSheetContentImplementation({
           data-size={sheet.size}
           data-expanded={sheet.expanded ? "" : undefined}
           data-expandable={sheet.expandable ? "" : undefined}
-          className={mergeClassNames(
+          className={cn(
             cn(
-              "pointer-events-auto absolute mx-auto flex max-w-(--bottom-sheet-max-width) flex-col overflow-hidden rounded-(--bottom-sheet-radius) bg-popover text-popover-foreground text-sm shadow-xl outline-none will-change-transform",
+              "pointer-events-auto absolute mx-auto flex max-w-(--bottom-sheet-max-width) flex-col overflow-hidden rounded-(--bottom-sheet-radius) border border-popover bg-popover text-popover-foreground text-sm shadow-xl outline-none will-change-transform dark:border-border",
               // Compact floats with a margin on each side and below; it fades
               // out while expanding, so the expanded sheet meets the edges.
-              "[--bottom-sheet-gap:--spacing(2)] [--bottom-sheet-margin:calc(var(--bottom-sheet-gap)*(1-var(--bottom-sheet-progress)))] [--bottom-sheet-max-width:none] [--bottom-sheet-radius:2rem] [--bottom-sheet-safe-bottom:max(0px,env(safe-area-inset-bottom,0px)-var(--bottom-sheet-margin))]",
+              "[--bottom-sheet-gap:--spacing(2)] [--bottom-sheet-margin:calc(var(--bottom-sheet-gap)*(1-var(--bottom-sheet-progress)))] [--bottom-sheet-max-width:none] [--bottom-sheet-radius:var(--radius-5xl)] [--bottom-sheet-safe-bottom:max(0px,env(safe-area-inset-bottom,0px)-var(--bottom-sheet-margin))]",
               "right-[calc(var(--bottom-sheet-margin)+env(safe-area-inset-right,0px))] bottom-[calc(var(--bottom-sheet-keyboard,0px)+var(--bottom-sheet-margin))] left-[calc(var(--bottom-sheet-margin)+env(safe-area-inset-left,0px))] h-(--bottom-sheet-height,auto)",
               "transform-[translate3d(0,var(--bottom-sheet-offset,0px),0)] transition-[height,--bottom-sheet-progress,transform,bottom] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-dragging:duration-0 motion-reduce:duration-0",
               "data-ending-style:transform-[translate3d(0,calc(100%+var(--bottom-sheet-margin)+2px),0)] data-starting-style:transform-[translate3d(0,calc(100%+var(--bottom-sheet-margin)+2px),0)] data-ending-style:duration-300",
               // Glass turns opaque while expanding, so a full sheet reads as
               // a solid page.
-              "data-[glass=true]:before:pointer-events-none data-[glass=true]:before:absolute data-[glass=true]:before:inset-0 data-[glass=true]:before:-z-1 data-[glass=true]:before:rounded-[inherit] data-[glass=true]:before:bg-popover data-[glass=true]:before:opacity-(--bottom-sheet-progress)",
+              "glass:before:pointer-events-none glass:before:absolute glass:before:inset-0 glass:before:-z-1 glass:before:rounded-[inherit] glass:before:bg-popover glass:before:opacity-(--bottom-sheet-progress)",
             ),
             className,
           )}
@@ -332,7 +331,7 @@ function BottomSheetTitle({
   return (
     <DrawerPrimitive.Title
       data-slot="bottom-sheet-title"
-      className={mergeClassNames(
+      className={cn(
         "font-heading font-semibold text-base text-foreground",
         className,
       )}
@@ -348,7 +347,7 @@ function BottomSheetDescription({
   return (
     <DrawerPrimitive.Description
       data-slot="bottom-sheet-description"
-      className={mergeClassNames(
+      className={cn(
         "max-h-24 overflow-hidden text-muted-foreground text-sm transition-[max-height,opacity] duration-200 group-data-collapsed/bottom-sheet-header:max-h-0 group-data-collapsed/bottom-sheet-header:opacity-0",
         className,
       )}
@@ -363,7 +362,7 @@ function BottomSheetBody({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="bottom-sheet-body"
       className={cn(
         // Content fades under the header and footer while more remains.
-        "scroll-fade-y flex min-h-0 shrink flex-col gap-4 overflow-hidden overscroll-contain px-5 pb-4 group-data-[scroll=container]/bottom-sheet-container:shrink-0 group-data-[scroll=body]/bottom-sheet-container:overflow-y-auto group-data-[scroll=container]/bottom-sheet-container:[mask-image:none]",
+        "scroll-fade-y group-data-[scroll=container]/bottom-sheet-container:mask-none flex min-h-0 shrink flex-col gap-4 overflow-hidden overscroll-contain px-5 pb-4 group-data-[scroll=container]/bottom-sheet-container:shrink-0 group-data-[scroll=body]/bottom-sheet-container:overflow-y-auto",
         className,
       )}
       {...props}
@@ -387,7 +386,7 @@ function BottomSheetFooter({
   );
 }
 
-function BottomSheetExpandedContent({ ...props }: React.ComponentProps<"div">) {
+function BottomSheetExpandedContent(props: React.ComponentProps<"div">) {
   const { expanded } = useBottomSheet();
   return (
     <div
@@ -398,11 +397,7 @@ function BottomSheetExpandedContent({ ...props }: React.ComponentProps<"div">) {
   );
 }
 
-const BottomSheet = withGlass(BottomSheetImplementation, "scope");
-const BottomSheetContent = withGlass(
-  BottomSheetContentImplementation,
-  "portal",
-);
+const BottomSheetContent = withGlass(BottomSheetContentImplementation);
 
 export type { BottomSheetDetents, BottomSheetSize } from "../lib/bottom-sheet";
 export {

@@ -17,7 +17,7 @@
 }
 
 /* Utilities, so the status color replaces the default popover paint. Glass
-   toasts read it as their material tint. */
+   toasts read it as their material tint, and frosted toasts as their base. */
 @layer utilities {
   [data-slot="toast"][data-type="error"] [data-slot="toast-icon"] {
     color: var(--toast-accent);
@@ -30,6 +30,11 @@
       [data-type="warning"],
       [data-type="error"]
     ) {
+    --frosted-base: color-mix(
+      in oklab,
+      var(--toast-accent) 12%,
+      var(--popover)
+    );
     border-color: color-mix(in oklab, var(--toast-accent) 35%, transparent);
     background-color: color-mix(
       in oklab,

@@ -38,7 +38,7 @@
 
 [data-slot="input-otp-halo"] {
   position: absolute;
-  inset: -4px;
+  inset: --spacing(-1);
   border-radius: inherit;
   box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary) 25%, transparent);
   animation: input-otp-halo 700ms ease-out 100ms both;
@@ -46,8 +46,8 @@
 
 [data-slot="input-otp-particles"] > span {
   position: absolute;
-  width: 4px;
-  height: 8px;
+  width: --spacing(1);
+  height: --spacing(2);
   border-radius: 999px;
   background: var(--primary);
   animation: input-otp-particle 850ms cubic-bezier(0.16, 1, 0.3, 1)

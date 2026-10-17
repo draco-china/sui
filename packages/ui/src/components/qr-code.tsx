@@ -7,7 +7,7 @@ import { cn } from "cn";
 import { CircleAlertIcon } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useReducedMotion } from "../hooks/use-reduced-motion";
-import { type GlassProps, withGlass, withoutGlass } from "../lib/glass/context";
+import { type GlassProps, withGlass } from "../lib/glass/with-glass";
 import { applyQRCodeFinderGeometry } from "../lib/qr-code/finder";
 
 type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
@@ -274,7 +274,7 @@ function DotMatrix({
 
 // QR codes are content and keep an opaque reading area inside glass. An
 // explicit `glass` prop shows the code on glass instead.
-const GlassQRCodeContent = withoutGlass(withGlass(QRCodeContent));
+const GlassQRCodeContent = withGlass(QRCodeContent);
 
 function QRCode(props: QRCodeProps & GlassProps) {
   return (
@@ -414,7 +414,7 @@ function QRCodeContent({
         children: (
           <div
             data-slot="qr-code-content"
-            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground group-data-[glass=true]/qr-code:bg-transparent"
+            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground group-glass/qr-code:bg-transparent"
           >
             {!ready && !failed && (
               <div

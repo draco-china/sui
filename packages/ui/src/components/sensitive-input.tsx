@@ -19,11 +19,12 @@ import {
 import { cn } from "cn";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import * as React from "react";
-import { withGlass } from "../lib/glass/context";
+import type { GlassProps } from "../lib/glass/with-glass";
 import { CopyIcon } from "./copy-icon";
 
 interface SensitiveInputProps
-  extends Omit<React.ComponentProps<"input">, "type"> {
+  extends Omit<React.ComponentProps<"input">, "type">,
+    GlassProps {
   visible?: boolean;
   defaultVisible?: boolean;
   onVisibleChange?: (visible: boolean) => void;
@@ -41,7 +42,9 @@ interface SensitiveInputProps
   };
 }
 
-function SensitiveInputImplementation({
+function SensitiveInput({
+  glass,
+  frosted,
   className,
   inputClassName,
   id,
@@ -166,6 +169,8 @@ function SensitiveInputImplementation({
 
   return (
     <InputGroup
+      glass={glass}
+      frosted={frosted}
       data-slot="sensitive-input"
       data-visible={visible}
       data-disabled={disabled}
@@ -305,7 +310,7 @@ function SensitiveInputImplementation({
           <TooltipTrigger
             data-slot="sensitive-input-copy-anchor"
             render={<span />}
-            className="absolute end-2 -top-px -translate-y-full opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/sensitive-input:opacity-100 group-hover/sensitive-input:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100"
+            className="absolute inset-e-2 -top-px -translate-y-full opacity-0 transition-opacity focus-within:opacity-100 group-focus-within/sensitive-input:opacity-100 group-hover/sensitive-input:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100"
           >
             <Button
               data-slot="sensitive-input-copy"
@@ -368,8 +373,5 @@ function SensitiveInputImplementation({
     </InputGroup>
   );
 }
-
-// The setting passes to its input group, which is the glass field.
-const SensitiveInput = withGlass(SensitiveInputImplementation, "scope");
 
 export { SensitiveInput, type SensitiveInputProps };

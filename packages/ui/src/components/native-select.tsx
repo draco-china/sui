@@ -29,7 +29,7 @@ function NativeSelect({
         {...props}
       />
       <ChevronDownIcon
-        className="pointer-events-none absolute end-2.5 top-1/2 size-4 -translate-y-1/2 select-none text-muted-foreground"
+        className="pointer-events-none absolute inset-e-2.5 top-1/2 size-4 -translate-y-1/2 select-none text-muted-foreground"
         aria-hidden="true"
         data-slot="native-select-icon"
       />

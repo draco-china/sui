@@ -3,17 +3,12 @@
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
 import { cn } from "cn";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { mergeClassNames } from "../lib/class-name";
-import { withoutGlass } from "../lib/glass/context";
 
-function AccordionImplementation({
-  className,
-  ...props
-}: AccordionPrimitive.Root.Props) {
+function Accordion({ className, ...props }: AccordionPrimitive.Root.Props) {
   return (
     <AccordionPrimitive.Root
       data-slot="accordion"
-      className={mergeClassNames(
+      className={cn(
         "flex w-full flex-col overflow-hidden rounded-2xl border",
         className,
       )}
@@ -26,10 +21,7 @@ function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={mergeClassNames(
-        "not-last:border-b data-open:bg-muted/50",
-        className,
-      )}
+      className={cn("not-last:border-b data-open:bg-muted/50", className)}
       {...props}
     />
   );
@@ -44,7 +36,7 @@ function AccordionTrigger({
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
-        className={mergeClassNames(
+        className={cn(
           "group/accordion-trigger relative flex flex-1 items-start justify-between gap-6 border border-transparent p-4 text-start font-medium text-sm outline-none transition-all hover:underline focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ms-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:text-muted-foreground",
           className,
         )}
@@ -72,7 +64,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className={mergeClassNames(
+      className={cn(
         "overflow-hidden px-4 text-sm data-closed:animate-accordion-up data-open:animate-accordion-down",
         typeof className === "function" ? className : undefined,
       )}
@@ -89,7 +81,5 @@ function AccordionContent({
     </AccordionPrimitive.Panel>
   );
 }
-
-const Accordion = withoutGlass(AccordionImplementation);
 
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

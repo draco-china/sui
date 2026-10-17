@@ -3,15 +3,15 @@
 import { cn } from "cn";
 import { AlertCircle, Check, LoaderCircle } from "lucide-react";
 import type { ComponentProps } from "react";
-import { Button } from "../../components/button";
-import { CopyIcon } from "../../components/copy-icon";
+import { useClipboard } from "../../hooks/use-clipboard";
+import { Button } from "../button";
+import { CopyIcon } from "../copy-icon";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../../components/tooltip";
-import { useClipboard } from "../../hooks/use-clipboard";
+} from "../tooltip";
 
 type ViewerButtonProps = ComponentProps<typeof Button> & { tooltip: string };
 function ViewerButton({ tooltip, children, ...props }: ViewerButtonProps) {

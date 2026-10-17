@@ -12,12 +12,12 @@ import {
   ChevronUpIcon,
 } from "lucide-react";
 import * as React from "react";
-import { withGlass } from "../lib/glass/context";
+import { withGlass } from "../lib/glass/with-glass";
 
 const TabsContext =
   React.createContext<TabsPrimitive.Root.Orientation>("horizontal");
 
-function TabsImplementation({
+function Tabs({
   className,
   orientation = "horizontal",
   ...props
@@ -251,7 +251,7 @@ function TabsListImplementation({
         id={viewportId}
         data-slot="tabs-list-viewport"
         className={cn(
-          "min-h-0 w-full min-w-0 rounded-[inherit] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          "scrollbar-none min-h-0 w-full min-w-0 rounded-[inherit] [&::-webkit-scrollbar]:hidden",
           vertical ? "overflow-y-auto" : "overflow-x-auto",
         )}
         style={maskStyle}
@@ -283,7 +283,7 @@ function TabsListImplementation({
               "group-data-[variant=segment]/tabs-list:rounded-md group-data-vertical/tabs:rounded-2xl",
               "group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:border-0 group-data-[variant=line]/tabs-list:bg-ring",
               "group-data-[variant=line]/tabs-list:data-horizontal:top-auto group-data-[variant=line]/tabs-list:data-horizontal:bottom-0 group-data-[variant=line]/tabs-list:data-horizontal:h-0.5 group-data-[variant=line]/tabs-list:data-horizontal:translate-y-0",
-              "group-data-[variant=line]/tabs-list:data-vertical:end-0 group-data-[variant=line]/tabs-list:data-vertical:left-auto group-data-[variant=line]/tabs-list:data-vertical:w-0.5 group-data-[variant=line]/tabs-list:data-vertical:translate-x-0",
+              "group-data-[variant=line]/tabs-list:data-vertical:inset-e-0 group-data-[variant=line]/tabs-list:data-vertical:left-auto group-data-[variant=line]/tabs-list:data-vertical:w-0.5 group-data-[variant=line]/tabs-list:data-vertical:translate-x-0",
               indicatorClassName,
             )}
           />
@@ -337,7 +337,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       data-slot="tabs-trigger"
       className={(state) =>
         cn(
-          "relative z-10 inline-flex h-full flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-foreground text-sm transition-colors focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-start]:ps-2 has-data-[icon=inline-end]:pe-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:h-auto group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-1.5 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+          "relative z-10 inline-flex h-full flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-foreground text-sm transition-colors focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-start]:ps-2 has-data-[icon=inline-end]:pe-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:h-auto group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-1.5 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
           "data-active:text-primary-foreground group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=segment]/tabs-list:rounded-md group-data-[variant=line]/tabs-list:data-active:text-accent-foreground motion-reduce:transition-none",
           typeof className === "function" ? className(state) : className,
         )
@@ -353,7 +353,7 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
       data-slot="tabs-content"
       className={(state) =>
         cn(
-          "flex-1 text-sm outline-none data-[ending-style]:hidden data-[hidden]:hidden data-[ending-style]:transition-none motion-safe:data-[starting-style]:data-[activation-direction=left]:-translate-x-2 motion-safe:data-[starting-style]:data-[activation-direction=right]:translate-x-2 motion-safe:data-[starting-style]:data-[activation-direction=down]:translate-y-2 motion-safe:data-[starting-style]:data-[activation-direction=up]:-translate-y-2 motion-safe:transition-[opacity,translate] motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:data-[starting-style]:not-data-[activation-direction=none]:opacity-0 motion-reduce:transition-none",
+          "flex-1 text-sm outline-none data-ending-style:hidden data-hidden:hidden data-ending-style:transition-none motion-safe:data-starting-style:data-[activation-direction=left]:-translate-x-2 motion-safe:data-starting-style:data-[activation-direction=right]:translate-x-2 motion-safe:data-starting-style:data-[activation-direction=down]:translate-y-2 motion-safe:data-starting-style:data-[activation-direction=up]:-translate-y-2 motion-safe:transition-[opacity,translate] motion-safe:duration-250 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:data-starting-style:not-data-[activation-direction=none]:opacity-0 motion-reduce:transition-none",
           typeof className === "function" ? className(state) : className,
         )
       }
@@ -362,7 +362,6 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   );
 }
 
-const Tabs = withGlass(TabsImplementation, "scope");
 const TabsList = withGlass(TabsListImplementation);
 
 export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants };

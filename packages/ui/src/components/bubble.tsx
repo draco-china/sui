@@ -95,8 +95,8 @@ const bubbleReactionsVariants = cva(
         bottom: "bottom-0 translate-y-3/4",
       },
       align: {
-        start: "start-3",
-        end: "end-3",
+        start: "inset-s-3",
+        end: "inset-e-3",
       },
     },
     defaultVariants: {

@@ -5,9 +5,8 @@ import { type Button, buttonVariants } from "@workspace/ui/components/button";
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 import type * as React from "react";
-import { withoutGlass } from "../lib/glass/context";
 
-function QuestionnaireImplementation({
+function Questionnaire({
   className,
   ...props
 }: React.ComponentProps<typeof QuestionnairePrimitive.Root>) {
@@ -28,7 +27,7 @@ function QuestionnaireProgress({
     <QuestionnairePrimitive.Progress
       data-slot="questionnaire-progress"
       className={cn(
-        "min-h-[1lh] w-fit min-w-[14ch] font-medium text-muted-foreground text-xs tabular-nums",
+        "min-h-lh w-fit min-w-[14ch] font-medium text-muted-foreground text-xs tabular-nums",
         className,
       )}
       {...props}
@@ -138,7 +137,7 @@ function QuestionnaireChoice({
       </QuestionnairePrimitive.ChoiceLabel>
       <QuestionnairePrimitive.ChoiceShortcut
         data-slot="questionnaire-choice-shortcut"
-        className="pointer-events-none ms-auto hidden size-5 shrink-0 translate-y-[--spacing(0.45)] items-center justify-center rounded-full border border-primary/10 bg-background/80 font-medium font-mono text-[0.625rem] text-muted-foreground leading-none group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5 group-data-[shortcut]/questionnaire-choice:inline-flex"
+        className="pointer-events-none ms-auto hidden size-5 shrink-0 translate-y-[--spacing(0.45)] items-center justify-center rounded-full border border-primary/10 bg-background/80 font-medium font-mono text-[0.625rem] text-muted-foreground leading-none group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5 group-data-shortcut/questionnaire-choice:inline-flex"
       />
     </QuestionnairePrimitive.Choice>
   );
@@ -307,8 +306,6 @@ function QuestionnaireSubmit({
     </QuestionnairePrimitive.Submit>
   );
 }
-
-const Questionnaire = withoutGlass(QuestionnaireImplementation);
 
 export {
   Questionnaire,

@@ -1,38 +1,33 @@
 "use client";
 
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
-import { type ComponentProps, useContext } from "react";
-import { mergeClassNames } from "../lib/class-name";
-import { GlassContext, withGlass } from "../lib/glass/context";
+import { cn } from "cn";
+import type { ComponentProps } from "react";
+import { withGlass } from "../lib/glass/with-glass";
 
-// As on Apple platforms, a thumb becomes a clear glass lens only while dragged.
+// With `glass`, as on Apple platforms, a thumb becomes a clear glass lens only
+// while dragged; a lens sits on glass, so it also works inside a layer.
 // It grows in layout rather than by transform: scaled SVG backdrops misplace refraction.
 // The lens drops its paint instantly: a fading fill would cover the refraction.
-const GlassThumb = withGlass(
-  (props: ComponentProps<"div">) => <div {...props} />,
-  "control",
-  { material: "clear" },
-);
+const GlassThumb = withGlass((props: ComponentProps<"div">) => (
+  <div data-glass-lens="" {...props} />
+));
 
-function SliderImplementation({
+function Slider({
   className,
   defaultValue,
   value,
   min = 0,
   max = 100,
+  glass: lens = false,
   ...props
-}: SliderPrimitive.Root.Props) {
-  const glass = useContext(GlassContext);
-  const lens = glass.enabled && !glass.content;
+}: SliderPrimitive.Root.Props & { glass?: boolean }) {
   const values = value ?? defaultValue ?? min;
   const thumbCount = Array.isArray(values) ? values.length : 1;
 
   return (
     <SliderPrimitive.Root
-      className={mergeClassNames(
-        "data-vertical:h-full data-horizontal:w-full",
-        className,
-      )}
+      className={cn("data-vertical:h-full data-horizontal:w-full", className)}
       data-slot="slider"
       defaultValue={defaultValue}
       value={value}
@@ -72,14 +67,12 @@ function SliderImplementation({
                 }
               />
             )}
-            className="block h-4 w-6 shrink-0 select-none rounded-full bg-white not-dark:bg-clip-padding shadow-md ring-1 ring-black/10 transition-[color,box-shadow,background-color] hover:ring-4 hover:ring-ring/30 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-vertical:data-[glass=true]:h-[30px] data-vertical:data-[glass=true]:w-[22px] data-[glass=true]:h-[22px] data-vertical:h-6 data-[glass=true]:w-[30px] data-vertical:w-4 data-[glass=true]:bg-transparent! data-[glass=true]:ring-0 data-[glass=true]:transition-none"
+            className="block h-4 w-6 shrink-0 select-none rounded-full bg-white not-dark:bg-clip-padding shadow-md ring-1 ring-black/10 transition-[color,box-shadow,background-color] hover:ring-4 hover:ring-ring/30 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-vertical:data-[glass=true]:h-7.5 data-vertical:data-[glass=true]:w-5.5 data-[glass=true]:h-5.5 data-vertical:h-6 data-[glass=true]:w-7.5 data-vertical:w-4 data-[glass=true]:bg-transparent! data-[glass=true]:ring-0 data-[glass=true]:transition-none"
           />
         ))}
       </SliderPrimitive.Control>
     </SliderPrimitive.Root>
   );
 }
-
-const Slider = withGlass(SliderImplementation, "scope");
 
 export { Slider };

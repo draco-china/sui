@@ -22,8 +22,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 import * as React from "react";
-import { mergeClassNames } from "../lib/class-name";
-import { withGlass } from "../lib/glass/context";
+import { type GlassProps, withGlass } from "../lib/glass/with-glass";
 
 // Keep grouped buttons, page input, and selects on the same opaque surface.
 const paginationControlClassName =
@@ -130,7 +129,7 @@ function pageRange(
   };
 }
 
-function PaginationImplementation({
+function Pagination({
   className,
   page: controlledPage,
   onPageChange,
@@ -254,15 +253,19 @@ function PaginationInfo({
   );
 }
 
-type PaginationControlsProps = React.ComponentProps<"div"> & {
-  controls?: PaginationControlsMode;
-  pageSelector?: "input" | "dropdown";
-};
+/** `glass` and `frosted` make the controls one capsule, like ButtonGroup. */
+type PaginationControlsProps = React.ComponentProps<"div"> &
+  GlassProps & {
+    controls?: PaginationControlsMode;
+    pageSelector?: "input" | "dropdown";
+  };
 
 function PaginationControls({
   className,
   controls,
   pageSelector = "input",
+  glass,
+  frosted,
   ...props
 }: PaginationControlsProps) {
   const context = usePagination();
@@ -309,7 +312,11 @@ function PaginationControls({
       className={cn("flex shrink-0 items-center", className)}
       {...props}
     >
-      <ButtonGroup aria-label={labels.navigation}>
+      <ButtonGroup
+        aria-label={labels.navigation}
+        glass={glass}
+        frosted={frosted}
+      >
         {full && (
           <Button
             type="button"
@@ -430,13 +437,15 @@ function PaginationControls({
   );
 }
 
-type PaginationPageSizeProps = Omit<React.ComponentProps<"div">, "onChange"> & {
-  value: number;
-  onValueChange: (value: number) => void;
-  options?: readonly number[];
-  label?: React.ReactNode;
-  disabled?: boolean;
-};
+/** `glass` and `frosted` apply to the size select's trigger and menu. */
+type PaginationPageSizeProps = Omit<React.ComponentProps<"div">, "onChange"> &
+  GlassProps & {
+    value: number;
+    onValueChange: (value: number) => void;
+    options?: readonly number[];
+    label?: React.ReactNode;
+    disabled?: boolean;
+  };
 
 function PaginationPageSize({
   value,
@@ -444,6 +453,8 @@ function PaginationPageSize({
   options = [10, 20, 50, 100],
   label = "Rows per page",
   disabled = false,
+  glass,
+  frosted,
   className,
   ...props
 }: PaginationPageSizeProps) {
@@ -476,12 +487,14 @@ function PaginationPageSize({
       >
         <SelectTrigger
           id={id}
+          glass={glass}
+          frosted={frosted}
           aria-label={context.labels.pageSize}
           className={cn(paginationControlClassName, "min-w-18")}
         >
           <SelectValue>{size}</SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent glass={glass} frosted={frosted}>
           {sizes.map((number) => (
             <SelectItem key={number} value={number}>
               {number}
@@ -502,7 +515,7 @@ function PaginationSeparator({
     <Separator
       data-slot="pagination-separator"
       orientation={orientation}
-      className={mergeClassNames("h-6 data-vertical:self-center", className)}
+      className={cn("h-6 data-vertical:self-center", className)}
       {...props}
     />
   );
@@ -516,7 +529,7 @@ function PaginationContentImplementation({
     <ul
       data-slot="pagination-content"
       className={cn(
-        "mx-auto flex items-center gap-1 data-[glass=true]:w-fit data-[glass=true]:rounded-4xl data-[glass=true]:p-1",
+        "mx-auto flex glass:w-fit items-center gap-1 glass:rounded-4xl glass:p-1",
         className,
       )}
       {...props}
@@ -641,9 +654,8 @@ export type {
   PaginationRangeInfo,
 };
 
-// Like ButtonGroup, glass pagination controls form one capsule; the page
-// links of a composed pagination share one capsule too.
-const Pagination = withGlass(PaginationImplementation, "scope");
+// Like ButtonGroup, glass page links of a composed pagination share one
+// capsule.
 const PaginationContent = withGlass(PaginationContentImplementation);
 
 export {

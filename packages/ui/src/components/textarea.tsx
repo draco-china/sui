@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "../lib/glass/context";
+import { withGlass } from "../lib/glass/with-glass";
 
 function TextareaImplementation({
   className,
@@ -20,6 +20,6 @@ function TextareaImplementation({
   );
 }
 
-const Textarea = withGlass(TextareaImplementation, "field");
+const Textarea = withGlass(TextareaImplementation);
 
 export { Textarea };
