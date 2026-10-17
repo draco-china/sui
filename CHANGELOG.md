@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/draco-china/sui/compare/v3.0.0...v3.0.1) (2026-10-17)
+
+### Bug Fixes
+
+* **tab-bar:** drop the hover fill on items ([fb0580e](https://github.com/draco-china/sui/commit/fb0580e12a8d8eb25e1f850725661d841fa2d235))
+
 ## [3.0.0](https://github.com/draco-china/sui/compare/v2.0.2...v3.0.0) (2026-10-17)
 
 ### ⚠ BREAKING CHANGES
