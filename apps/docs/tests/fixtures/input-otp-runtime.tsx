@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost/docs?preview=1#example",
@@ -275,6 +276,8 @@ function App() {
     </>
   );
 }
+
+scenario("server markup hydrates without recoverable errors");
 const host = document.createElement("div");
 document.body.append(host);
 host.innerHTML = renderToString(<App />);
@@ -287,6 +290,8 @@ await act(async () => {
   await new Promise((resolve) => setTimeout(resolve, 30));
 });
 assert.deepEqual(errors, []);
+
+scenario("slots are native inputs with the field's label and validation");
 const otpRoot = rootRef.current;
 assert.ok(otpRoot);
 const slots = () => [
@@ -313,6 +318,7 @@ assert.equal(validationInput.minLength, 6);
 assert.equal(validationInput.maxLength, 6);
 assert.equal(validationInput.checkValidity(), false);
 
+scenario("only the first slot offers one-time-code autofill and a tab stop");
 assert.equal(inputRef.current?.getAttribute("autocomplete"), "one-time-code");
 assert.equal(slots()[1]?.getAttribute("autocomplete"), "off");
 assert.equal(slots()[1]?.getAttribute("aria-label"), null);
@@ -358,6 +364,8 @@ function paste(input: HTMLInputElement, value: string) {
   });
   input.dispatchEvent(event);
 }
+
+scenario("typing advances focus and rejects characters outside the pattern");
 await interact(() => inputRef.current?.focus());
 await interact(() => edit(slots()[0] as HTMLInputElement, "1"));
 await settle();
@@ -366,6 +374,8 @@ assert.equal(document.activeElement, slots()[1]);
 await interact(() => edit(slots()[1] as HTMLInputElement, "x"));
 assert.equal(invalid.at(-1), "x");
 assert.equal(changes.at(-1), "1");
+
+scenario("a paste fills every slot, completes the code and submits one value");
 await interact(() => paste(slots()[1] as HTMLInputElement, "2 3-456"));
 await settle();
 assert.equal(changes.at(-1), "123456");
@@ -388,6 +398,8 @@ assert.equal(
   ).getAll("code").length,
   1,
 );
+
+scenario("Backspace removes the last character");
 await interact(() =>
   (slots()[5] as HTMLElement).dispatchEvent(
     new window.KeyboardEvent("keydown", {
@@ -399,6 +411,8 @@ await interact(() =>
 );
 await settle();
 assert.equal(changes.at(-1), "12345");
+
+scenario("an external value fills the slots");
 await interact(() => setExternal("654321"));
 assert.equal(
   slots()
@@ -406,6 +420,8 @@ assert.equal(
     .join(""),
   "654321",
 );
+
+scenario("loading makes masked slots read-only while the form keeps the value");
 await interact(() => inputRef.current?.focus());
 await interact(() => updateMask(true));
 await interact(() => setStatus("loading"));
@@ -423,6 +439,8 @@ assert.equal(
   ),
   "654321",
 );
+
+scenario("an error morphs the loading glyph in place");
 const glyph = otpRoot.querySelector('[data-slot="input-otp-state"] svg path');
 assert.ok(glyph);
 const loader = glyph.getAttribute("d");
@@ -443,6 +461,8 @@ function completeAnimation(element: Element, name = "input-otp-feedback") {
   });
   element.dispatchEvent(event);
 }
+
+scenario("after error feedback the slots restore, refocus and stay editable");
 const beforeError = statusRequests.length;
 await interact(() => completeAnimation(marker));
 assert.equal(otpRoot.getAttribute("data-feedback"), "restoring");
@@ -478,6 +498,8 @@ assert.equal(
 assert.equal(document.activeElement, slots()[0]);
 await interact(() => edit(slots()[0] as HTMLInputElement, "1"));
 assert.equal(changes.at(-1), "154321");
+
+scenario("success stays until the status changes without asking for idle");
 await interact(() => setStatus("loading"));
 const beforeSuccess = statusRequests.length;
 await interact(() => setStatus("success"));
@@ -501,6 +523,8 @@ assert.equal(otpRoot.getAttribute("data-status"), "success");
 assert.ok(slots().every((slot) => slot.readOnly));
 await interact(() => setStatus("idle"));
 assert.equal(otpRoot.querySelector('[data-slot="input-otp-state"]'), null);
+
+scenario("error feedback does not steal focus from another control");
 await interact(() => setStatus("loading"));
 await interact(() =>
   (document.querySelector("#unrelated") as HTMLElement).focus(),
@@ -517,6 +541,8 @@ assert.equal(
   document.querySelector("#unrelated"),
   "feedback does not steal another instance's focus",
 );
+
+scenario("uncontrolled, disabled and read-only instances keep their values");
 const local = document.querySelector("#local") as HTMLInputElement;
 assert.equal(local.value, "1");
 await interact(() => local.focus());
@@ -540,6 +566,8 @@ assert.equal(
   (document.querySelector("#readonly") as HTMLInputElement).readOnly,
   true,
 );
+
+scenario("alphanumeric codes normalize pasted characters");
 const alpha = document.querySelector("#alpha") as HTMLInputElement;
 await interact(() => alpha.focus());
 await interact(() => paste(alpha, "a7-c9"));
@@ -555,6 +583,8 @@ assert.equal(
     .join(""),
   "A7C9",
 );
+
+scenario("masked slots submit their value through the form attribute");
 assert.equal(
   (document.querySelector("#masked") as HTMLInputElement).type,
   "password",
@@ -565,6 +595,8 @@ assert.equal(
   ),
   "12",
 );
+
+scenario("unmasking switches the slots back to text");
 await interact(() => updateMask(false));
 assert.ok(slots().every((slot) => slot.type === "text"));
 assert.equal(
@@ -573,6 +605,8 @@ assert.equal(
     .join(""),
   "154321",
 );
+
+scenario("slot style callbacks receive the filled state");
 assert.equal(
   document.querySelector("#styled")?.hasAttribute("data-glass"),
   false,
@@ -581,6 +615,8 @@ const styledSlot = document.querySelector("#styled") as HTMLInputElement;
 assert.equal(styledSlot.style.opacity, "0.8");
 await interact(() => paste(styledSlot, "42"));
 assert.equal(styledSlot.style.opacity, "0.9");
+
+scenario("cancelled loading leaves no stale focus ownership");
 await interact(() => inputRef.current?.focus());
 await interact(() => setStatus("loading"));
 await interact(() => setStatus("idle"));
@@ -599,6 +635,8 @@ assert.equal(
   document.body,
   "cancelled loading does not leave stale focus ownership",
 );
+
+scenario("reduced motion restores after the feedback duration");
 reduced = true;
 for (const listener of listeners) listener();
 await interact(() => inputRef.current?.focus());
@@ -613,6 +651,8 @@ assert.equal(otpRoot.getAttribute("data-status"), "idle");
 assert.equal(otpRoot.querySelector('[data-slot="input-otp-state"]'), null);
 assert.equal(document.activeElement, slots()[0]);
 reduced = false;
+
+scenario("a timeout restores the input when animationend never fires");
 await interact(() => updateFeedbackDuration(10));
 await interact(() => setStatus("error"));
 await interact(() => {});
@@ -628,11 +668,15 @@ assert.equal(
   "idle",
   "fallback restores input if animationend was suppressed",
 );
+
+scenario("success with a zero duration stays until the status changes");
 await interact(() => updateFeedbackDuration(0));
 await interact(() => setStatus("success"));
 assert.equal(otpRoot.getAttribute("data-status"), "success");
 assert.ok(otpRoot.querySelector('[data-slot="input-otp-state"]'));
 await interact(() => setStatus("idle"));
+
+scenario("unmount during feedback requests nothing and releases listeners");
 await interact(() => updateFeedbackDuration(1250));
 await interact(() => setStatus("error"));
 const beforeUnmount = statusRequests.length;
@@ -643,6 +687,3 @@ assert.equal(statusRequests.length, beforeUnmount);
 assert.equal(frames.size, 0);
 assert.equal(listeners.size, 0);
 await window.happyDOM.close();
-console.log(
-  "Base UI OTP inputs, paste, validation, refs, feedback loop, focus and cleanup passed",
-);

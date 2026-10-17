@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -142,6 +143,8 @@ function Demo() {
     />
   );
 }
+
+scenario("the demo long-presses the real TabBar and slides its lens");
 await act(async () => {
   root.render(<Demo />);
 });
@@ -188,6 +191,8 @@ assert.equal(
   0,
   "synthetic gesture never requests native pointer capture",
 );
+
+scenario("release commits the destination and hides the pointer");
 await pause(1800);
 assert.deepEqual(
   changes,
@@ -197,6 +202,8 @@ assert.deepEqual(
 assert.equal(track.getAttribute("data-pressed"), "false");
 assert.equal(cursor.style.opacity, "0", "gesture pointer hides on release");
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("hovering keeps the demo playing");
 await act(async () => {
   nav.dispatchEvent(new window.PointerEvent("pointerenter"));
 });
@@ -209,6 +216,8 @@ await act(async () => {
   nav.dispatchEvent(new window.PointerEvent("pointerleave"));
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("real input pauses the demo and an open menu keeps it paused");
 await act(async () => {
   const down = new window.PointerEvent("pointerdown");
   Object.defineProperty(down, "isTrusted", { value: true });
@@ -234,6 +243,8 @@ assert.equal(
   "an open header menu suppresses playback",
 );
 menu.remove();
+
+scenario("the demo plays only while it is on screen");
 await act(async () => {
   intersection?.([{ isIntersecting: true, intersectionRatio: 1 }]);
 });
@@ -246,6 +257,8 @@ await act(async () => {
   intersection?.([{ isIntersecting: true, intersectionRatio: 1 }]);
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("reduced motion pauses the demo");
 await act(async () => {
   preference.matches = true;
   preference.dispatchEvent(new window.Event("change"));
@@ -260,6 +273,8 @@ await act(async () => {
   preference.dispatchEvent(new window.Event("change"));
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("keyboard focus pauses the demo");
 const button = host.querySelector("button");
 assert.ok(button);
 await act(async () => {
@@ -274,6 +289,8 @@ await act(async () => {
   button.blur();
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("a hidden document pauses the demo");
 await act(async () => {
   hidden = true;
   document.dispatchEvent(new window.Event("visibilitychange"));
@@ -288,6 +305,8 @@ await act(async () => {
   document.dispatchEvent(new window.Event("visibilitychange"));
 });
 assert.equal(nav.dataset.homeTabBarDemo, "idle");
+
+scenario("unmount removes the pause listeners");
 await act(async () => {
   root.unmount();
 });
@@ -301,5 +320,4 @@ assert.equal(
   "unmount removes pause listeners",
 );
 assert.equal(captures, 0);
-console.log("Home TabBar cycle and suspension passed");
 window.happyDOM.abort();

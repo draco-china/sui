@@ -2,6 +2,7 @@ import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 import { cssForHappyDOM } from "./css-color";
 
 const window = new Window({ url: "http://localhost" });
@@ -109,9 +110,6 @@ const { Input } = await import("@workspace/ui/components/input");
 const { GlassSurface } = await import("@workspace/ui/components/glass");
 const { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } =
   await import("@workspace/ui/components/tooltip");
-const { GlassContext, withGlass } = await import(
-  "../../../../packages/ui/src/lib/glass/context"
-);
 const { acquireGlass, updateGlassConfiguration } = await import(
   "@workspace/ui/lib/glass/runtime"
 );
@@ -127,29 +125,30 @@ const inputRef = createRef<HTMLInputElement>();
 const siblingRef = createRef<HTMLButtonElement>();
 let clicked = 0;
 let submitted = 0;
+scenario(
+  "glass controls keep native refs and form semantics; the rest stay ordinary",
+);
 await act(async () => {
   root.render(
-    <GlassContext.Provider
-      value={{ configuration, enabled: true, surface: false }}
-    >
+    <div>
       <form
         onSubmit={(event) => {
           event.preventDefault();
           submitted++;
         }}
       >
-        <Button ref={buttonRef} type="button" onClick={() => clicked++}>
+        <Button ref={buttonRef} glass type="button" onClick={() => clicked++}>
           Copy
         </Button>
-        <Input ref={inputRef} name="workspace" defaultValue="Studio" />
-        <Button ref={siblingRef} type="button">
+        <Input ref={inputRef} glass name="workspace" defaultValue="Studio" />
+        <Button ref={siblingRef} glass type="button">
           Paste
         </Button>
-        <Button id="plain" glass={false} type="button">
+        <Button id="plain" type="button">
           Plain
         </Button>
       </form>
-    </GlassContext.Provider>,
+    </div>,
   );
 });
 assert.equal(
@@ -169,12 +168,12 @@ assert.ok(siblingScope);
 assert.notEqual(
   buttonScope,
   siblingScope,
-  "same inherited settings retain independent requests",
+  "the same settings retain independent requests",
 );
 assert.equal(
   inputRef.current?.getAttribute("data-glass"),
   "true",
-  "a field on its own in an enabled scope is a glass field",
+  "a field with glass is a glass field",
 );
 assert.equal(inputRef.current?.name, "workspace");
 assert.equal(inputRef.current?.value, "Studio");
@@ -191,6 +190,9 @@ assert.equal(
   0,
   "a type=button glass control cannot submit the surrounding form",
 );
+scenario(
+  "reduced transparency keeps the CSS material and each request's own shading",
+);
 await pause();
 assert.equal(svgAttempts, 0, "reduced transparency does not request SVG");
 assert.equal(
@@ -206,7 +208,7 @@ assert.equal(
 updateGlassConfiguration({
   ...configuration,
   id: buttonScope,
-  options: { strength: 30 },
+  strength: 30,
 });
 await pause();
 assert.equal(
@@ -234,8 +236,15 @@ assert.equal(buttonRef.current, null);
 assert.equal(inputRef.current, null);
 assert.ok(observers.every((observer) => observer.disconnected));
 
+scenario("standalone frosted glass stays CSS only while glass requests SVG");
 const standaloneRoot = createRoot(host as unknown as HTMLElement);
 reducedTransparency = false;
+await act(async () => {
+  standaloneRoot.render(<Button frosted>Standalone frosted</Button>);
+});
+await pause();
+assert.equal(svgAttempts, 0, "standalone frosted glass stays CSS only");
+assert.equal(host.querySelector("button")?.dataset.glassState, undefined);
 await act(async () => {
   standaloneRoot.render(<Button glass>Standalone glass</Button>);
 });
@@ -245,6 +254,9 @@ assert.equal(host.querySelector("button")?.dataset.glassState, "fallback");
 await act(async () => standaloneRoot.unmount());
 reducedTransparency = true;
 
+scenario(
+  "a Toggle repaints on its pressed state and a controlled Switch keeps an ordinary track",
+);
 const { Toggle } = await import("@workspace/ui/components/toggle");
 const { Switch } = await import("@workspace/ui/components/switch");
 const semanticStyle = document.createElement("style");
@@ -301,6 +313,9 @@ assert.deepEqual(semanticEvents, { input: 0, change: 0 });
 await act(async () => semanticRoot.unmount());
 semanticStyle.remove();
 
+scenario(
+  "a tooltip trigger stays ordinary while a portaled glass popup owns a surface",
+);
 const tooltipHost = document.createElement("div");
 const beforeTooltip = svgAttempts;
 document.body.append(tooltipHost);
@@ -316,7 +331,9 @@ await act(async () => {
             >
               Help
             </TooltipTrigger>
-            <TooltipContent id="tooltip-popup">Useful help</TooltipContent>
+            <TooltipContent id="tooltip-popup" glass>
+              Useful help
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </GlassSurface>
@@ -337,16 +354,10 @@ for (const id of ["tooltip-parent", "default-intensity", "large-intensity"]) {
 const tooltipParent = document.getElementById("tooltip-parent");
 assert.ok(tooltipParent instanceof window.HTMLElement);
 assert.equal(tooltipParent.style.getPropertyValue("--glass-blur"), "");
-assert.equal(tooltipParent.style.getPropertyValue("--glass-opacity"), "30%");
 assert.equal(
   document.getElementById("tooltip-trigger")?.hasAttribute("data-glass"),
   false,
-  "a default trigger shares its existing container material",
-);
-assert.equal(
-  document.getElementById("tooltip-trigger")?.getAttribute("data-glass-part"),
-  "control",
-  "the ordinary trigger remains a semantic part for local focus styling",
+  "a trigger without glass stays ordinary",
 );
 assert.equal(
   document.getElementById("tooltip-popup")?.getAttribute("data-glass"),
@@ -360,6 +371,7 @@ assert.equal(
 );
 await act(async () => tooltipRoot.unmount());
 
+scenario("the first read takes the native paint and unhydrated surfaces wait");
 const surface = document.createElement("div");
 surface.style.backgroundColor = "#ffffff";
 surface.dataset.glass = "true";
@@ -379,7 +391,7 @@ assert.notEqual(
 );
 const initialRelease = acquireGlass({
   id: "leases",
-  options: { tintOpacity: 0 },
+  tintOpacity: 0,
 });
 assert.deepEqual(
   parseGlassColor(surface.style.getPropertyValue("--glass-base")),
@@ -411,11 +423,14 @@ assert.deepEqual(
 );
 releasePending();
 pendingSurface.remove();
+scenario(
+  "translucent caller paint falls back after SVG fails, with shared idempotent leases",
+);
 // Translucent caller paint remains eligible for renderer fallback.
 surface.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
 reducedTransparency = false;
-const releaseOne = acquireGlass({ id: "leases", material: "clear" });
-const releaseTwo = acquireGlass({ id: "leases", material: "clear" });
+const releaseOne = acquireGlass({ id: "leases" });
+const releaseTwo = acquireGlass({ id: "leases" });
 await pause();
 assert.equal(surface.dataset.glassState, "fallback");
 assert.ok(svgAttempts > 1, "surfaces attempt SVG before falling back");
@@ -445,6 +460,7 @@ assert.equal(surface.dataset.glassState, undefined);
 assert.equal(surface.style.getPropertyValue("--glass-base"), "");
 assert.ok(observers.every((observer) => observer.disconnected));
 
+scenario("releasing a DOM lease restores the caller's own glass styles");
 const leaseStyle = {
   "--glass-filter": 'url("#caller-filter")',
   "--glass-edge": "linear-gradient(red, blue)",
@@ -477,7 +493,7 @@ for (const refresh of [false, true]) {
   if (refresh) {
     updateGlassConfiguration({
       id: "caller-styles",
-      options: { strength: 30 },
+      strength: 30,
     });
     await pause();
     assert.notEqual(
@@ -499,6 +515,9 @@ for (const refresh of [false, true]) {
 }
 leased.remove();
 
+scenario(
+  "a surface moved to a new scope keeps its state when the old owner releases",
+);
 const transferred = document.createElement("div");
 transferred.dataset.glass = "true";
 transferred.dataset.glassScope = "previous-scope";
@@ -512,7 +531,7 @@ const releasePreviousScope = acquireGlass({ id: "previous-scope" });
 transferred.dataset.glassScope = "next-scope";
 const releaseNextScope = acquireGlass({
   id: "next-scope",
-  material: "regular",
+  tintOpacity: 0.65,
 });
 const transferredState = transferred.dataset.glassState;
 const transferredPaint = transferred.getAttribute("style");
@@ -526,12 +545,13 @@ assert.equal(
 assert.equal(transferred.getAttribute("style"), transferredPaint);
 await pause();
 assert.equal(transferred.dataset.glassState, "css");
-assert.equal(transferred.style.getPropertyValue("--glass-opacity"), "30%");
+assert.equal(transferred.style.getPropertyValue("--glass-opacity"), "65%");
 releaseNextScope();
 assert.equal(transferred.getAttribute("style"), originalTransferredStyle);
 assert.equal(transferred.dataset.glassState, undefined);
 transferred.remove();
 
+scenario("a hidden surface initializes the renderer only once shown");
 const hidden = document.createElement("div");
 hidden.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
 hidden.hidden = true;
@@ -541,7 +561,7 @@ hidden.dataset.glassScope = "hidden";
 document.body.append(hidden);
 reducedTransparency = false;
 const beforeHidden = svgAttempts;
-const releaseHidden = acquireGlass({ id: "hidden", material: "clear" });
+const releaseHidden = acquireGlass({ id: "hidden" });
 await pause();
 assert.equal(
   svgAttempts,
@@ -561,6 +581,9 @@ releaseHidden();
 reducedTransparency = true;
 assert.equal(hidden.dataset.glassState, undefined);
 assert.ok(observers.every((observer) => observer.disconnected));
+scenario(
+  "theme toggle transitions clean up in order and the locale toggle follows its glyph",
+);
 const { ThemeToggle } = await import("@workspace/ui/components/theme-toggle");
 const { LocaleToggle } = await import("@workspace/ui/components/locale-toggle");
 const transitionFinishes: (() => void)[] = [];
@@ -680,6 +703,7 @@ assert.equal(
   "shared toggles must not own browser preferences",
 );
 await act(async () => toggleRoot.unmount());
+scenario("the language selector portal inherits the glass scope");
 const selectorHost = document.createElement("div");
 document.body.append(selectorHost);
 const selectorRoot = createRoot(selectorHost as unknown as HTMLElement);
@@ -708,6 +732,7 @@ assert.equal(
   "the language selector portal inherits the enabled glass scope",
 );
 await act(async () => selectorRoot.unmount());
+scenario("the navigation menu popup owns its painted background");
 const {
   NavigationMenu,
   NavigationMenuList,
@@ -748,7 +773,8 @@ assert.ok(navigationPopup);
 assert.equal(navigationPopup.getAttribute("data-glass"), "true");
 assert.equal(
   document.getElementById("menu-trigger")?.getAttribute("data-glass"),
-  "true",
+  null,
+  "the menu's glass reaches its popup, not its triggers",
 );
 assert.equal(
   document.getElementById("menu-content")?.getAttribute("data-glass"),
@@ -767,6 +793,7 @@ assert.equal(
 );
 await act(async () => navigationRoot.unmount());
 
+scenario("the sidebar never acquires a glass material");
 const sidebarHost = document.createElement("div");
 document.body.append(sidebarHost);
 const sidebarRoot = createRoot(sidebarHost as unknown as HTMLElement);
@@ -801,6 +828,7 @@ assert.equal(
 );
 await act(async () => sidebarRoot.unmount());
 assert.equal(sidebarRef.current, null);
+scenario("theme examples follow the saved theme and keep the accent");
 Object.assign(globalThis, { localStorage: window.localStorage });
 const { ThemeProvider, useTheme } = await import("next-themes");
 const { default: ThemeExample } = await import(
@@ -914,65 +942,98 @@ for (const finish of transitionFinishes) finish();
 await Promise.resolve();
 await act(async () => exampleRoot.unmount());
 exampleStyle.remove();
+scenario("frosted glass is CSS only and never acquires the runtime");
 const capabilityHost = document.createElement("div");
 document.body.append(capabilityHost);
 const capabilityRoot = createRoot(capabilityHost as unknown as HTMLElement);
 reducedTransparency = false;
-const beforeScope = svgAttempts;
-const beforeScopeObservers = observers.length;
-const Scope = withGlass(
-  (props: { children?: import("react").ReactNode }) => <div {...props} />,
-  "scope",
-);
+const beforeFrosted = svgAttempts;
+const beforeFrostedObservers = observers.length;
 await act(async () =>
   capabilityRoot.render(
-    <Scope glass>
-      <p>No glass mounted yet</p>
-    </Scope>,
-  ),
-);
-await pause();
-assert.equal(
-  svgAttempts,
-  beforeScope,
-  "a layout scope without actual surfaces does not request SVG",
-);
-assert.equal(
-  observers.length,
-  beforeScopeObservers,
-  "a layout scope without actual surfaces does not acquire a runtime owner",
-);
-assert.equal(capabilityHost.querySelector("[data-glass]"), null);
-await act(async () =>
-  capabilityRoot.render(
-    <Button glass id="regular-capability" glassConfig={{ material: "regular" }}>
-      Regular
+    <Button id="frosted-capability" frosted>
+      Frosted
     </Button>,
   ),
 );
 await pause();
+const frostedButton = document.querySelector<
+  typeof window.HTMLElement.prototype
+>("#frosted-capability");
+assert.equal(frostedButton?.getAttribute("data-frosted"), "true");
+assert.equal(frostedButton?.hasAttribute("data-glass"), false);
+assert.equal(frostedButton?.hasAttribute("data-glass-state"), false);
+assert.equal(svgAttempts, beforeFrosted, "frosted glass never requests SVG");
 assert.equal(
-  document
-    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
-    ?.getAttribute("data-glass-state"),
-  "fallback",
-  "Regular requests SVG, then keeps CSS where it is unsupported",
-);
-assert.equal(
-  document
-    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
-    ?.getAttribute("data-glass-material"),
-  "regular",
-);
-assert.equal(
-  document
-    .querySelector<typeof window.HTMLElement.prototype>("#regular-capability")
-    ?.style.getPropertyValue("--glass-opacity"),
-  "30%",
+  observers.length,
+  beforeFrostedObservers,
+  "frosted glass does not acquire a runtime owner",
 );
 await act(async () => capabilityRoot.unmount());
 capabilityHost.remove();
-await window.happyDOM.close();
-console.log(
-  "reduced transparency avoids SVG work; native refs/form semantics, false override, SVG fallback, shared cleanup, and hidden surfaces passed",
+
+scenario(
+  "a Clear surface with nothing to refract never loads the SVG renderer",
 );
+reducedTransparency = false;
+const glassSurface = (scope: string) => {
+  const element = document.createElement("div");
+  element.dataset.glass = "true";
+  element.dataset.glassScope = scope;
+  document.body.append(element);
+  return element;
+};
+// Like the TabBar lens: Clear for its edge light, without a backdrop.
+const flat = glassSurface("flat-lens");
+flat.style.setProperty("backdrop-filter", "none");
+const beforeFlat = svgAttempts;
+const releaseFlat = acquireGlass({ id: "flat-lens" });
+await pause();
+assert.equal(svgAttempts, beforeFlat, "a disabled backdrop requests no SVG");
+assert.equal(flat.dataset.glassState, "css");
+assert.match(
+  flat.style.getPropertyValue("--glass-edge"),
+  /^url\("data:image\/svg\+xml/,
+  "its edge light still shows",
+);
+const refracting = glassSurface("flat-lens");
+await pause();
+assert.equal(
+  svgAttempts,
+  beforeFlat + 1,
+  "a surface that can refract still requests SVG",
+);
+releaseFlat();
+flat.remove();
+refracting.remove();
+scenario("glass inside a glass layer keeps its edge light without refracting");
+const outerLayer = glassSurface("outer-layer");
+const nested = document.createElement("div");
+nested.dataset.glass = "true";
+nested.dataset.glassScope = "nested-layer";
+// glass.css drops a nested surface's backdrop filter.
+nested.style.setProperty("backdrop-filter", "none");
+outerLayer.append(nested);
+const beforeNested = svgAttempts;
+const releaseOuter = acquireGlass({ id: "outer-layer" });
+await pause();
+assert.equal(svgAttempts, beforeNested + 1, "the outer layer refracts");
+const releaseNested = acquireGlass({ id: "nested-layer" });
+await pause();
+assert.equal(
+  svgAttempts,
+  beforeNested + 1,
+  "nested glass never refracts the outer layer again",
+);
+assert.equal(nested.dataset.glassState, "css");
+assert.match(
+  nested.style.getPropertyValue("--glass-edge"),
+  /^url\("data:image\/svg\+xml/,
+  "nested glass keeps its edge light",
+);
+assert.ok(nested.style.getPropertyValue("--glass-opacity"), "and its tint");
+releaseNested();
+releaseOuter();
+outerLayer.remove();
+reducedTransparency = true;
+await window.happyDOM.close();

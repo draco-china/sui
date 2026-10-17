@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { cssForHappyDOM } from "./fixtures/css-color";
+import { describeFixture } from "./support/fixture";
 
 test("DOM fixture translates native OKLCH colors to equivalent sRGB without changing other CSS", () => {
   expect(
@@ -11,36 +12,12 @@ test("DOM fixture translates native OKLCH colors to equivalent sRGB without chan
   );
 });
 
-test("QRCode asynchronous generation, image feedback and cleanup stay isolated", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/qr-runtime.tsx", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "QR async state, stale values, image feedback, logo readiness, instance isolation and cleanup passed",
-  );
-});
+describeFixture(
+  "QRCode generation, image feedback and cleanup",
+  "qr-runtime.tsx",
+);
 
-test("real QR encoder preserves concentric finder radii and corner centers", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/qr-finder-runtime.ts", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "Actual QR SVG finder radii and shared corner centers passed",
-  );
-});
+describeFixture(
+  "QR finder geometry on the real encoder",
+  "qr-finder-runtime.ts",
+);

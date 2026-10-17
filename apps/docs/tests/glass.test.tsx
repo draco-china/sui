@@ -41,15 +41,12 @@ import {
 } from "@workspace/ui/components/tooltip";
 import type { ComponentProps } from "react";
 import { renderToString } from "react-dom/server";
-import {
-  GlassContext,
-  withGlass,
-} from "../../../packages/ui/src/lib/glass/context";
+import { withGlass } from "../../../packages/ui/src/lib/glass/with-glass";
+import { describeFixture } from "./support/fixture";
 
 function Element(props: ComponentProps<"div">) {
   return <div {...props} />;
 }
-const Scope = withGlass(Element, "scope");
 const Surface = withGlass(Element);
 
 function tag(html: string, id: string) {
@@ -77,19 +74,19 @@ describe("glass preserves component semantics", () => {
     expect(html).not.toContain("--glass-initial-blur");
     expect(html).not.toContain("<canvas");
   });
-  test("plain layout and text allow independently enabled controls", () => {
+  test("plain layout and text stay ordinary beside explicit glass controls", () => {
     const html = renderToString(
-      <Scope glass>
+      <div>
         <FieldSet id="text-fieldset">
           <FieldGroup id="text-fieldgroup">
             <Field id="text-field">
               <FieldLabel id="plain-fieldlabel" htmlFor="painted-input">
                 Name
               </FieldLabel>
-              <Input id="painted-input" />
+              <Input id="painted-input" glass />
             </Field>
           </FieldGroup>
-          <ButtonGroup id="text-buttongroup">
+          <ButtonGroup id="text-buttongroup" glass>
             <ButtonGroupText
               id="plain-affix"
               render={<Label htmlFor="painted-input" />}
@@ -111,7 +108,7 @@ describe("glass preserves component semantics", () => {
             Show details
           </Marker>
         </FieldSet>
-      </Scope>,
+      </div>,
     );
     for (const id of [
       "text-fieldset",
@@ -123,13 +120,13 @@ describe("glass preserves component semantics", () => {
       "painted-key",
       "plain-marker-link",
       "plain-marker-button",
+      "painted-button",
     ])
-      expect(tag(html, id)).not.toContain("data-glass=");
-    // A button group is one capsule its buttons share; a field on its own in
-    // the scope is a glass field.
+      expect(tag(html, id)).not.toContain("data-glass");
+    // A button group is one capsule its buttons sit on; the field asked for
+    // glass itself.
     expect(tag(html, "text-buttongroup")).toContain('data-glass="true"');
     expect(tag(html, "text-buttongroup")).toContain('role="group"');
-    expect(tag(html, "painted-button")).toContain('data-glass-part="control"');
     expect(tag(html, "painted-input")).toContain('data-glass="true"');
     expect(tag(html, "plain-fieldlabel")).toMatch(/^<label\b/);
     expect(tag(html, "plain-fieldlabel")).toContain('for="painted-input"');
@@ -144,8 +141,9 @@ describe("glass preserves component semantics", () => {
     const html = renderToString(
       <GlassSurface
         id="initial-options"
-        glassConfig={{
-          options: { tint: "#161617", tintOpacity: 0 },
+        glass={{
+          tint: "#161617",
+          tintOpacity: 0,
         }}
         style={{ minHeight: 48 }}
       />,
@@ -181,46 +179,36 @@ describe("glass preserves component semantics", () => {
     expect(tag(html, "initial-button")).toContain('data-glass-state="loading"');
     expect(html).not.toContain("<svg");
   });
-  test("scope enables one surface layer, explicit false overrides and explicit true nests deliberately", () => {
+  test("glass is never inherited: only components that ask are glass", () => {
     const html = renderToString(
-      <GlassContext.Provider
-        value={{
-          enabled: false,
-          surface: false,
-          configuration: {},
-        }}
-      >
-        <Scope glass id="scope">
-          <Button id="inherited" type="button">
-            Inherited
-          </Button>
-          <Button id="disabled-glass" type="button" glass={false}>
-            Plain
-          </Button>
-          <Surface id="surface">
-            <Button id="nested" type="button">
-              One layer
-            </Button>
-            <Button id="explicit-nested" type="button" glass>
-              Two layers
-            </Button>
-          </Surface>
-        </Scope>
-      </GlassContext.Provider>,
+      <Surface glass id="surface">
+        <Button id="inner" type="button">
+          Ordinary
+        </Button>
+        <Button id="explicit" type="button" glass>
+          Own glass
+        </Button>
+        <Button id="frosted" type="button" frosted>
+          Frosted
+        </Button>
+        <Button id="both" type="button" glass frosted>
+          Clear wins
+        </Button>
+      </Surface>,
     );
-    expect(tag(html, "scope")).not.toContain("data-glass=");
-    expect(tag(html, "inherited")).toContain('data-glass="true"');
-    const scopes = ["inherited", "surface", "explicit-nested"].map(
+    expect(tag(html, "surface")).toContain('data-glass="true"');
+    expect(tag(html, "inner")).not.toContain("data-glass");
+    expect(tag(html, "inner")).not.toContain("data-frosted");
+    expect(tag(html, "explicit")).toContain('data-glass="true"');
+    expect(tag(html, "frosted")).toContain('data-frosted="true"');
+    expect(tag(html, "frosted")).not.toContain("data-glass");
+    expect(tag(html, "both")).toContain('data-glass="true"');
+    expect(tag(html, "both")).not.toContain("data-frosted");
+    const scopes = ["surface", "explicit", "both"].map(
       (id) => tag(html, id).match(/data-glass-scope="([^"]+)"/)?.[1],
     );
     expect(scopes.every(Boolean)).toBe(true);
     expect(new Set(scopes).size).toBe(3);
-    expect(scopes).not.toContain("shared-test-scope");
-    expect(tag(html, "disabled-glass")).not.toContain("data-glass=");
-    expect(tag(html, "surface")).toContain('data-glass="true"');
-    expect(tag(html, "nested")).not.toContain("data-glass=");
-    expect(tag(html, "nested")).toContain('data-glass-part="control"');
-    expect(tag(html, "explicit-nested")).toContain('data-glass="true"');
     expect(html).toContain('data-glass-state="loading"');
     expect(html).not.toContain('data-glass-state="ready"');
   });
@@ -248,7 +236,7 @@ describe("glass preserves component semantics", () => {
     for (const id of ["content-wrapper", "plain-scope-button"])
       expect(tag(html, id)).not.toContain("data-glass=");
   });
-  test("tooltip trigger shares its container without a second material", () => {
+  test("a tooltip trigger stays ordinary inside glass", () => {
     const html = renderToString(
       <GlassSurface id="tooltip-surface">
         <TooltipProvider>
@@ -263,51 +251,30 @@ describe("glass preserves component semantics", () => {
       </GlassSurface>,
     );
     expect(tag(html, "tooltip-surface")).toContain('data-glass="true"');
-    expect(tag(html, "tooltip-trigger")).not.toContain("data-glass=");
-    expect(tag(html, "tooltip-trigger")).toContain('data-glass-part="control"');
+    expect(tag(html, "tooltip-trigger")).not.toContain("data-glass");
   });
-  test("menubar titles stay ordinary inside and outside glass", () => {
+  test("menubar titles stay ordinary inside glass", () => {
     const html = renderToString(
-      <>
-        <GlassSurface>
-          <Menubar>
-            <MenubarMenu>
-              <MenubarTrigger id="inner-menu-trigger">File</MenubarTrigger>
-            </MenubarMenu>
-          </Menubar>
-        </GlassSurface>
-        <GlassContext.Provider
-          value={{ enabled: true, surface: false, configuration: {} }}
-        >
-          <Menubar>
-            <MenubarMenu>
-              <MenubarTrigger id="outer-menu-trigger">Help</MenubarTrigger>
-            </MenubarMenu>
-          </Menubar>
-        </GlassContext.Provider>
-      </>,
+      <GlassSurface>
+        <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger id="inner-menu-trigger">File</MenubarTrigger>
+          </MenubarMenu>
+        </Menubar>
+      </GlassSurface>,
     );
-    for (const id of ["inner-menu-trigger", "outer-menu-trigger"]) {
-      expect(tag(html, id)).not.toContain("data-glass=");
-      expect(tag(html, id)).not.toContain("data-glass-part=");
-    }
+    expect(tag(html, "inner-menu-trigger")).not.toContain("data-glass");
   });
   test("QR shells use a real glass scope and leave the scanner image undecorated", () => {
     const html = renderToString(
-      <GlassContext.Provider
-        value={{
-          enabled: true,
-          surface: false,
-          configuration: {},
-        }}
-      >
+      <>
         <GlassSurface id="card">
           <QRCode id="code" value="connect:studio" />
         </GlassSurface>
         <GlassSurface id="plain-card" glass={false}>
           <QRCode value="connect:studio" />
         </GlassSurface>
-      </GlassContext.Provider>,
+      </>,
     );
     expect(tag(html, "card")).toContain('data-glass="true"');
     expect(tag(html, "card")).toContain("data-glass-scope=");
@@ -344,7 +311,7 @@ describe("glass preserves component semantics", () => {
     );
     expect(plain).not.toContain('data-glass="true"');
   });
-  test("navigation triggers inherit the enabled scope without decorating the layout root", () => {
+  test("navigation menu glass reaches its popup, not the root or triggers", () => {
     const html = renderToString(
       <NavigationMenu glass id="navigation">
         <NavigationMenuList>
@@ -353,26 +320,20 @@ describe("glass preserves component semantics", () => {
               Products
             </NavigationMenuTrigger>
           </NavigationMenuItem>
+          <NavigationMenuItem value="docs">
+            <NavigationMenuTrigger id="glass-trigger" glass>
+              Docs
+            </NavigationMenuTrigger>
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>,
     );
-    expect(tag(html, "navigation")).not.toContain("data-glass=");
-    expect(tag(html, "navigation-trigger")).toContain('data-glass="true"');
+    expect(tag(html, "navigation")).not.toContain("data-glass");
+    expect(tag(html, "navigation-trigger")).not.toContain("data-glass");
+    expect(tag(html, "glass-trigger")).toContain('data-glass="true"');
   });
-  test("isolated DOM keeps native refs, forms, leases and fallback behavior", () => {
-    const result = Bun.spawnSync({
-      cmd: [
-        process.execPath,
-        new URL("./fixtures/glass-dom.tsx", import.meta.url).pathname,
-      ],
-      cwd: new URL("..", import.meta.url).pathname,
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-    expect(new TextDecoder().decode(result.stderr)).toBe("");
-    expect(result.exitCode).toBe(0);
-    expect(new TextDecoder().decode(result.stdout)).toContain(
-      "hidden surfaces passed",
-    );
-  }, 10_000);
+  describeFixture(
+    "Isolated DOM keeps native refs, forms, leases and fallback behavior",
+    "glass-dom.tsx",
+  );
 });

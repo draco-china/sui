@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost",
@@ -125,10 +126,14 @@ function App() {
     </form>
   );
 }
+
+scenario("the trigger forwards its ref to a non-submitting button");
 await interaction(() => root.render(<App />));
 assert.equal(ref.current, document.querySelector("#trigger"));
 assert.equal(ref.current?.tagName, "BUTTON");
 assert.equal(ref.current?.getAttribute("type"), "button");
+
+scenario("the hex field keeps invalid and partial drafts, completed on blur");
 const local = document.querySelector("#local");
 assert.ok(local);
 const localInput = local.querySelector(
@@ -160,6 +165,8 @@ await interaction(() =>
   ),
 );
 assert.equal(localInput.value, "#123456FF");
+
+scenario("the saturation area follows keyboard steps and keeps the hue");
 await interaction(() => edit(localInput, "#f008"));
 const area = local.querySelector(
   '[data-slot="color-picker-saturation"]',
@@ -187,6 +194,8 @@ await interaction(() =>
   ),
 );
 assert.equal(localInput.value, "#E6000088");
+
+scenario("dragging the area captures the pointer until it is cancelled");
 area.getBoundingClientRect = () => ({
   left: 10,
   top: 10,
@@ -224,6 +233,8 @@ await interaction(() => area.dispatchEvent(pointer("pointercancel", 210, 10)));
 assert.equal(captures.size, 0);
 await interaction(() => area.dispatchEvent(pointer("pointermove", 10, 110)));
 assert.equal(localInput.value, "#FF000088");
+
+scenario("an OKLCH draft keeps a zero alpha");
 const localFormatTrigger = local.querySelector(
   '[data-slot="select-trigger"]',
 ) as HTMLButtonElement;
@@ -246,6 +257,8 @@ const localOpacity = local.querySelectorAll(
   'input[type="range"]',
 )[1] as HTMLInputElement;
 assert.equal(localOpacity?.value, "0");
+
+scenario("a disabled picker ignores the keyboard");
 const disabledArea = document.querySelector(
   '#disabled [data-slot="color-picker-saturation"]',
 ) as HTMLElement;
@@ -267,12 +280,16 @@ assert.equal(
   ).value,
   "#007AFF",
 );
+
+scenario("a controlled picker that rejects a change keeps its value");
 const rejectedInput = document.querySelector(
   '#rejected input[data-slot="input"]',
 ) as HTMLInputElement;
 await interaction(() => edit(rejectedInput, "#FF0000"));
 assert.equal(rejectedInput.value, "#0000FF");
 assert.equal(requests.at(-1), "#FF0000");
+
+scenario("the popover offers each valid swatch once and follows the value");
 await interaction(() => ref.current?.click());
 const popup = document.querySelector('[data-slot="popover-content"]');
 assert.ok(popup);
@@ -290,6 +307,8 @@ assert.equal(
   "#00FF00",
 );
 assert.equal(swatches[1]?.getAttribute("aria-pressed"), "true");
+
+scenario("RGB and OKLCH fields convert, validate and follow the value");
 const formatTrigger = popup.querySelector(
   '[data-slot="select-trigger"]',
 ) as HTMLButtonElement;
@@ -328,6 +347,8 @@ assert.equal(document.querySelector("output")?.textContent, "#FF0000");
 await interaction(() => changeExternal("#00FF00"));
 assert.equal(rgbInput.getAttribute("aria-invalid"), null);
 assert.match(rgbInput.value, /^oklch\(86.643/);
+
+scenario("the eye dropper runs once, applies its color and reports failure");
 const dropperButton = popup.querySelector(
   'button[aria-label="Pick a screen color"]',
 ) as HTMLButtonElement;
@@ -354,6 +375,8 @@ assert.equal(
 );
 assert.equal(document.querySelector("output")?.textContent, "#123456");
 assert.equal(submissions, 0);
+
+scenario("Escape closes the popover and refocuses the trigger");
 await interaction(() =>
   document.dispatchEvent(
     new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
@@ -362,6 +385,8 @@ await interaction(() =>
 await interaction(() => {});
 assert.equal(ref.current?.getAttribute("aria-expanded"), "false");
 assert.equal(document.activeElement, ref.current);
+
+scenario("unmount aborts a pending eye dropper");
 await interaction(() => ref.current?.click());
 const reopenedDropper = document.querySelector(
   '[data-slot="popover-content"] button[aria-label="Pick a screen color"]',
@@ -372,4 +397,3 @@ await interaction(() => root.unmount());
 assert.equal(lastDropperSignal?.aborted, true);
 
 await window.happyDOM.close();
-console.log("ColorPicker DOM passed");

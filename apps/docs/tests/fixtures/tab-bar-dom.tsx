@@ -5,7 +5,8 @@ import {
   type HTMLElement as HappyHTMLElement,
   Window,
 } from "happy-dom";
-import type { GlassConfiguration } from "../../../../packages/ui/src/lib/glass/context";
+import type { GlassConfiguration } from "../../../../packages/ui/src/lib/glass/defaults";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -114,8 +115,7 @@ function Demo() {
     >
       <TabBar
         ref={ref}
-        glass
-        glassConfig={{ options: { strength: 30 } }}
+        glass={{ strength: 30 }}
         aria-label="Destinations"
         value={value}
         onItemActivate={() => activations++}
@@ -133,6 +133,7 @@ function Demo() {
     </form>
   );
 }
+scenario("the bar keeps its native ref and only the track takes glass at rest");
 await act(async () => {
   root.render(<Demo />);
 });
@@ -194,6 +195,9 @@ const pointer = async (
   });
   return event;
 };
+scenario(
+  "a long press lifts a Clear lens in its own scope over the frozen bar",
+);
 hit = button("Home");
 assert.equal((await pointer(hit, "pointerdown")).defaultPrevented, true);
 assert.equal(document.activeElement, hit, "pointer activation preserves focus");
@@ -206,9 +210,9 @@ const lensScope = lens().getAttribute("data-glass-scope");
 assert.ok(lensScope);
 assert.notEqual(lensScope, outerScope, "held lens has an independent scope");
 assert.equal(
-  configurations.get(lensScope)?.options?.strength,
+  configurations.get(lensScope)?.strength,
   30,
-  "lens keeps inherited option configuration",
+  "the lens takes the bar's own settings",
 );
 assert.equal(leases.get(lensScope), 1);
 const nativeDrag = new window.Event("dragstart", {
@@ -234,6 +238,10 @@ assert.equal(
   "true",
   "only held selection gets floating glass",
 );
+assert.ok(
+  lens().hasAttribute("data-glass-lens"),
+  "the lens may sit on the glass bar",
+);
 assert.equal(lens().getAttribute("data-glass-motion"), "true");
 await act(async () => {
   await new Promise((resolve) => setTimeout(resolve, 220));
@@ -241,6 +249,7 @@ await act(async () => {
 assert.equal((lens() as HappyHTMLElement).style.height, "74px");
 assert.equal(lens().getAttribute("data-glass-motion"), "false");
 assert.deepEqual(changes, [], "holding never commits navigation");
+scenario("dragging previews another item and release commits it once");
 hit = button("Search");
 await pointer(track(), "pointermove", 104);
 assert.equal(lens().getAttribute("data-glass-motion"), "true");
@@ -273,6 +282,7 @@ await act(async () => {
   );
 });
 assert.equal(activations, 1, "pointer release does not activate twice");
+scenario("cancelling a drag restores the selection and stops motion tracking");
 hit = button("Home");
 await pointer(hit, "pointerdown");
 await pointer(track(), "pointermove", 50);
@@ -291,6 +301,7 @@ assert.equal(
   "false",
   "cancel interrupts GPU motion tracking",
 );
+scenario("the keyboard skips disabled items and commits only on activation");
 await act(async () => {
   button("Search").focus();
   button("Search").dispatchEvent(
@@ -310,6 +321,7 @@ await act(async () => {
 });
 assert.deepEqual(changes, ["search", "activity"]);
 assert.equal(submitted, 0);
+scenario("a short press commits once after a long press");
 hit = button("Home");
 await pointer(hit, "pointerdown");
 await pointer(track(), "pointerup");
@@ -324,6 +336,7 @@ assert.deepEqual(
   "short pointer release commits once after a long press",
 );
 assert.equal(activations, 3);
+scenario("reduced motion completes the press without tweens");
 hit = button("Home");
 await pointer(hit, "pointerdown");
 await pointer(track(), "pointermove", 50);
@@ -361,6 +374,9 @@ await act(async () => {
   motionPreference.matches = false;
   motionPreference.dispatchEvent(new window.Event("change"));
 });
+scenario(
+  "past either end the end item stays held and the lens overshoots by half at most",
+);
 // Past either end, the end item stays held and the lens rubber-bands out by
 // at most half its held size.
 hit = button("Home");
@@ -390,6 +406,7 @@ assert.equal(
   "activity",
   "releasing past the end selects the end item",
 );
+scenario("unmount releases tweens, motion tracking and every glass scope");
 hit = button("Home");
 await pointer(hit, "pointerdown");
 await pointer(track(), "pointermove", 50);
@@ -412,8 +429,5 @@ assert.equal(
 assert.ok(
   [...leases.values()].every((count) => count === 0),
   "unmount releases all glass scopes",
-);
-console.log(
-  "Tab Bar native ref, blur-only selection, floating press, release, cancellation, keyboard and cleanup passed",
 );
 window.happyDOM.abort();

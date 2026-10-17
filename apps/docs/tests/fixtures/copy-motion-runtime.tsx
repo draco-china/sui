@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost/docs?preview=1#example",
@@ -183,6 +184,8 @@ function Example() {
     </form>
   );
 }
+
+scenario("server markup hydrates without recoverable errors");
 const host = document.createElement("div");
 document.body.append(host);
 host.innerHTML = renderToString(<Example />);
@@ -215,6 +218,8 @@ async function settle() {
     await frame(clock);
   }
 }
+
+scenario("a generic morph icon morphs and sets its path through its ref");
 const generic = document.querySelector("#generic");
 assert.ok(generic);
 assert.equal(generic.getAttribute("width"), "16");
@@ -227,6 +232,8 @@ await settle();
 assert.notEqual(genericPath?.getAttribute("d"), initialGeneric);
 genericRef.current?.set("M2 2L22 22");
 assert.equal(genericPath?.getAttribute("d"), initialGeneric);
+
+scenario("the copy icon morphs one path into a check");
 const svg = document.querySelector("#geometry");
 assert.ok(svg);
 const path = svg.querySelector("path");
@@ -254,6 +261,8 @@ assert.equal(
   path,
   "the same SVG path survives the transition",
 );
+
+scenario("an interrupted morph continues from its current shape");
 await interaction(() => updateState("idle"));
 clock += 16;
 await frame(clock);
@@ -268,6 +277,8 @@ assert.equal(
 );
 await settle();
 assert.equal(path.getAttribute("d"), checkPath);
+
+scenario("reduced motion jumps straight to each state");
 reduced = true;
 for (const listener of listeners) listener();
 await interaction(() => updateState("idle"));
@@ -280,6 +291,8 @@ await interaction(() => updateState("error"));
 assert.notEqual(path.getAttribute("d"), copyPath);
 assert.equal(svg.getAttribute("data-copy-state"), "error");
 assert.equal(document.querySelector("#geometry path"), path);
+
+scenario("inline copy ignores clicks while pending and keeps its path");
 function button(selector: string) {
   const found = document.querySelector(selector);
   assert.ok(found);
@@ -296,6 +309,8 @@ assert.equal(writes.filter((value) => value === "full inline value").length, 1);
 await interaction(resolveWrite);
 assert.equal(inline.getAttribute("data-copy-status"), "copied");
 assert.equal(inline.querySelector("svg path"), inlinePath);
+
+scenario("clipboard text copies the full value and shows a failed write");
 const clipboard = button('[data-slot="clipboard-text"] button');
 await interaction(() => clipboard.click());
 assert.equal(writes.at(-1), "full clipboard value");
@@ -306,6 +321,8 @@ assert.equal(
     ?.getAttribute("data-slot"),
   "copy-icon",
 );
+
+scenario("a sensitive input copies its private value");
 deferred = false;
 const sensitive = button('[data-slot="sensitive-input-copy"]');
 await interaction(() => sensitive.click());
@@ -316,6 +333,8 @@ assert.equal(
     ?.getAttribute("data-slot"),
   "copy-icon",
 );
+
+scenario("code blocks copy without ignored nodes and keep custom actions");
 const codeCopy = button('figure button[aria-label="复制代码"]');
 await interaction(() => codeCopy.click());
 assert.equal(writes.at(-1), "first\nsecond");
@@ -328,6 +347,8 @@ assert.equal(
 assert.ok(
   document.querySelector("figure")?.textContent?.includes("Custom toolbar"),
 );
+
+scenario("headings copy their link with the current query");
 const heading = button('button[aria-label="复制标题链接"]');
 const headingPath = heading.querySelector("svg path");
 await interaction(() => heading.click());
@@ -339,6 +360,8 @@ assert.equal(
     ?.getAttribute("data-slot"),
   "copy-icon",
 );
+
+scenario("the Markdown button copies the fetched page");
 const markdown = button('button[aria-label="复制 Markdown"]');
 await interaction(() => markdown.click());
 assert.equal(writes.at(-1), "# Full Markdown\n\nFull body with examples.");
@@ -348,6 +371,8 @@ assert.equal(
     ?.getAttribute("data-slot"),
   "copy-icon",
 );
+
+scenario("a failed Markdown fetch shows the error label");
 await interaction(() => updateUrl("/markdown/b"));
 fetchStatus = 500;
 await interaction(() => markdown.click());
@@ -358,6 +383,8 @@ assert.equal(
     ?.getAttribute("data-slot"),
   "copy-icon",
 );
+
+scenario("a new URL aborts a pending Markdown fetch");
 fetchStatus = 200;
 delayFetch = true;
 await interaction(() => updateUrl("/markdown/c"));
@@ -370,6 +397,8 @@ await interaction(() => updateUrl("/markdown/d"));
 assert.equal(requestSignal?.aborted, true);
 assert.equal(markdown.getAttribute("aria-label"), "复制 Markdown");
 assert.equal(markdown.disabled, false);
+
+scenario("unmount aborts fetches and stops every animation");
 await interaction(() => markdown.click());
 const detachedPath = path.getAttribute("d");
 await interaction(() => root.unmount());
@@ -383,6 +412,3 @@ assert.equal(
   "unmounted SVG is no longer updated",
 );
 await window.happyDOM.close();
-console.log(
-  "Copy SVG morphs, clipboard integration, Markdown fetching and cleanup passed",
-);

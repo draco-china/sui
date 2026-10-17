@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -113,13 +114,6 @@ const { act, createRef } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { GlassSurface } = await import("@workspace/ui/components/glass");
 const { Button } = await import("@workspace/ui/components/button");
-const { withGlass } = await import(
-  "../../../../packages/ui/src/lib/glass/context"
-);
-const Scope = withGlass(
-  (props: React.ComponentProps<"div">) => <div {...props} />,
-  "scope",
-);
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host as unknown as HTMLElement);
@@ -140,24 +134,23 @@ async function render({
         <GlassSurface
           id="left"
           ref={leftRef}
-          glass={left}
-          glassConfig={{ options: { strength } }}
+          glass={left && { strength }}
           style={{ borderRadius: 9, minHeight: 48 }}
         />
         <GlassSurface
           id="right"
           ref={rightRef}
-          glass={right}
-          glassConfig={{ material: "regular", options: { strength: 17 } }}
+          glass={right && { strength: 17 }}
         />
-        <Scope glass={false}>
+        <div>
           <Button id="disabled-child">Plain</Button>
-        </Scope>
+        </div>
       </>,
     ),
   );
   await act(async () => new Promise((r) => setTimeout(r, 250)));
 }
+scenario("each surface gets its own scope and native SVG filter");
 await render();
 const left = leftRef.current,
   right = rightRef.current;
@@ -176,7 +169,7 @@ assert.notEqual(ids[0], ids[1]);
 for (const e of [left, right]) {
   assert.equal(e.dataset.glassState, "ready");
   assert.equal(e.dataset.glassRenderer, "svg");
-  assert.equal(e.hasAttribute("glassConfig"), false);
+  assert.equal(e.hasAttribute("glass"), false);
 }
 assert.match(left.style.getPropertyValue("--glass-edge"), /^url\("data:/);
 assert.equal(left.style.borderRadius, "9px");
@@ -184,12 +177,14 @@ assert.equal(
   document.getElementById("disabled-child")?.hasAttribute("data-glass"),
   false,
 );
+scenario("a setting change refilters only its own surface");
 const rightFilter = right.style.getPropertyValue("--glass-filter");
 await render({ strength: 31 });
 assert.deepEqual([left.dataset.glassScope, right.dataset.glassScope], ids);
 assert.equal(geometry.get(left)?.strength, 31);
 assert.equal(geometry.get(right)?.strength, 17);
 assert.equal(right.style.getPropertyValue("--glass-filter"), rightFilter);
+scenario("opting out releases one surface and keeps the caller's styles");
 left.style.setProperty(
   "background-color",
   "rgba(10, 20, 30, 0.2)",
@@ -204,11 +199,9 @@ assert.equal(left.style.borderRadius, "9px");
 assert.equal(right.dataset.glassState, "ready");
 assert.equal(activeFilters.has(left), false);
 assert.equal(activeFilters.has(right), true);
+scenario("unmounting releases the filters, the renderer and the observers");
 await act(async () => root.unmount());
 assert.equal(activeFilters.size, 0);
 assert.equal(svgDestroy, 1);
 assert.ok(observers.every((o) => o.disconnected));
 await window.happyDOM.abort();
-console.log(
-  "local requests passed: independent settings, native SVG isolation, refs, opt-out and disposal",
-);

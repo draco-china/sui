@@ -17,7 +17,6 @@ import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 import { ImageViewer } from "@workspace/ui/components/image-viewer";
 import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
 import { renderToStaticMarkup } from "react-dom/server";
-import { GlassContext } from "../../../packages/ui/src/lib/glass/context";
 import {
   clampImageScale,
   normalizeImageIndex,
@@ -27,6 +26,7 @@ import {
   codeToViewerTokens,
   getViewerHighlighter,
 } from "../../../packages/ui/src/lib/viewer/shiki";
+import { describeFixture } from "./support/fixture";
 
 describe("viewer SSR and untrusted content", () => {
   test("code escapes executable content before asynchronous highlighting", () => {
@@ -243,64 +243,28 @@ describe("gallery limits", () => {
   });
 });
 
-test("isolated DOM exercises editor state, viewer controls, streaming and fullscreen", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/viewers-dom.tsx", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "detached fullscreen passed",
-  );
-}, 20_000);
+describeFixture(
+  "Editors, viewers, streaming and fullscreen in Happy DOM",
+  "viewers-dom.tsx",
+);
 
-test("editor maps real JSX and TSX Shiki grammars onto native Monaco model languages", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/editor-highlighting.ts", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "actual official JSX/TSX tokenizers",
-  );
-});
+describeFixture(
+  "Editor highlighting with the real JSX and TSX grammars",
+  "editor-highlighting.ts",
+);
 
-test("editor workers release shared threads and reopen with a fresh actual Monaco client", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/editor-workers.ts", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "actual Monaco TS/JS/JSON/CSS/HTML cache reset",
-  );
-});
+describeFixture(
+  "Editor workers on the real Monaco clients",
+  "editor-workers.ts",
+);
 
-test("markdown content stays plain while independent editor actions inherit glass", () => {
+test("markdown content and editor actions stay plain inside glass", () => {
   const markdown = "```typescript\nconst answer = 42;\n```";
   const html = renderToStaticMarkup(
-    <GlassContext value={{ enabled: true, surface: false }}>
+    <>
       <MarkdownViewer content={markdown} />
       <HtmlViewer content="<h1>Plain HTML</h1>" />
-    </GlassContext>,
+    </>,
   );
   expect(html).not.toContain('data-glass="true"');
   expect(html).not.toMatch(
@@ -310,13 +274,11 @@ test("markdown content stays plain while independent editor actions inherit glas
     <MarkdownViewer content={content} />
   );
   const editor = renderToStaticMarkup(
-    <GlassContext value={{ enabled: true, surface: false }}>
-      <Editor
-        value={markdown}
-        height={240}
-        preview={{ component: Preview, defaultMode: "preview" }}
-      />
-    </GlassContext>,
+    <Editor
+      value={markdown}
+      height={240}
+      preview={{ component: Preview, defaultMode: "preview" }}
+    />,
   );
   // Editors are content: neither the surface nor its toolbar actions use glass.
   expect(editor).not.toContain("data-glass");
@@ -331,17 +293,15 @@ test("markdown content stays plain while independent editor actions inherit glas
 
 test("carousel material belongs only to navigation controls", () => {
   const html = renderToStaticMarkup(
-    <GlassContext value={{ enabled: true, surface: false }}>
-      <Carousel>
-        <CarouselContent>
-          <CarouselItem>
-            <img src="/photo.png" alt="Mountain lake" />
-          </CarouselItem>
-        </CarouselContent>
-        <CarouselPrevious glass={false} />
-        <CarouselNext />
-      </Carousel>
-    </GlassContext>,
+    <Carousel>
+      <CarouselContent>
+        <CarouselItem>
+          <img src="/photo.png" alt="Mountain lake" />
+        </CarouselItem>
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext glass />
+    </Carousel>,
   );
   expect((html.match(/data-glass="true"/g) ?? []).length).toBe(1);
   expect(html).toMatch(/data-slot="carousel-next"[^>]*data-glass="true"/);
@@ -352,18 +312,16 @@ test("carousel material belongs only to navigation controls", () => {
   expect(html).toContain('aria-roledescription="slide"');
 });
 
-test("code tools stay ordinary, including their actions, inside glass scopes", () => {
+test("code tools stay ordinary, including their actions, inside glass", () => {
   const code = "function answer() {\n  return 42;\n}";
-  for (const surface of [false, true]) {
-    const html = renderToStaticMarkup(
-      <GlassContext value={{ enabled: true, surface }}>
-        <CodeViewer code={code} />
-        <CodeViewer code={code} variant="plain" />
-        <DiffViewer oldCode="const answer = 1;" newCode="const answer = 42;" />
-        <Editor value={code} language="typescript" height={240} />
-      </GlassContext>,
-    );
-    expect(html).not.toContain("data-glass");
-    expect(html).toMatch(/<button\b/);
-  }
+  const html = renderToStaticMarkup(
+    <GlassSurface>
+      <CodeViewer code={code} />
+      <CodeViewer code={code} variant="plain" />
+      <DiffViewer oldCode="const answer = 1;" newCode="const answer = 42;" />
+      <Editor value={code} language="typescript" height={240} />
+    </GlassSurface>,
+  );
+  expect(html.match(/data-glass="true"/g)).toHaveLength(1);
+  expect(html).toMatch(/<button\b/);
 });

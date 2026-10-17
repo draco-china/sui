@@ -84,7 +84,7 @@ describe("Loader server rendering contract", () => {
       expect(svg?.classList.contains("origin-center")).toBe(true);
       expect(
         window.document.querySelector('[data-slot="loader"]')?.className,
-      ).toContain("motion-reduce:[&_*]:animate-none!");
+      ).toContain("motion-reduce:**:animate-none!");
       expect(arc?.getAttribute("pathLength")).toBe("100");
       expect(arc?.getAttribute("stroke-dasharray")).toBe("25 75");
       expect(arc?.getAttribute("transform")).toBe("rotate(-90 20 20)");

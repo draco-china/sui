@@ -8,6 +8,7 @@ import {
   parseColor,
   parseHexColor,
 } from "@workspace/ui/lib/color/model";
+import { describeFixture } from "./support/fixture";
 
 function required<T>(value: T | null): T {
   assert.notEqual(value, null);
@@ -72,22 +73,10 @@ test("editable RGB/HSL/HSB validate ranges and retain opacity", () => {
   }
 });
 
-test("ColorPicker actual DOM handles controlled and local values, validation, keyboard, pointers and popup focus", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/color-picker-runtime.tsx", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "ColorPicker DOM passed",
-  );
-}, 20_000);
+describeFixture(
+  "ColorPicker values, validation, pointers and popup",
+  "color-picker-runtime.tsx",
+);
 
 test("OKLCH known primaries, neutral endpoints and alpha match sRGB", () => {
   const vectors = [

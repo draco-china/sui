@@ -348,10 +348,10 @@ test("RSC installations preserve client boundaries for every interactive public 
   expect(checked).toBeGreaterThan(36);
   const button = registry.items.find((item) => item.name === "button");
   expect(
-    button?.files?.find((file) => file.path.endsWith("/glass/context.tsx"))
+    button?.files?.find((file) => file.path.endsWith("/glass/with-glass.tsx"))
       ?.content,
   ).toMatch(/^"use client";/);
   expect(
     button?.files?.some((file) => file.path.endsWith("/class-name.ts")),
-  ).toBe(true);
+  ).toBe(false);
 }, 30_000);

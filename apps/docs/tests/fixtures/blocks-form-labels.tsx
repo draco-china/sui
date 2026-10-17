@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 Object.assign(globalThis, {
@@ -37,6 +38,8 @@ async function until(condition: () => boolean) {
   }
   assert.ok(condition(), "Async form state did not settle");
 }
+
+scenario("the bug report form validates with English defaults");
 const english = render(<BugReportForm onSubmit={() => {}} />);
 assert.ok(english.getByText("Bug report"));
 assert.ok(english.getByRole("button", { name: "Submit report" }));
@@ -50,6 +53,7 @@ assert.equal(
 );
 cleanup();
 
+scenario("translated messages validate the title and description lengths");
 let fail = true;
 let submitted: { title: string; description: string } | undefined;
 const translated = render(
@@ -86,6 +90,8 @@ await until(
     !translated.queryByText("标题最多 80 个字符。") &&
     !translated.queryByText("描述最多 500 个字符。"),
 );
+
+scenario("a failed submit shows the error, a retry saves and reset clears");
 const form = translated.container.querySelector("form");
 assert.ok(form);
 await act(async () => {
@@ -110,6 +116,7 @@ assert.equal((title as HTMLInputElement).value, "");
 assert.equal(translated.queryByRole("status"), null);
 cleanup();
 
+scenario("the profile form validates email and name in Chinese");
 const profile = render(
   <ProfileForm
     labels={chineseProfileFormLabels}
@@ -129,6 +136,7 @@ fireEvent.blur(profile.getByLabelText("姓名"));
 await until(() => !!profile.queryByText("姓名最多 50 个字符。"));
 cleanup();
 
+scenario("a pending submission disables the fields until it settles");
 let finishSubmission: (() => void) | undefined;
 const pending = render(
   <ProfileForm
@@ -169,6 +177,7 @@ assert.equal(
 );
 cleanup();
 
+scenario("partial labels override only their own text");
 const partial = render(
   <ProfileForm labels={{ submit: "保存" }} onSubmit={() => {}} />,
 );
@@ -176,7 +185,4 @@ assert.ok(partial.getByRole("button", { name: "保存" }));
 assert.ok(partial.getByLabelText("Name"));
 assert.ok(partial.getByRole("button", { name: "Reset" }));
 cleanup();
-console.log(
-  "English defaults, external Chinese validation and feedback, reset and partial overrides passed",
-);
 await window.happyDOM.abort();

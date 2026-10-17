@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { glassMaterial } from "../../../packages/ui/src/lib/glass/material";
+import { describeFixture } from "./support/fixture";
 
 const neutral = [1, 1, 1, 1] as [number, number, number, number];
 const blue = [0, 0.3, 0.8, 1] as typeof neutral;
@@ -219,19 +220,7 @@ test("missing surfaces and transparent paint cannot acquire a neutral color iden
   ).toBeCloseTo(0.28);
 });
 
-test("native material follows themes, caller styles and independent cleanup", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/glass-native-material.ts", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "explicit caller paint and cleanup passed",
-  );
-});
+describeFixture(
+  "Native material follows themes, caller styles and cleanup",
+  "glass-native-material.ts",
+);

@@ -1,9 +1,15 @@
 import { expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
 import { FieldSeparator } from "@workspace/ui/components/field";
+import { GlassSurface } from "@workspace/ui/components/glass";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@workspace/ui/components/resizable";
 import { Separator } from "@workspace/ui/components/separator";
 import { Window } from "happy-dom";
 import { renderToStaticMarkup } from "react-dom/server";
+import { compiledStylesheet, declaredValues } from "./support/css";
 
 function render(html: string) {
   const window = new Window();
@@ -55,14 +61,35 @@ test("FieldSeparator text no longer masks the line with the page background", ()
 });
 
 test("separators inside glass use a translucent foreground line", () => {
-  const css = readFileSync(
-    new URL(
-      "../../../packages/ui/src/styles/components/glass.css",
-      import.meta.url,
+  const css = compiledStylesheet("components/glass.css");
+  const document = render(
+    renderToStaticMarkup(
+      <>
+        <Separator id="plain" />
+        <GlassSurface>
+          <Separator id="glass" />
+          <FieldSeparator>Or</FieldSeparator>
+          <ResizablePanelGroup>
+            <ResizablePanel />
+            <ResizableHandle id="handle" />
+            <ResizablePanel />
+          </ResizablePanelGroup>
+        </GlassSurface>
+      </>,
     ),
-    "utf8",
   );
-  expect(css).toMatch(
-    /:is\(\[role="separator"\], \[data-slot="separator-line"\]\):not\(\s*\[data-slot="resizable-handle"\]\s*\) \{\s*background-color: color-mix\(in srgb, var\(--foreground\) 12%, transparent\);/,
+  const line = (element: Parameters<typeof declaredValues>[1] | null) => {
+    if (!element) throw new Error("Expected a separator");
+    return declaredValues(css, element, "background-color");
+  };
+  const translucent = [
+    "color-mix(in srgb, var(--foreground) 12%, transparent)",
+  ];
+  expect(line(document.getElementById("glass"))).toEqual(translucent);
+  expect(line(document.querySelector('[data-slot="separator-line"]'))).toEqual(
+    translucent,
   );
+  // Outside glass the theme's border color stays, and resize handles keep theirs.
+  expect(line(document.getElementById("plain"))).toEqual([]);
+  expect(line(document.getElementById("handle"))).toEqual([]);
 });

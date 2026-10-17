@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost",
@@ -215,12 +216,16 @@ function ControlledGallery() {
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host);
+
+scenario("a closed controlled viewer renders no popup");
 await interaction(() => root.render(<ControlledGallery />));
 assert.equal(
   document.querySelector('[data-slot="image-viewer"]'),
   null,
   "closed viewer should have no popup",
 );
+
+scenario("the opener selects the photo and moves focus into the modal");
 const opener = host.querySelector<HTMLButtonElement>("button");
 assert.ok(opener);
 await interaction(() => {
@@ -246,6 +251,8 @@ assert.equal(
   "image viewer has no redundant browser fullscreen control",
 );
 clean(panel);
+
+scenario("a pending image cannot start a drag");
 let captureBeforeLoad = false;
 const loadingSurface = stage(panel);
 loadingSurface.setPointerCapture = () => {
@@ -255,6 +262,8 @@ await pointer(loadingSurface, "pointerdown", 99, 10, 10);
 await pointer(loadingSurface, "pointermove", 99, 50, 50);
 assert.equal(captureBeforeLoad, false, "pending image cannot start a drag");
 clean(panel);
+
+scenario("zoom, rotation and reset transform the loaded image");
 await loadImage(panel);
 await click(panel, "Zoom in");
 assert.equal(button(panel, "Reset image").disabled, false);
@@ -265,6 +274,8 @@ await click(panel, "Reset image");
 clean(panel);
 await click(panel, "Rotate counterclockwise");
 assert.ok(mainImage(panel).style.transform.includes("rotate(-90deg)"));
+
+scenario("next wraps to the first photo and returns to loading");
 await click(panel, "Next image");
 assert.equal(changes.at(-1), 0, "next wraps to the first gallery item");
 assert.equal(mainImage(panel).getAttribute("src"), gallery[0]);
@@ -272,6 +283,7 @@ assert.ok(panel.textContent?.includes("Loading image…"));
 clean(panel);
 await loadImage(panel);
 
+scenario("a controlled index waits for its prop to change");
 commitIndex = false;
 await click(panel, "Next image");
 assert.equal(changes.at(-1), 1);
@@ -283,6 +295,8 @@ assert.equal(
 await interaction(() => setControlledIndex(1));
 assert.equal(mainImage(panel).getAttribute("src"), gallery[1]);
 commitIndex = true;
+
+scenario("retry replaces a failed request and ignores the stale one");
 const failedImage = mainImage(panel);
 await interaction(() => failedImage.dispatchEvent(new window.Event("error")));
 assert.equal(
@@ -304,6 +318,8 @@ assert.ok(
   "a detached stale request cannot mark the retry ready",
 );
 await loadImage(panel);
+
+scenario("a new URL at the same index returns to loading");
 await interaction(() =>
   setGallery(["/changed.png", "/replacement.png", gallery[2]]),
 );
@@ -314,6 +330,7 @@ assert.ok(
 );
 await loadImage(panel);
 
+scenario("dragging pans in image space until the pointer is cancelled");
 const surface = stage(panel);
 const captures: number[] = [];
 surface.setPointerCapture = (id) => captures.push(id);
@@ -338,6 +355,8 @@ assert.equal(
   "transform 150ms ease",
   "cancel exits active dragging",
 );
+
+scenario("a pinch scales around its center and one finger keeps panning");
 await click(panel, "Reset image");
 await pointer(surface, "pointerdown", 2, 0, 0);
 await pointer(surface, "pointerdown", 3, 100, 0);
@@ -366,6 +385,8 @@ assert.equal(
 );
 await click(panel, "Reset image");
 clean(panel);
+
+scenario("controls and secondary buttons cannot start a pan");
 await pointer(button(panel, "Next image"), "pointerdown", 4, 0, 0);
 assert.deepEqual(
   captures,
@@ -378,6 +399,8 @@ assert.deepEqual(
   [1, 2, 3],
   "secondary pointer buttons cannot initiate panning",
 );
+
+scenario("a small wheel delta zooms a little without scrolling the page");
 let prevented = false;
 await interaction(() => {
   const event = new window.WheelEvent("wheel", {
@@ -400,6 +423,8 @@ assert.ok(
   wheelScale > 1 && wheelScale < 1.05,
   "a small wheel delta zooms a little, so trackpads glide",
 );
+
+scenario("keyboard shortcuts zoom, reset and navigate");
 await key(panel, "0");
 await key(panel, "+");
 assert.ok(mainImage(panel).style.transform.includes("scale(1.25)"));
@@ -411,12 +436,16 @@ await key(panel, "ArrowRight");
 assert.equal(mainImage(panel).getAttribute("src"), gallery[2]);
 clean(panel);
 await loadImage(panel);
+
+scenario("thumbnails select their own gallery item");
 await click(panel, "Open Gallery 1");
 assert.equal(
   mainImage(panel).getAttribute("src"),
   "/changed.png",
   "thumbnail buttons select their distinct gallery item",
 );
+
+scenario("Escape closes once, restores focus and drops the wheel listener");
 await key(panel, "Escape");
 assert.equal(closeCount, 1, "Escape requests close once");
 assert.equal(document.querySelector('[data-slot="image-viewer"]'), null);
@@ -430,6 +459,8 @@ assert.equal(
   false,
   "closed stage releases its native wheel listener",
 );
+
+scenario("the close button closes a reopened viewer");
 await interaction(() => setControlledOpen(true));
 panel = popup("Controlled gallery");
 clean(panel);
@@ -438,6 +469,7 @@ assert.equal(closeCount, 2);
 await interaction(() => root.unmount());
 host.remove();
 
+scenario("an uncontrolled viewer and a single-image viewer stay independent");
 let localClose = 0;
 const localChanges: number[] = [];
 const localHost = document.createElement("div");
@@ -495,6 +527,8 @@ assert.equal(
 );
 clean(localPanel);
 await loadImage(localPanel);
+
+scenario("gestures after unmount cannot change a detached viewer");
 const localSurface = stage(localPanel);
 localSurface.setPointerCapture = () => {};
 await pointer(localSurface, "pointerdown", 6, 20, 30);
@@ -533,6 +567,8 @@ assert.equal(
 assert.equal(localClose, 0, "unmount does not synthesize a user close action");
 localHost.remove();
 otherHost.remove();
+
+scenario("an empty gallery mounts no modal");
 const emptyHost = document.createElement("div");
 document.body.append(emptyHost);
 const emptyRoot = createRoot(emptyHost);
@@ -554,6 +590,8 @@ assert.equal(
 );
 await interaction(() => emptyRoot.unmount());
 emptyHost.remove();
+
+scenario("glass reaches the controls but not the shell, image or thumbnails");
 const controlsHost = document.createElement("div");
 document.body.append(controlsHost);
 const controlsRoot = createRoot(controlsHost);
@@ -606,6 +644,3 @@ controlsHost.remove();
 assert.equal(wheelTargets.size, 0);
 assert.equal(mediaListeners.size, 0);
 await window.happyDOM.close();
-console.log(
-  "ImageViewer controlled state, loading, retry, gestures, keyboard and cleanup passed",
-);

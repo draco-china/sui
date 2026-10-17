@@ -1,5 +1,6 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
+import { scenario } from "../support/scenario";
 
 let creates = 0;
 let destroyed = 0;
@@ -23,15 +24,18 @@ mock.module("../../../../packages/ui/src/lib/glass/svg-renderer", () => ({
 }));
 const { prepareGlassRenderer, releaseGlassRenderers, failGlassRenderer } =
   await import("../../../../packages/ui/src/lib/glass/backend");
+scenario("every scope shares one renderer initialization");
 const choices = await Promise.all(
   Array.from({ length: 8 }, () => prepareGlassRenderer()),
 );
 assert.equal(creates, 1, "all scopes share one renderer initialization");
 assert.ok(choices[0] && choices.every((choice) => choice === choices[0]));
+scenario("a failed renderer keeps CSS and is not retried by each surface");
 failGlassRenderer();
 assert.equal(destroyed, 1);
 assert.equal(await prepareGlassRenderer(), undefined, "a failure keeps CSS");
 assert.equal(creates, 1, "a failed renderer is not retried by each surface");
+scenario("an initialization failure leaves the CSS base");
 releaseGlassRenderers();
 reject = true;
 assert.equal(
@@ -39,12 +43,16 @@ assert.equal(
   undefined,
   "an initialization failure leaves the CSS base",
 );
+scenario("reduced transparency never requests SVG");
 releaseGlassRenderers();
 reject = false;
 accessibility = true;
 const beforeAccessible = creates;
 assert.equal(await prepareGlassRenderer(), undefined);
 assert.equal(creates, beforeAccessible, "reduced transparency skips SVG");
+scenario(
+  "a released provider destroys an abandoned renderer and starts afresh",
+);
 accessibility = false;
 let finish!: () => void;
 pending = new Promise((resolve) => {
@@ -63,4 +71,3 @@ assert.equal(
 );
 assert.ok(await prepareGlassRenderer(), "a new provider gets a fresh session");
 releaseGlassRenderers();
-console.log("shared SVG renderer and CSS fallback passed");

@@ -5,7 +5,9 @@ import {
   ToastViewport,
   toastViewportVariants,
 } from "@workspace/ui/components/toast";
+import { Window } from "happy-dom";
 import { renderToStaticMarkup } from "react-dom/server";
+import { compiledStylesheet, declaredValues } from "./support/css";
 
 const viewport = (props: Parameters<typeof ToastViewport>[0] = {}) =>
   renderToStaticMarkup(
@@ -29,30 +31,46 @@ test("other positions anchor to their edge and corner", () => {
   expect(viewport({ colorful: false })).toContain('data-colorful="false"');
   const corner = toastViewportVariants({ position: "bottom-right" });
   expect(corner).toContain("bottom-4");
-  expect(corner).toContain("sm:end-4");
+  expect(corner).toContain("sm:inset-e-4");
   expect(toastViewportVariants({ position: "top-left" })).toContain(
-    "sm:start-4",
+    "sm:inset-s-4",
   );
 });
 
 test("colorful toasts tint status toasts while errors always mark their icon", () => {
-  const css = readFileSync(
-    new URL(
-      "../../../packages/ui/src/styles/components/toast.css",
-      import.meta.url,
-    ),
-    "utf8",
-  );
-  for (const type of ["success", "info", "warning", "error"])
-    expect(css).toContain(`&[data-type="${type}"]`);
-  expect(css).toContain('[data-slot="toast-viewport"][data-colorful="true"]');
-  expect(css).toContain(
-    '[data-slot="toast"][data-type="error"] [data-slot="toast-icon"]',
-  );
+  const css = compiledStylesheet("components/toast.css");
+  const { document } = new Window();
+  const toast = (type: string) =>
+    `<div data-slot="toast" data-type="${type}"><span data-slot="toast-icon"></span></div>`;
+  const types = ["success", "info", "warning", "error"];
+  document.body.innerHTML = `
+    <div data-slot="toast-viewport" data-colorful="true" id="colorful">${types.map(toast).join("")}</div>
+    <div data-slot="toast-viewport" data-colorful="false" id="quiet">${types.map(toast).join("")}</div>`;
+  const declared = (selector: string, property: string) => {
+    const element = document.querySelector(selector);
+    if (!element) throw new Error(`Missing ${selector}`);
+    return declaredValues(css, element, property);
+  };
+  for (const type of types) {
+    const colorful = `#colorful [data-type="${type}"]`;
+    const quiet = `#quiet [data-type="${type}"]`;
+    expect(declared(colorful, "--toast-accent")).toHaveLength(1);
+    expect(declared(colorful, "background-color")[0]).toContain(
+      "var(--toast-accent) 12%",
+    );
+    expect(
+      declared(`${colorful} [data-slot="toast-icon"]`, "color"),
+    ).not.toEqual([]);
+    expect(declared(quiet, "background-color")).toEqual([]);
+    // Without color, only an error's icon still takes its status color.
+    expect(declared(`${quiet} [data-slot="toast-icon"]`, "color")).toEqual(
+      type === "error" ? ["var(--toast-accent)"] : [],
+    );
+  }
   expect(
     readFileSync(
       new URL("../../../packages/ui/src/styles/globals.css", import.meta.url),
       "utf8",
     ),
-  ).toContain('@import "./components/toast.css";');
+  ).toMatch(/@import\s+["']\.\/components\/toast\.css["']/);
 });

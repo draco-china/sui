@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost",
@@ -139,6 +140,8 @@ function button(label: string) {
       node.textContent === label || node.getAttribute("aria-label") === label,
   );
 }
+
+scenario("an uncontrolled editor reports edits and previews them sandboxed");
 const changes: string[] = [];
 await render(
   <Editor
@@ -160,6 +163,8 @@ assert.equal(
 assert.equal(host.querySelector("iframe")?.getAttribute("srcdoc"), "edited");
 await click(button("Hide preview"));
 assert(host.querySelector("[data-editor-value]"));
+
+scenario("a controlled editor reports edits without changing its value");
 await render(
   <Editor
     value="controlled"
@@ -175,6 +180,8 @@ assert.equal(
   "controlled",
 );
 assert.equal(changes.at(-1), "edited");
+
+scenario("a disabled editor reports no edits");
 const beforeDisabled = changes.length;
 await render(
   <Editor
@@ -188,6 +195,8 @@ await render(
 );
 await click(button("Simulate Monaco edit"));
 assert.equal(changes.length, beforeDisabled);
+
+scenario("the picker lists each language once and keeps the document");
 const languageChanges: string[] = [];
 function LanguageEditor({ disabled = false }: { disabled?: boolean }) {
   const [language, setLanguage] = useState("markdown");
@@ -249,6 +258,8 @@ assert.equal(
   host.querySelector("iframe")?.getAttribute("srcdoc"),
   "document stays intact",
 );
+
+scenario("a language without a built-in preview returns to editing");
 await selectLanguage("TypeScript");
 assert.equal(languageChanges.at(-1), "typescript");
 assert.equal(
@@ -260,6 +271,8 @@ assert.equal(
   host.querySelector("[data-editor-value]")?.textContent,
   "document stays intact",
 );
+
+scenario("TSX reaches the editor bridge with its own grammar and model");
 await selectLanguage("TSX");
 assert.equal(languageChanges.at(-1), "tsx");
 assert.equal(
@@ -271,8 +284,12 @@ assert.equal(liveModels.size, 1);
 assert([...liveModels][0].endsWith(".tsx"));
 await selectLanguage("JSON");
 assert.equal(languageChanges.at(-1), "json");
+
+scenario("a disabled editor disables the language picker");
 await render(<LanguageEditor disabled />);
 assert.equal(button("Language")?.getAttribute("disabled"), "");
+
+scenario("the picker hides without a callback or with toolbarLanguage off");
 await render(<Editor language="typescript" fullscreen={false} />);
 assert.equal(
   button("Language"),
@@ -292,6 +309,8 @@ assert.equal(
   undefined,
   "toolbarLanguage explicitly hides selection",
 );
+
+scenario("a controlled language waits for the caller to accept a change");
 const requests: string[] = [];
 await render(
   <Editor
@@ -308,6 +327,7 @@ assert.equal(
   "the caller must acknowledge a controlled language change",
 );
 
+scenario("switching TypeScript to TSX disposes the old model");
 await render(
   <Editor
     value="const node = <div />;"
@@ -342,6 +362,7 @@ assert.equal(
   "const node = <div />;",
 );
 
+scenario("the editor and its HTML preview scroll each other proportionally");
 await render(
   <Editor
     value="<p>First document</p>"
@@ -399,6 +420,8 @@ assert.equal(
   400,
   "HTML document scrolling updates Monaco proportionally",
 );
+
+scenario("a replaced preview document takes over the scroll sync");
 await render(
   <Editor
     value="<p>Replacement document</p>"
@@ -433,6 +456,7 @@ assert.equal(
   "old iframe document listeners are removed after replacement",
 );
 
+scenario("unmounting the editor removes the preview scroll listeners");
 await render(
   <DiffViewer
     oldCode={"same\nold\n"}
@@ -451,6 +475,8 @@ assert.equal(
 );
 await firstDoc.inner.happyDOM.close();
 await secondDoc.inner.happyDOM.close();
+
+scenario("the diff viewer switches between split and unified tables");
 assert.equal(host.querySelectorAll("table").length, 2);
 await click(button("Unified"));
 assert.equal(host.querySelectorAll("table").length, 1);
@@ -485,6 +511,8 @@ function expectedPairs(tokens: { content: string; color?: string }[]) {
   });
 }
 await ready();
+
+scenario("padding rows never reuse the React keys of code rows");
 // Unequal replacements create padding positions that can collide with token indexes.
 const previousConsoleError = console.error;
 const diffErrors: unknown[][] = [];
@@ -531,6 +559,8 @@ try {
 } finally {
   console.error = previousConsoleError;
 }
+
+scenario("each diff pane keeps its own multiline lexical context");
 for (const [oldCode, newCode] of [
   ["const value = `old\nshared\n`;", 'const value = "new";\nshared\n`;'],
   ["/* old\nshared\n*/", "const ready = true;\nshared\n*/"],
@@ -570,6 +600,8 @@ for (const [oldCode, newCode] of [
   assert(unchanged);
   assert.deepEqual(tokenPairs(unchanged), expectedPairs(newTokens[1]));
 }
+
+scenario("rapid streaming updates show only the latest source tokens");
 await render(
   <DiffViewer
     oldCode="const old = 1;"
@@ -609,6 +641,7 @@ assert.deepEqual(
   "rapid source updates display only the latest source tokens",
 );
 
+scenario("folds collapse and expand across blank lines");
 await render(
   <CodeViewer code={"function example() {\n  return 42\n}"} copyable={false} />,
 );
@@ -638,6 +671,8 @@ for (const code of [
   await click(button("Expand"));
   assert(host.textContent?.includes("return 42"));
 }
+
+scenario("expanding an outer fold keeps the inner fold");
 await render(
   <CodeViewer
     code={
@@ -664,6 +699,8 @@ assert(
 );
 await click(button("Expand"));
 assert(host.textContent?.includes("return 42"));
+
+scenario("completion follows the latest raw rows while tokens are pending");
 // Hold the real tokenizer so completion is checked while highlighting is pending.
 const highlightModule = await import(
   "../../../../packages/ui/src/lib/viewer/shiki"
@@ -744,6 +781,8 @@ mock.module("../../../../packages/ui/src/lib/viewer/shiki", () => ({
   ...highlightModule,
   codeToViewerTokens,
 }));
+
+scenario("streaming scroll follows appends through its own smooth scrolling");
 const nativeRequestFrame = globalThis.requestAnimationFrame;
 const nativeCancelFrame = globalThis.cancelAnimationFrame;
 const streamFrames = new Map<number, FrameRequestCallback>();
@@ -815,6 +854,8 @@ assert.equal(
   "continued appends do not mistake programmatic scrolling for a user pause",
 );
 assert.equal(viewport.scrollTop, 900);
+
+scenario("scrolling away pauses following and returning resumes it");
 viewport.scrollTop = 0;
 viewport.dispatchEvent(new window.Event("scroll"));
 contentHeight = 1200;
@@ -828,6 +869,8 @@ await render(<Stream content="fifth" />);
 await flushStreamFrames();
 assert.equal(follows, 3);
 assert.equal(viewport.scrollTop, 1100);
+
+scenario("completion follows the final content once");
 contentHeight = 1400;
 await render(<Stream content="complete" streaming={false} />);
 viewport.dispatchEvent(new window.Event("scroll"));
@@ -839,9 +882,13 @@ viewport.dispatchEvent(new window.Event("scroll"));
 await render(<Stream content="finished" streaming={false} />);
 await flushStreamFrames();
 assert.equal(follows, 4);
+
+scenario("a new streaming session restores following");
 await render(<Stream content="new session" />);
 await flushStreamFrames();
 assert.equal(follows, 5, "a new streaming session restores following");
+
+scenario("an upward move cancels a queued follow before its scroll event");
 await render(<Stream content="manual Home before scroll notification" />);
 viewport.scrollTop = 0;
 await flushStreamFrames();
@@ -851,6 +898,8 @@ assert.equal(
   "a real upward move cancels the queued follow even before its scroll notification",
 );
 assert.equal(viewport.scrollTop, 0);
+
+scenario("unmount cancels the pending follow frame");
 viewport.scrollTop = 1200;
 viewport.dispatchEvent(new window.Event("scroll"));
 await render(<Stream content="pending last frame" />);
@@ -859,6 +908,8 @@ await render(<div>Closed stream</div>);
 assert.equal(streamFrames.size, 0, "unmount cancels its pending follow frame");
 globalThis.requestAnimationFrame = nativeRequestFrame;
 globalThis.cancelAnimationFrame = nativeCancelFrame;
+
+scenario("fixed fullscreen wraps Tab between outer actions and the iframe");
 function FixedScreen({ frameLast = false }: { frameLast?: boolean }) {
   const fullscreen = useFullscreen({ mode: "fixed" });
   const outer = (
@@ -941,6 +992,8 @@ assert.equal(
   outerAction,
   "Shift+Tab at the first iframe action wraps to the outer last action",
 );
+
+scenario("Tab wrapping follows a reordered layout and a reloaded iframe");
 await render(<FixedScreen frameLast />);
 const keyboardTwo = keyboardPreview();
 Object.defineProperty(fixedFrame, "contentDocument", {
@@ -967,6 +1020,8 @@ await act(async () => {
   assert(key(window.document, "Tab", true).defaultPrevented);
 });
 assert.equal(keyboardTwo.document.activeElement?.id, "inner-last");
+
+scenario("only Escape in the current iframe exits and restores focus");
 await act(async () => {
   key(keyboardOne.document as unknown as Document, "Escape");
 });
@@ -988,6 +1043,8 @@ assert.equal(
   enterFixed,
   "fullscreen restores the original outer focus",
 );
+
+scenario("an inaccessible cross-origin iframe stays one focus entry");
 await click(enterFixed);
 Object.defineProperty(fixedFrame, "contentDocument", {
   get: () => {
@@ -1005,6 +1062,8 @@ assert.equal(
   fixedFrame,
   "an inaccessible iframe remains one focus entry",
 );
+
+scenario("unmount releases the fixed viewport scroll lock");
 await act(async () => root.render(<div>Closed</div>));
 await act(async () => {
   key(keyboardTwo.document as unknown as Document, "Escape");
@@ -1017,6 +1076,7 @@ assert.equal(
 await keyboardOne.happyDOM.close();
 await keyboardTwo.happyDOM.close();
 
+scenario("stacked overlays trap focus in the newest and exit top-down");
 const stackChanges: string[] = [];
 function StackOverlay({ name, revision }: { name: string; revision: number }) {
   const fullscreen = useFullscreen({
@@ -1126,6 +1186,7 @@ assert.equal(
   "the final overlay restores the document's original focus",
 );
 
+scenario("closing a lower overlay keeps the top focus and scroll lock");
 stackNode("stack-outside").focus();
 await click(stackNode("a-enter"));
 await click(stackNode("b-enter"));
@@ -1147,6 +1208,7 @@ assert.equal(
 );
 assert.equal(window.document.activeElement, stackNode("stack-outside"));
 
+scenario("unmounting a lower overlay leaves the top overlay intact");
 await click(stackNode("a-enter"));
 await click(stackNode("b-enter"));
 const focusBeforeLowerUnmount = window.document.activeElement;
@@ -1163,6 +1225,7 @@ await act(async () => {
 assert.equal(stackNode("b-state").textContent, "false");
 assert.equal(window.document.body.style.overflow, "scroll");
 
+scenario("unmounting the top overlay returns focus to the one below");
 await render(<OverlayStack revision={3} />);
 stackNode("stack-outside").focus();
 await click(stackNode("a-enter"));
@@ -1186,6 +1249,8 @@ assert.equal(
   window.document.body.style.getPropertyPriority("overflow"),
   "important",
 );
+
+scenario("another owner document keeps its own keys and scroll lock");
 await render(<OverlayStack showB={false} revision={5} />);
 stackNode("stack-outside").focus();
 await click(stackNode("a-enter"));
@@ -1231,6 +1296,7 @@ await ownerWindow.happyDOM.abort();
 
 window.document.body.style.removeProperty("overflow");
 
+scenario("screen fullscreen follows the document after its target unmounts");
 const fullscreenRef = createRef<HTMLDivElement>();
 function Screen({ show }: { show: boolean }) {
   const fullscreen = useFullscreen({ mode: "screen", ref: fullscreenRef });
@@ -1271,6 +1337,8 @@ await act(async () => {
   window.document.dispatchEvent(new window.Event("fullscreenchange"));
 });
 assert.equal(host.querySelector("[data-screen]")?.textContent, "false");
+
+scenario("the final editor unmount releases all models");
 await act(async () => root.unmount());
 assert.equal(
   liveModels.size,
@@ -1278,6 +1346,3 @@ assert.equal(
   "the final editor unmount releases all owned models",
 );
 await window.happyDOM.abort();
-console.log(
-  "editor controlled/uncontrolled/disabled, sandbox preview, diff modes, folds, paused streaming and detached fullscreen passed",
-);

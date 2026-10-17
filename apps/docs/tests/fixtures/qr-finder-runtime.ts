@@ -1,6 +1,7 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
 import { applyQRCodeFinderGeometry } from "../../../../packages/ui/src/lib/qr-code/finder";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow() as unknown as Window &
   typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
@@ -19,6 +20,9 @@ for (const { value, size, margin } of [
   { value: "https://example.com/", size: 512, margin: 32 },
   { value: "文😀", size: 768, margin: 48 },
 ]) {
+  scenario(
+    `the encoded "${value}" keeps rounded finders on shared corner centers at ${size}px`,
+  );
   const code = new QRCodeStyling({
     type: "svg",
     width: size,
@@ -113,4 +117,3 @@ for (const { value, size, margin } of [
 }
 
 await window.happyDOM.abort();
-console.log("Actual QR SVG finder radii and shared corner centers passed");

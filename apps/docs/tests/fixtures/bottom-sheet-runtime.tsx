@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document as unknown as Document;
@@ -88,6 +89,7 @@ function Sheet({ step }: { step: string }) {
   );
 }
 
+scenario("an expandable sheet opens at half the viewport over a dimmed page");
 await act(async () => root.render(<Sheet step="regions" />));
 const popup = () =>
   document.querySelector<HTMLElement>('[data-slot="bottom-sheet-popup"]');
@@ -120,6 +122,7 @@ assert.equal(
 );
 assert.equal(grabber()?.getAttribute("aria-label"), "Expand sheet");
 
+scenario("the grabber expands the sheet and its body scrolls once settled");
 await act(async () => grabber()?.click());
 assert.equal(popup()?.dataset.size, "lg");
 assert.equal(popup()?.style.getPropertyValue("--bottom-sheet-height"), "800px");
@@ -132,6 +135,7 @@ assert.equal(
   "the body scrolls once expansion settles",
 );
 
+scenario("a new content key returns to the default size");
 await act(async () => root.render(<Sheet step="cities" />));
 assert.equal(
   popup()?.dataset.size,
@@ -139,6 +143,7 @@ assert.equal(
   "a new content key returns to the default size",
 );
 
+scenario("the close button reports the sheet closing");
 await act(async () =>
   document
     .querySelector<HTMLButtonElement>('[data-slot="bottom-sheet-close"]')
@@ -146,6 +151,7 @@ await act(async () =>
 );
 assert.deepEqual(changes, [false]);
 
+scenario("a nonmodal sheet leaves the page behind it usable");
 await act(async () =>
   root.render(
     <BottomSheet defaultOpen modal={false} key="nonmodal">
@@ -162,4 +168,3 @@ assert.equal(
 );
 
 await act(async () => root.unmount());
-console.log("bottom sheet runtime passed");

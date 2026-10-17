@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import { GlassSurface } from "@workspace/ui/components/glass";
 import {
   InputOTP,
   InputOTPGroup,
@@ -17,9 +18,9 @@ import {
 import { Window } from "happy-dom";
 import { Fragment, type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
-import { GlassContext } from "../../../packages/ui/src/lib/glass/context";
+import { describeFixture } from "./support/fixture";
 
-type ControlProps = { glass?: boolean; disabled?: boolean };
+type ControlProps = { glass?: boolean; frosted?: boolean; disabled?: boolean };
 const controls: {
   name: string;
   slots: string[];
@@ -35,76 +36,44 @@ const controls: {
     ),
   },
   {
-    name: "toggle group",
+    name: "toggle group item",
     slots: ["toggle-group-item"],
-    render: ({ glass, disabled }) => (
-      <ToggleGroup glass={glass} defaultValue={["bold"]} disabled={disabled}>
-        <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
+    render: ({ disabled, ...material }) => (
+      <ToggleGroup defaultValue={["bold"]} disabled={disabled}>
+        <ToggleGroupItem value="bold" {...material}>
+          Bold
+        </ToggleGroupItem>
       </ToggleGroup>
     ),
   },
 ];
 
-function documentFor(content: ReactNode, inherited = false) {
+function documentFor(content: ReactNode) {
   const window = new Window();
-  window.document.body.innerHTML = renderToString(
-    <GlassContext.Provider
-      value={{
-        enabled: inherited,
-        surface: false,
-        configuration: { material: "clear" },
-      }}
-    >
-      {content}
-    </GlassContext.Provider>,
-  );
+  window.document.body.innerHTML = renderToString(content);
   return window.document;
 }
 
-describe("small glass controls use fixed Regular CSS", () => {
+describe("small controls take the material they ask for", () => {
   for (const control of controls) {
-    test(`${control.name} keeps fixed material with explicit or inherited glass`, () => {
-      for (const inherited of [false, true]) {
-        const document = documentFor(
-          control.render({ glass: inherited ? undefined : true }),
-          inherited,
-        );
-        const surfaces = document.querySelectorAll('[data-glass="true"]');
-        expect(surfaces.length).toBeGreaterThan(0);
-        expect(
-          new Set(
-            [...surfaces].map((surface) =>
-              surface.getAttribute("data-glass-scope"),
-            ),
-          ).size,
-        ).toBe(surfaces.length);
-        for (const slot of control.slots) {
-          const elements = document.querySelectorAll(`[data-slot="${slot}"]`);
-          expect(elements.length).toBeGreaterThan(0);
-          for (const element of elements) {
-            expect(element.getAttribute("data-glass")).toBe("true");
-            expect(element.getAttribute("data-glass-material")).toBe("regular");
-            expect(element.getAttribute("data-glass-scope")).toBeTruthy();
-            expect(element.getAttribute("data-glass-scope")).not.toBe(
-              "ambient",
-            );
-          }
-        }
-        expect(document.querySelector("canvas")).toBeNull();
+    test(`${control.name} is Clear with glass and CSS-only when frosted`, () => {
+      const clear = documentFor(control.render({ glass: true }));
+      const frosted = documentFor(control.render({ frosted: true }));
+      for (const slot of control.slots) {
+        const glassElement = clear.querySelector(`[data-slot="${slot}"]`);
+        expect(glassElement?.getAttribute("data-glass")).toBe("true");
+        expect(glassElement?.getAttribute("data-glass-scope")).toBeTruthy();
+        const frostedElement = frosted.querySelector(`[data-slot="${slot}"]`);
+        expect(frostedElement?.getAttribute("data-frosted")).toBe("true");
+        expect(frostedElement?.hasAttribute("data-glass")).toBe(false);
       }
+      expect(clear.querySelector("canvas")).toBeNull();
     });
-    test(`${control.name} keeps ordinary and explicit opt-out controls plain`, () => {
-      for (const inherited of [false, true]) {
-        const document = documentFor(
-          control.render({ glass: inherited ? false : undefined }),
-          inherited,
-        );
-        expect(document.querySelector("[data-glass]")).toBeNull();
-        for (const slot of control.slots)
-          expect(
-            document.querySelector(`[data-slot="${slot}"]`),
-          ).not.toBeNull();
-      }
+    test(`${control.name} stays ordinary without glass`, () => {
+      const document = documentFor(control.render({}));
+      expect(document.querySelector("[data-glass], [data-frosted]")).toBeNull();
+      for (const slot of control.slots)
+        expect(document.querySelector(`[data-slot="${slot}"]`)).not.toBeNull();
     });
     test(`${control.name} preserves its disabled state in glass mode`, () => {
       const document = documentFor(
@@ -117,7 +86,7 @@ describe("small glass controls use fixed Regular CSS", () => {
     });
   }
 
-  test("checked, pressed and native input semantics survive material overrides", () => {
+  test("checked, pressed and native input semantics survive glass", () => {
     const document = documentFor(
       controls.map((control) => (
         <Fragment key={control.name}>
@@ -133,10 +102,10 @@ describe("small glass controls use fixed Regular CSS", () => {
       ).toBe("true");
   });
 
-  test("group items can explicitly opt in or opt out independently of the group", () => {
+  test("group items choose their material independently", () => {
     const document = documentFor(
-      <ToggleGroup glass>
-        <ToggleGroupItem glass={false} value="plain" data-case="plain-toggle">
+      <ToggleGroup>
+        <ToggleGroupItem value="plain" data-case="plain-toggle">
           Plain
         </ToggleGroupItem>
         <ToggleGroupItem glass value="glass" data-case="glass-toggle">
@@ -152,7 +121,7 @@ describe("small glass controls use fixed Regular CSS", () => {
     const item = document.querySelector(
       '[data-case="glass-toggle"][data-slot]',
     );
-    expect(item?.getAttribute("data-glass-material")).toBe("regular");
+    expect(item?.getAttribute("data-glass")).toBe("true");
     expect(item?.getAttribute("data-glass-scope")).toBeTruthy();
   });
 
@@ -175,21 +144,15 @@ describe("small glass controls use fixed Regular CSS", () => {
     expect(button?.getAttribute("aria-label")).toBe("Custom");
     expect(button?.getAttribute("data-caller")).toBe("kept");
     expect(button?.getAttribute("aria-pressed")).toBe("true");
-    expect(button?.getAttribute("data-glass-material")).toBe("regular");
+    expect(button?.getAttribute("data-glass")).toBe("true");
   });
 });
 
 test("checkbox, radio and OTP stay ordinary content controls inside glass", () => {
   for (const surface of [false, true]) {
     const window = new Window();
-    window.document.body.innerHTML = renderToString(
-      <GlassContext.Provider
-        value={{
-          enabled: true,
-          surface,
-          configuration: { material: "clear" },
-        }}
-      >
+    const content = (
+      <>
         <Checkbox defaultChecked aria-label="Agree" />
         <RadioGroup defaultValue="one">
           <RadioGroupItem value="one" aria-label="One" />
@@ -200,12 +163,15 @@ test("checkbox, radio and OTP stay ordinary content controls inside glass", () =
             <InputOTPSlot aria-label="Second digit" />
           </InputOTPGroup>
         </InputOTP>
-      </GlassContext.Provider>,
+      </>
+    );
+    window.document.body.innerHTML = renderToString(
+      surface ? <GlassSurface>{content}</GlassSurface> : content,
     );
     const document = window.document;
-    expect(
-      document.querySelector("[data-glass], [data-glass-part]"),
-    ).toBeNull();
+    expect(document.querySelectorAll("[data-glass]").length).toBe(
+      Number(surface),
+    );
     for (const slot of ["checkbox", "radio-group-item"])
       expect(
         document
@@ -220,19 +186,7 @@ test("checkbox, radio and OTP stay ordinary content controls inside glass", () =
   }
 });
 
-test("Switch and Slider lift a clear glass lens only while pressed or dragged", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/glass-press-lens.tsx", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "lift a lens only while pressed passed",
-  );
-}, 15_000);
+describeFixture(
+  "Switch and Slider lift a Clear lens only while pressed or dragged",
+  "glass-press-lens.tsx",
+);

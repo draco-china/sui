@@ -62,7 +62,6 @@ import {
 } from "@workspace/ui/components/table";
 import type { ComponentProps, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { GlassContext } from "../../../packages/ui/src/lib/glass/context";
 
 const plainComponents = {
   Kbd,
@@ -119,18 +118,9 @@ const noGlassApis: {
   BubbleContent: false,
 };
 
-function ambient(children: ReactNode, surface = false) {
-  return (
-    <GlassContext.Provider
-      value={{
-        enabled: true,
-        surface,
-        configuration: {},
-      }}
-    >
-      {children}
-    </GlassContext.Provider>
-  );
+// Glass is never inherited, so content renders as it would next to glass.
+function ambient(children: ReactNode) {
+  return <>{children}</>;
 }
 
 function tag(html: string, id: string) {
@@ -160,12 +150,14 @@ describe("Glass stays on interaction surfaces instead of text and content", () =
           <FieldGroup id="field-group">
             <Field id="field">
               <FieldLabel htmlFor="field-input">Name</FieldLabel>
-              <Input id="field-input" />
+              <Input id="field-input" glass />
             </Field>
           </FieldGroup>
-          <Button id="save">Save</Button>
+          <Button id="save" glass>
+            Save
+          </Button>
           <Collapsible id="collapsible" defaultOpen>
-            <CollapsibleTrigger render={<Button id="collapse-control" />}>
+            <CollapsibleTrigger render={<Button id="collapse-control" glass />}>
               Details
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -179,7 +171,6 @@ describe("Glass stays on interaction surfaces instead of text and content", () =
       expect(tag(html, id)).not.toContain("data-glass=");
     for (const id of ["save", "collapse-control"])
       expect(tag(html, id)).toContain('data-glass="true"');
-    // A field on its own in an enabled scope is a glass field.
     expect(tag(html, "field-input")).toContain('data-glass="true"');
     expect(tag(html, "fieldset")).toMatch(/^<fieldset\b/);
     expect(html).toContain('for="field-input"');

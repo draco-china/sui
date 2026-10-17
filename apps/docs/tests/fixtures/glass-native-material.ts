@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -103,17 +104,19 @@ themed.dataset.glass = "true";
 themed.dataset.glassScope = "theme-material";
 document.body.append(themed);
 const originalThemeStyle = themed.getAttribute("style");
-const themeConfiguration = {
-  id: "theme-material",
-  material: "clear" as const,
-};
+const themeConfiguration = { id: "theme-material" };
+scenario(
+  "a surface takes its tint from its theme paint at the default opacity",
+);
 const releaseThemed = acquireGlass(themeConfiguration);
 await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "12%");
 assert.equal(themed.style.getPropertyValue("--glass-base"), "rgb(70, 70, 74)");
-updateGlassConfiguration({ ...themeConfiguration, material: "regular" });
+scenario("a denser tintOpacity raises the tint");
+updateGlassConfiguration({ ...themeConfiguration, tintOpacity: 0.65 });
 await pause();
-assert.equal(themed.style.getPropertyValue("--glass-opacity"), "30%");
+assert.equal(themed.style.getPropertyValue("--glass-opacity"), "65%");
+scenario("a theme change repaints the tint");
 updateGlassConfiguration(themeConfiguration);
 materialRules.textContent = `
   .theme-material { --input: rgb(199, 199, 204); background-color: rgba(199, 199, 204, 0.5); }
@@ -124,6 +127,7 @@ assert.equal(
   themed.style.getPropertyValue("--glass-base"),
   "rgb(199, 199, 204)",
 );
+scenario("caller paint adds to the tint, even in the theme's own color");
 // A caller's background shorthand participates as paint, even with the same RGB.
 themed.style.background = "rgba(199, 199, 204, 0.2)";
 await pause();
@@ -133,15 +137,19 @@ assert.ok(
     Number.parseFloat(themed.style.getPropertyValue("--glass-opacity")) - 29.6,
   ) < 0.01,
 );
+scenario("tintOpacity 0 leaves only the caller's paint");
 updateGlassConfiguration({
   ...themeConfiguration,
-  options: { tintOpacity: 0 },
+  tintOpacity: 0,
 });
 await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "20%");
 themed.style.removeProperty("background");
 await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "0%");
+scenario(
+  "opaque caller paint keeps CSS, and release restores the caller's styles",
+);
 updateGlassConfiguration(themeConfiguration);
 await pause();
 assert.equal(themed.style.getPropertyValue("--glass-opacity"), "12%");
@@ -163,6 +171,6 @@ assert.equal(themed.getAttribute("style") || null, originalThemeStyle);
 themed.remove();
 materialRules.remove();
 
+scenario("releasing the last lease disconnects every observer");
 assert.ok(observers.every((observer) => observer.disconnected));
 await window.happyDOM.close();
-console.log("native theme material, explicit caller paint and cleanup passed");

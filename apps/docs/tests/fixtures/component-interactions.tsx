@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost",
@@ -37,6 +38,8 @@ const { Calendar, CalendarDayButton } = await import(
   "@workspace/ui/components/calendar"
 );
 const { CalendarDay } = await import("react-day-picker");
+
+scenario("a focused calendar day button takes focus and forwards its ref");
 const date = new Date(2026, 9, 8);
 const buttonRef = createRef<HTMLButtonElement>();
 let view = render(
@@ -51,6 +54,8 @@ let view = render(
 assert.equal(document.activeElement, view.getByText("8"));
 assert.equal(buttonRef.current, view.getByText("8"));
 cleanup();
+
+scenario("a focused calendar day keeps its node and focus on reselection");
 view = render(
   <Calendar mode="single" month={new Date(2026, 9, 1)} selected={date} />,
 );
@@ -66,6 +71,8 @@ view.rerender(
 assert.equal(day, view.container.querySelector("[data-day]"));
 assert.equal(document.activeElement, day);
 cleanup();
+
+scenario("markdown code blocks keep their viewer across prop changes");
 const { MarkdownViewer } = await import(
   "@workspace/ui/components/markdown-viewer"
 );
@@ -82,6 +89,8 @@ view.rerender(
 );
 assert.equal(code, view.container.querySelector('[data-slot="code-viewer"]'));
 cleanup();
+
+scenario("an uncontrolled sidebar toggles and reports the change");
 const { SidebarProvider, useSidebar } = await import(
   "@workspace/ui/components/sidebar"
 );
@@ -103,6 +112,8 @@ fireEvent.click(view.getByText("true"));
 assert.ok(view.getByText("false"));
 assert.deepEqual(changes, [false]);
 cleanup();
+
+scenario("a controlled sidebar reports a toggle without changing");
 view = render(
   <SidebarProvider open onOpenChange={(open) => changes.push(open)}>
     <SidebarProbe />
@@ -112,6 +123,8 @@ fireEvent.click(view.getByText("true"));
 assert.ok(view.getByText("true"));
 assert.deepEqual(changes, [false, false]);
 cleanup();
+
+scenario("a vertical toggle group moves focus with ArrowDown");
 const { ToggleGroup, ToggleGroupItem } = await import(
   "@workspace/ui/components/toggle-group"
 );
@@ -130,6 +143,8 @@ await act(async () => {
 });
 assert.equal(document.activeElement, b);
 cleanup();
+
+scenario("a carousel leaves arrow keys to fields and editable content");
 const { Carousel } = await import("@workspace/ui/components/carousel");
 view = render(
   <Carousel>
@@ -160,6 +175,8 @@ const arrow = new window.KeyboardEvent("keydown", {
 await act(async () => view.getByText("Navigation").dispatchEvent(arrow));
 assert.equal(arrow.defaultPrevented, true);
 cleanup();
+
+scenario("a vertical carousel handles ArrowDown");
 view = render(
   <Carousel orientation="vertical">
     <button type="button">Vertical</button>
@@ -173,6 +190,8 @@ const down = new window.KeyboardEvent("keydown", {
 await act(async () => view.getByText("Vertical").dispatchEvent(down));
 assert.equal(down.defaultPrevented, true);
 cleanup();
+
+scenario("data table pinning follows column meta and can be turned off");
 const { DataTable } = await import("@workspace/ui/blocks/data-table");
 type RecordRow = { id: number; user: { name: string }; name: string };
 let table:
@@ -214,6 +233,8 @@ assert.equal(view.container.querySelector("td")?.style.position, "");
 view.rerender(<DataTable {...props} />);
 assert.equal(table?.getColumn("user_name")?.getIsPinned(), "start");
 cleanup();
+
+scenario("header-named columns pin and filter-only columns stay hidden");
 const headerColumns: typeof columns = [
   {
     accessorFn: (r) => r.name,
@@ -226,6 +247,8 @@ view = render(<DataTable {...props} columns={headerColumns} />);
 assert.equal(table?.getColumn("Display name")?.getIsPinned(), "start");
 assert.equal(table?.getColumn("user_name")?.getIsVisible(), false);
 cleanup();
+
+scenario("outer fullscreen leaves Tab and Escape to a nested dialog");
 const { useFullscreen } = await import(
   "../../../../packages/ui/src/hooks/use-fullscreen"
 );
@@ -277,4 +300,3 @@ assert.equal(
 );
 cleanup();
 await window.happyDOM.abort();
-console.log("Component interaction regressions passed");

@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost",
@@ -94,6 +95,8 @@ function deleteButton() {
 async function click(button: HTMLButtonElement) {
   await act(async () => button.click());
 }
+
+scenario("copying the name neither submits nor confirms the deletion");
 await render();
 assert.equal(copyButton().type, "button");
 assert.equal(copyButton().textContent?.trim(), "api-gateway");
@@ -116,6 +119,7 @@ assert.equal(copyButton().dataset.copyStatus, "copied");
 assert.match(copyButton().textContent ?? "", /Copied/);
 assert.equal(deleteButton().disabled, true);
 
+scenario("localized labels name the hint, the copy action and its failure");
 await render({
   labels: {
     hint: "输入 api-gateway 确认删除。",
@@ -136,10 +140,13 @@ assert.match(copyButton().textContent ?? "", /复制失败，请手动复制。/
 assert.equal(deletes, 0);
 assert.equal(openChanges.length, 0);
 
+scenario("a busy dialog disables copying the resource name");
 await render({ isDeleting: true });
 assert.equal(copyButton().disabled, true);
 await click(copyButton());
 assert.equal(writes.length, 2, "a busy dialog disables resource copying");
+
+scenario("the exact name confirms the deletion, which closes when it ends");
 await render();
 await act(async () =>
   fireEvent.change(confirmation(), { target: { value: "api-gateway" } }),
@@ -155,6 +162,7 @@ assert.equal(copyButton().disabled, true);
 await act(async () => finishDelete?.());
 assert.deepEqual(openChanges, [false]);
 
+scenario("a new resource name resets the copy feedback and the hint");
 await render({
   resourceName: "other-worker",
   labels: { hint: "Enter the exact identifier." },
@@ -168,11 +176,10 @@ failCopy = false;
 await click(copyButton());
 assert.equal(writes.at(-1), "other-worker");
 await act(async () => finishCopy?.());
+
+scenario("an empty resource name hides the copy action");
 await render({ resourceName: "" });
 assert.equal(document.querySelector('[data-slot="inline-copy-text"]'), null);
 assert.equal(deleteButton().disabled, true);
 await act(async () => root.unmount());
 await window.happyDOM.abort();
-console.log(
-  "inline resource copy, feedback, confirmation and busy semantics passed",
-);

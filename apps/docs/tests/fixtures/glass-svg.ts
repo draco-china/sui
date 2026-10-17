@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window();
 const document = window.document as unknown as Document;
@@ -57,6 +58,7 @@ Object.defineProperty(window, "CSS", {
     },
   },
 });
+scenario("browsers without SVG backdrop syntax fail before any probe");
 await assert.rejects(
   SvgGlassRenderer.create(),
   /backdrop filtering unavailable/,
@@ -66,6 +68,9 @@ assert.equal(
   encodes,
   0,
   "unsupported syntax exits before any pixel probe or map encoding",
+);
+scenario(
+  "WebKit fails before rasterizing a probe while Chromium keeps its pixel probe",
 );
 // WebKit accepts URL syntax and inline SVG displacement, but ignores SVG backdrops.
 Object.defineProperty(window, "CSS", {
@@ -125,6 +130,9 @@ Object.defineProperty(window, "CSS", {
   value: originalCSS,
 });
 
+scenario(
+  "a filter URL references an SVG definition with the Clear blur and both maps",
+);
 const renderer = new SvgGlassRenderer();
 const first = document.createElement("div") as unknown as HTMLElement;
 const second = document.createElement("div") as unknown as HTMLElement;
@@ -180,10 +188,14 @@ assert.ok(
   clarityMap.data.some((value, index) => index % 4 === 0 && value > 200),
 );
 assert.equal(encodes, 2);
+scenario("stable geometry never re-encodes its maps");
 assert.equal(renderer.filter(first, { ...geometry }), firstUrl);
 assert.equal(document.querySelectorAll("filter").length, 1);
 assert.equal(encodes, 2, "stable geometry never re-encodes its maps");
 
+scenario(
+  "elements own their definitions but share geometry maps across strengths",
+);
 const secondUrl = renderer.filter(second, geometry);
 assert.notEqual(
   secondUrl,
@@ -207,6 +219,9 @@ assert.equal(
   "4",
 );
 
+scenario(
+  "new dimensions and radii update the geometry while recent shapes stay cached",
+);
 const changed = {
   ...geometry,
   width: 40,
@@ -225,6 +240,7 @@ const prepared = encodes;
 for (const shape of shapes) renderer.filter(first, shape);
 assert.equal(encodes, prepared, "a small group of shapes stays cached");
 assert.equal(document.querySelectorAll("filter").length, 2);
+scenario("invalid geometry throws without adding definitions");
 for (const invalid of [
   { ...geometry, width: 0 },
   { ...geometry, strength: Number.NaN },
@@ -236,6 +252,7 @@ assert.equal(
   2,
   "invalid geometry does not add definitions",
 );
+scenario("release removes only its own element's definition");
 renderer.release(first);
 assert.equal(document.querySelectorAll("filter").length, 1);
 assert.ok(
@@ -246,6 +263,7 @@ renderer.release(first);
 const reacquired = renderer.filter(first, geometry);
 assert.ok(definition(reacquired).isConnected);
 assert.equal(encodes, prepared);
+scenario("corner direction does not amplify edge clarity");
 renderer.filter(first, {
   ...geometry,
   radius: [0, 0, 0, 0],
@@ -271,6 +289,7 @@ assert.equal(
   mixedMap.data[(36 * mixedMap.width + 8) * 4 + 2],
   "a flat corner on a rounded surface retains scalar edge clarity",
 );
+scenario("destroy removes every definition and rejects later filters");
 renderer.destroy();
 assert.equal(root.isConnected, false);
 assert.equal(document.querySelectorAll("filter").length, 0);
@@ -280,6 +299,3 @@ renderer.destroy();
 first.remove();
 second.remove();
 await window.happyDOM.close();
-console.log(
-  "Native SVG filter definitions, geometry cache and lifecycle passed",
-);

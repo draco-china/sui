@@ -41,7 +41,7 @@ test("ClipboardText offers shadcn-style variants", () => {
   );
 });
 
-test("ClipboardText is a glass field on its own and ordinary inside glass", async () => {
+test("ClipboardText is a glass field when it asks and ordinary otherwise", async () => {
   const { GlassSurface } = await import("@workspace/ui/components/glass");
   const window = new Window();
   window.document.body.innerHTML = renderToStaticMarkup(
@@ -56,8 +56,8 @@ test("ClipboardText is a glass field on its own and ordinary inside glass", asyn
   const element = (id: string) => window.document.getElementById(id);
   expect(element("glass")?.getAttribute("data-glass")).toBe("true");
   expect(
-    element("glass")?.querySelector("button")?.getAttribute("data-glass-part"),
-  ).toBe("control");
+    element("glass")?.querySelector("button")?.hasAttribute("data-glass"),
+  ).toBe(false);
   expect(element("inside")?.hasAttribute("data-glass")).toBe(false);
   expect(element("plain")?.hasAttribute("data-glass")).toBe(false);
 });

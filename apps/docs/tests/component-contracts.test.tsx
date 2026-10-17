@@ -33,30 +33,23 @@ describe("Slider value shape", () => {
   });
 });
 
-test("Button and Toggle execute Base UI state class callbacks", () => {
+test("Button and Toggle merge string classes and style state through data attributes", () => {
   const button = renderToStaticMarkup(
-    <Button
-      disabled
-      className={(state) =>
-        state.disabled ? "disabled-probe" : "enabled-probe"
-      }
-    >
+    <Button disabled className="caller-probe data-disabled:opacity-40">
       Save
     </Button>,
   );
-  expect(button).toContain("disabled-probe");
-  expect(button).not.toContain("enabled-probe");
+  expect(button).toContain("caller-probe");
   expect(button).toContain("group/button");
+  expect(button).toContain("data-disabled");
   const toggle = renderToStaticMarkup(
-    <Toggle
-      pressed
-      className={(state) => (state.pressed ? "pressed-probe" : "idle-probe")}
-    >
+    <Toggle pressed className="caller-probe data-pressed:font-bold">
       Pin
     </Toggle>,
   );
-  expect(toggle).toContain("pressed-probe");
+  expect(toggle).toContain("caller-probe");
   expect(toggle).toContain("group/toggle");
+  expect(toggle).toContain("data-pressed");
 });
 
 test("chart content forwards native attributes without leaking Recharts configuration", () => {

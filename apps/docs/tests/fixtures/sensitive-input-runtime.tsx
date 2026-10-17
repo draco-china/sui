@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { type HTMLButtonElement as HappyButton, Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -62,7 +63,8 @@ const status = () =>
     ?.getAttribute("data-copy-status");
 assert(form && input && copy);
 
-// Copy immediately after the native reset, while its DOM synchronization is pending.
+// The copy runs while the DOM synchronization of the native reset is pending.
+scenario("a copy right after a native reset writes the restored default");
 await act(async () => {
   input.value = "edited secret";
   form.reset();
@@ -78,7 +80,7 @@ assert.equal(status(), "copied");
 assert.deepEqual(writes, ["default secret"]);
 assert.deepEqual(copied, ["default secret"]);
 
-// React cancellation must preserve both the native value and previous feedback.
+scenario("a cancelled reset keeps the edited value and the copied feedback");
 cancelReset = true;
 await act(async () => {
   input.value = "kept secret";
@@ -90,11 +92,15 @@ await act(async () => {
 });
 assert.equal(input.value, "kept secret");
 assert.equal(status(), "copied");
+
+scenario("an uncancelled reset returns the copy feedback to idle");
 cancelReset = false;
 await act(async () => {
   form.reset();
 });
 assert.equal(status(), "idle");
+
+scenario("unmounting during a pending copy skips the success callback");
 await act(async () => {
   copy.click();
   root.unmount();
@@ -102,4 +108,3 @@ await act(async () => {
 });
 assert.deepEqual(copied, ["default secret"]);
 await window.happyDOM.cancelAsync();
-console.log("sensitive input reset lifecycle passed");

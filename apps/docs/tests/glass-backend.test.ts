@@ -3,22 +3,12 @@ import {
   glassDisplacement,
   type SvgGlassGeometry,
 } from "../../../packages/ui/src/lib/glass/svg-renderer";
+import { describeFixture } from "./support/fixture";
 
-test("the shared SVG renderer initializes once and falls back to CSS", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/glass-backend.ts", import.meta.url).pathname,
-    ],
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "SVG renderer and CSS fallback passed",
-  );
-});
+describeFixture(
+  "The shared SVG renderer initializes once and falls back to CSS",
+  "glass-backend.ts",
+);
 
 test("SVG normals refract all four edges while leaving the center still", () => {
   const frame: SvgGlassGeometry = {

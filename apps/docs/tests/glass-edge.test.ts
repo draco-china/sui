@@ -64,7 +64,7 @@ test("square and elliptical corners keep the light on their own arc", () => {
   expect(ellipse[1]).toBeCloseTo(20 * (1 - Math.SQRT1_2));
 });
 
-test("the 1.1 stroke narrows continuously on denser screens", () => {
+test("the 1.1 stroke is the same on every screen", () => {
   function line(pixelRatio: number) {
     const source = decode(
       glassEdge(120, 40, ["20px", "20px", "20px", "20px"], {
@@ -74,10 +74,7 @@ test("the 1.1 stroke narrows continuously on denser screens", () => {
     );
     return Number(source.match(/stroke-width="([^"]+)"/)?.[1]);
   }
-  expect(line(1)).toBe(0.9);
-  expect(line(2)).toBe(0.9);
-  expect(line(2.5)).toBeCloseTo(0.72);
-  expect(line(3)).toBeCloseTo(0.6);
+  for (const pixelRatio of [1, 2, 2.5, 3]) expect(line(pixelRatio)).toBe(0.9);
 });
 
 test("the diagonal rim follows the foreground and the continuous density strength", () => {
@@ -155,8 +152,8 @@ test("the vertical bevel narrows on small controls and keeps one device pixel at
   expect(softness(2)).toBeCloseTo(1.25 * 0.46);
   // Larger controls keep the 1.3 bevel exactly.
   const regular = vertical(120, 40, ["20px", "20px", "20px", "20px"], 1);
-  expect(regular).toContain('stdDeviation="0.828"');
-  expect(regular).toContain('surfaceScale="2.016"');
+  expect(regular).toContain('stdDeviation="0.83"');
+  expect(regular).toContain('surfaceScale="2.02"');
 });
 
 test("outer glass shading has no component rings or focus decorations", () => {

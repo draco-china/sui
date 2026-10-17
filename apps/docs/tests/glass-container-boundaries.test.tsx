@@ -34,12 +34,7 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
 import { Toolbar, ToolbarButton } from "@workspace/ui/components/toolbar";
-import type { ComponentProps } from "react";
 import { renderToString } from "react-dom/server";
-import {
-  GlassContext,
-  withGlass,
-} from "../../../packages/ui/src/lib/glass/context";
 
 function tag(html: string, id: string) {
   return (
@@ -49,34 +44,24 @@ function tag(html: string, id: string) {
   );
 }
 
-test("ColorPicker inherits action material and respects explicit local switches", () => {
-  const Scope = withGlass(
-    (props: ComponentProps<"div">) => <div {...props} />,
-    "scope",
+test("ColorPicker glass reaches its trigger only when asked", () => {
+  const html = renderToString(
+    <>
+      <ColorPicker id="plain-picker" eyeDropper={false} />
+      <ColorPicker id="glass-picker" glass eyeDropper={false} />
+      <ColorPicker id="frosted-picker" frosted eyeDropper={false} />
+      <ColorPicker inline eyeDropper={false} />
+    </>,
   );
-  for (const enabled of [false, true]) {
-    const html = renderToString(
-      <Scope glass={enabled}>
-        <ColorPicker id="inherited-picker" eyeDropper={false} />
-        <ColorPicker id="plain-picker" glass={false} eyeDropper={false} />
-        <ColorPicker id="local-picker" glass eyeDropper={false} />
-        <ColorPicker inline eyeDropper={false} />
-      </Scope>,
-    );
-    expect(tag(html, "inherited-picker").includes('data-glass="true"')).toBe(
-      enabled,
-    );
-    expect(tag(html, "plain-picker")).not.toContain("data-glass=");
-    expect(tag(html, "local-picker")).toContain('data-glass="true"');
-    expect(html.match(/data-glass="true"/g)).toHaveLength(Number(enabled) + 1);
-  }
+  expect(tag(html, "plain-picker")).not.toContain("data-glass");
+  expect(tag(html, "glass-picker")).toContain('data-glass="true"');
+  expect(tag(html, "frosted-picker")).toContain('data-frosted="true"');
+  expect(html.match(/data-glass="true"/g)).toHaveLength(1);
 });
 
-const enabledScope = { enabled: true, surface: false } as const;
-
-test("Accordion and its rows stay ordinary inside enabled glass", () => {
+test("Accordion and its rows stay ordinary inside glass", () => {
   const html = renderToString(
-    <GlassContext.Provider value={enabledScope}>
+    <GlassSurface id="surface">
       <Accordion defaultValue={["first"]}>
         <AccordionItem id="row" value="first">
           <AccordionTrigger id="trigger">First</AccordionTrigger>
@@ -85,78 +70,55 @@ test("Accordion and its rows stay ordinary inside enabled glass", () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </GlassContext.Provider>,
+    </GlassSurface>,
   );
-  expect(html).not.toContain("data-glass");
+  expect(html.match(/data-glass="true"/g)).toHaveLength(1);
+  expect(tag(html, "row")).not.toContain("data-glass");
+  expect(tag(html, "inner-action")).not.toContain("data-glass");
   expect(tag(html, "trigger")).toContain('aria-expanded="true"');
   expect(tag(html, "trigger")).toContain("focus-visible:ring-3");
 });
 
-test("Card content stays ordinary while Toolbar paints once with its actions", () => {
+test("Card content stays ordinary while a glass Toolbar paints once", () => {
   const card = renderToString(
-    <GlassContext.Provider value={enabledScope}>
-      <Card>
-        <Button id="card-button">Inherited</Button>
-        <Input id="card-input" />
-        <Button id="card-explicit" glass>
-          Explicit
-        </Button>
-      </Card>
-    </GlassContext.Provider>,
+    <Card glass>
+      <Button id="card-button">Ordinary</Button>
+      <Input id="card-input" />
+    </Card>,
   );
-  // Cards are content; only an explicit opt-in inside them becomes glass.
   expect(tag(card, "card-button")).not.toContain("data-glass");
   expect(tag(card, "card-input")).not.toContain("data-glass");
-  expect(tag(card, "card-explicit")).toContain('data-glass="true"');
   expect(card.match(/data-glass="true"/g)).toHaveLength(1);
   const toolbar = renderToString(
     <Toolbar glass>
       <ToolbarButton id="action">Save</ToolbarButton>
-      <Button id="plain-button" glass={false}>
-        Ordinary
-      </Button>
-      <Button id="independent-button" glass>
-        Independent
-      </Button>
+      <Button id="plain-button">Ordinary</Button>
     </Toolbar>,
   );
-  expect(toolbar.match(/data-glass="true"/g)).toHaveLength(2);
-  expect(tag(toolbar, "action")).toContain('data-glass-part="control"');
-  expect(tag(toolbar, "plain-button")).not.toContain("data-glass-part=");
-  expect(tag(toolbar, "independent-button")).toContain('data-glass="true"');
+  expect(toolbar.match(/data-glass="true"/g)).toHaveLength(1);
+  expect(tag(toolbar, "action")).not.toContain("data-glass");
+  expect(tag(toolbar, "plain-button")).not.toContain("data-glass");
 });
 
-test("InputGroup is one glass field in an enabled scope and ordinary inside a surface", () => {
-  const group = (
-    <InputGroup id="group">
+test("InputGroup with glass is one glass field whose controls stay ordinary", () => {
+  const html = renderToString(
+    <InputGroup id="group" glass>
       <InputGroupInput id="group-input" />
       <InputGroupTextarea id="group-textarea" />
       <InputGroupButton id="group-action">Action</InputGroupButton>
-    </InputGroup>
+    </InputGroup>,
   );
-  const html = renderToString(
-    <GlassContext.Provider value={enabledScope}>{group}</GlassContext.Provider>,
-  );
-  // Like an iOS search field: one capsule whose controls share it.
+  // Like an iOS search field: one capsule its controls sit on.
   expect(tag(html, "group")).toContain('data-glass="true"');
-  expect(tag(html, "group-input")).not.toContain("data-glass");
-  expect(tag(html, "group-textarea")).not.toContain("data-glass");
-  expect(tag(html, "group-action")).toContain('data-glass-part="control"');
-  // Inside a glass surface, the field and its actions stay ordinary and keep
-  // their focus rings.
-  const nested = renderToString(
-    <GlassContext.Provider value={{ enabled: true, surface: true }}>
-      {group}
-    </GlassContext.Provider>,
-  );
-  expect(nested).not.toContain("data-glass");
-  expect(tag(nested, "group-action")).toContain("focus-visible:ring-3");
+  for (const id of ["group-input", "group-textarea", "group-action"])
+    expect(tag(html, id)).not.toContain("data-glass");
+  expect(tag(html, "group-action")).toContain("focus-visible:ring-3");
 });
 
-test("Tabs paint the list while panels remain ordinary", () => {
+test("Tabs paint only a list that asks, while panels remain ordinary", () => {
   const html = renderToString(
-    <Tabs glass defaultValue="first">
-      <TabsList id="list">
+    <Tabs defaultValue="first">
+      <TabsList id="list" glass>
         <TabsTrigger value="first">First</TabsTrigger>
       </TabsList>
       <TabsContent id="panel" value="first">
@@ -169,9 +131,9 @@ test("Tabs paint the list while panels remain ordinary", () => {
   expect(html.match(/data-glass="true"/g)).toHaveLength(1);
 });
 
-test("Sidebar navigation stays ordinary inside an enabled material scope", () => {
+test("Sidebar navigation stays ordinary inside glass", () => {
   const html = renderToString(
-    <GlassContext.Provider value={{ enabled: true, surface: false }}>
+    <GlassSurface>
       <SidebarProvider>
         <Sidebar>
           <SidebarMenu>
@@ -189,34 +151,11 @@ test("Sidebar navigation stays ordinary inside an enabled material scope", () =>
         </Sidebar>
         <SidebarInset id="page">Page</SidebarInset>
       </SidebarProvider>
-    </GlassContext.Provider>,
+    </GlassSurface>,
   );
-  expect(html).not.toContain("data-glass");
+  expect(html.match(/data-glass="true"/g)).toHaveLength(1);
   expect(tag(html, "nav")).not.toContain("data-glass");
   expect(tag(html, "sub-nav")).not.toContain("data-glass");
   expect(tag(html, "sub-nav")).toContain('href="/settings"');
   expect(tag(html, "page")).not.toContain("data-glass");
-});
-
-test("portal boundaries retain an independent material inside a container", () => {
-  const Popup = withGlass(
-    (props: ComponentProps<"div">) => <div {...props} />,
-    "portal",
-  );
-  const html = renderToString(
-    <GlassSurface>
-      <InputGroup id="embedded-control">
-        <Popup id="popup">
-          <Button id="popup-action">Action</Button>
-        </Popup>
-      </InputGroup>
-      <Popup id="plain-popup" glass={false}>
-        <Button id="plain-popup-action">Plain</Button>
-      </Popup>
-    </GlassSurface>,
-  );
-  expect(tag(html, "popup")).toContain('data-glass="true"');
-  expect(tag(html, "popup-action")).toContain('data-glass-part="control"');
-  expect(tag(html, "plain-popup")).not.toContain("data-glass");
-  expect(tag(html, "plain-popup-action")).not.toContain("data-glass");
 });

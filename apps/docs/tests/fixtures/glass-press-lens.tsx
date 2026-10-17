@@ -1,7 +1,8 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
-import type { GlassConfiguration } from "../../../../packages/ui/src/lib/glass/context";
+import type { GlassConfiguration } from "../../../../packages/ui/src/lib/glass/defaults";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
@@ -43,29 +44,19 @@ const active = () =>
 
 const { act } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { GlassContext } = await import(
-  "../../../../packages/ui/src/lib/glass/context"
-);
 const { Switch } = await import("@workspace/ui/components/switch");
 const { Slider } = await import("@workspace/ui/components/slider");
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host as unknown as HTMLElement);
 
-function render(glass: boolean | undefined, content = false) {
+function render(glass: boolean) {
   return act(async () =>
     root.render(
-      <GlassContext.Provider
-        value={{
-          enabled: true,
-          surface: false,
-          content,
-          configuration: { material: "regular" },
-        }}
-      >
+      <>
         <Switch glass={glass} aria-label="Airplane mode" />
         <Slider glass={glass} defaultValue={[20, 80]} aria-label="Range" />
-      </GlassContext.Provider>,
+      </>,
     ),
   );
 }
@@ -81,7 +72,8 @@ const release = (type = "pointerup") =>
     window.dispatchEvent(new window.PointerEvent(type, { bubbles: true }));
   });
 
-await render(undefined);
+scenario("resting Switch and Slider stay ordinary and request no glass");
+await render(true);
 for (const slot of ["switch", "switch-thumb", "slider-track", "slider-thumb"])
   assert.equal(
     query(`[data-slot="${slot}"]`)?.hasAttribute("data-glass"),
@@ -90,6 +82,7 @@ for (const slot of ["switch", "switch-thumb", "slider-track", "slider-thumb"])
   );
 assert.equal(active(), 0, "resting controls request no glass");
 
+scenario("pressing lifts a Clear lens from the thumb alone");
 await press();
 const thumb = query('[data-slot="switch-thumb"]');
 assert.equal(
@@ -97,13 +90,14 @@ assert.equal(
   "true",
   "pressing lifts a lens",
 );
-assert.equal(thumb?.getAttribute("data-glass-material"), "clear");
+assert.ok(thumb?.hasAttribute("data-glass-lens"), "the lens may sit on glass");
 assert.equal(
   query('[data-slot="switch"]')?.hasAttribute("data-glass"),
   false,
   "the track stays ordinary",
 );
 assert.equal(active(), 1);
+scenario("release and cancellation free the lens");
 await release();
 assert.equal(
   query('[data-slot="switch-thumb"]')?.hasAttribute("data-glass"),
@@ -115,23 +109,17 @@ await press();
 await release("pointercancel");
 assert.equal(active(), 0, "cancellation also frees the lens");
 
-for (const [glass, content, reason] of [
-  [false, false, "explicit opt-out"],
-  [undefined, true, "content-layer boundary"],
-] as const) {
-  await render(glass, content);
-  await press();
-  assert.equal(
-    query('[data-slot="switch-thumb"]')?.hasAttribute("data-glass"),
-    false,
-    `${reason} keeps the pressed thumb ordinary`,
-  );
-  await release();
-}
+scenario("without glass the pressed thumb stays ordinary");
+await render(false);
+await press();
+assert.equal(
+  query('[data-slot="switch-thumb"]')?.hasAttribute("data-glass"),
+  false,
+  "a Switch without glass keeps its pressed thumb ordinary",
+);
+await release();
 
+scenario("unmounting leaves no glass requested");
 await act(async () => root.unmount());
 assert.equal(active(), 0);
-console.log(
-  "Switch and Slider stay ordinary at rest and lift a lens only while pressed passed",
-);
 window.happyDOM.abort();

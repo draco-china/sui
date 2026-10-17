@@ -2,6 +2,7 @@ import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 import { cssForHappyDOM } from "./css-color";
 
 const window = new HappyWindow({
@@ -345,6 +346,7 @@ function themeColors(id: string) {
   return { background: colors.backgroundColor, foreground: colors.color };
 }
 
+scenario("loading draws themed dots and recolors them without re-encoding");
 await render(<QRCode id="main" value="first" logo={<span>Brand</span>} />);
 assert.equal(qr("main").dataset.state, "loading");
 assert.equal(qr("main").getAttribute("aria-busy"), "true");
@@ -378,6 +380,8 @@ assert.equal(
 );
 await act(async () => document.documentElement.classList.remove("dark"));
 await frame(200);
+
+scenario("a stale generation shows no URL and loading dots follow the grid");
 await render(<QRCode id="main" value="second" logo={<span>Brand</span>} />);
 await resolve("first");
 assert.equal(
@@ -407,6 +411,7 @@ assert.equal(
   2,
 );
 
+scenario("image load makes the default QR ready behind its code mask");
 assert.equal(
   qr("main").dataset.state,
   "loading",
@@ -447,6 +452,8 @@ assert.equal(
   "#FFFFFF00",
   "the encoder produces a transparent geometry mask rather than an opaque themed bitmap",
 );
+
+scenario("theme and accent changes recolor a ready QR without re-encoding");
 const readyUrl = qr("main").querySelector("image")?.getAttribute("href");
 const encodersBeforeReadyThemeChange = pending.length;
 const lightReady = themeColors("main");
@@ -472,6 +479,7 @@ assert.equal(getComputedStyle(coloredCode).color, lightReady.foreground);
 assert.equal(pending.length, encodersBeforeReadyThemeChange);
 assert.equal(frames.size, 0, "a ready QR releases the loading dot matrix");
 
+scenario("the loading prop hides the logo without regenerating the content");
 await render(
   <QRCode id="main" value="second" loading logo={<span>Brand</span>} />,
 );
@@ -493,6 +501,8 @@ await render(<QRCode id="main" value="second" logo={<span>Brand</span>} />);
 await frame(1000);
 await frame(1750);
 assert.equal(qr("main").dataset.state, "ready");
+
+scenario("an animated QR stays loading until its reveal finishes");
 await render(
   <QRCode
     id="main"
@@ -519,6 +529,8 @@ assert.equal(
   qr("main").querySelector('[data-slot="qr-code-logo"]')?.textContent,
   "Reveal brand",
 );
+
+scenario("encoder failures show an alert that survives theme changes");
 const oldUrl = qr("main").querySelector("image")?.getAttribute("href");
 await render(<QRCode id="main" value="broken" />);
 assert.ok(
@@ -553,6 +565,7 @@ assert.equal(
 );
 await act(async () => document.documentElement.classList.remove("dark"));
 
+scenario("image decode errors show the alert without the logo");
 await render(<QRCode id="main" value="image-error" />);
 await resolve("image-error");
 await imageEvent("main", "error");
@@ -562,6 +575,8 @@ assert.equal(
   "Unable to generate QR code",
 );
 assert.equal(qr("main").querySelector('[data-slot="qr-code-logo"]'), null);
+
+scenario("non-ASCII content is encoded as UTF-8 bytes in byte mode");
 await render(<QRCode id="main" value="文😀" />);
 const unicodeGeneration = pending[pending.length - 1];
 assert.deepEqual(
@@ -579,6 +594,8 @@ await imageEvent("main", "load");
 await frame(2200);
 await frame(2950);
 assert.equal(qr("main").dataset.state, "ready");
+
+scenario("an obsolete failure cannot replace the latest valid image");
 await render(<QRCode id="main" value="obsolete-error" />);
 await render(<QRCode id="main" value="latest-valid" />);
 await resolve("latest-valid");
@@ -596,6 +613,8 @@ assert.equal(
   qr("main").querySelector("image")?.getAttribute("href"),
   latestUrl,
 );
+
+scenario("empty content waits under its label without calling the encoder");
 await render(<QRCode id="main" value="" label="Waiting for content" />);
 assert.equal(qr("main").dataset.state, "loading");
 assert.equal(
@@ -609,6 +628,7 @@ assert.equal(
 );
 assert.equal(liveUrls.size, 0);
 
+scenario("two QRs keep their images, masks and readiness apart");
 await render(
   <>
     <QRCode id="one" value="instance-one" animated logo={<span>One</span>} />
@@ -642,6 +662,7 @@ assert.equal(
   "one image failure cannot disturb its peer",
 );
 
+scenario("size and margin map CSS pixels onto the fixed 512px output");
 const margins = [
   { size: undefined, margin: undefined, pixels: 256, encoded: 32 },
   { size: 192, margin: undefined, pixels: 192, encoded: 512 / 12 },
@@ -673,6 +694,8 @@ for (const [index, entry] of margins.entries()) {
   assert.equal(generation.options.width, 512);
   assert.equal(generation.options.height, 512);
 }
+
+scenario("loading dots scale with the display-to-output ratio");
 await render(<QRCode id="main" value="double-scale" size={512} />);
 await resolve("double-scale");
 const scaledDots = canvasDraws.get(
@@ -689,6 +712,8 @@ assert.equal(
   (scaledDots[1].x - scaledDots[0].x) / (scaledDots[0].radius * 2),
   2,
 );
+
+scenario("replaced size and margin requests cannot expose stale images");
 await render(<QRCode id="main" value="config-race" size={256} margin={16} />);
 const initialConfiguration = pending[pending.length - 1];
 await render(<QRCode id="main" value="config-race" size={192} margin={16} />);
@@ -714,6 +739,8 @@ await imageEvent("main", "load");
 assert.equal(qr("main").dataset.state, "ready");
 assert.equal(qr("main").style.width, "192px");
 assert.equal(currentConfiguration.options.margin, (8 / 192) * 512);
+
+scenario("ref, theme and loading changes keep the solid surface and data");
 const nativeRef = createRef<HTMLDivElement>();
 const beforeGlassChange = pending.length;
 const plainLightColors = themeColors("main");
@@ -806,6 +833,8 @@ assert.deepEqual(
   plainLightColors,
   "theme and loading transitions retain the solid neutral scan surface",
 );
+
+scenario("the finder extension rounds only the inner finder squares");
 const finder = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 finder.innerHTML =
   '<defs><clipPath id="clip-corners-dot-color-0-0"><rect id="finder-24" width="24" height="24" rx="0" ry="0" /></clipPath><clipPath id="clip-corners-dot-color-0-1"><rect id="finder-36" width="36" height="36" /></clipPath><clipPath id="clip-corners-square-color-0-0"><rect id="outer-ring" width="72" height="72" rx="0" ry="0" /></clipPath><clipPath id="ordinary-dot"><rect id="ordinary" width="6" height="6" rx="0" ry="0" /></clipPath></defs>';
@@ -834,6 +863,7 @@ assert.equal(
   "finder geometry cannot alter data modules",
 );
 
+scenario("reduced motion skips the timed reveal");
 await act(async () => {
   motionQuery.matches = true;
   for (const listener of [...motionQuery.listeners]) listener();
@@ -862,6 +892,8 @@ await act(async () => {
   motionQuery.matches = false;
   for (const listener of [...motionQuery.listeners]) listener();
 });
+
+scenario("DPR changes sharpen the loading canvas and move its query");
 await render(<QRCode id="main" value="pending-at-unmount" />);
 const loadingCanvas = qr("main").querySelector("canvas");
 assert.ok(loadingCanvas);
@@ -887,6 +919,8 @@ assert.equal(
   "DPR updates detach the obsolete resolution query",
 );
 assert.ok(queries.get("(resolution: 2dppx)")?.listeners.size);
+
+scenario("hidden documents pause the loading animation");
 await act(async () => {
   hidden = true;
   document.dispatchEvent(new window.Event("visibilitychange"));
@@ -897,6 +931,8 @@ await act(async () => {
   document.dispatchEvent(new window.Event("visibilitychange"));
 });
 assert.ok(frames.size > 0 && liveObservers.size > 0);
+
+scenario("unmount ignores late results and releases every subscription");
 await act(async () => root.unmount());
 const createdAtUnmount = createdUrls.length;
 const stillPending = pending.find(
@@ -930,6 +966,3 @@ assert.ok(
 assert.equal(visibilityListeners.size, 0);
 assert.equal(resizeListeners.size, 0);
 await window.happyDOM.abort();
-console.log(
-  "QR async state, stale values, image feedback, logo readiness, instance isolation and cleanup passed",
-);

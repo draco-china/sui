@@ -2,6 +2,7 @@ import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { pathToFileURL } from "node:url";
 import { createEditorWorkerLifecycle } from "../../../../packages/ui/src/lib/editor/monaco-workers";
+import { scenario } from "../support/scenario";
 
 const base = new URL(
   "./esm/vs/",
@@ -96,6 +97,8 @@ function disposeModel() {
   for (const listener of disposals) listener();
   modelCount = 0;
 }
+
+scenario("one editor releasing keeps another editor's shared workers alive");
 const one = lifecycle.acquire();
 const two = lifecycle.acquire();
 const first = await ts.getLanguageServiceWorker();
@@ -113,6 +116,8 @@ assert(
   "one instance releasing cannot terminate another's shared Worker",
 );
 assert.equal(resets, 0);
+
+scenario("the final release waits for its model, then stops each worker once");
 two();
 await tick();
 assert(
@@ -135,6 +140,7 @@ assert.equal(
   "the final release disconnects its model observer",
 );
 
+scenario("reopening gets a fresh client and a quick reopen cancels disposal");
 const reopen = lifecycle.acquire();
 const next = await ts.getLanguageServiceWorker();
 assert.notEqual(
@@ -152,6 +158,7 @@ rapidReopen();
 await tick();
 assert.equal(next.thread.alive, false);
 
+scenario("models of another consumer keep the shared services alive");
 const shared = lifecycle.acquire();
 modelCount = 1;
 const foreignDependent = await ts.getLanguageServiceWorker();
@@ -165,6 +172,7 @@ disposeModel();
 await tick();
 assert.equal(foreignDependent.thread.alive, false);
 
+scenario("a late worker without owners or models is cleaned up");
 const late = await ts.getLanguageServiceWorker();
 await tick();
 assert.equal(
@@ -178,6 +186,8 @@ assert.notEqual(fresh, late);
 assert.equal(fresh.format(), "formatted");
 afterLate();
 await tick();
+
+scenario("JSON, CSS and HTML clients reset and reopen with fresh workers");
 Object.defineProperty(globalThis, "window", {
   value: { setInterval: () => 0 },
 });
@@ -236,6 +246,3 @@ ts.dispose();
 js.dispose();
 assert(threads.every((thread) => !thread.alive && thread.stops === 1));
 assert.equal(disposals.size, 0);
-console.log(
-  "actual Monaco TS/JS/JSON/CSS/HTML cache reset, shared leases, deferred model cleanup, reopen, late tasks, and Worker termination passed",
-);

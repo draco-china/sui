@@ -3,6 +3,7 @@ import { Window } from "happy-dom";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { GlassLab } from "../src/components/glass-lab";
+import { describeFixture } from "./support/fixture";
 
 function render(locale: "en-US" | "zh-CN") {
   const window = new Window();
@@ -36,7 +37,7 @@ test("playground keeps settings on the left and composed blocks on the right", (
   }
 });
 
-test("playground settings default to glass, Clear and diagonal edge light", () => {
+test("playground settings default to glass, diagonal edge light and text glow", () => {
   for (const locale of ["en-US", "zh-CN"] as const) {
     const window = render(locale);
     const sidebar = window.document.querySelector('[data-slot="sidebar"]');
@@ -55,10 +56,7 @@ test("playground settings default to glass, Clear and diagonal edge light", () =
     expect(group(zh ? "组件材质" : "Component material")).toEqual([
       [zh ? "普通" : "Ordinary", "false"],
       ["Glass", "true"],
-    ]);
-    expect(group(zh ? "玻璃材质" : "Glass material")).toEqual([
-      [zh ? "清透" : "Clear", "true"],
-      [zh ? "常规" : "Regular", "false"],
+      [zh ? "磨砂" : "Frosted", "false"],
     ]);
     expect(group(zh ? "边缘光" : "Edge light")).toEqual([
       [zh ? "对角" : "Diagonal", "true"],
@@ -83,7 +81,9 @@ test("playground settings default to glass, Clear and diagonal edge light", () =
     expect(switchFor(zh ? "显示折射镜片" : "Show refraction lens")).toBe(
       "false",
     );
-    expect(switchFor(zh ? "启用折射" : "Enable refraction")).toBe("true");
+    // Text glow is opt-in, and the tint follows the component.
+    expect(switchFor(zh ? "文字光晕" : "Text glow")).toBe("false");
+    expect(switchFor(zh ? "自定义着色" : "Custom tint")).toBe("false");
     expect(
       window.document.querySelector('[data-slot="glass-refraction-probe"]'),
     ).toBeNull();
@@ -91,10 +91,11 @@ test("playground settings default to glass, Clear and diagonal edge light", () =
       ...(sidebar?.querySelectorAll('input[type="range"]') ?? []),
     ];
     expect(sliders.map((slider) => slider.getAttribute("aria-label"))).toEqual(
-      zh ? ["透明度", "折射强度"] : ["Transparency", "Refraction strength"],
+      zh ? ["折射强度", "透明度"] : ["Refraction strength", "Transparency"],
     );
+    expect(sliders[0]?.getAttribute("value")).toBe("22");
     // Clear tints 12%, so the surface starts 88% transparent.
-    expect(sliders[0]?.getAttribute("value")).toBe("88");
+    expect(sliders[1]?.getAttribute("value")).toBe("88");
     window.close();
   }
 });
@@ -111,7 +112,6 @@ test("blocks put navigation, controls and floating layers in glass while content
   expect(panels.length).toBeGreaterThan(5);
   for (const panel of panels) {
     expect(panel.getAttribute("data-glass")).toBe("true");
-    expect(panel.getAttribute("data-glass-material")).toBe("clear");
   }
   // Copy components stay ordinary content inside a glass panel.
   for (const slot of ["clipboard-text", "inline-copy-text"]) {
@@ -123,3 +123,8 @@ test("blocks put navigation, controls and floating layers in glass while content
   expect(document.querySelector('[data-slot="tab-bar"]')).not.toBeNull();
   window.close();
 });
+
+describeFixture(
+  "Playground settings follow the chosen material",
+  "glass-lab-runtime.tsx",
+);

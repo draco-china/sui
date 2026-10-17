@@ -1,120 +1,163 @@
 import { expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { glassDefaults } from "../../../packages/ui/src/lib/glass/defaults";
+import { glassShadow } from "../../../packages/ui/src/lib/glass/edge";
+import { compiledStylesheet, optimize } from "./support/css";
 
-const tailwindPlugin = Bun.resolveSync(
-  "@tailwindcss/vite",
-  new URL("../src", import.meta.url).pathname,
-);
-const { optimize } = await import(
-  Bun.resolveSync("@tailwindcss/node", dirname(tailwindPlugin))
-);
-
-test("production CSS keeps fallback blur and layers live SVG refraction", () => {
-  const source = readFileSync(
-    new URL(
-      "../../../packages/ui/src/styles/components/glass.css",
-      import.meta.url,
-    ),
-    "utf8",
-  );
-  const { code } = optimize(source, { minify: true });
-  const material = code.match(
+// The stylesheet as production ships it: minified, with nesting flattened.
+const minifiedSheet = (name: string) =>
+  compiledStylesheet(`components/${name}.css`, true);
+const code = minifiedSheet("glass");
+const frosted = minifiedSheet("frosted");
+const layer = ":is([data-glass=true],[data-frosted=true])";
+const material =
+  code.match(
     /\[data-glass=true\]\[data-glass-state\]\{[^}]*background-image[^}]*\}/,
-  )?.[0];
-  expect(material).toBeDefined();
-  expect(material).toMatch(/(?:^|;)backdrop-filter:blur\(/);
-  expect(material).toContain("-webkit-backdrop-filter:blur(");
-  expect(material).toContain("background-image:var(--glass-edge,none)");
-  expect(code).not.toContain("--glass-frame");
-  expect(code).not.toContain("vgpu");
-  const ready: string[] =
-    code.match(/[^{}]*\[data-glass-state=ready\][^{}]*\{[^}]*\}/g) ?? [];
-  const svg = ready.find((rule) => rule.includes("[data-glass-renderer=svg]"));
-  expect(svg).toContain("backdrop-filter:var(--glass-filter)");
-  expect(svg).toContain("-webkit-backdrop-filter:var(--glass-filter)");
-  expect(svg).toContain(":where(");
+  )?.[0] ?? "";
+const frostedMaterial =
+  frosted.match(/^\[data-frosted=true\]\{[^}]*\}/)?.[0] ?? "";
+const legible =
+  code.match(
+    /\[data-glass=true\]\[data-glass-state\]\{--glass-halo:[^}]*\}/,
+  )?.[0] ?? "";
+
+/** A declaration value as the minifier writes it, such as colors in hex. */
+function minified(value: string) {
+  return optimize(`a{--value:${value}}`, { minify: true }).code.match(
+    /--value:([^;}]+)/,
+  )?.[1];
+}
+
+test("Clear blurs as its fallback and layers live SVG refraction over it", () => {
   expect(material).toContain("--glass-backdrop-blur:6px");
   expect(material).toMatch(
     /(?:^|;)backdrop-filter:blur\(var\(--glass-backdrop-blur\)\) ?saturate\(1\.3\)/,
   );
+  expect(material).toContain("-webkit-backdrop-filter:blur(");
+  expect(material).toContain("background-image:var(--glass-edge,none)");
+  const ready: string[] =
+    code.match(/[^{}]*\[data-glass-state=ready\][^{}]*\{[^}]*\}/g) ?? [];
+  const svg = ready.find((rule) => rule.includes("[data-glass-renderer=svg]"));
+  expect(svg).toContain(":where(");
   expect(svg).toMatch(
-    /backdrop-filter:var\(--glass-filter\) ?saturate\(1\.3\)/,
+    /(?:^|;)backdrop-filter:var\(--glass-filter\) ?saturate\(1\.3\)/,
   );
-  // Regular frosts more than Clear by changing variables only, so the
-  // higher-specificity rule cannot override SVG refraction.
-  expect(code).toContain(
-    "[data-glass=true][data-glass-state][data-glass-material=regular]{--glass-opacity:30%;--glass-backdrop-blur:16px}",
+  expect(svg).toContain("-webkit-backdrop-filter:var(--glass-filter)");
+  for (const removed of ["--glass-frame", "vgpu", "--glass-material-filter"])
+    expect(code).not.toContain(removed);
+});
+
+test("frosted glass blurs 24px behind its 65% tint, CSS only and without edge light", () => {
+  expect(frostedMaterial).toContain("var(--frosted-opacity,65%)");
+  expect(frostedMaterial).toMatch(
+    /(?:^|;)backdrop-filter:blur\(var\(--frosted-blur,24px\)\) ?saturate\(1\.3\)/,
   );
-  expect(code).not.toContain("--glass-material-filter");
+  expect(frosted).not.toContain("--glass-edge");
+  expect(frosted).not.toContain("--glass-filter");
+  expect(frosted).not.toContain("outline");
+  // The CSS tint matches the runtime's default before the runtime runs.
+  expect(material).toContain(
+    `var(--glass-opacity,${glassDefaults.tintOpacity * 100}%)`,
+  );
   expect(code).not.toContain("brightness(");
-  // Every material keeps text legible over bright, busy backdrops with a soft
-  // glow in its own tint and stronger secondary text; ordinary buttons and
-  // fields keep crisp labels, and reduced transparency reverts both.
-  const legible = code.match(
-    /\[data-glass=true\]\[data-glass-state\]\{--glass-halo:[^}]*\}/,
-  )?.[0];
+  expect(code).not.toContain("data-glass-material");
+  expect(code).not.toContain("data-glass-part");
+});
+
+test("frosted glass's drop shadow is glassShadow() over a white tint, or a black one in dark mode", () => {
+  const shadow = (rule: RegExp) =>
+    frosted.match(rule)?.[1]?.match(/--frosted-shadow:([^;}]+)/)?.[1];
+  expect(shadow(/^\[data-frosted=true\]\{([^}]*)\}/)).toBe(
+    minified(glassShadow([0, 0, 0], [1, 1, 1])),
+  );
+  expect(shadow(/\[data-frosted=true\]:where\(\.dark \*\)\{([^}]*)\}/)).toBe(
+    minified(glassShadow([1, 1, 1], [0, 0, 0])),
+  );
+});
+
+test("only Clear glass hides component borders, rings and focus rings", () => {
+  expect(code).toMatch(
+    /(?:^|\})\[data-glass=true\],\[data-slot=tabs-list\]\[data-glass=true\] \[data-slot=tabs-trigger\],/,
+  );
+  // Frosted glass hides borders and decorative rings but keeps focus rings,
+  // and Increase Contrast brings them back.
+  expect(frosted).toContain("border-color:#0000");
+  expect(frosted).toContain(":not(:focus-visible,:has(>:focus-visible))");
+  expect(frosted).toContain("@media (prefers-contrast:more)");
+  expect(code).not.toContain("data-glass-border");
+});
+
+test("text and icons glow in the material's tint and secondary text strengthens", () => {
   expect(legible).toContain("--glass-halo:var(--glass-base,var(--popover))");
   expect(legible).toContain(
     "text-shadow:0 0 .08em color-mix(in srgb, var(--glass-halo) 90%, transparent),",
   );
-  expect(code).not.toContain("[data-glass-material=clear]");
-  expect(code).toContain(
-    "[data-glass=true][data-glass-state] :where(button,input,select,textarea):not([data-glass-state]){text-shadow:none}",
-  );
-  // Content on its own fill, such as a copy field, code or a primary
-  // button's icon, never glows.
-  const layered =
-    /\[data-glass=true\]\[data-glass-state\] :where\(code,kbd,pre,\.text-accent-foreground,\.text-primary-foreground,\.text-secondary-foreground,\[data-slot=badge\],[^)]*\):not\(\[data-glass-state\]\)/;
-  expect(code).toMatch(new RegExp(`${layered.source}\\{text-shadow:none\\}`));
-  expect(code).toMatch(
-    new RegExp(
-      `${layered.source} :where\\(svg\\.lucide\\)\\{filter:revert-layer\\}`,
-    ),
+  expect(legible).toContain(
+    "--glass-icon-glow:drop-shadow(0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)) drop-shadow(",
   );
   expect(code).toContain(
-    "[data-glass=true][data-glass-state] :where(.text-muted-foreground){color:color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))}",
+    "[data-glass=true][data-glass-state] :where(svg.lucide){filter:var(--glass-icon-glow)}",
   );
   expect(code).toContain(
-    "[data-glass=true][data-glass-state] :where(svg.lucide){filter:drop-shadow(0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent)) drop-shadow(",
+    `${layer} :where(.text-muted-foreground){color:color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))}`,
   );
-  // Each rule undoes itself under reduced transparency or forced colors, with
-  // a positive query that stays safe where the feature is unsupported.
+});
+
+test("the textGlow switch alone decides, with nothing inside a glowing surface excluded", () => {
+  expect(code).toContain(
+    "[data-glass=true][data-glass-state][data-glass-text-glow=false]{--glass-icon-glow:none;text-shadow:none}",
+  );
+  expect(code).not.toContain(
+    ":where(button,input,select,textarea):not([data-glass-state])",
+  );
+  expect(code).not.toContain(":where(code,kbd,pre,");
+});
+
+test("each rule undoes itself under reduced transparency or forced colors", () => {
+  // A positive query stays safe where the feature is unsupported.
   const reduced =
     "@media (prefers-reduced-transparency:reduce),(forced-colors:active){";
   for (const revert of [
     "[data-glass=true][data-glass-state]{--glass-initial-edge-shadow:0 0 #0000;background-color:var(--glass-base,var(--popover));",
     "[data-glass=true][data-glass-state]{text-shadow:none}",
-    "[data-glass=true][data-glass-state] :where(.text-muted-foreground){color:revert-layer}",
+    `${layer} :where(.text-muted-foreground){color:revert-layer}`,
     "[data-glass=true][data-glass-state] :where(svg.lucide){filter:revert-layer}",
   ])
     expect(code).toContain(reduced + revert);
   expect(code).not.toContain("prefers-reduced-transparency:no-preference");
-  // Grouped buttons share the group's capsule, with a light wash on hover.
+});
+
+test("grouped buttons share their group's capsule with a light hover wash", () => {
   expect(code).toMatch(
-    /\[data-slot=button-group\]:is\(\[data-glass=true\],\[data-glass-part=surface\]\)>:is\(\[data-variant=outline\][^{]*\{background-color:#0000;border-color:#0000\}/,
+    /\[data-slot=button-group\]:is\(\[data-glass=true\],\[data-frosted=true\]\)>:is\(\[data-variant=outline\][^{]*\{background-color:#0000;border-color:#0000\}/,
   );
   expect(code).toMatch(
-    /:is\(:hover,:focus-visible,\[aria-expanded=true\]\):not\(:disabled\),\[data-slot=pagination-content\]\[data-glass=true\] \[data-slot=pagination-link\]:not\(\[data-active=true\]\):hover\{background-color:color-mix\(in srgb, var\(--foreground\) 8%, transparent\)\}/,
+    /:is\(:hover,:focus-visible,\[aria-expanded=true\]\):not\(:disabled\),\[data-slot=pagination-content\]:is\(\[data-glass=true\],\[data-frosted=true\]\) \[data-slot=pagination-link\]:not\(\[data-active=true\]\):hover\{background-color:color-mix\(in srgb, var\(--foreground\) 8%, transparent\)\}/,
   );
-  // Glass fields brighten while focused instead of drawing a ring.
+});
+
+test("focused glass fields and pressed glass controls brighten instead of drawing a ring", () => {
   expect(code).toMatch(
-    /\[data-glass=true\]:is\(\[data-slot=input\],[^{]*\[data-slot=tag-input\]\):focus-within\{--glass-press:/,
+    /:is\(\[data-glass=true\],\[data-frosted=true\]\):is\(\[data-slot=input\],[^{]*\[data-slot=tag-input\]\):focus-within\{--glass-press:/,
   );
-  // Floating layers share one diffuse shadow; small controls keep the 1px drop shadow.
+  expect(code).toContain("var(--glass-press,0 0 #0000)");
+  expect(frosted).toContain("var(--glass-press,0 0 #0000)");
+  expect(code).toMatch(/:active\{--glass-press:inset 0 0 0 100vmax [^;}]+\}/);
+  expect(code).toMatch(
+    /transition-property:color,background-color,box-shadow,scale/,
+  );
+});
+
+test("floating layers share one diffuse shadow while small controls keep theirs", () => {
   const floating = code.match(
-    /\[data-glass=true\]:is\([^{]*\[data-slot=popover-content\][^{]*\)\{[^}]*\}/,
+    /:is\(\[data-glass=true\],\[data-frosted=true\]\):is\([^{]*\[data-slot=popover-content\][^{]*\)\{[^}]*\}/,
   )?.[0];
   expect(floating).toContain("[data-slot=tooltip-content]");
   expect(floating).toContain("[data-slot=tab-bar-list]");
   expect(floating).not.toContain("[data-slot=button]");
   expect(floating).toContain("--tw-shadow:0 14px 36px -14px");
-  // Pressed glass controls brighten and animate Button's shared press bloom.
-  expect(code).toContain("var(--glass-press,0 0 #0000)");
-  expect(code).toMatch(/:active\{--glass-press:inset 0 0 0 100vmax [^;}]+\}/);
-  expect(code).toMatch(
-    /transition-property:color,background-color,box-shadow,scale/,
-  );
+});
+
+test("the TabBar lens has no tint or backdrop of its own", () => {
   const lens = code.match(
     /\[data-glass=true\]\[data-glass-state\]:where\(\[data-slot=tab-bar-indicator\]\)\{[^}]*\}/,
   )?.[0];

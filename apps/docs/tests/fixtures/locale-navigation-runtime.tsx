@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost/docs/test?preview=1#example",
@@ -181,6 +182,8 @@ const router = createRouter({
   defaultPendingMs: 10_000,
 });
 await router.load();
+
+scenario("the header paints the saved theme glyph without a mount morph");
 const host = document.createElement("div");
 document.body.append(host);
 const root = createRoot(host);
@@ -218,6 +221,8 @@ async function frame(time: number) {
     for (const callback of callbacks) callback(time);
   });
 }
+
+scenario("two clicks morph only the locale glyph before any route loads");
 await act(async () => {
   initialButton.click();
   initialButton.click();
@@ -247,6 +252,8 @@ assert.notEqual(
   "the intermediate curve is not the completed glyph",
 );
 assert.equal(targetLoads, 0);
+
+scenario("navigation starts once the glyph completes and keeps the header");
 for (let n = 0; n < 150 && targetLoads === 0; n++) await frame(100 + n * 16);
 assert.equal(initialPath.getAttribute("d"), chinese);
 assert.equal(
@@ -264,6 +271,8 @@ assert.equal(
   "true",
   "the real layout returns the route promise",
 );
+
+scenario("the loaded locale keeps the query, hash and theme glyph");
 await act(async () => {
   releaseNavigation();
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -284,6 +293,8 @@ assert.equal(
   darkShape,
   "a new pathname header restores the existing theme without replaying its glyph",
 );
+
+scenario("returning to English removes the language prefix");
 await act(async () => button().click());
 assert.equal(router.state.location.pathname, "/zh-CN/docs/test");
 for (let n = 0; n < 150 && router.state.location.pathname !== "/docs/test"; n++)
@@ -297,6 +308,3 @@ assert.equal(router.state.location.searchStr, "?preview=1");
 assert.equal(router.state.location.hash, "example");
 await act(async () => root.unmount());
 await window.happyDOM.close();
-console.log(
-  "Documentation locale navigation waits for morph completion and preserves the route passed",
-);

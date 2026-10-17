@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 // Happy DOM does not recognize the native search element yet.
@@ -61,6 +62,8 @@ function localProps() {
     },
   };
 }
+
+scenario("local pagination reports changes once and keeps equal state");
 const local = render(<DataTable {...localProps()} />);
 assert.equal(changes.length, 0);
 await act(async () => {
@@ -79,6 +82,8 @@ assert.deepEqual(
   [1],
   "Changing the callback identity must not emit unchanged state",
 );
+
+scenario("changed initial state synchronizes without a notification loop");
 local.rerender(
   <DataTable
     {...localProps()}
@@ -104,6 +109,8 @@ async function until(condition: () => boolean) {
   }
   assert.ok(condition(), "Async table state did not settle");
 }
+
+scenario("loading keeps existing rows visible behind an inert overlay");
 const loadingLocal = render(
   <DataTable columns={columns} data={data} rowKey="id" loading />,
 );
@@ -128,6 +135,8 @@ assert.equal(
   null,
 );
 cleanup();
+
+scenario("removing a request clears its loading and ignores its result");
 let finishPending: ((value: { data: typeof data }) => void) | undefined;
 const pendingRequest = () =>
   new Promise<{ data: typeof data }>((resolve) => {
@@ -158,6 +167,8 @@ assert.ok(
   "Late removed requests must not replace local rows",
 );
 cleanup();
+
+scenario("a failed request retries and pages without a known total");
 const pages: number[] = [];
 let shouldFail = true;
 const request = async (
@@ -196,6 +207,8 @@ assert.equal(
 assert.ok(remote.getByText("3 rows on this page"));
 assert.deepEqual(pages, [0, 0, 1, 2]);
 cleanup();
+
+scenario("a header refresh control shares loading and table density");
 let headerContext:
   | import("@workspace/ui/blocks/data-table").DataTableRenderContext<
       (typeof data)[number]
@@ -266,6 +279,8 @@ await act(async () => {
 });
 assert.equal(headerContext?.loading, false);
 cleanup();
+
+scenario("search applies on Enter or click, resets and follows filters");
 let searchTable: TableInstance | undefined;
 const searchableColumns = [
   { accessorKey: "name", header: "Name", meta: { search: true } },
@@ -317,7 +332,4 @@ assert.equal(
   "Row 7",
 );
 cleanup();
-console.log(
-  "DataTable initial state, callback stability, request retry and unknown totals passed",
-);
 await window.happyDOM.abort();

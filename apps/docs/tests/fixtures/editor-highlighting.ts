@@ -4,6 +4,7 @@ import {
   codeToViewerTokens,
   getViewerHighlighter,
 } from "../../../../packages/ui/src/lib/viewer/shiki";
+import { scenario } from "../support/scenario";
 
 const { shikiToMonaco } = await import(
   Bun.resolveSync(
@@ -75,6 +76,8 @@ function compare(
     "real grammar produces syntax token boundaries",
   );
 }
+
+scenario("cold JSX gets a native JavaScript tokenizer with the JSX grammar");
 const { instance } = await getViewerHighlighter("jsx", "light");
 assert.deepEqual(instance.getLoadedLanguages(), ["jsx"]);
 const jsxGrammar = instance.getLanguage("jsx");
@@ -105,6 +108,7 @@ assert.equal(
   "the shared grammar object is preserved",
 );
 
+scenario("loading base JavaScript later keeps its JSX superset");
 await getViewerHighlighter("javascript", "light");
 const afterJavaScript = registry(["javascript"]);
 registerEditorHighlighter(instance, afterJavaScript.monaco);
@@ -119,6 +123,7 @@ compare(
   jsx,
 );
 
+scenario("TypeScript maps onto the native TypeScript tokenizer");
 await getViewerHighlighter("typescript", "light");
 const typeScript = registry(["typescript"]);
 registerEditorHighlighter(instance, typeScript.monaco);
@@ -131,6 +136,7 @@ compare(
   ["type Value = number;", "const value: Value = 3;"],
 );
 
+scenario("TSX and JSX each give one superset to their native language");
 await getViewerHighlighter("tsx", "light");
 const tsxGrammar = instance.getLanguage("tsx");
 const mixed = registry(["typescript", "javascript"]);
@@ -160,6 +166,7 @@ compare(
 );
 assert.equal(instance.getLanguage("tsx"), tsxGrammar);
 
+scenario("unrelated native languages keep their own tokenizer");
 await getViewerHighlighter("json", "light");
 const unrelated = registry(["json"]);
 registerEditorHighlighter(instance, unrelated.monaco);
@@ -167,7 +174,4 @@ assert.deepEqual(
   unrelated.installations,
   ["json"],
   "preloaded viewer TSX/JSX cannot register unknown native model languages",
-);
-console.log(
-  "actual official JSX/TSX tokenizers, native model mapping, multiline state, base suppression and unrelated languages passed",
 );

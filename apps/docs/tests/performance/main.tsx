@@ -91,7 +91,7 @@ function Scene({ count, strength = 22 }: { count: number; strength?: number }) {
           <GlassSurface
             className="benchmark-surface"
             key={id}
-            glassConfig={{ options: { strength } }}
+            glass={{ strength }}
           >
             Glass {id}
           </GlassSurface>
@@ -99,8 +99,7 @@ function Scene({ count, strength = 22 }: { count: number; strength?: number }) {
       </div>
       <TabBar
         aria-label="Benchmark navigation"
-        glass
-        glassConfig={{ options: { strength } }}
+        glass={{ strength }}
         items={items}
         value={value}
         onValueChange={setValue}

@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { Window as HappyWindow } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new HappyWindow({
   url: "http://localhost/docs?preview=1#example",
@@ -175,6 +176,8 @@ function Example() {
     </form>
   );
 }
+
+scenario("server morph paths hydrate without recoverable errors");
 const host = document.createElement("div");
 document.body.append(host);
 host.innerHTML = renderToString(<Example />);
@@ -214,6 +217,8 @@ async function frame(time: number) {
 async function settle(start = 100) {
   for (let n = 0; n < 100 && frames.size; n++) await frame(start + n * 16);
 }
+
+scenario("an explicit mode runs the page transition without toggling");
 let transitions = 0;
 Object.defineProperty(document, "startViewTransition", {
   configurable: true,
@@ -244,6 +249,8 @@ assert.equal(
 assert.equal(transitions, 1);
 await Promise.resolve();
 transitions = 0;
+
+scenario("the toggles forward native refs and draw one 16px icon each");
 assert.equal(
   themeRef.current,
   control("theme"),
@@ -272,6 +279,8 @@ assert.equal(
   control("locale").querySelector("svg")?.getAttribute("stroke-width"),
   "2",
 );
+
+scenario("the theme toggle morphs one persistent path from sun to moon");
 await click("theme");
 assert.equal(transitions, 1);
 assert.equal(control("theme").getAttribute("aria-pressed"), "true");
@@ -296,6 +305,8 @@ assert.notEqual(
   intermediateMoon,
   "spring settles at the moon curve rather than an intermediate polyline",
 );
+
+scenario("the locale toggle navigates once its glyph completes");
 await click("locale");
 assert.deepEqual(
   changes,
@@ -325,8 +336,12 @@ assert.deepEqual(
   "canonical glyph completion starts navigation exactly once",
 );
 assert.equal(control("locale").querySelector("svg")?.dataset.locale, "zh-CN");
+
+scenario("a prevented click keeps the locale");
 await click("prevented-locale");
 assert.deepEqual(changes, ["dark", "zh-CN"]);
+
+scenario("the select shows the committed locale");
 await act(async () => setLocale("fr-FR"));
 assert.equal(
   control("select-locale").querySelector("svg")?.dataset.locale,
@@ -337,6 +352,8 @@ assert.equal(
   control("select-locale").getAttribute("aria-label"),
   "Change language: Français",
 );
+
+scenario("an async locale change stays busy until its navigation settles");
 await act(async () => {
   control("pending-locale").click();
   control("pending-locale").click();
@@ -368,6 +385,8 @@ assert.equal(
   "rejected callbacks release pending state without an unhandled rejection",
 );
 assert.equal(control("pending-locale").hasAttribute("disabled"), false);
+
+scenario("the language menu waits for the morph and shares the busy state");
 await click("async-select");
 await act(async () => {
   await new Promise((resolve) => setTimeout(resolve, 40));
@@ -392,6 +411,8 @@ assert.equal(control("async-select").getAttribute("aria-busy"), "true");
 assert.equal(control("async-select").hasAttribute("disabled"), true);
 await act(async () => resolveNavigation());
 assert.equal(control("async-select").getAttribute("aria-busy"), "false");
+
+scenario("a hidden document completes the glyph without waiting for frames");
 await click("cancel-before");
 assert.equal(cancelledNavigationCalls, 0);
 await act(async () => {
@@ -408,8 +429,11 @@ await act(async () => {
   document.dispatchEvent(new window.Event("visibilitychange"));
 });
 
+scenario("the toggles leave storage and the page URL alone");
 assert.equal(window.localStorage.length, 0);
 assert.equal(window.location.href, "http://localhost/docs?preview=1#example");
+
+scenario("reduced motion swaps the glyphs without a page transition");
 await act(async () => {
   reduced = true;
   for (const listener of listeners) listener();
@@ -427,6 +451,8 @@ assert.equal(
   "M3.5 6.5 L10.5 6.5 M10.5 6.5 L3.5 17.5 M3.5 17.5 L10.5 17.5 M7 12 L7 12 M13.5 6.5 L13.5 17.5 M20.5 6.5 L20.5 17.5 M13.5 12 L20.5 12",
   "reduced motion uses the reference ZH lettering without animation frames",
 );
+
+scenario("unmount stops the morphs and cancels pending navigation");
 await click("pending-locale");
 const lateNavigation = resolveNavigation;
 await act(async () => {
@@ -462,6 +488,3 @@ assert.equal(
 );
 assert.deepEqual(errors, []);
 await window.happyDOM.close();
-console.log(
-  "Toggle morph geometry, async callbacks, reduced motion and hydration passed",
-);

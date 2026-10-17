@@ -6,7 +6,6 @@ import { loader, type VirtualFile } from "fumadocs-core/source";
 import * as ts from "typescript";
 import { getMDXComponents } from "../src/components/mdx";
 import { examples, sourceFiles } from "../src/examples";
-import { components } from "../src/lib/catalog";
 import { i18n } from "../src/lib/i18n";
 
 const appRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -14,6 +13,15 @@ const uiRoot = join(appRoot, "../../packages/ui/src");
 const contentRoot = join(appRoot, "content/docs");
 const exportedNames = new Map<string, Set<string>>();
 const docs = [...new Bun.Glob("**/*.mdx").scanSync(contentRoot)].sort();
+// Icon primitives back other components and have no page of their own.
+const componentSlugs = readdirSync(join(uiRoot, "components"))
+  .filter(
+    (file) =>
+      file.endsWith(".tsx") &&
+      !["copy-icon.tsx", "morph-icon.tsx"].includes(file),
+  )
+  .map((file) => file.slice(0, -4))
+  .sort();
 
 function exportsOf(path: string) {
   const cached = exportedNames.get(path);
@@ -163,23 +171,21 @@ describe("documentation coverage", () => {
     }
     expect(failures).toEqual([]);
   });
-  test("catalog, live examples and displayed sources cover every UI component", () => {
-    const slugs = readdirSync(join(uiRoot, "components"))
-      .filter(
-        (file) =>
-          file.endsWith(".tsx") &&
-          !["copy-icon.tsx", "morph-icon.tsx"].includes(file),
-      )
-      .map((file) => file.slice(0, -4))
-      .sort();
-    expect(slugs.length).toBeGreaterThan(0);
-    expect(components.map((entry) => entry.slug).sort()).toEqual(slugs);
+  test("navigation, live examples and displayed sources cover every UI component", () => {
+    expect(componentSlugs.length).toBeGreaterThan(0);
+    // The component index lists the navigation's pages.
+    const navigation = JSON.parse(
+      readFileSync(join(contentRoot, "components/meta.json"), "utf8"),
+    ).pages as string[];
+    expect(navigation.filter((page) => !page.startsWith("!")).sort()).toEqual(
+      componentSlugs,
+    );
     expect(Object.keys(sourceFiles).sort()).toEqual(
       Object.keys(examples).sort(),
     );
   });
 
-  for (const { slug } of components) {
+  for (const slug of componentSlugs) {
     for (const locale of ["en-US", "zh-CN"] as const) {
       test(`${slug} has a ${locale} page with a registered live example`, () => {
         const suffix = locale === "zh-CN" ? ".zh-CN" : "";

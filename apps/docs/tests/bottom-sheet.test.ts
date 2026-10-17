@@ -5,6 +5,7 @@ import {
   createVelocityTracker,
   resolveBottomSheetRelease,
 } from "@workspace/ui/lib/bottom-sheet";
+import { describeFixture } from "./support/fixture";
 
 const expandable = bottomSheetLayout({
   available: 800,
@@ -167,19 +168,7 @@ describe("BottomSheet velocity", () => {
   });
 });
 
-test("BottomSheet runs its own sizes on top of Base UI Drawer", () => {
-  const result = Bun.spawnSync({
-    cmd: [
-      process.execPath,
-      new URL("./fixtures/bottom-sheet-runtime.tsx", import.meta.url).pathname,
-    ],
-    cwd: new URL("..", import.meta.url).pathname,
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  expect(new TextDecoder().decode(result.stderr)).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(new TextDecoder().decode(result.stdout)).toContain(
-    "bottom sheet runtime passed",
-  );
-}, 10000);
+describeFixture(
+  "BottomSheet on top of Base UI Drawer",
+  "bottom-sheet-runtime.tsx",
+);

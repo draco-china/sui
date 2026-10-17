@@ -1,18 +1,20 @@
 import { spyOn } from "bun:test";
 import { strict as assert } from "node:assert";
 import { Window } from "happy-dom";
+import { scenario } from "../support/scenario";
 
 const window = new Window({ url: "http://localhost" });
 const document = window.document;
 const observers: {
   disconnected: boolean;
   observed: Set<unknown>;
-  callback: (entries: { target: unknown }[]) => void;
+  callback: (entries: ObserverEntry[]) => void;
 }[] = [];
+type ObserverEntry = { target: unknown; isIntersecting?: boolean };
 class Observer {
   disconnected = false;
   observed = new Set<unknown>();
-  constructor(readonly callback: (entries: { target: unknown }[]) => void) {
+  constructor(readonly callback: (entries: ObserverEntry[]) => void) {
     observers.push(this);
   }
   observe(element: unknown) {
@@ -139,14 +141,11 @@ const input = document.createElement("input");
 input.type = "radio";
 targetA.append(input);
 targetB.append(second);
-const settingsA = {
-  id: "local-first",
-  options: { tintOpacity: 0.15 },
-};
-const settingsB = {
-  id: "local-second",
-  options: { tintOpacity: 0.45 },
-};
+const settingsA = { id: "local-first", tintOpacity: 0.15 };
+const settingsB = { id: "local-second", tintOpacity: 0.45 };
+scenario(
+  "distinct ids keep their own tint and share observers, listeners and discovery",
+);
 const releaseFirst = acquireGlass(settingsA);
 const releaseSecond = acquireGlass(settingsB);
 assert.equal(first.style.getPropertyValue("--glass-opacity"), "15%");
@@ -191,6 +190,7 @@ assert.equal(
   1,
   "distinct ids use one initial discovery pass",
 );
+scenario("only paint-affecting mutations reread a material");
 await pause();
 const discoveryCount = () =>
   discovery.mock.calls.filter(
@@ -222,7 +222,8 @@ assert.ok(
 );
 assert.equal(secondClones.mock.calls.length, 0);
 
-updateGlassConfiguration({ ...settingsA, options: { tintOpacity: 0.25 } });
+scenario("a settings change updates only its own id without rediscovery");
+updateGlassConfiguration({ ...settingsA, tintOpacity: 0.25 });
 await pause();
 assert.equal(first.style.getPropertyValue("--glass-opacity"), "25%");
 assert.equal(second.style.getPropertyValue("--glass-opacity"), "45%");
@@ -236,6 +237,9 @@ assert.equal(
   0,
   "updating one id does not recompute another material",
 );
+scenario(
+  "Clear lights a surface from its corners by default and relights it per edge",
+);
 const lit = (element: typeof first) =>
   decodeURIComponent(element.style.getPropertyValue("--glass-edge"));
 // The 120×40 square-cornered surface is lit from its corners by default.
@@ -243,7 +247,7 @@ assert.ok(lit(first).includes("translate(0 0)"), "diagonal is the default");
 updateGlassConfiguration({
   ...settingsA,
   edge: "vertical",
-  options: { tintOpacity: 0.25 },
+  tintOpacity: 0.25,
 });
 await pause();
 assert.ok(
@@ -251,9 +255,10 @@ assert.ok(
   "switching the edge relights it as the top and bottom bevel",
 );
 assert.ok(lit(second).includes("translate(0 0)"));
-updateGlassConfiguration({ ...settingsA, options: { tintOpacity: 0.25 } });
+updateGlassConfiguration({ ...settingsA, tintOpacity: 0.25 });
 await pause();
 assert.ok(lit(first).includes("translate(0 0)"));
+scenario("a background change or resize entry updates only its own surface");
 // A targeted background change only updates its own group's material.
 second.style.backgroundColor = "rgba(120, 140, 160, 0.2)";
 await pause();
@@ -274,6 +279,7 @@ assert.equal(
   secondMaterialReads,
   "resize entries are routed to their exact owner",
 );
+scenario("refreshGlass rereads only the surfaces inside its target");
 const firstRefreshReads = firstClones.mock.calls.length;
 const secondRefreshReads = secondClones.mock.calls.length;
 refreshGlass(targetA as unknown as HTMLElement);
@@ -289,6 +295,9 @@ refreshGlass({ current: null });
 await pause();
 assert.equal(firstClones.mock.calls.length, afterTargetRefresh);
 assert.equal(secondClones.mock.calls.length, secondRefreshReads);
+scenario(
+  "releasing one id twice restores its caller styles and keeps the shared observers",
+);
 releaseFirst();
 releaseFirst();
 assert.equal(first.style.getPropertyValue("--glass-base"), "caller-base");
@@ -301,19 +310,22 @@ assert.equal(
 assert.ok(observers.every((observer) => !observer.disconnected));
 for (const observer of observers)
   assert.deepEqual([...observer.observed], [second]);
-updateGlassConfiguration({ ...settingsB, options: { tintOpacity: 0.3 } });
+updateGlassConfiguration({ ...settingsB, tintOpacity: 0.3 });
 await pause();
 assert.equal(second.style.getPropertyValue("--glass-opacity"), "44%");
+scenario(
+  "a surface moved to another id keeps its state when the old id releases",
+);
 // Move an existing surface between active ids before mutation delivery.
 const replacement = makeSurface("local-replacement");
 const releaseReplacement = acquireGlass({
   id: "local-replacement",
-  options: { tintOpacity: 0.6 },
+  tintOpacity: 0.6,
 });
 second.dataset.glassScope = "local-replacement";
 updateGlassConfiguration({
   id: "local-replacement",
-  options: { tintOpacity: 0.5 },
+  tintOpacity: 0.5,
 });
 await pause();
 assert.ok(
@@ -328,6 +340,7 @@ assert.equal(
   "releasing previous owner cannot clear transferred state",
 );
 assert.ok(observers.every((observer) => !observer.disconnected));
+scenario("the last lease restores caller styles and removes every listener");
 releaseReplacement();
 assert.equal(second.style.getPropertyValue("--glass-base"), "caller-base");
 assert.equal(second.style.getPropertyPriority("--glass-base"), "important");
@@ -345,11 +358,9 @@ for (const type of documentEvents)
     1,
     type,
   );
-const regular = makeSurface("local-regular");
-const releaseRegular = acquireGlass({
-  id: "local-regular",
-  material: "regular",
-});
+scenario("a fresh lease after cleanup starts a new document owner");
+const fresh = makeSurface("local-fresh");
+const releaseFresh = acquireGlass({ id: "local-fresh" });
 await pause();
 assert.equal(
   mutations.length,
@@ -357,11 +368,34 @@ assert.equal(
   "a fresh lease starts one new document owner",
 );
 assert.equal(observers.length, 4);
-assert.ok(regular.dataset.glassState);
-releaseRegular();
+assert.ok(fresh.dataset.glassState);
+releaseFresh();
 assert.ok(mutations.every((observer) => observer.disconnected));
 assert.ok(observers.every((observer) => observer.disconnected));
-await window.happyDOM.close();
-console.log(
-  "independent settings, shared DOM observation, ownership transfer and last-lease cleanup passed",
+
+scenario("a surface out of view takes a settings change once it scrolls in");
+const inView = makeSurface("local-switch");
+const outOfView = makeSurface("local-switch");
+let scrolledIn = false;
+Object.defineProperty(outOfView, "getBoundingClientRect", {
+  value: () => new window.DOMRect(scrolledIn ? 20 : 2000, 20, 120, 40),
+});
+const releaseSwitch = acquireGlass({ id: "local-switch" });
+await pause();
+for (const surface of [inView, outOfView])
+  assert.match(lit(surface), /^url\("data:/, "glass paints every edge");
+updateGlassConfiguration({ id: "local-switch", tintOpacity: 0.65 });
+await pause();
+assert.equal(inView.style.getPropertyValue("--glass-opacity"), "65%");
+assert.notEqual(
+  outOfView.style.getPropertyValue("--glass-opacity"),
+  "65%",
+  "a surface out of view waits",
 );
+scrolledIn = true;
+// The intersection observer is the last one the fresh document owner made.
+observers.at(-1)?.callback([{ target: outOfView, isIntersecting: true }]);
+await pause();
+assert.equal(outOfView.style.getPropertyValue("--glass-opacity"), "65%");
+releaseSwitch();
+await window.happyDOM.close();
