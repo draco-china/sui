@@ -50,11 +50,12 @@ export function saveAccent(seed: string | null): void {
 
 export function applyAccent(seed: string | null, dark: boolean): void {
   const root = document.documentElement;
-  root.dataset.color = getThemeId(seed);
-  if (root.dataset.color === "custom" && seed) root.dataset.colorSeed = seed;
+  const id = getThemeId(seed);
+  root.dataset.color = id;
+  if (id === "custom" && seed) root.dataset.colorSeed = seed;
   else delete root.dataset.colorSeed;
   for (const name of themeTokenNames) root.style.removeProperty(name);
-  if (getThemeId(seed) === "custom") {
+  if (id === "custom") {
     for (const [name, value] of Object.entries(createThemeTokens(seed, dark))) {
       root.style.setProperty(name, value);
     }

@@ -18,6 +18,8 @@ export const publishedRegistryOutput = join(repositoryRoot, "registry/r");
 const homepage = "https://github.com/draco-china/sui";
 const githubSourceDirectory = "registry/source";
 const registrySizeLimit = 5 * 1024 * 1024;
+/** How the UI package imports its own source. */
+const workspaceAlias = "@workspace/ui/";
 
 type CssObject = { [key: string]: string | CssObject };
 type ModuleReference = { name: string; start: number; end: number };
@@ -84,65 +86,60 @@ function packageName(specifier: string) {
   return specifier.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
 }
 
-function canonicalImport(path: string) {
+/** Where each source folder installs: its import alias and its CLI target. */
+const installRules = [
+  {
+    folder: "components/",
+    alias: "@/components/ui/",
+    target: "@ui/",
+    type: "registry:ui",
+  },
+  {
+    folder: "blocks/",
+    alias: "@/components/blocks/",
+    target: "@components/blocks/",
+    type: "registry:component",
+  },
+  {
+    folder: "hooks/",
+    alias: "@/hooks/",
+    target: "@hooks/",
+    type: "registry:hook",
+  },
+  { folder: "lib/", alias: "@/lib/", target: "@lib/", type: "registry:lib" },
+  {
+    folder: "types/",
+    alias: "@/lib/sui/types/",
+    target: "@lib/sui/types/",
+    type: "registry:file",
+  },
+] as const;
+
+function installRule(path: string) {
   const name = relative(sourceRoot, path).replaceAll("\\", "/");
+  const rule = installRules.find((entry) => name.startsWith(entry.folder));
+  if (!rule) throw new Error(`Unsupported registry file: ${name}`);
+  return { name, rule, rest: name.slice(rule.folder.length) };
+}
+
+function canonicalImport(path: string) {
+  const { rule, rest } = installRule(path);
   // CSS extensions are part of an import; TS extensions are resolved by the app.
-  const module = name.replace(/(?:\.d)?\.(?:tsx?|jsx?)$/, "");
-  if (name.startsWith("components/")) {
-    return module.replace(/^components\//, "@/components/ui/");
-  }
-  if (name.startsWith("blocks/")) return `@/components/${module}`;
-  if (name.startsWith("types/")) return `@/lib/sui/${module}`;
-  return `@/${module}`;
+  return `${rule.alias}${rest.replace(/(?:\.d)?\.(?:tsx?|jsx?)$/, "")}`;
 }
 
 function fileDefinition(path: string, content: string) {
-  const name = relative(sourceRoot, path).replaceAll("\\", "/");
-  const filePath = `packages/ui/src/${name}`;
-  if (name.startsWith("components/")) {
-    return {
-      path: filePath,
-      type: "registry:ui" as const,
-      target: `@ui/${name.slice(11)}`,
-      content,
-    };
-  }
-  if (name.startsWith("blocks/")) {
-    return {
-      path: filePath,
-      type:
-        extname(path) === ".css"
-          ? ("registry:file" as const)
-          : ("registry:component" as const),
-      target: `@components/${name}`,
-      content,
-    };
-  }
-  if (name.startsWith("hooks/")) {
-    return {
-      path: filePath,
-      type: "registry:hook" as const,
-      target: `@hooks/${name.slice(6)}`,
-      content,
-    };
-  }
-  if (name.startsWith("lib/")) {
-    return {
-      path: filePath,
-      type: "registry:lib" as const,
-      target: `@lib/${name.slice(4)}`,
-      content,
-    };
-  }
-  if (name.startsWith("types/")) {
-    return {
-      path: filePath,
-      type: "registry:file" as const,
-      target: `@lib/sui/${name}`,
-      content,
-    };
-  }
-  throw new Error(`Unsupported registry file: ${name}`);
+  const { name, rule, rest } = installRule(path);
+  return {
+    path: `packages/ui/src/${name}`,
+    // A block's stylesheet installs as a plain file beside its components.
+    type:
+      rule.folder === "blocks/" && extname(path) === ".css"
+        ? ("registry:file" as const)
+        : rule.type,
+    target: `${rule.target}${rest}`,
+    content,
+  };
 }
 
 function mergeCss(target: CssObject, key: string, value: string | CssObject) {
@@ -220,15 +217,23 @@ export function registryStyles(source: string) {
   return { cssVars, css };
 }
 
-export async function createRegistry() {
-  const packageJson = JSON.parse(
-    await readFile(join(repositoryRoot, "packages/ui/package.json"), "utf8"),
-  ) as {
-    dependencies: Record<string, string>;
-    devDependencies: Record<string, string>;
-  };
+type PackageManifest = {
+  dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
+};
+type SourceTree = {
+  paths: string[];
+  available: Set<string>;
+  sources: Map<string, Source>;
+};
+type RegistryContext = SourceTree & {
+  manifest: PackageManifest;
+  styles: ReturnType<typeof registryStyles>;
+  styleDependencies: Set<string>;
+};
+
+async function readSources(): Promise<SourceTree> {
   const paths = await filesUnder(sourceRoot);
-  const available = new Set(paths);
   const sources = new Map<string, Source>();
   for (const path of paths) {
     if (!/\.(?:tsx?|css)$/.test(path)) continue;
@@ -238,180 +243,222 @@ export async function createRegistry() {
       : moduleReferences(path, content);
     sources.set(path, { content, ...modules });
   }
-  function localPath(from: string, name: string): string | undefined {
-    const specifier = name.split("?")[0];
-    let base: string;
-    if (specifier.startsWith("@workspace/ui/"))
-      base = join(sourceRoot, specifier.slice(14));
-    else if (specifier.startsWith("."))
-      base = resolve(dirname(from), specifier);
-    else return undefined;
-    const found = [
-      base,
-      `${base}.tsx`,
-      `${base}.ts`,
-      join(base, "index.tsx"),
-      join(base, "index.ts"),
-    ].find((candidate) => available.has(candidate));
-    if (!found || !sources.has(found))
-      throw new Error(
-        `Unresolved local import ${name} in ${relative(sourceRoot, from)}`,
-      );
-    return found;
-  }
+  return { paths, available: new Set(paths), sources };
+}
 
-  const styleDependencies = new Set<string>();
-  async function expandStyles(
-    path: string,
-    ancestors = new Set<string>(),
-  ): Promise<string> {
-    if (ancestors.has(path)) throw new Error(`Cyclic CSS imports: ${path}`);
-    const content = sources.get(path)?.content;
-    if (content === undefined) throw new Error(`Missing CSS import: ${path}`);
-    const root = postcss.parse(content);
-    for (const node of [...root.nodes]) {
-      if (node.type !== "atrule") continue;
-      if (node.name === "source") {
-        node.remove();
-        continue;
-      }
-      if (node.name !== "import") continue;
-      const specifier = node.params.match(/^["']([^"']+)["']$/)?.[1];
-      if (!specifier) throw new Error(`Unsupported CSS import: ${node.params}`);
-      if (specifier.startsWith(".")) {
-        const expanded = await expandStyles(
-          resolve(dirname(path), specifier),
-          new Set([...ancestors, path]),
-        );
-        node.replaceWith(postcss.parse(expanded).nodes);
-      } else if (specifier === "tailwindcss") {
-        // Initialized Tailwind v4 projects already import the compiler stylesheet.
-        node.remove();
-      } else {
-        styleDependencies.add(packageName(specifier));
-      }
+/** The local source file an import names, or undefined for a package. */
+function localPath(tree: SourceTree, from: string, name: string) {
+  const specifier = name.split("?")[0];
+  let base: string;
+  if (specifier.startsWith(workspaceAlias))
+    base = join(sourceRoot, specifier.slice(workspaceAlias.length));
+  else if (specifier.startsWith(".")) base = resolve(dirname(from), specifier);
+  else return undefined;
+  const found = [
+    base,
+    `${base}.tsx`,
+    `${base}.ts`,
+    join(base, "index.tsx"),
+    join(base, "index.ts"),
+  ].find((candidate) => tree.available.has(candidate));
+  if (!found || !tree.sources.has(found))
+    throw new Error(
+      `Unresolved local import ${name} in ${relative(sourceRoot, from)}`,
+    );
+  return found;
+}
+
+/** Inlines relative CSS imports and collects the packages the rest import. */
+async function expandStyles(
+  tree: SourceTree,
+  path: string,
+  packages: Set<string>,
+  ancestors = new Set<string>(),
+): Promise<string> {
+  if (ancestors.has(path)) throw new Error(`Cyclic CSS imports: ${path}`);
+  const content = tree.sources.get(path)?.content;
+  if (content === undefined) throw new Error(`Missing CSS import: ${path}`);
+  const root = postcss.parse(content);
+  for (const node of [...root.nodes]) {
+    if (node.type !== "atrule") continue;
+    if (node.name === "source") {
+      node.remove();
+      continue;
     }
-    return root.toString();
-  }
-  const styles = registryStyles(
-    await expandStyles(join(sourceRoot, "styles/globals.css")),
-  );
-  const versioned = (name: string, dev = false) => {
-    const version = dev
-      ? packageJson.devDependencies[name]
-      : packageJson.dependencies[name];
-    if (!version || version.startsWith("workspace:"))
-      throw new Error(
-        `Missing ${dev ? "devDependency" : "dependency"} declaration: ${name}`,
+    if (node.name !== "import") continue;
+    const specifier = node.params.match(/^["']([^"']+)["']$/)?.[1];
+    if (!specifier) throw new Error(`Unsupported CSS import: ${node.params}`);
+    if (specifier.startsWith(".")) {
+      const expanded = await expandStyles(
+        tree,
+        resolve(dirname(path), specifier),
+        packages,
+        new Set([...ancestors, path]),
       );
-    return `${name}@${version}`;
-  };
-  function item(
-    name: string,
-    type: RegistryItem["type"],
-    entries: string[],
-  ): RegistryItem {
-    const visited = new Set<string>();
-    const dependencies = new Set(styleDependencies);
-    const devDependencies = new Set<string>();
-    function visit(path: string) {
-      if (visited.has(path)) return;
-      visited.add(path);
-      const source = sources.get(path);
-      if (!source) throw new Error(`Missing registry source: ${path}`);
-      for (const reference of source.references) {
-        const local = localPath(path, reference.name);
-        if (local) visit(local);
-        else {
-          const dependency = packageName(reference.name);
-          // React is provided by the initialized host; preserve its installed version.
-          if (dependency !== "react" && dependency !== "react-dom") {
-            if (path.endsWith(".d.ts")) devDependencies.add(dependency);
-            else dependencies.add(dependency);
-          }
-          if (reference.name.endsWith("?worker"))
-            visit(join(sourceRoot, "types/worker.d.ts"));
-        }
-      }
-      for (const dependency of source.typeReferences)
-        devDependencies.add(dependency);
-      if (path.endsWith(".css") && available.has(`${path}.d.ts`))
-        visit(`${path}.d.ts`);
+      node.replaceWith(postcss.parse(expanded).nodes);
+    } else if (specifier === "tailwindcss") {
+      // Initialized Tailwind v4 projects already import the compiler stylesheet.
+      node.remove();
+    } else {
+      packages.add(packageName(specifier));
     }
-    for (const path of entries) visit(path);
-    const files = [...visited].sort().map((path) => {
-      const source = sources.get(path);
-      if (!source) throw new Error(`Missing registry source: ${path}`);
-      let content = source.content;
-      for (const reference of [...source.references].sort(
-        (a, b) => b.start - a.start,
-      )) {
-        const local = localPath(path, reference.name);
-        if (!local) continue;
-        const query = reference.name.includes("?")
-          ? `?${reference.name.split("?").slice(1).join("?")}`
-          : "";
-        content =
-          content.slice(0, reference.start) +
-          canonicalImport(local) +
-          query +
-          content.slice(reference.end);
-      }
-      return fileDefinition(path, content);
-    });
-    let category = "components";
-    let kind = "component";
-    if (type === "registry:block") {
-      category = "blocks";
-      kind = "block";
-    } else if (type === "registry:style") {
-      category = "styles";
-      kind = "style";
-    } else if (type === "registry:lib") {
-      category = "helpers";
-      kind = "helper";
-    }
-    let description = `SUI ${kind}: ${name}. Includes its local dependencies and SUI styles.`;
-    if (name === "sui")
-      description = "All SUI components, blocks, hooks, helpers and styles.";
-    return registryItemSchema.parse({
-      $schema: "https://ui.shadcn.com/schema/registry-item.json",
-      name,
-      type,
-      title: name
-        .split("-")
-        .map((word) => word[0].toUpperCase() + word.slice(1))
-        .join(" "),
-      description,
-      categories: ["sui", category],
-      dependencies: [...dependencies]
-        .sort()
-        .map((dependency) => versioned(dependency)),
-      devDependencies: [...devDependencies]
-        .sort()
-        .map((dependency) => versioned(dependency, true)),
-      // Self-contained manifests avoid Glass cycles, namespace coupling, and
-      // bare-name dependencies accidentally resolving to built-in shadcn items.
-      registryDependencies: [],
-      files,
-      ...styles,
-      docs:
-        entries.some((path) => path.endsWith("/editor.tsx")) || name === "sui"
-          ? "The Editor uses locally bundled Monaco Workers and requires a Vite-compatible ?worker loader. Keep the installed worker.d.ts in your TypeScript include paths."
-          : undefined,
-      meta: {
-        source: homepage,
-        tailwindVersion: "4",
-        base: "base",
-        entrypoints: entries.map(canonicalImport),
-      },
-    });
   }
-  const components = paths.filter(
+  return root.toString();
+}
+
+function pinnedVersion(manifest: PackageManifest, name: string, dev = false) {
+  const version = dev
+    ? manifest.devDependencies[name]
+    : manifest.dependencies[name];
+  if (!version || version.startsWith("workspace:"))
+    throw new Error(
+      `Missing ${dev ? "devDependency" : "dependency"} declaration: ${name}`,
+    );
+  return `${name}@${version}`;
+}
+
+/** The local files the entries reach, and the packages those files import. */
+function dependencyClosure(context: RegistryContext, entries: string[]) {
+  const files = new Set<string>();
+  const dependencies = new Set(context.styleDependencies);
+  const devDependencies = new Set<string>();
+  function visit(path: string) {
+    if (files.has(path)) return;
+    files.add(path);
+    const source = context.sources.get(path);
+    if (!source) throw new Error(`Missing registry source: ${path}`);
+    for (const reference of source.references) {
+      const local = localPath(context, path, reference.name);
+      if (local) visit(local);
+      else {
+        const dependency = packageName(reference.name);
+        // React is provided by the initialized host; preserve its installed version.
+        if (dependency !== "react" && dependency !== "react-dom") {
+          if (path.endsWith(".d.ts")) devDependencies.add(dependency);
+          else dependencies.add(dependency);
+        }
+        if (reference.name.endsWith("?worker"))
+          visit(join(sourceRoot, "types/worker.d.ts"));
+      }
+    }
+    for (const dependency of source.typeReferences)
+      devDependencies.add(dependency);
+    if (path.endsWith(".css") && context.available.has(`${path}.d.ts`))
+      visit(`${path}.d.ts`);
+  }
+  for (const path of entries) visit(path);
+  return { files, dependencies, devDependencies };
+}
+
+/** A source file with its local imports rewritten to their installed aliases. */
+function installedContent(tree: SourceTree, path: string) {
+  const source = tree.sources.get(path);
+  if (!source) throw new Error(`Missing registry source: ${path}`);
+  let content = source.content;
+  for (const reference of [...source.references].sort(
+    (a, b) => b.start - a.start,
+  )) {
+    const local = localPath(tree, path, reference.name);
+    if (!local) continue;
+    const query = reference.name.includes("?")
+      ? `?${reference.name.split("?").slice(1).join("?")}`
+      : "";
+    content =
+      content.slice(0, reference.start) +
+      canonicalImport(local) +
+      query +
+      content.slice(reference.end);
+  }
+  return content;
+}
+
+const itemKinds: Partial<
+  Record<RegistryItem["type"], { category: string; kind: string }>
+> = {
+  "registry:block": { category: "blocks", kind: "block" },
+  "registry:style": { category: "styles", kind: "style" },
+  "registry:lib": { category: "helpers", kind: "helper" },
+};
+
+function registryItem(
+  context: RegistryContext,
+  name: string,
+  type: RegistryItem["type"],
+  entries: string[],
+): RegistryItem {
+  const { files, dependencies, devDependencies } = dependencyClosure(
+    context,
+    entries,
+  );
+  const { category, kind } = itemKinds[type] ?? {
+    category: "components",
+    kind: "component",
+  };
+  let description = `SUI ${kind}: ${name}. Includes its local dependencies and SUI styles.`;
+  if (name === "sui")
+    description = "All SUI components, blocks, hooks, helpers and styles.";
+  return registryItemSchema.parse({
+    $schema: "https://ui.shadcn.com/schema/registry-item.json",
+    name,
+    type,
+    title: name
+      .split("-")
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(" "),
+    description,
+    categories: ["sui", category],
+    dependencies: [...dependencies]
+      .sort()
+      .map((dependency) => pinnedVersion(context.manifest, dependency)),
+    devDependencies: [...devDependencies]
+      .sort()
+      .map((dependency) => pinnedVersion(context.manifest, dependency, true)),
+    // Self-contained manifests avoid Glass cycles, namespace coupling, and
+    // bare-name dependencies accidentally resolving to built-in shadcn items.
+    registryDependencies: [],
+    files: [...files]
+      .sort()
+      .map((path) => fileDefinition(path, installedContent(context, path))),
+    ...context.styles,
+    docs:
+      entries.some((path) => path.endsWith("/editor.tsx")) || name === "sui"
+        ? "The Editor uses locally bundled Monaco Workers and requires a Vite-compatible ?worker loader. Keep the installed worker.d.ts in your TypeScript include paths."
+        : undefined,
+    meta: {
+      source: homepage,
+      tailwindVersion: "4",
+      base: "base",
+      entrypoints: entries.map(canonicalImport),
+    },
+  });
+}
+
+export async function createRegistry() {
+  const manifest = JSON.parse(
+    await readFile(join(repositoryRoot, "packages/ui/package.json"), "utf8"),
+  ) as PackageManifest;
+  const tree = await readSources();
+  const styleDependencies = new Set<string>();
+  const styles = registryStyles(
+    await expandStyles(
+      tree,
+      join(sourceRoot, "styles/globals.css"),
+      styleDependencies,
+    ),
+  );
+  const context: RegistryContext = {
+    ...tree,
+    manifest,
+    styles,
+    styleDependencies,
+  };
+  const item = (name: string, type: RegistryItem["type"], entries: string[]) =>
+    registryItem(context, name, type, entries);
+  const components = tree.paths.filter(
     (path) =>
       dirname(path) === join(sourceRoot, "components") && path.endsWith(".tsx"),
   );
-  const blocks = paths.filter(
+  const blocks = tree.paths.filter(
     (path) =>
       dirname(path) === join(sourceRoot, "blocks") && path.endsWith(".tsx"),
   );
@@ -431,7 +478,7 @@ export async function createRegistry() {
     item(
       "sui",
       "registry:block",
-      [...sources.keys()].filter(
+      [...tree.sources.keys()].filter(
         (path) => !relative(sourceRoot, path).startsWith("styles/"),
       ),
     ),
@@ -444,6 +491,13 @@ export async function createRegistry() {
     homepage,
     items,
   });
+}
+
+function assertPayloadSizes(payloads: Map<string, string>, kind: string) {
+  for (const [name, content] of payloads) {
+    if (Buffer.byteLength(content) >= registrySizeLimit)
+      throw new Error(`${kind} ${name} must be smaller than 5 MiB`);
+  }
 }
 
 function registryPayloads(
@@ -462,11 +516,8 @@ function registryPayloads(
     })),
   });
   payloads.set("registry.json", `${JSON.stringify(catalog, null, 2)}\n`);
-  for (const [name, content] of payloads) {
-    // Keep individual raw GitHub payloads below the CLI's registry size limit.
-    if (Buffer.byteLength(content) >= registrySizeLimit)
-      throw new Error(`Registry payload ${name} must be smaller than 5 MiB`);
-  }
+  // Keep individual raw GitHub payloads below the CLI's registry size limit.
+  assertPayloadSizes(payloads, "Registry payload");
   return payloads;
 }
 
@@ -495,12 +546,7 @@ export function githubRegistryPayloads(
   // A compact manifest keeps complete, self-contained styles below GitHub's
   // 5 MiB read limit without introducing unpinned cross-item dependencies.
   payloads.set("registry.json", `${JSON.stringify(manifest)}\n`);
-  for (const [path, content] of payloads) {
-    if (Buffer.byteLength(content) >= registrySizeLimit)
-      throw new Error(
-        `GitHub registry file ${path} must be smaller than 5 MiB`,
-      );
-  }
+  assertPayloadSizes(payloads, "GitHub registry file");
   return payloads;
 }
 
