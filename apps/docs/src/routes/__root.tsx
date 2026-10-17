@@ -3,8 +3,6 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  useLocation,
-  useNavigate,
   useParams,
   useRouterState,
 } from "@tanstack/react-router";
@@ -15,7 +13,8 @@ import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import type { ReactNode } from "react";
 import { DocumentationLink } from "../components/documentation-link";
 import { DocumentationSearch } from "../components/search-dialog";
-import { getLocale, isLocale, localePath, translations } from "../lib/i18n";
+import { getLocale, localePath, translations } from "../lib/i18n";
+import { useLocaleNavigation } from "../lib/locale-navigation";
 import { themeBootstrapScript } from "../lib/theme";
 import appCss from "../styles/app.css?url";
 
@@ -43,8 +42,7 @@ export const Route = createRootRoute({
 function RootDocument({ children }: { children: ReactNode }) {
   const { lang } = useParams({ strict: false });
   const locale = getLocale(lang);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const changeLocale = useLocaleNavigation();
   const pending = useRouterState({
     select: (state) => state.status === "pending",
   });
@@ -65,14 +63,7 @@ function RootDocument({ children }: { children: ReactNode }) {
           components={{ Link: DocumentationLink }}
           i18n={{
             ...i18nProvider(translations, locale),
-            onLocaleChange: (next) => {
-              if (isLocale(next))
-                void navigate({
-                  to: localePath(next, location.pathname),
-                  search: location.search,
-                  hash: location.hash,
-                });
-            },
+            onLocaleChange: (next) => void changeLocale(next),
           }}
           theme={{ defaultTheme: "system" }}
           search={{ SearchDialog: DocumentationSearch }}

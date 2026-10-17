@@ -1,25 +1,35 @@
 import { defineI18n } from "fumadocs-core/i18n";
 import { uiTranslations } from "fumadocs-ui/i18n";
 
-export type Locale = "en-US" | "zh-CN";
-export const locales: Locale[] = ["en-US", "zh-CN"];
+/** Each supported locale with its name in its own language. */
+export const localeNames = {
+  "en-US": "English",
+  "zh-CN": "简体中文",
+} as const;
+
+export type Locale = keyof typeof localeNames;
+export const locales = Object.keys(localeNames) as Locale[];
+/** The default locale has no path prefix. */
+export const defaultLocale: Locale = "en-US";
 
 export function isLocale(value: string): value is Locale {
-  return value === "en-US" || value === "zh-CN";
+  return Object.hasOwn(localeNames, value);
 }
 
 export function getLocale(lang?: string): Locale {
-  return lang === "zh-CN" ? "zh-CN" : "en-US";
+  return lang !== undefined && isLocale(lang) ? lang : defaultLocale;
 }
 
+const localePrefix = new RegExp(`^/(?:${locales.join("|")})(?=/|$)`);
+
 export function localePath(locale: Locale, path: string): string {
-  const cleanPath = path.replace(/^\/(en-US|zh-CN)(?=\/|$)/, "") || "/";
-  if (locale === "en-US") return cleanPath;
-  return cleanPath === "/" ? "/zh-CN" : `/zh-CN${cleanPath}`;
+  const cleanPath = path.replace(localePrefix, "") || "/";
+  if (locale === defaultLocale) return cleanPath;
+  return cleanPath === "/" ? `/${locale}` : `/${locale}${cleanPath}`;
 }
 
 export const i18n = defineI18n({
-  defaultLanguage: "en-US",
+  defaultLanguage: defaultLocale,
   languages: locales,
   hideLocale: "default-locale",
   fallbackLanguage: null,
@@ -29,9 +39,9 @@ export const translations = i18n
   .translations()
   .extend(uiTranslations())
   .add({
-    "en-US": { displayName: "English" },
+    "en-US": { displayName: localeNames["en-US"] },
     "zh-CN": {
-      displayName: "简体中文",
+      displayName: localeNames["zh-CN"],
       "Search(search dialog)": "搜索文档",
       "Search(search trigger)": "搜索文档",
       "Open Search(search trigger)(aria-label)": "打开搜索",

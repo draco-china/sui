@@ -1,4 +1,4 @@
-import { isLocale, type Locale } from "./i18n";
+import { defaultLocale, isLocale, type Locale, localePath } from "./i18n";
 
 export interface LLMPage {
   path: string;
@@ -38,17 +38,24 @@ const messages = {
   },
 } as const;
 
+/** Reference sections in index order, after the guides. */
+const sections = ["components", "blocks", "utils"] as const;
+type Section = (typeof sections)[number];
+
+/** The page's reference section, or undefined for a guide. */
+function sectionOf(page: LLMPage): Section | undefined {
+  return sections.find((section) => section === page.slugs[0]);
+}
+
 function sortedPages(pages: LLMPage[]) {
+  const rank = (page: LLMPage) => {
+    const section = sectionOf(page);
+    return section ? sections.indexOf(section) + 1 : 0;
+  };
   return [...pages].sort((a, b) => {
-    const section = (page: LLMPage) => {
-      if (page.slugs[0] === "components") return 1;
-      if (page.slugs[0] === "blocks") return 2;
-      if (page.slugs[0] === "utils") return 3;
-      return 0;
-    };
-    const difference = section(a) - section(b);
+    const difference = rank(a) - rank(b);
     if (difference) return difference;
-    if (section(a))
+    if (rank(a))
       return a.slugs.join("/").localeCompare(b.slugs.join("/"), "en-US");
     return a.title.localeCompare(b.title, "en-US");
   });
@@ -62,8 +69,8 @@ function markdownURL(origin: string, locale: Locale, page: LLMPage) {
 }
 
 function pageURL(origin: string, locale: Locale, page: LLMPage) {
-  const prefix = locale === "zh-CN" ? "/zh-CN" : "";
-  return `${origin}${prefix}/docs${page.slugs.length ? `/${page.slugs.join("/")}` : ""}`;
+  const path = ["/docs", ...page.slugs].join("/");
+  return `${origin}${localePath(locale, path)}`;
 }
 
 function pageLink(origin: string, locale: Locale, page: LLMPage) {
@@ -79,13 +86,12 @@ export function renderLLMIndex(
 ) {
   const text = messages[locale];
   const ordered = sortedPages(pages);
-  const guides = ordered.filter(
-    (page) => !["components", "blocks", "utils"].includes(page.slugs[0] ?? ""),
-  );
-  const components = ordered.filter((page) => page.slugs[0] === "components");
-  const blocks = ordered.filter((page) => page.slugs[0] === "blocks");
-  const utils = ordered.filter((page) => page.slugs[0] === "utils");
-  const prefix = locale === "zh-CN" ? "/zh-CN" : "";
+  const inSection = (section?: Section) =>
+    ordered.filter((page) => sectionOf(page) === section);
+  const guides = inSection(undefined);
+  const components = inSection("components");
+  const blocks = inSection("blocks");
+  const utils = inSection("utils");
   return [
     "# SUI",
     `> ${text.summary}`,
@@ -106,7 +112,7 @@ export function renderLLMIndex(
         ]
       : []),
     "## Optional",
-    `- [${text.full}](${origin}${prefix}/llms-full.txt)`,
+    `- [${text.full}](${origin}${localePath(locale, "/llms-full.txt")})`,
   ]
     .join("\n\n")
     .concat("\n");
@@ -195,7 +201,7 @@ export async function toLLMMarkdown(
     } else if (name === "ComponentIndex") {
       result += sortedPages(context.pages)
         .filter(
-          (page) => page.slugs[0] === "components" && page.slugs.length > 1,
+          (page) => sectionOf(page) === "components" && page.slugs.length > 1,
         )
         .map((page) => pageLink(context.origin, context.locale, page))
         .join("\n");
@@ -266,11 +272,11 @@ export async function llmsResponse(
   const url = new URL(request.url);
   const locale =
     kind === "page"
-      ? (url.searchParams.get("locale") ?? "en-US")
-      : (lang ?? "en-US");
+      ? (url.searchParams.get("locale") ?? defaultLocale)
+      : (lang ?? defaultLocale);
   if (!isLocale(locale)) return new Response("Not found", { status: 404 });
-  if (kind !== "page" && lang === "en-US") {
-    url.pathname = url.pathname.replace(/^\/en-US(?=\/)/, "");
+  if (kind !== "page" && lang === defaultLocale) {
+    url.pathname = localePath(defaultLocale, url.pathname);
     return new Response(null, { status: 308, headers: { Location: url.href } });
   }
   const pages = content.pages(locale);

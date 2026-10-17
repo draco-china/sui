@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { buttonVariants } from "@workspace/ui/components/button";
 import { LocaleToggle } from "@workspace/ui/components/locale-toggle";
 import { cn } from "cn";
@@ -13,16 +13,33 @@ import { GitHubLink } from "../components/github-link";
 import { Logo } from "../components/logo";
 import { ThemeModeMenu } from "../components/theme-mode-menu";
 import { ThemePanel } from "../components/theme-panel";
-import { getLocale, isLocale, type Locale, localePath } from "./i18n";
+import {
+  defaultLocale,
+  getLocale,
+  type Locale,
+  localeNames,
+  localePath,
+  locales as supportedLocales,
+} from "./i18n";
+import { useLocaleNavigation } from "./locale-navigation";
 
-function LayoutThemeSwitch() {
+/** The GitHub link and appearance menus shown beside every layout's title. */
+function SiteActions() {
   const { lang } = useParams({ strict: false });
   const locale = getLocale(lang);
   return (
-    <div className="flex items-center gap-1">
+    <>
       <GitHubLink />
       <ThemeModeMenu locale={locale} />
       <ThemePanel locale={locale} />
+    </>
+  );
+}
+
+function LayoutThemeSwitch() {
+  return (
+    <div className="flex items-center gap-1">
+      <SiteActions />
     </div>
   );
 }
@@ -34,26 +51,19 @@ export function LayoutLocaleSwitch({
   ...props
 }: LanguageSelectProps) {
   const { locale, locales } = useI18n();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const changeLocale = useLocaleNavigation();
   return (
     <LocaleToggle
       {...props}
       className={cn(className, "text-foreground")}
-      value={locale ?? "en-US"}
-      onValueChange={(next) => {
-        if (isLocale(next))
-          return navigate({
-            to: localePath(next, location.pathname),
-            search: location.search,
-            hash: location.hash,
-          });
-      }}
+      value={locale ?? defaultLocale}
+      onValueChange={changeLocale}
       options={(
-        locales ?? [
-          { locale: "en-US", name: "English" },
-          { locale: "zh-CN", name: "简体中文" },
-        ]
+        locales ??
+        supportedLocales.map((item) => ({
+          locale: item,
+          name: localeNames[item],
+        }))
       ).map((item) => ({ value: item.locale, label: item.name }))}
       label={locale === "zh-CN" ? "切换语言" : "Change language"}
     />
@@ -97,12 +107,9 @@ export function DocumentationActions({
   className,
   ...props
 }: ComponentProps<"div">) {
-  const { lang } = useParams({ strict: false });
   return (
-    <div {...props} className={`flex items-center gap-1 ${className ?? ""}`}>
-      <GitHubLink />
-      <ThemeModeMenu locale={getLocale(lang)} />
-      <ThemePanel locale={getLocale(lang)} />
+    <div {...props} className={cn("flex items-center gap-1", className)}>
+      <SiteActions />
       <LayoutLocaleSwitch />
     </div>
   );
