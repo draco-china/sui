@@ -15,7 +15,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { cn } from "cn";
 import { CheckIcon, SearchIcon } from "lucide-react";
 import type * as React from "react";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function CommandImplementation({
   className,
@@ -97,7 +97,7 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "no-scrollbar max-h-72 scroll-py-1.5 overflow-y-auto overflow-x-hidden outline-none [&>[cmdk-list-sizer]]:grid [&>[cmdk-list-sizer]]:gap-1 [&>[cmdk-list-sizer]]:p-1.5",
+        "no-scrollbar max-h-72 scroll-py-1.5 overflow-y-auto overflow-x-hidden outline-none *:[[cmdk-list-sizer]]:grid *:[[cmdk-list-sizer]]:gap-1 *:[[cmdk-list-sizer]]:p-1.5",
         className,
       )}
       {...props}
@@ -126,7 +126,7 @@ function CommandGroup({
     <CommandPrimitive.Group
       data-slot="command-group"
       className={cn(
-        "overflow-hidden text-foreground [&>[cmdk-group-items]]:grid [&>[cmdk-group-items]]:gap-1 **:[[cmdk-group-heading]]:mb-1 **:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:text-xs",
+        "overflow-hidden text-foreground **:[[cmdk-group-heading]]:mb-1 **:[[cmdk-group-heading]]:px-3 **:[[cmdk-group-heading]]:py-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground **:[[cmdk-group-heading]]:text-xs *:[[cmdk-group-items]]:grid *:[[cmdk-group-items]]:gap-1",
         className,
       )}
       {...props}

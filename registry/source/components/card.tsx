@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass, withoutGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function CardImplementation({
   className,
@@ -93,7 +93,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 
 // Cards are content and stay ordinary inside glass. An explicit `glass` prop
 // turns one into a glass surface, such as a widget over media.
-const Card = withoutGlass(withGlass(CardImplementation));
+const Card = withGlass(CardImplementation);
 
 export {
   Card,

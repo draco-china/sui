@@ -3,7 +3,7 @@
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { cn } from "cn";
 import type * as React from "react";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function InputImplementation({
   className,
@@ -23,6 +23,6 @@ function InputImplementation({
   );
 }
 
-const Input = withGlass(InputImplementation, "field");
+const Input = withGlass(InputImplementation);
 
 export { Input };

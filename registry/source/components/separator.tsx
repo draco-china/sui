@@ -3,7 +3,6 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 import { cn } from "cn";
 import type * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
 
 const lineClassName =
   "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch";
@@ -19,7 +18,7 @@ function Separator({
       <SeparatorPrimitive
         data-slot="separator"
         orientation={orientation}
-        className={mergeClassNames(lineClassName, className)}
+        className={cn(lineClassName, className)}
         {...props}
       />
     );

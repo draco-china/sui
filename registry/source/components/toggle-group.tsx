@@ -6,8 +6,7 @@ import { toggleVariants } from "@/components/ui/toggle";
 import type { VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants> & {
@@ -49,7 +48,7 @@ function ToggleGroupImplementation({
           ...(typeof style === "function" ? style(state) : style),
         }) as React.CSSProperties
       }
-      className={mergeClassNames(
+      className={cn(
         "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
         className,
       )}
@@ -79,7 +78,7 @@ function ToggleGroupItemImplementation({
       data-variant={context.variant || variant}
       data-size={context.size || size}
       data-spacing={context.spacing}
-      className={mergeClassNames(
+      className={cn(
         cn(
           "shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:ps-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pe-2.5 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last:rounded-e-3xl group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last:rounded-b-3xl group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first:rounded-s-3xl group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first:rounded-t-3xl",
           toggleVariants({
@@ -96,10 +95,8 @@ function ToggleGroupItemImplementation({
   );
 }
 
-const ToggleGroupItem = withGlass(ToggleGroupItemImplementation, "control", {
-  material: "regular",
-});
-
-const ToggleGroup = withGlass(ToggleGroupImplementation, "scope");
+// A glass group is one capsule its items sit on, like ButtonGroup.
+const ToggleGroup = withGlass(ToggleGroupImplementation);
+const ToggleGroupItem = withGlass(ToggleGroupItemImplementation);
 
 export { ToggleGroup, ToggleGroupItem };

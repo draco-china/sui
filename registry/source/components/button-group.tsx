@@ -6,11 +6,10 @@ import { Separator } from "@/components/ui/separator";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { Children, type ComponentProps, isValidElement } from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { type GlassProps, withGlass } from "@/lib/glass/context";
+import { type GlassProps, withGlass } from "@/lib/glass/with-glass";
 
 const buttonGroupVariants = cva(
-  "flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 data-[glass=true]:rounded-4xl has-[>[data-variant=outline]]:*:data-[slot=input-group]:border-border has-[>[data-variant=outline]]:*:data-[slot=select-trigger]:border-border has-[>[data-variant=outline]]:[&>[data-slot=input-group]:has(:focus-visible)]:border-ring has-[>[data-variant=outline]]:[&>[data-slot=select-trigger]:focus-visible]:border-ring has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-4xl [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit has-[>[data-variant=outline]]:[&>input:focus-visible]:border-ring [&>input]:flex-1 has-[>[data-variant=outline]]:[&>input]:border-border",
+  "flex w-fit items-stretch glass:rounded-4xl *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[>[data-variant=outline]]:*:data-[slot=input-group]:border-border has-[>[data-variant=outline]]:*:data-[slot=select-trigger]:border-border has-[>[data-variant=outline]]:[&>[data-slot=input-group]:has(:focus-visible)]:border-ring has-[>[data-variant=outline]]:[&>[data-slot=select-trigger]:focus-visible]:border-ring has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-4xl [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit has-[>[data-variant=outline]]:[&>input:focus-visible]:border-ring [&>input]:flex-1 has-[>[data-variant=outline]]:[&>input]:border-border",
   {
     variants: {
       orientation: {
@@ -60,11 +59,10 @@ function ButtonGroupImplementation({
   );
 }
 
-// A glass group is one capsule whose buttons share its material, like grouped
-// iOS toolbar items. A group of groups only lays them out, so each inner
-// group keeps its own capsule.
-const ButtonGroupSurface = withGlass(ButtonGroupImplementation);
-const ButtonGroupScope = withGlass(ButtonGroupImplementation, "scope");
+// A glass group is one capsule whose buttons sit on its material, like
+// grouped iOS toolbar items. A group of groups only lays them out; give each
+// inner group its own glass.
+const GlassButtonGroup = withGlass(ButtonGroupImplementation);
 
 function ButtonGroup(
   props: Omit<ComponentProps<typeof ButtonGroupImplementation>, "nested"> &
@@ -73,11 +71,7 @@ function ButtonGroup(
   const nested = Children.toArray(props.children).some(
     (child) => isValidElement(child) && child.type === ButtonGroup,
   );
-  return nested ? (
-    <ButtonGroupScope {...props} nested />
-  ) : (
-    <ButtonGroupSurface {...props} />
-  );
+  return <GlassButtonGroup {...props} nested={nested} />;
 }
 
 function ButtonGroupText({
@@ -112,7 +106,7 @@ function ButtonGroupSeparator({
     <Separator
       data-slot="button-group-separator"
       orientation={orientation}
-      className={mergeClassNames(
+      className={cn(
         "relative self-stretch bg-input data-horizontal:mx-px data-vertical:my-px data-vertical:h-auto data-horizontal:w-auto",
         className,
       )}

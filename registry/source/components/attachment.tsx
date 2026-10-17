@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withoutGlass } from "@/lib/glass/context";
 
 const attachmentVariants = cva(
   "group/attachment relative flex w-fit min-w-0 max-w-full shrink-0 flex-wrap rounded-3xl border bg-card text-card-foreground transition-colors focus-within:ring-1 focus-within:ring-ring/30 has-[>a,>button]:hover:bg-muted/50 data-[state=error]:border-destructive/30 data-[state=idle]:border-dashed",
@@ -27,7 +25,7 @@ const attachmentVariants = cva(
   },
 );
 
-function AttachmentImplementation({
+function Attachment({
   className,
   state = "done",
   size = "default",
@@ -137,7 +135,7 @@ function AttachmentActions({
     <div
       data-slot="attachment-actions"
       className={cn(
-        "relative z-20 flex shrink-0 items-center group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:end-3 group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:gap-1",
+        "relative z-20 flex shrink-0 items-center group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:inset-e-3 group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:gap-1",
         className,
       )}
       {...props}
@@ -146,7 +144,6 @@ function AttachmentActions({
 }
 
 function AttachmentAction({
-  className,
   variant,
   size = "icon-xs",
   ...props
@@ -156,7 +153,6 @@ function AttachmentAction({
       data-slot="attachment-action"
       variant={variant ?? "ghost"}
       size={size}
-      className={mergeClassNames("", className)}
       {...props}
     />
   );
@@ -196,8 +192,6 @@ function AttachmentGroup({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
-const Attachment = withoutGlass(AttachmentImplementation);
 
 export {
   Attachment,

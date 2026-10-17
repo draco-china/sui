@@ -11,7 +11,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { mergeClassNames } from "@/lib/class-name";
 import {
   type ColorFormat,
   clampColor,
@@ -22,6 +21,7 @@ import {
   parseColor,
   parseHexColor,
 } from "@/lib/color/model";
+import type { GlassProps } from "@/lib/glass/with-glass";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,14 +57,16 @@ interface ColorPickerLabels {
 interface ColorPickerProps
   extends Omit<
     ComponentProps<typeof Button>,
-    "value" | "defaultValue" | "onChange" | "children" | "glass"
+    "value" | "defaultValue" | "onChange" | "children" | "glass" | "frosted"
   > {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   alpha?: boolean;
   swatches?: readonly string[];
-  glass?: boolean;
+  /** Applies to the trigger and the popover. */
+  glass?: GlassProps["glass"];
+  frosted?: boolean;
   inline?: boolean;
   eyeDropper?: boolean;
   labels?: Partial<ColorPickerLabels>;
@@ -107,6 +109,7 @@ function ColorPicker({
   alpha = false,
   swatches = [],
   glass,
+  frosted,
   inline = false,
   eyeDropper = true,
   labels,
@@ -242,11 +245,7 @@ function ColorPicker({
         }}
         disabled={disabled}
       >
-        <SelectTrigger
-          glass={false}
-          aria-label={text.format}
-          className="w-full"
-        >
+        <SelectTrigger aria-label={text.format} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -275,7 +274,6 @@ function ColorPicker({
             {format === "hex" ? text.hex : text.color}
           </label>
           <Input
-            glass={false}
             id={`${id}-hex`}
             value={draft}
             disabled={disabled}
@@ -307,7 +305,6 @@ function ColorPicker({
                   type="button"
                   variant="outline"
                   size="icon"
-                  glass={false}
                   disabled={disabled || dropperPending}
                   aria-label={text.eyeDropper}
                   onClick={pickScreen}
@@ -349,14 +346,16 @@ function ColorPicker({
   );
   if (inline) return controls;
   return (
-    <Popover glass={glass}>
+    <Popover>
       <PopoverTrigger
         render={
           <Button
             type="button"
             variant="outline"
+            glass={glass}
+            frosted={frosted}
             disabled={disabled}
-            className={mergeClassNames("gap-2 font-mono", className)}
+            className={cn("gap-2 font-mono", className)}
             {...triggerProps}
           />
         }
@@ -378,6 +377,7 @@ function ColorPicker({
       </PopoverTrigger>
       <PopoverContent
         glass={glass}
+        frosted={frosted}
         className={cn("w-72 max-w-[calc(100vw-2rem)]", contentClassName)}
       >
         <PopoverTitle>{text.trigger}</PopoverTitle>
@@ -510,7 +510,6 @@ function ColorPickerSlider({
         {label ?? defaultLabels[channel]}
       </span>
       <Slider
-        glass={false}
         aria-labelledby={id}
         value={[hue ? color.h : color.a * 100]}
         min={0}
@@ -524,7 +523,7 @@ function ColorPickerSlider({
             [hue ? "h" : "a"]: hue ? value : value / 100,
           });
         }}
-        className="[&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-track]]:bg-[image:var(--color-gradient)]"
+        className="**:data-[slot=slider-track]:bg-(image:--color-gradient) **:data-[slot=slider-range]:bg-transparent"
         style={
           { "--color-gradient": gradient } as ComponentProps<
             typeof Slider
@@ -570,7 +569,6 @@ function ColorPickerSwatches({
         <Button
           key={swatch}
           type="button"
-          glass={false}
           variant="outline"
           size="icon-sm"
           aria-label={swatch}

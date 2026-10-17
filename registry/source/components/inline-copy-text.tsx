@@ -9,8 +9,6 @@ import {
   type ClipboardOptions,
   useClipboard,
 } from "@/hooks/use-clipboard";
-import { mergeClassNames } from "@/lib/class-name";
-import { withoutGlass } from "@/lib/glass/context";
 import { CopyIcon } from "@/components/ui/copy-icon";
 
 type InlineCopyTextProps = Omit<
@@ -45,7 +43,7 @@ const inlineCopyVariants = cva(
   },
 );
 
-function InlineCopyTextImplementation({
+function InlineCopyText({
   children,
   value,
   variant = "default",
@@ -87,10 +85,7 @@ function InlineCopyTextImplementation({
       data-copy-status={status}
       aria-busy={status === "pending"}
       aria-label={props["aria-label"] ?? labels?.copy ?? `Copy ${text}`}
-      className={mergeClassNames(
-        cn(inlineCopyVariants({ variant, size })),
-        className,
-      )}
+      className={cn(cn(inlineCopyVariants({ variant, size })), className)}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) void copy();
@@ -121,7 +116,5 @@ function InlineCopyTextImplementation({
 }
 
 export type { InlineCopyTextProps };
-
-const InlineCopyText = withoutGlass(InlineCopyTextImplementation);
 
 export { InlineCopyText };

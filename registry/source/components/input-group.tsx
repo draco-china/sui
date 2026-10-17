@@ -6,8 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function InputGroupImplementation({
   className,
@@ -102,10 +101,7 @@ function InputGroupButton({
       type={type}
       data-size={size}
       variant={variant}
-      className={mergeClassNames(
-        cn(inputGroupButtonVariants({ size })),
-        className,
-      )}
+      className={cn(cn(inputGroupButtonVariants({ size })), className)}
       {...props}
     />
   );
@@ -156,7 +152,7 @@ function InputGroupTextarea({
 }
 
 // A glass input group is one field capsule whose buttons share its material.
-const InputGroup = withGlass(InputGroupImplementation, "field");
+const InputGroup = withGlass(InputGroupImplementation);
 
 export {
   InputGroup,

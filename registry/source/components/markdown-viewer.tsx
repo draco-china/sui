@@ -106,7 +106,7 @@ const alertVariants = cva("", {
   variants: {
     element: {
       surface:
-        "not-prose my-5 rounded-lg border px-4 py-3 text-foreground text-sm ring-1 ring-border [&_p+p]:mt-2 [&_p]:my-0",
+        "not-prose my-5 rounded-2xl border px-4 py-3 text-foreground text-sm [&_p+p]:mt-2 [&_p]:my-0",
       title: "mb-2 flex items-start gap-2 font-semibold",
     },
     variant: {
@@ -788,7 +788,7 @@ const markdownComponents: Components = {
     return (
       <div
         className={
-          "not-prose my-6 w-full overflow-x-auto rounded-lg border border-border shadow-sm"
+          "not-prose my-6 w-full overflow-x-auto rounded-2xl border border-border shadow-sm"
         }
       >
         <table

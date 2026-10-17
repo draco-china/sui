@@ -4,8 +4,6 @@ import { OTPField } from "@base-ui/react/otp-field";
 import { cn } from "cn";
 import { MinusIcon } from "lucide-react";
 import * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withoutGlass } from "@/lib/glass/context";
 import { type IconNode, MorphIcon } from "@/components/ui/morph-icon";
 
 type InputOTPStatus = "idle" | "loading" | "success" | "error";
@@ -30,7 +28,7 @@ const particles = Array.from({ length: 28 }, (_, index) => ({
 const useLayout =
   typeof document === "undefined" ? React.useEffect : React.useLayoutEffect;
 
-function InputOTPImplementation({
+function InputOTP({
   className,
   style,
   ref,
@@ -238,7 +236,7 @@ function InputOTPImplementation({
         <div
           data-slot="input-otp-state"
           className={cn(
-            "pointer-events-none absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-background",
+            "pointer-events-none absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-md bg-background",
             status === "error" ? "text-destructive" : "text-primary",
           )}
           aria-hidden="true"
@@ -329,7 +327,7 @@ function InputOTPSlot({
       data-slot="input-otp-slot"
       className={(state) =>
         cn(
-          "relative size-9 rounded-xl border border-transparent bg-input/50 text-center font-medium text-sm tabular-nums caret-transparent outline-none transition-[background-color,box-shadow] selection:bg-transparent selection:text-current focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
+          "relative size-9 rounded-md border border-transparent bg-input/50 text-center font-medium text-sm tabular-nums caret-transparent outline-none transition-[background-color,box-shadow] selection:bg-transparent selection:text-current focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
           typeof className === "function" ? className(state) : className,
         )
       }
@@ -344,7 +342,7 @@ function InputOTPSeparator({
   return (
     <OTPField.Separator
       data-slot="input-otp-separator"
-      className={mergeClassNames(
+      className={cn(
         "flex items-center text-muted-foreground [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
@@ -354,7 +352,6 @@ function InputOTPSeparator({
     </OTPField.Separator>
   );
 }
-const InputOTP = withoutGlass(InputOTPImplementation);
 
 export type { InputOTPProps, InputOTPStatus };
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot };

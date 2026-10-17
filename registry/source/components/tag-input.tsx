@@ -16,7 +16,7 @@ import {
 import { cn } from "cn";
 import { XIcon } from "lucide-react";
 import * as React from "react";
-import { withGlass } from "@/lib/glass/context";
+import type { GlassProps } from "@/lib/glass/with-glass";
 
 interface TagInputLabels {
   input?: string;
@@ -29,9 +29,10 @@ interface TagInputLabels {
 
 interface TagInputProps
   extends Omit<
-    React.ComponentProps<"input">,
-    "value" | "defaultValue" | "type" | "size"
-  > {
+      React.ComponentProps<"input">,
+      "value" | "defaultValue" | "type" | "size"
+    >,
+    GlassProps {
   value?: string[];
   defaultValue?: string[];
   onValueChange?: (values: string[]) => void;
@@ -52,7 +53,9 @@ function uniqueValues(values: readonly string[]) {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
-function TagInputImplementation({
+function TagInput({
+  glass,
+  frosted,
   value: controlledValue,
   defaultValue = EMPTY_VALUES,
   onValueChange,
@@ -287,6 +290,8 @@ function TagInputImplementation({
     >
       <ComboboxChips
         ref={anchor}
+        glass={glass}
+        frosted={frosted}
         data-slot="tag-input"
         data-disabled={disabled}
         data-readonly={readOnly}
@@ -300,7 +305,7 @@ function TagInputImplementation({
             <span className="max-w-48 truncate">{value}</span>
             <ComboboxPrimitive.ChipRemove
               data-slot="tag-input-remove"
-              render={<Button variant="ghost" size="icon-xs" glass={false} />}
+              render={<Button variant="ghost" size="icon-xs" />}
               disabled={disabled || readOnly}
               className="-ms-1 opacity-50 hover:opacity-100"
               aria-label={labels?.removeValue?.(value) ?? `Remove ${value}`}
@@ -385,8 +390,5 @@ function TagInputImplementation({
     </Combobox>
   );
 }
-
-// The setting passes to its chips field, which is the glass field.
-const TagInput = withGlass(TagInputImplementation, "scope");
 
 export { TagInput, type TagInputLabels, type TagInputProps };

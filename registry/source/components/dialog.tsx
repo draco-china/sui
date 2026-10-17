@@ -5,22 +5,21 @@ import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 import { XIcon } from "lucide-react";
 import type * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
-function DialogImplementation({ ...props }: DialogPrimitive.Root.Props) {
+function Dialog(props: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
+function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
+function DialogPortal(props: DialogPrimitive.Portal.Props) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
+function DialogClose(props: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
@@ -31,7 +30,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
-      className={mergeClassNames(
+      className={cn(
         "data-open:fade-in-0 data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/30 duration-100 data-closed:animate-out data-open:animate-in supports-backdrop-filter:backdrop-blur-sm",
         className,
       )}
@@ -53,8 +52,8 @@ function DialogContentImplementation({
       <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        className={mergeClassNames(
-          "data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 fixed start-1/2 top-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-4xl bg-popover p-6 text-popover-foreground text-sm shadow-xl outline-none ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in sm:max-w-md rtl:translate-x-1/2 dark:ring-foreground/10",
+        className={cn(
+          "data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 fixed inset-s-1/2 top-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 rounded-4xl bg-popover p-6 text-popover-foreground text-sm shadow-xl outline-none ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in sm:max-w-md rtl:translate-x-1/2 dark:ring-foreground/10",
           className,
         )}
         {...props}
@@ -66,7 +65,7 @@ function DialogContentImplementation({
             render={
               <Button
                 variant="ghost"
-                className="absolute end-4 top-4 bg-secondary"
+                className="absolute inset-e-4 top-4 bg-secondary"
                 size="icon-sm"
               />
             }
@@ -121,7 +120,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={mergeClassNames(
+      className={cn(
         "font-heading font-medium text-base leading-none",
         className,
       )}
@@ -137,7 +136,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={mergeClassNames(
+      className={cn(
         "text-muted-foreground text-sm *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
         className,
       )}
@@ -146,8 +145,7 @@ function DialogDescription({
   );
 }
 
-const Dialog = withGlass(DialogImplementation, "scope");
-const DialogContent = withGlass(DialogContentImplementation, "portal");
+const DialogContent = withGlass(DialogContentImplementation);
 
 export {
   Dialog,

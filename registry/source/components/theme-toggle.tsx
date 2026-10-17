@@ -6,7 +6,6 @@ import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { mergeClassNames } from "@/lib/class-name";
 import { type IconNode, MorphIcon, type MorphIconProps } from "@/components/ui/morph-icon";
 import {
   Tooltip,
@@ -37,7 +36,6 @@ type ThemeToggleProps = Omit<
   lightIcon?: ReactNode;
   darkIcon?: ReactNode;
   iconClassName?: string;
-  glass?: boolean;
 };
 
 const sunIcon: IconNode = [
@@ -208,8 +206,8 @@ function ThemeToggle({
               glass={glass}
               aria-label={label}
               aria-pressed={theme === "dark"}
-              className={mergeClassNames(
-                cn(themeToggleVariants({ glass })),
+              className={cn(
+                cn(themeToggleVariants({ glass: Boolean(glass) })),
                 className,
               )}
               onClick={(event) => {

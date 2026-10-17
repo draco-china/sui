@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 import { ArrowDownIcon } from "lucide-react";
 import type * as React from "react";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function MessageScrollerProvider(
   props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>,
@@ -117,10 +117,7 @@ function MessageScrollerButtonImplementation({
   );
 }
 
-const MessageScrollerButton = withGlass(
-  MessageScrollerButtonImplementation,
-  "control",
-);
+const MessageScrollerButton = withGlass(MessageScrollerButtonImplementation);
 
 export {
   MessageScroller,

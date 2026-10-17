@@ -5,6 +5,7 @@ const GLASS_ATTRIBUTES = [
   "hidden",
   "inert",
   "data-glass",
+  "data-frosted",
   "data-glass-scope",
   "data-glass-mounted",
   "data-glass-frozen",
@@ -176,9 +177,12 @@ export class GlassDom {
       relevant.some(
         (record) =>
           record.type === "childList" ||
-          ["data-glass", "data-glass-scope", "data-glass-mounted"].includes(
-            record.attributeName ?? "",
-          ),
+          [
+            "data-glass",
+            "data-frosted",
+            "data-glass-scope",
+            "data-glass-mounted",
+          ].includes(record.attributeName ?? ""),
       )
     )
       this.groups = undefined;

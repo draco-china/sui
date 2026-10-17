@@ -1,20 +1,14 @@
-/** Refraction strength shared by both materials. */
-export const glassDefaults = { strength: 22 } as const;
-
-// Web approximations of Apple's Clear and Regular materials. Clear keeps the
-// backdrop recognizable; Regular frosts it so text stays legible over busy
-// content. `blur` is the SVG refraction blur. The CSS fallback in glass.css
-// blurs a little more (6px and 16px) to separate the layers, and both
-// saturate the backdrop by 1.3.
-export const glassMaterials = {
-  clear: { tintOpacity: 0.12, blur: 4 },
-  regular: { tintOpacity: 0.3, blur: 14 },
+/**
+ * Clear liquid glass, a Web approximation of Apple's Clear material: the
+ * backdrop stays recognizable through SVG refraction, where `blur` is the
+ * refraction blur; its CSS fallback in glass.css blurs 6px. It saturates the
+ * backdrop by 1.3. Frosted glass is CSS only and lives in frosted.css.
+ */
+export const glassDefaults = {
+  strength: 22,
+  tintOpacity: 0.12,
+  blur: 4,
 } as const;
-
-export type GlassMaterial = keyof typeof glassMaterials;
-
-/** Regular is the default, as on Apple platforms; Clear suits media backdrops. */
-export const glassDefaultMaterial: GlassMaterial = "regular";
 
 /**
  * Edge light: the SUI 1.1 rim lit from the top-left and bottom-right corners
@@ -25,3 +19,22 @@ const glassEdges = ["diagonal", "vertical"] as const;
 export type GlassEdge = (typeof glassEdges)[number];
 
 export const glassDefaultEdge: GlassEdge = "diagonal";
+
+export type GlassConfig = {
+  /** Edge light from the top-left and bottom-right corners, or from the top and bottom. */
+  edge?: GlassEdge;
+  /** Refraction strength. */
+  strength?: number;
+  /** The tint color; the component's own background by default. */
+  tint?: string;
+  /** The tint's opacity from 0 to 1. */
+  tintOpacity?: number;
+  /**
+   * A tight glow in the tint behind text and icons, for legibility over busy
+   * backdrops. Off by default.
+   */
+  textGlow?: boolean;
+};
+
+/** One component's settings, as the runtime receives them. */
+export type GlassConfiguration = GlassConfig & { id: string };

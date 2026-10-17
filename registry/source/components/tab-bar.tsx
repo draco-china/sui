@@ -12,11 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  type GlassProps,
-  useGlassEnabled,
-  withGlass,
-} from "@/lib/glass/context";
+import { type GlassProps, withGlass } from "@/lib/glass/with-glass";
 import { Button } from "@/components/ui/button";
 
 export type TabBarItem = {
@@ -28,14 +24,14 @@ export type TabBarItem = {
 
 const tabBarVariants = cva(
   // Equal tracks: every item takes the width (or height) of the largest one.
-  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible",
+  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
   },
 );
 const tabBarItemVariants = cva(
-  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-accent focus-visible:z-20 data-[active=true]:bg-foreground/8 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent group-data-[glass=true]/tab-bar:active:translate-y-0 dark:data-[active=true]:bg-foreground/12",
+  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] focus-visible:z-20 group-glass/tab-bar:active:translate-y-0 data-[active=true]:bg-foreground/8 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent dark:data-[active=true]:bg-foreground/12",
   {
     variants: {
       size: {
@@ -58,7 +54,10 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
   } & GlassProps;
 
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
-const Lens = withGlass((props: ComponentProps<"div">) => <div {...props} />);
+// The lens is Clear glass over the bar, with the bar's own Clear settings.
+const Lens = withGlass((props: ComponentProps<"div">) => (
+  <div data-glass-lens="" {...props} />
+));
 const indicatorVariants = cva(
   "pointer-events-none absolute top-0 left-0 z-0 rounded-full data-[pressed=true]:shadow-lg",
   {
@@ -74,19 +73,21 @@ const indicatorVariants = cva(
   },
 );
 
-function TabBarImplementation({
+export function TabBar({
   items,
   value,
   onValueChange,
   onItemActivate,
   orientation = "horizontal",
   size = "default",
+  glass: settings = false,
+  frosted = false,
   className,
   ref,
   ...props
 }: TabBarProps) {
   const track = useRef<HTMLDivElement>(null);
-  const glass = useGlassEnabled();
+  const glass = settings !== false || frosted;
   const [heldValue, setHeldValue] = useState<string | null>(null);
   const selection = useRef<HTMLDivElement>(null);
   const lens = useRef<HTMLDivElement>(null);
@@ -419,7 +420,8 @@ function TabBarImplementation({
         data-lens={Boolean(bounds)}
         data-pressed={pressed}
         data-glass-frozen={pressed}
-        data-glass={glass ? "true" : undefined}
+        glass={settings}
+        frosted={frosted}
         className={tabBarVariants({ size })}
         onPointerDown={(event) => {
           if (!event.isPrimary || event.button !== 0 || hold.current) return;
@@ -601,7 +603,7 @@ function TabBarImplementation({
         />
         <Lens
           ref={lens}
-          glass={glass && pressed}
+          glass={glass && pressed && (settings || true)}
           data-slot="tab-bar-indicator"
           data-pressed={pressed}
           aria-hidden="true"
@@ -617,5 +619,3 @@ function TabBarImplementation({
     </nav>
   );
 }
-
-export const TabBar = withGlass(TabBarImplementation, "scope");

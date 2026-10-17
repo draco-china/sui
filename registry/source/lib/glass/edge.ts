@@ -75,13 +75,12 @@ type EdgeShape = {
  * corners, fading along the sides.
  */
 function diagonalEdge(
-  { width, height, corners, opacity, pixelRatio }: EdgeShape,
+  { width, height, corners, opacity }: EdgeShape,
   color: readonly number[],
 ) {
-  const density = Math.max(pixelRatio, 1);
-  // The 1.1 stroke up to 2x, narrowing continuously on denser phone screens.
-  const line = Math.min(0.9, Math.max(0.6, 1.8 / density));
-  const softness = 0.55 * Math.min(1, 2 / density);
+  // The 1.1 stroke, the same on every screen.
+  const line = 0.9;
+  const softness = 0.55;
   const stroke = `rgb(${color
     .slice(0, 3)
     .map((channel) => Math.round((0.8 + channel * 0.2) * 255))
@@ -100,7 +99,7 @@ function diagonalEdge(
       opacity: opacity * 0.7,
     },
   ];
-  const outline = outlinePath(width, height, corners, line * (0.65 / 0.9));
+  const outline = outlinePath(width, height, corners, 0.65);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
     <defs>
       ${lights
@@ -212,8 +211,46 @@ export type GlassEdgeOptions = {
   pixelRatio?: number;
 };
 
+/**
+ * Shortens the markup without changing the picture: hundredths of a CSS
+ * pixel are invisible, and indentation only lengthens the data URI.
+ */
+function compact(svg: string) {
+  return svg
+    .replace(/-?\d*\.\d{3,}/g, (number) =>
+      String(Math.round(Number(number) * 100) / 100),
+    )
+    .replace(/>\s+</g, "><")
+    .replace(/\s{2,}/g, " ");
+}
+
+// Surfaces of one size, shape and color, like a row of buttons, share an
+// edge; the most recent ones are kept.
+const edges = new Map<string, string>();
+const edgeCacheSize = 128;
+
 /** The edge highlight as a CSS background image. */
 export function glassEdge(
+  width: number,
+  height: number,
+  radii: [string, string, string, string],
+  options: GlassEdgeOptions,
+) {
+  const key = JSON.stringify([width, height, radii, options]);
+  const cached = edges.get(key);
+  if (cached !== undefined) {
+    edges.delete(key);
+    edges.set(key, cached);
+    return cached;
+  }
+  const edge = renderEdge(width, height, radii, options);
+  edges.set(key, edge);
+  if (edges.size > edgeCacheSize)
+    edges.delete(edges.keys().next().value as string);
+  return edge;
+}
+
+function renderEdge(
   width: number,
   height: number,
   radii: [string, string, string, string],
@@ -241,7 +278,7 @@ export function glassEdge(
             (0.9 - surfaceBrightness(color, background) * 0.25),
         })
       : diagonalEdge({ ...shape, opacity: Math.min(1, highlight * 2) }, color);
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  return `url("data:image/svg+xml,${encodeURIComponent(compact(svg))}")`;
 }
 
 /** Edge highlight strength: full from 2x, dimmer where device pixels are larger. */

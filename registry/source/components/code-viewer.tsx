@@ -9,11 +9,10 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { withoutGlass } from "@/lib/glass/context";
-import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ViewerCopyButton, ViewerStatus } from "@/components/ui/viewer/controls";
 
 interface CodeLine {
   index: number;
@@ -71,7 +70,7 @@ const DEFAULT_CODE_VIEWER_LABELS: CodeViewerLabels = {
 
 const EMPTY_LINES: number[] = [];
 
-function CodeViewerImplementation({
+export function CodeViewer({
   code,
   variant = "default",
   lang = "typescript",
@@ -90,7 +89,7 @@ function CodeViewerImplementation({
   const text = { ...DEFAULT_CODE_VIEWER_LABELS, ...labels };
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = useReducedMotion();
   const viewportRef = useRef<HTMLDivElement>(null);
   const {
     lines: tokenLines,
@@ -196,12 +195,12 @@ function CodeViewerImplementation({
       className={cn(
         variant === "plain"
           ? "relative min-w-0 overflow-hidden text-foreground text-sm"
-          : "flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-border",
+          : "flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-foreground/5 dark:ring-foreground/10",
         className,
       )}
     >
       {variant === "default" ? (
-        <div className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-border/70 border-b bg-muted/80 px-3 py-1">
+        <div className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b bg-muted/80 px-3 py-1">
           <FileCode2
             aria-hidden="true"
             className="size-3.5 shrink-0 text-muted-foreground/70"
@@ -226,7 +225,7 @@ function CodeViewerImplementation({
           {copyable ? <ViewerCopyButton value={code} labels={text} /> : null}
         </div>
       ) : (
-        <div className="absolute end-1 top-1 z-10">
+        <div className="absolute inset-e-1 top-1 z-10">
           {copyable && <ViewerCopyButton value={code} labels={text} />}
           <span className="sr-only">
             <ViewerStatus
@@ -281,7 +280,7 @@ function CodeViewerImplementation({
                     className={cn(
                       "group/line h-5 hover:bg-accent/40",
                       highlighted.has(line.index + 1) &&
-                        "bg-[var(--code-highlight-bg,color-mix(in_oklch,var(--primary)_10%,transparent))]",
+                        "bg-(--code-highlight-bg,color-mix(in_oklch,var(--primary)_10%,transparent))",
                     )}
                   >
                     {showLineNumbers ? (
@@ -311,7 +310,7 @@ function CodeViewerImplementation({
                       className={cn(
                         "min-w-0 pr-4 pl-1",
                         wrap
-                          ? "whitespace-pre-wrap break-words"
+                          ? "wrap-break-word whitespace-pre-wrap"
                           : "whitespace-pre",
                       )}
                     >
@@ -352,8 +351,6 @@ function CodeViewerImplementation({
     </div>
   );
 }
-
-export const CodeViewer = withoutGlass(CodeViewerImplementation);
 
 export type { ShikiProviderProps } from "@/lib/viewer/shiki-context";
 export { ShikiProvider } from "@/lib/viewer/shiki-context";

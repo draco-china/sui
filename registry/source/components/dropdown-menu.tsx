@@ -4,18 +4,17 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { cn } from "cn";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import type * as React from "react";
-import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
-function DropdownMenuImplementation({ ...props }: MenuPrimitive.Root.Props) {
+function DropdownMenu(props: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
-function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
+function DropdownMenuPortal(props: MenuPrimitive.Portal.Props) {
   return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
+function DropdownMenuTrigger(props: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
@@ -42,7 +41,7 @@ function DropdownMenuContentImplementation({
       >
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
-          className={mergeClassNames(
+          className={cn(
             "data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 z-50 grid max-h-(--available-height) w-(--anchor-width) min-w-48 origin-(--transform-origin) gap-1 overflow-y-auto overflow-x-hidden rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg outline-none ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in data-closed:overflow-hidden dark:ring-foreground/10",
             className,
           )}
@@ -57,7 +56,7 @@ function DropdownMenuGroup({ className, ...props }: MenuPrimitive.Group.Props) {
   return (
     <MenuPrimitive.Group
       data-slot="dropdown-menu-group"
-      className={mergeClassNames("grid gap-1", className)}
+      className={cn("grid gap-1", className)}
       {...props}
     />
   );
@@ -74,7 +73,7 @@ function DropdownMenuLabel({
     <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset}
-      className={mergeClassNames(
+      className={cn(
         "px-3 py-2.5 text-muted-foreground text-xs data-inset:ps-9.5",
         className,
       )}
@@ -97,7 +96,7 @@ function DropdownMenuItem({
       data-slot="dropdown-menu-item"
       data-inset={inset}
       data-variant={variant}
-      className={mergeClassNames(
+      className={cn(
         "group/dropdown-menu-item relative flex cursor-default select-none items-center gap-2.5 rounded-2xl px-3 py-2 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-[variant=destructive]:text-destructive data-checked:text-accent-foreground data-disabled:opacity-50 data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 data-[variant=destructive]:*:[svg]:text-destructive",
         className,
       )}
@@ -106,7 +105,7 @@ function DropdownMenuItem({
   );
 }
 
-function DropdownMenuSub({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
+function DropdownMenuSub(props: MenuPrimitive.SubmenuRoot.Props) {
   return <MenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />;
 }
 
@@ -122,7 +121,7 @@ function DropdownMenuSubTrigger({
     <MenuPrimitive.SubmenuTrigger
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
-      className={mergeClassNames(
+      className={cn(
         "flex cursor-default select-none items-center gap-2 rounded-2xl px-3 py-2 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-open:bg-accent data-popup-open:bg-accent data-inset:ps-9.5 data-open:text-accent-foreground data-popup-open:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -145,7 +144,7 @@ function DropdownMenuSubContentImplementation({
   return (
     <DropdownMenuContent
       data-slot="dropdown-menu-sub-content"
-      className={mergeClassNames(
+      className={cn(
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 w-auto min-w-36 rounded-3xl bg-popover p-1.5 text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100 data-closed:animate-out data-open:animate-in dark:ring-foreground/10",
         className,
       )}
@@ -171,7 +170,7 @@ function DropdownMenuCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
-      className={mergeClassNames(
+      className={cn(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-3 pe-8 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
@@ -179,7 +178,7 @@ function DropdownMenuCheckboxItem({
       {...props}
     >
       <span
-        className="pointer-events-none absolute end-2 flex items-center justify-center"
+        className="pointer-events-none absolute inset-e-2 flex items-center justify-center"
         data-slot="dropdown-menu-checkbox-item-indicator"
       >
         <MenuPrimitive.CheckboxItemIndicator>
@@ -198,7 +197,7 @@ function DropdownMenuRadioGroup({
   return (
     <MenuPrimitive.RadioGroup
       data-slot="dropdown-menu-radio-group"
-      className={mergeClassNames("grid gap-1", className)}
+      className={cn("grid gap-1", className)}
       {...props}
     />
   );
@@ -216,14 +215,14 @@ function DropdownMenuRadioItem({
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
-      className={mergeClassNames(
+      className={cn(
         "relative flex cursor-default select-none items-center gap-2.5 rounded-2xl py-2 ps-3 pe-8 font-medium text-sm outline-hidden focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-disabled:pointer-events-none data-checked:bg-accent data-inset:ps-9.5 data-checked:text-accent-foreground data-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       {...props}
     >
       <span
-        className="pointer-events-none absolute end-2 flex items-center justify-center"
+        className="pointer-events-none absolute inset-e-2 flex items-center justify-center"
         data-slot="dropdown-menu-radio-item-indicator"
       >
         <MenuPrimitive.RadioItemIndicator>
@@ -242,7 +241,7 @@ function DropdownMenuSeparator({
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={mergeClassNames("-mx-1.5 my-0.5 h-px bg-border/50", className)}
+      className={cn("-mx-1.5 my-0.5 h-px bg-border/50", className)}
       {...props}
     />
   );
@@ -264,15 +263,8 @@ function DropdownMenuShortcut({
   );
 }
 
-const DropdownMenu = withGlass(DropdownMenuImplementation, "scope");
-const DropdownMenuContent = withGlass(
-  DropdownMenuContentImplementation,
-  "portal",
-);
-const DropdownMenuSubContent = withGlass(
-  DropdownMenuSubContentImplementation,
-  "portal",
-);
+const DropdownMenuContent = withGlass(DropdownMenuContentImplementation);
+const DropdownMenuSubContent = withGlass(DropdownMenuSubContentImplementation);
 
 export {
   DropdownMenu,

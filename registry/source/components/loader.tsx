@@ -28,20 +28,20 @@ const loaderVariantNames = [
   "percent",
 ] as const;
 const loaderVariants = cva(
-  "inline-flex size-(--loader-size) shrink-0 items-center justify-center text-current motion-reduce:[&_*]:animate-none!",
+  "inline-flex size-(--loader-size) shrink-0 items-center justify-center text-current motion-reduce:**:animate-none!",
   {
     variants: {
       variant: {
         spinner:
-          "[&_[data-slot=loader-spin]]:animate-[loader-spin_var(--loader-cycle)_linear_infinite]",
+          "**:data-[slot=loader-spin]:animate-[loader-spin_var(--loader-cycle)_linear_infinite]",
         "dash-ring":
-          "[&_[data-slot=loader-dash-ring]]:animate-[loader-spin_calc(var(--loader-cycle)*1.8)_linear_infinite] [&_[data-slot=loader-dash]]:animate-[loader-dash_calc(var(--loader-cycle)*1.4)_ease-in-out_infinite]",
-        dots: "[&_[data-slot=loader-dot]]:animate-[loader-dot_var(--loader-cycle)_ease-in-out_infinite_both]",
-        bars: "[&_[data-slot=loader-bar]]:animate-[loader-bar_var(--loader-cycle)_ease-in-out_infinite_both]",
+          "**:data-[slot=loader-dash-ring]:animate-[loader-spin_calc(var(--loader-cycle)*1.8)_linear_infinite] **:data-[slot=loader-dash]:animate-[loader-dash_calc(var(--loader-cycle)*1.4)_ease-in-out_infinite]",
+        dots: "**:data-[slot=loader-dot]:animate-[loader-dot_var(--loader-cycle)_ease-in-out_infinite_both]",
+        bars: "**:data-[slot=loader-bar]:animate-[loader-bar_var(--loader-cycle)_ease-in-out_infinite_both]",
         "dot-matrix":
-          "[&_[data-slot=loader-matrix-cell]]:animate-[loader-matrix_var(--loader-cycle)_ease-in-out_infinite_both]",
+          "**:data-[slot=loader-matrix-cell]:animate-[loader-matrix_var(--loader-cycle)_ease-in-out_infinite_both]",
         dither:
-          "[&_[data-slot=loader-dither-cell]]:animate-[loader-opacity_var(--loader-cycle)_ease-in-out_infinite_both]",
+          "**:data-[slot=loader-dither-cell]:animate-[loader-opacity_var(--loader-cycle)_ease-in-out_infinite_both]",
         ascii: null,
         "ascii-line": null,
         "ascii-braille": null,
@@ -50,15 +50,15 @@ const loaderVariants = cva(
         morph:
           "[&_[data-slot=loader-morph]]:animate-[loader-morph-shape_calc(var(--loader-cycle)*5)_ease-in-out_infinite,loader-morph-pose_calc(var(--loader-cycle)*5)_ease-in-out_infinite]",
         comet:
-          "[&_[data-slot=loader-spin]]:animate-[loader-spin_var(--loader-cycle)_linear_infinite]",
-        scramble: "[width:calc(var(--loader-size)*2.4)]",
+          "**:data-[slot=loader-spin]:animate-[loader-spin_var(--loader-cycle)_linear_infinite]",
+        scramble: "w-[calc(var(--loader-size)*2.4)]",
         metaballs:
           "[&_[data-slot=loader-metaball-first]]:animate-[loader-metaball-first_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite] [&_[data-slot=loader-metaball-second]]:animate-[loader-metaball-second_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite]",
         newton:
-          "[&_[data-slot=loader-newton-left]]:animate-[loader-newton-left_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite] [&_[data-slot=loader-newton-right]]:animate-[loader-newton-right_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite]",
+          "**:data-[slot=loader-newton-left]:animate-[loader-newton-left_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite] **:data-[slot=loader-newton-right]:animate-[loader-newton-right_calc(var(--loader-cycle)*1.6)_ease-in-out_infinite]",
         helix:
-          "[&_[data-slot=loader-helix-left]]:animate-[loader-helix-left_calc(var(--loader-cycle)*1.5)_ease-in-out_infinite_both] [&_[data-slot=loader-helix-right]]:animate-[loader-helix-right_calc(var(--loader-cycle)*1.5)_ease-in-out_infinite_both]",
-        percent: "[width:calc(var(--loader-size)*1.5)]",
+          "**:data-[slot=loader-helix-left]:animate-[loader-helix-left_calc(var(--loader-cycle)*1.5)_ease-in-out_infinite_both] **:data-[slot=loader-helix-right]:animate-[loader-helix-right_calc(var(--loader-cycle)*1.5)_ease-in-out_infinite_both]",
+        percent: "w-[calc(var(--loader-size)*1.5)]",
       },
       size: {
         sm: "[--loader-size:16px]",
@@ -256,7 +256,7 @@ function DashRing({ size }: { size: number }) {
     <svg
       aria-hidden="true"
       data-slot="loader-dash-ring"
-      className="size-full origin-center [transform-box:view-box]"
+      className="transform-view size-full origin-center"
       viewBox="0 0 40 40"
       fill="none"
     >

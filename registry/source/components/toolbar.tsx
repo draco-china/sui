@@ -5,8 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { VariantProps } from "class-variance-authority";
 import { cn } from "cn";
-import { mergeClassNames } from "@/lib/class-name";
-import { withGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
 function ToolbarImplementation({
   className,
@@ -18,8 +17,8 @@ function ToolbarImplementation({
       data-slot="toolbar"
       data-orientation={orientation}
       orientation={orientation}
-      className={mergeClassNames(
-        "flex w-fit max-w-full items-center gap-1 rounded-[calc(var(--radius)+1.25rem+1px)] border border-border bg-background p-1 data-[orientation=vertical]:flex-col",
+      className={cn(
+        "flex w-fit max-w-full items-center gap-1 rounded-4xl border border-border bg-background p-1 data-[orientation=vertical]:flex-col",
         className,
       )}
       {...props}
@@ -38,7 +37,7 @@ function ToolbarButtonImplementation({
       data-slot="toolbar-button"
       data-variant={variant}
       data-size={size}
-      className={mergeClassNames(
+      className={cn(
         cn(
           buttonVariants({ variant, size }),
           "data-pressed:bg-accent data-pressed:text-accent-foreground data-disabled:opacity-50",
@@ -61,10 +60,7 @@ function ToolbarLinkImplementation({
       data-slot="toolbar-link"
       data-variant={variant}
       data-size={size}
-      className={mergeClassNames(
-        cn(buttonVariants({ variant, size })),
-        className,
-      )}
+      className={cn(cn(buttonVariants({ variant, size })), className)}
       {...props}
     />
   );
@@ -79,10 +75,7 @@ function ToolbarInput({
     <ToolbarPrimitive.Input
       data-slot="toolbar-input"
       render={render}
-      className={mergeClassNames(
-        "w-40 rounded-4xl data-disabled:opacity-50",
-        className,
-      )}
+      className={cn("w-40 rounded-4xl data-disabled:opacity-50", className)}
       {...props}
     />
   );
@@ -92,7 +85,7 @@ function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
   return (
     <ToolbarPrimitive.Group
       data-slot="toolbar-group"
-      className={mergeClassNames(
+      className={cn(
         "flex items-center gap-1 data-[orientation=vertical]:flex-col",
         className,
       )}
@@ -108,7 +101,7 @@ function ToolbarSeparator({
   return (
     <ToolbarPrimitive.Separator
       data-slot="toolbar-separator"
-      className={mergeClassNames(
+      className={cn(
         "shrink-0 self-stretch bg-border data-[orientation=horizontal]:mx-1 data-[orientation=vertical]:my-1 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-auto data-[orientation=vertical]:w-px",
         className,
       )}
@@ -117,10 +110,10 @@ function ToolbarSeparator({
   );
 }
 
-const ToolbarLink = withGlass(ToolbarLinkImplementation, "control");
+const ToolbarLink = withGlass(ToolbarLinkImplementation);
 
 const Toolbar = withGlass(ToolbarImplementation);
-const ToolbarButton = withGlass(ToolbarButtonImplementation, "control");
+const ToolbarButton = withGlass(ToolbarButtonImplementation);
 
 export {
   Toolbar,

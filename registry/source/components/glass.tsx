@@ -2,15 +2,14 @@
 
 import { useRender } from "@base-ui/react/use-render";
 import type { ComponentProps } from "react";
-import { withGlass, withoutGlass } from "@/lib/glass/context";
+import { withGlass } from "@/lib/glass/with-glass";
 
+export { type GlassTarget, refreshGlass } from "@/lib/glass/runtime";
 export type {
   GlassConfig,
   GlassEdge,
-  GlassMaterial,
-  GlassOptions,
-} from "@/lib/glass/context";
-export { type GlassTarget, refreshGlass } from "@/lib/glass/runtime";
+  GlassProps,
+} from "@/lib/glass/with-glass";
 
 function Surface({ render, ref, ...props }: useRender.ComponentProps<"div">) {
   return useRender({
@@ -25,28 +24,19 @@ function Surface({ render, ref, ...props }: useRender.ComponentProps<"div">) {
 const DecoratedSurface = withGlass(Surface);
 
 /**
- * A glass panel. Pass `render={<nav />}` (or any element) to keep native
- * semantics; controls inside reuse its material unless they opt out.
+ * A glass panel, Clear unless `frosted` is set. Pass `render={<nav />}` (or
+ * any element) to keep native semantics. Controls inside stay ordinary.
  */
 export function GlassSurface({
   glass = true,
+  frosted,
   ...props
 }: ComponentProps<typeof DecoratedSurface>) {
-  return <DecoratedSurface glass={glass} {...props} />;
+  return (
+    <DecoratedSurface
+      glass={frosted ? false : glass}
+      frosted={frosted}
+      {...props}
+    />
+  );
 }
-
-function Content({ render, ref, ...props }: useRender.ComponentProps<"div">) {
-  return useRender({
-    defaultTagName: "div",
-    props,
-    ref,
-    render,
-    state: { slot: "glass-content" },
-  });
-}
-
-/**
- * An ordinary content region inside a glass surface: its own controls keep
- * their native styling, while menus and popovers it opens still use glass.
- */
-export const GlassContent = withoutGlass(Content);

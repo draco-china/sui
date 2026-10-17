@@ -10,10 +10,9 @@ import {
   useStreamingScroll,
 } from "@/hooks/use-viewer-code";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { withoutGlass } from "@/lib/glass/context";
-import { ViewerCopyButton, ViewerStatus } from "@/lib/viewer/controls";
 import type { ThemedToken } from "@/lib/viewer/shiki";
 import { Button } from "@/components/ui/button";
+import { ViewerCopyButton, ViewerStatus } from "@/components/ui/viewer/controls";
 
 interface DiffLine {
   type: "added" | "removed" | "unchanged";
@@ -68,7 +67,7 @@ const DEFAULT_DIFF_VIEWER_LABELS: DiffViewerLabels = {
   copyFailed: "Copy failed",
 };
 
-function DiffViewerImplementation({
+export function DiffViewer({
   oldCode,
   newCode,
   oldTitle,
@@ -158,7 +157,7 @@ function DiffViewerImplementation({
       data-state={status}
       aria-busy={streaming}
       className={cn(
-        "w-full overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm",
+        "w-full overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-foreground/5 dark:ring-foreground/10",
         className,
       )}
     >
@@ -217,7 +216,7 @@ function DiffViewerImplementation({
         tabIndex={0}
         role={streaming ? "log" : undefined}
         aria-live={streaming ? "polite" : undefined}
-        className="overflow-auto border-foreground/10 border-t outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        className="overflow-auto border-t outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         style={{ maxHeight }}
       >
         {view === "unified" ? (
@@ -238,7 +237,7 @@ function DiffViewerImplementation({
             </tbody>
           </table>
         ) : (
-          <div className="grid min-w-[48rem] grid-cols-2 divide-x divide-border">
+          <div className="grid min-w-3xl grid-cols-2 divide-x divide-border">
             <SplitDiffPane
               title={oldTitle ?? text.before}
               lines={left}
@@ -257,8 +256,6 @@ function DiffViewerImplementation({
     </div>
   );
 }
-
-export const DiffViewer = withoutGlass(DiffViewerImplementation);
 
 function SplitDiffPane({
   title,

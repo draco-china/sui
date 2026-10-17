@@ -34,9 +34,6 @@ import { useClipboard } from "@/hooks/use-clipboard";
 import { useEditorModelPath, useEditorValue } from "@/hooks/use-editor-state";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import { mergeClassNames } from "@/lib/class-name";
-import { withoutGlass } from "@/lib/glass/context";
-import { ViewerButton as TooltipButton } from "@/lib/viewer/controls";
 import type { ViewerThemes } from "@/lib/viewer/shiki";
 import { useShikiThemes } from "@/lib/viewer/shiki-context";
 import type { Button } from "@/components/ui/button";
@@ -50,6 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ViewerButton } from "@/components/ui/viewer/controls";
 
 type ButtonSize = ComponentProps<typeof Button>["size"];
 
@@ -197,12 +195,12 @@ export function EditorToolbarButton({
   variant = "ghost",
   className,
   ...props
-}: Readonly<ComponentProps<typeof TooltipButton>>) {
+}: Readonly<ComponentProps<typeof ViewerButton>>) {
   return (
-    <TooltipButton
+    <ViewerButton
       size={size}
       variant={variant}
-      className={mergeClassNames(
+      className={cn(
         "text-muted-foreground hover:bg-background/70 hover:text-foreground [&_svg]:size-3.5",
         className,
       )}
@@ -566,7 +564,7 @@ function useEditorPreviewScrollSync() {
   };
 }
 
-function EditorImplementation({
+export function Editor({
   value,
   onChange,
   disabled = false,
@@ -717,7 +715,7 @@ function EditorImplementation({
       <div
         data-slot="editor-surface"
         className={cn(
-          "flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-border",
+          "flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-muted/80 text-foreground text-sm ring-1 ring-foreground/5 dark:ring-foreground/10",
           editor.contentFillsParent && "h-full min-h-0",
           editor.isFixedFullscreen &&
             "fixed inset-0 z-50 h-full rounded-none border-0",
@@ -727,7 +725,7 @@ function EditorImplementation({
         {toolbar !== false && (
           <div
             data-slot="editor-toolbar"
-            className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-border/70 border-b bg-muted/80 px-3 py-1"
+            className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b bg-muted/80 px-3 py-1"
           >
             <FileCode2
               aria-hidden="true"
@@ -909,7 +907,7 @@ function EditorImplementation({
                 )
               }
               className={cn(
-                "h-full overflow-auto bg-background [scrollbar-color:transparent_transparent] [scrollbar-width:thin] hover:[scrollbar-color:var(--editor-scrollbar-thumb)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:size-2",
+                "scrollbar-thin h-full overflow-auto bg-background [scrollbar-color:transparent_transparent] hover:[scrollbar-color:var(--editor-scrollbar-thumb)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/35 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:size-2",
                 editor.isSplitView ? "w-1/2" : "w-full",
               )}
             >
@@ -943,8 +941,6 @@ function EditorImplementation({
     </div>
   );
 }
-
-export const Editor = withoutGlass(EditorImplementation);
 
 function HtmlEditorPreview({ content }: Readonly<{ content: string }>) {
   const port = useContext(HtmlPreviewScrollContext);
