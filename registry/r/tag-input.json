@@ -852,6 +852,13 @@
         "--tw-ring-offset-shadow": "revert-layer"
       }
     },
+    ":is(\n  [data-glass=\"true\"],\n  [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"],\n  [data-slot=\"accordion-item\"][data-glass=\"true\"]\n    > *\n    > [data-slot=\"accordion-trigger\"]\n):focus-visible,\n[data-glass=\"true\"]:is(\n  [data-slot=\"input-group\"],\n  [data-slot=\"sensitive-input\"],\n  [data-slot=\"combobox-chips\"],\n  [data-slot=\"tag-input\"],\n  [data-slot=\"wheel-picker\"]\n):has(:focus-visible)": {
+      "outline": "2px solid var(--ring)",
+      "outline-offset": "3px",
+      "@media (forced-colors: active)": {
+        "outline-color": "Highlight"
+      }
+    },
     "[data-glass=\"true\"][data-glass-state]": {
       "--glass-edge": "none",
       "--glass-initial-edge-shadow": "initial",
@@ -977,6 +984,9 @@
       },
       "&:where(.dark *)": {
         "--frosted-shadow": "0 1px 3px -1px rgb(0 0 0 / 0.1)"
+      },
+      "&:where([class~=\"bg-foreground\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--foreground))"
       },
       "&:where([class~=\"bg-background\"])": {
         "--frosted-tint": "var(--frosted-base, var(--background))"

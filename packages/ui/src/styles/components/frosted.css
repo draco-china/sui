@@ -36,6 +36,9 @@
   }
 
   /* Surface fills become the tint. */
+  &:where([class~="bg-foreground"]) {
+    --frosted-tint: var(--frosted-base, var(--foreground));
+  }
   &:where([class~="bg-background"]) {
     --frosted-tint: var(--frosted-base, var(--background));
   }

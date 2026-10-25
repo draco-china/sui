@@ -165,3 +165,17 @@ test("the TabBar lens has no tint or backdrop of its own", () => {
   expect(lens).toMatch(/(?:^|;)backdrop-filter:none/);
   expect(lens).toContain("-webkit-backdrop-filter:none");
 });
+
+test("Clear keyboard focus has an independent outline and system color fallback", () => {
+  expect(code).toContain(":focus-visible");
+  expect(code).toContain("outline:2px solid var(--ring)");
+  expect(code).toContain("outline-offset:3px");
+  expect(code).toContain("outline-color:highlight");
+});
+
+test("Frosted retains the inverse surface tint used by Tooltip", () => {
+  expect(frosted).toContain("[class~=bg-foreground]");
+  expect(frosted).toContain(
+    "--frosted-tint:var(--frosted-base,var(--foreground))",
+  );
+});

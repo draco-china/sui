@@ -77,9 +77,9 @@
   }
 }
 
-/* Clear draws its own edge light, so borders, outlines and focus rings step
-   aside. Frosted glass keeps each component's own borders, rings and focus
-   styles. */
+/* Clear draws its own edge light, so decorative borders and rings step
+   aside. Keyboard focus has an independent outline below. Frosted glass
+   keeps the component's own focus styles. */
 [data-glass="true"],
 [data-slot="tabs-list"][data-glass="true"] [data-slot="tabs-trigger"],
 [data-slot="accordion-item"][data-glass="true"]
@@ -99,6 +99,30 @@
     --tw-inset-ring-shadow: revert-layer;
     --tw-ring-shadow: revert-layer;
     --tw-ring-offset-shadow: revert-layer;
+  }
+}
+
+/* A resting material edge cannot identify keyboard focus. Keep this outside
+   utility layers so Clear's decorative ring suppression cannot erase it. */
+:is(
+  [data-glass="true"],
+  [data-slot="tabs-list"][data-glass="true"] [data-slot="tabs-trigger"],
+  [data-slot="accordion-item"][data-glass="true"]
+    > *
+    > [data-slot="accordion-trigger"]
+):focus-visible,
+[data-glass="true"]:is(
+  [data-slot="input-group"],
+  [data-slot="sensitive-input"],
+  [data-slot="combobox-chips"],
+  [data-slot="tag-input"],
+  [data-slot="wheel-picker"]
+):has(:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+
+  @media (forced-colors: active) {
+    outline-color: Highlight;
   }
 }
 
