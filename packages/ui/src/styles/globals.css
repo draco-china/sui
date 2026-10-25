@@ -2,13 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
-@import "./themes/bamboo.css";
-@import "./themes/mauve.css";
-@import "./themes/mist.css";
-@import "./themes/sand.css";
-@import "./themes/pine.css";
-@import "./themes/rose.css";
-@import "./themes/lime.css";
 @import "./components/loader.css";
 @import "./components/input-otp.css";
 @import "./components/glass.css";

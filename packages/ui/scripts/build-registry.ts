@@ -479,6 +479,27 @@ export async function createRegistry() {
       [path],
     ),
   );
+  const themes = tree.paths.filter(
+    (path) =>
+      dirname(path) === join(sourceRoot, "styles/themes") &&
+      path.endsWith(".css"),
+  );
+  for (const path of themes) {
+    const theme = relative(dirname(path), path).replace(/\.css$/, "");
+    items.push(
+      registryItemSchema.parse({
+        $schema: "https://ui.shadcn.com/schema/registry-item.json",
+        name: `theme-${theme}`,
+        type: "registry:style",
+        title: `${theme[0].toUpperCase()}${theme.slice(1)} theme`,
+        description: `Optional ${theme} palette. Install SUI base styles first, then select data-color="${theme}".`,
+        categories: ["sui", "styles"],
+        registryDependencies: [],
+        files: [],
+        ...registryStyles(await readFile(path, "utf8")),
+      }),
+    );
+  }
   items.push(item("sui-style", "registry:style", []));
   items.push(
     item("sui-theme", "registry:lib", [join(sourceRoot, "lib/theme/theme.ts")]),

@@ -105,6 +105,16 @@ For the whole documentation site, open the appearance panel and choose **Light**
 
 ## Preset palettes
 
+The global entry includes default light/dark colors only. Import a preset explicitly before using its `data-color` selector:
+
+```css
+@import "@workspace/ui/globals.css";
+@import "@workspace/ui/themes/lime.css";
+```
+
+Registry installations can opt in with `bunx --bun shadcn@latest add draco-china/sui/theme-lime`. Other palettes use `theme-bamboo`, `theme-mauve`, `theme-mist`, `theme-sand`, `theme-pine`, or `theme-rose`. The docs app imports all seven for its gallery; application installations do not.
+
+
 Choose **Default** or one of seven presets: Bamboo, Mauve, Mist, Sand, Pine, Rose, and Lime. Default uses the base tokens in `globals.css`. Each preset has a complete five-color palette, with the colors mapped in order to `chart-1` through `chart-5`. Its primary seed controls `primary` independently; it does not have to be the first chart color.
 
 The cards below show the full five-color palette, copyable color values, and the same interactive component preview for every theme. Use the shared light/dark control to compare them under the same appearance. The default theme has its own complete card.

@@ -28,7 +28,7 @@
 | Feature | Details |
 | --- | --- |
 | **Components & Blocks** | Form controls, navigation, feedback, content viewers, and composed workflows |
-| **Shared themes** | Semantic OKLCH tokens, eight accent palettes, and light/dark appearance |
+| **Shared themes** | Default light/dark semantic OKLCH tokens, with seven opt-in accent palettes |
 | **Glass surfaces** | Three intensity levels with CSS, SVG refraction, and vgpu + WGSL rendering |
 | **Source ownership** | Install components and Blocks through shadcn, then adapt the source to your app |
 | **AI tooling** | Registry integration with shadcn MCP and LLM-ready documentation |

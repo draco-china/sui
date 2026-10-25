@@ -320,8 +320,16 @@ describe("theme colors", () => {
         ).toBeGreaterThanOrEqual(3);
       }
     }
-    for (const theme of themes)
-      expect(globals).toContain(`@import "./themes/${theme.id}.css";`);
+    const documentationStyles = await readFile(
+      new URL("../src/styles/app.css", import.meta.url),
+      "utf8",
+    );
+    for (const theme of themes) {
+      expect(globals).not.toContain(`@import "./themes/${theme.id}.css";`);
+      expect(documentationStyles).toContain(
+        `@import "@workspace/ui/themes/${theme.id}.css";`,
+      );
+    }
   });
 
   test("shared output uses equivalent OKLCH without documentation-specific tokens", async () => {

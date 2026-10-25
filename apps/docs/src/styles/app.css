@@ -1,4 +1,11 @@
 @import "@workspace/ui/globals.css";
+@import "@workspace/ui/themes/bamboo.css";
+@import "@workspace/ui/themes/mauve.css";
+@import "@workspace/ui/themes/mist.css";
+@import "@workspace/ui/themes/sand.css";
+@import "@workspace/ui/themes/pine.css";
+@import "@workspace/ui/themes/rose.css";
+@import "@workspace/ui/themes/lime.css";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/generated/spacious.css";
 @import "fumadocs-ui/css/preset.css";

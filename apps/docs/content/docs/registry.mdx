@@ -49,3 +49,6 @@ The CLI rewrites imports to your aliases. Workspace imports in documentation are
 Preview changes with the [CLI](/docs/cli#review-an-update) before updating components and shared dependencies. Installation copies source; files do not automatically follow library changes. Keep your application's package-manager lockfile and review styles alongside local edits.
 
 LLM documentation lives on the documentation site's [text endpoints](/docs/llms-txt). Registry JSON supplies installation data; an MCP client starts the shadcn stdio server separately.
+
+
+Ordinary items and `sui-style` include default light/dark tokens only. Optional `theme-<name>` style items contain one preset and are never pulled in automatically. Install the desired palette explicitly after the base styles.

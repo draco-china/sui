@@ -15,6 +15,8 @@ The default appearance uses Apple-inspired neutral surfaces and a blue accent. S
 @import "@workspace/ui/globals.css";
 ```
 
+Optional palettes are loaded explicitly after the base stylesheet, for example `@import "@workspace/ui/themes/pine.css";`, or installed with `bunx --bun shadcn@latest add draco-china/sui/theme-pine`. The global entry supplies only default light/dark colors.
+
 ```html
 <html data-color="pine" class="dark">
 ```

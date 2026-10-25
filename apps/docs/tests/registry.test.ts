@@ -179,6 +179,15 @@ test("CSS serialization retains !important, nested rules and required global imp
       Object.keys(style?.css ?? {}).some((key) =>
         key.includes(`[data-color="${theme}"]`),
       ),
+    ).toBe(false);
+    const optional = registry.items.find(
+      (item) => item.name === `theme-${theme}`,
+    );
+    expect(optional?.type).toBe("registry:style");
+    expect(
+      Object.keys(optional?.css ?? {}).some((key) =>
+        key.includes(`[data-color="${theme}"]`),
+      ),
     ).toBe(true);
   }
 });
@@ -270,8 +279,8 @@ test("build produces a searchable catalog and prunes removed item payloads", asy
         await readFile(join(output, `${item.name}.json`), "utf8"),
       );
       expect(payload.name).toBe(item.name);
-      expect(payload.cssVars.light.primary).toBe(
-        registry.items[0].cssVars?.light?.primary,
+      expect(payload.cssVars).toEqual(
+        registry.items.find((original) => original.name === item.name)?.cssVars,
       );
     }
     for (const file of files.filter((name) => name.endsWith(".json"))) {

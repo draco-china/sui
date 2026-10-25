@@ -15,6 +15,8 @@ description: 完整的排版、间距、表面与交互设计规则，包含每�
 @import "@workspace/ui/globals.css";
 ```
 
+可选预设需要在基础样式之后显式引入，例如 `@import "@workspace/ui/themes/pine.css";`，也可通过 `bunx --bun shadcn@latest add draco-china/sui/theme-pine` 安装。全局入口只提供默认明暗配色。
+
 ```html
 <html data-color="pine" class="dark">
 ```

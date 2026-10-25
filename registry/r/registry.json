@@ -7281,6 +7281,97 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-bamboo",
+      "title": "Bamboo theme",
+      "description": "Optional bamboo palette. Install SUI base styles first, then select data-color=\"bamboo\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-lime",
+      "title": "Lime theme",
+      "description": "Optional lime palette. Install SUI base styles first, then select data-color=\"lime\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-mauve",
+      "title": "Mauve theme",
+      "description": "Optional mauve palette. Install SUI base styles first, then select data-color=\"mauve\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-mist",
+      "title": "Mist theme",
+      "description": "Optional mist palette. Install SUI base styles first, then select data-color=\"mist\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-pine",
+      "title": "Pine theme",
+      "description": "Optional pine palette. Install SUI base styles first, then select data-color=\"pine\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-rose",
+      "title": "Rose theme",
+      "description": "Optional rose palette. Install SUI base styles first, then select data-color=\"rose\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "theme-sand",
+      "title": "Sand theme",
+      "description": "Optional sand palette. Install SUI base styles first, then select data-color=\"sand\".",
+      "registryDependencies": [],
+      "files": [],
+      "categories": [
+        "sui",
+        "styles"
+      ],
+      "type": "registry:style"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "sui-style",
       "title": "Sui Style",
       "description": "SUI style: sui-style. Includes its local dependencies and SUI styles.",

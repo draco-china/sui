@@ -151,3 +151,5 @@ registry，提交前运行上述检查，提交信息使用 Conventional Commits
 
 [MIT](LICENSE) © 2026 draco-china。
 第三方许可证与致谢记录见 [THIRD_PARTY_NOTICES](apps/docs/THIRD_PARTY_NOTICES.md)。
+
+全局样式只包含默认明暗配色。七套预设主题按需引入，例如 `@import "@workspace/ui/themes/lime.css";`，或通过注册表安装 `draco-china/sui/theme-lime`。

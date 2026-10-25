@@ -105,6 +105,16 @@ import { Button } from "@workspace/ui/components/button";
 
 ## 预设配色 [#preset-palettes]
 
+全局入口只包含默认明暗配色。使用 `data-color` 选择预设前，需要显式引入对应主题：
+
+```css
+@import "@workspace/ui/globals.css";
+@import "@workspace/ui/themes/lime.css";
+```
+
+通过注册表安装时，可执行 `bunx --bun shadcn@latest add draco-china/sui/theme-lime`。其他预设对应 `theme-bamboo`、`theme-mauve`、`theme-mist`、`theme-sand`、`theme-pine` 和 `theme-rose`。文档站为展示主动加载七套预设，应用安装不会自动包含它们。
+
+
 选择**默认**或七套预设：竹青 Bamboo、烟紫 Mauve、雾蓝 Mist、沙金 Sand、松绿 Pine、绯红 Rose 和青柠 Lime。默认配色使用 `globals.css` 中的基础变量。每套预设都有完整的五色 palette，按顺序映射到 `chart-1` 至 `chart-5`；主色种子独立控制 `primary`，不必是第一个图表颜色。
 
 下面为每套主题提供独立的完整卡片，展示五色 palette、可复制的颜色值和相同的交互组件预览。统一的明暗切换可在相同外观下比较各套配色，默认主题也有自己的完整卡片。
