@@ -262,3 +262,24 @@ test("navigation feedback is hidden and stable before client navigation", () => 
   expect(html).toContain('aria-label="正在加载页面"');
   expect(html).toContain("motion-reduce:transition-none");
 });
+
+test("empty table status is outside the named keyboard scroll region", async () => {
+  const { Window } = await import("happy-dom");
+  const window = new Window();
+  window.document.body.innerHTML = renderToString(
+    <DataTable
+      label="Records"
+      columns={[{ accessorKey: "name", header: "Name", size: 1000 }]}
+      data={[]}
+    />,
+  );
+  const region = window.document.querySelector(
+    '[data-slot="ui-table-scroll-area"]',
+  );
+  const status = window.document.querySelector('[data-slot="ui-table-state"]');
+  expect(region?.getAttribute("aria-label")).toBe("Records");
+  expect(region?.getAttribute("tabindex")).toBe("0");
+  expect(status?.textContent).toContain("No data");
+  expect(region?.contains(status)).toBe(false);
+  expect(region?.querySelector("thead")).not.toBeNull();
+});

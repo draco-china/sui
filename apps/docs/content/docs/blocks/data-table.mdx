@@ -130,3 +130,6 @@ The block ships English defaults only and has no locale or i18n dependency. Keep
   labels={{ search: t("table.search"), noData: t("table.empty"), paginationPage: (page) => t("table.page", { page }) }}
 />
 ```
+
+
+Empty messages, request errors, and retry actions use the visible viewport width, independently from horizontal column scrolling. Column headers remain available. The named scroll region is keyboard focusable; pending overlays keep the underlying controls inert.

@@ -37,6 +37,7 @@ import {
   getPinnedColumnClassName,
   getPinnedColumnStyle,
   TableBody,
+  TableEmptyState,
 } from "./body";
 import { TableBulkActions } from "./bulk-actions";
 import { DataTableColumnHeader } from "./column-header";
@@ -594,18 +595,25 @@ export function DataTable<TData extends RowData, TValue>({
   const tableStyle: CSSProperties = {
     width: hasFlexibleColumns ? "100%" : fixedColumnsWidth,
   };
+  const showEmptyState = !loadingEnabled && tableController.rows.length === 0;
   const content = (
     <>
       <div
         data-slot="data-table-viewport"
-        className={cn("relative min-w-0", isFullLayout && "min-h-0 flex-1")}
+        className={cn(
+          "relative min-w-0 overflow-hidden rounded-2xl border",
+          isFullLayout && "flex min-h-0 flex-1 flex-col",
+        )}
       >
-        <div
+        <section
           data-slot="ui-table-scroll-area"
           inert={overlayLoading}
+          aria-label={label}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: This named overflow region needs keyboard scrolling.
+          tabIndex={0}
           className={cn(
-            "w-full max-w-full overflow-auto rounded-2xl border *:data-[slot=table-container]:overflow-visible",
-            isFullLayout && "h-full min-h-0",
+            "w-full max-w-full overflow-auto focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 *:data-[slot=table-container]:overflow-visible",
+            isFullLayout && !showEmptyState && "min-h-0 flex-1",
           )}
         >
           <TablePrimitive
@@ -726,19 +734,30 @@ export function DataTable<TData extends RowData, TValue>({
               <TableBody
                 rows={tableController.rows}
                 visibleColumns={tableController.visibleColumns}
-                visibleColumnCount={tableController.visibleColumnCount}
                 dragSort={tableController.dragSortEnabled}
                 loading={loadingEnabled}
                 loadingRows={loadingRows}
                 paddingClass={paddingClass}
-                emptyFallbackText={requestError ? labels.loadFailed : undefined}
-                onRetry={requestError ? refresh : undefined}
                 labels={labels}
                 pinnedOffsets={tableController.pinnedOffsets}
               />
             </TableBodyPrimitive>
           </TablePrimitive>
-        </div>
+        </section>
+        {showEmptyState && (
+          <div
+            className={cn(
+              "min-w-0 overflow-auto",
+              isFullLayout && "min-h-0 flex-1",
+            )}
+          >
+            <TableEmptyState
+              title={requestError ? labels.loadFailed : undefined}
+              onRetry={requestError ? refresh : undefined}
+              labels={labels}
+            />
+          </div>
+        )}
         {overlayLoading && (
           <div
             data-slot="data-table-loading"

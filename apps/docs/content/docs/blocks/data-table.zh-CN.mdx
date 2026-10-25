@@ -130,3 +130,6 @@ Block 只内置英文默认文案，不包含 locale 判断或国际化依赖。
   labels={{ search: t("table.search"), noData: t("table.empty"), paginationPage: (page) => t("table.page", { page }) }}
 />
 ```
+
+
+空态消息、请求错误和重试操作按可视区域宽度排布，不随宽表的横向滚动被移出屏幕。表头仍然保留。滚动区域具有可访问名称并支持键盘聚焦；加载遮罩期间底层控件保持 inert。

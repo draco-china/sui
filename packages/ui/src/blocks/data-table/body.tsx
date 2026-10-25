@@ -36,57 +36,55 @@ export interface TablePinnedColumnOffsets {
   headerTop: number[];
 }
 
-/** Renders loading, empty, static, and sortable Table rows. */
+/** Viewport-wide status; it must not be centered in the entire column width. */
+export function TableEmptyState({
+  title,
+  onRetry,
+  labels = defaultTableLabels,
+}: {
+  title?: ReactNode;
+  onRetry?: () => void;
+  labels?: TableLabels;
+}) {
+  return (
+    <Empty data-slot="ui-table-state" role="status" className="min-h-40 py-8">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Inbox />
+        </EmptyMedia>
+        <EmptyTitle>{title ?? labels.noData}</EmptyTitle>
+      </EmptyHeader>
+      {onRetry && (
+        <EmptyContent>
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            {labels.retry}
+          </Button>
+        </EmptyContent>
+      )}
+    </Empty>
+  );
+}
+
+/** Renders loading, static, and sortable table rows. */
 export function TableBody<TData extends RowData>({
   rows,
   visibleColumns,
-  visibleColumnCount,
   dragSort,
   loading,
   loadingRows,
   paddingClass,
-  emptyFallbackText,
-  onRetry,
   pinnedOffsets,
   labels = defaultTableLabels,
 }: Readonly<{
   rows: Row<TData>[];
   visibleColumns: ReturnType<Row<TData>["getVisibleCells"]>[number]["column"][];
-  visibleColumnCount: number;
   dragSort: boolean;
   loading: boolean;
   loadingRows: number;
   paddingClass: string;
-  emptyFallbackText?: ReactNode;
-  onRetry?: () => void;
   pinnedOffsets: TablePinnedColumnOffsets;
   labels?: TableLabels;
 }>) {
-  const emptyRow = (
-    <TableRow data-slot="ui-table-row" className={TABLE_ROW_CLASS_NAME}>
-      <TableCell
-        colSpan={visibleColumnCount}
-        className={cn("h-32", TABLE_CELL_STATE_CLASS_NAME)}
-      >
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Inbox />
-            </EmptyMedia>
-            <EmptyTitle>{emptyFallbackText ?? labels.noData}</EmptyTitle>
-          </EmptyHeader>
-          {onRetry && (
-            <EmptyContent>
-              <Button variant="outline" size="sm" onClick={onRetry}>
-                {labels.retry}
-              </Button>
-            </EmptyContent>
-          )}
-        </Empty>
-      </TableCell>
-    </TableRow>
-  );
-
   if (loading) {
     return Array.from({ length: loadingRows }, (_, index) => (
       <TableRow
@@ -149,12 +147,11 @@ export function TableBody<TData extends RowData>({
             ))}
           </SortableRow>
         ))}
-        {rows.length === 0 && emptyRow}
       </SortableContext>
     );
   }
 
-  if (rows.length === 0) return emptyRow;
+  if (rows.length === 0) return null;
   return rows.map((row) => (
     <TableRow
       key={row.id}
