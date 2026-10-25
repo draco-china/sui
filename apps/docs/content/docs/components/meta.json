@@ -84,6 +84,7 @@
     "toggle",
     "toggle-group",
     "toolbar",
-    "tooltip"
+    "tooltip",
+    "wheel-picker"
   ]
 }

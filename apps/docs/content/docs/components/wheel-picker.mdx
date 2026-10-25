@@ -1,0 +1,66 @@
+---
+title: Wheel Picker
+description: A cylindrical scroll picker with native momentum, snapping, keyboard selection, and optional glass.
+---
+
+WheelPicker selects one value from an ordered list. Touch and trackpad scrolling use native momentum and scroll snapping; mouse or pen dragging moves the same scroll viewport. The visual drum follows its position without creating a duplicate accessible list.
+
+<ComponentPreview name="wheel-picker-demo" />
+
+## Installation [#installation]
+
+```sh
+bunx --bun shadcn@latest add draco-china/sui/wheel-picker
+```
+
+Load SUI's base styles as described in [Installation](/docs/installation). Default light/dark colors are included; other palettes are optional.
+
+## Usage [#usage]
+
+```tsx
+import { WheelPicker } from "@workspace/ui/components/wheel-picker";
+
+<WheelPicker
+  aria-label="Duration in minutes"
+  options={["15", "30", "45", "60"]}
+  defaultValue="30"
+  name="duration_minutes"
+/>;
+```
+
+Options can be strings or `{ label, value }` objects. Values must be unique. Use `value` and `onValueChange` for controlled selection. The parent owns the selected value and can reject a request; uncontrolled selection uses `defaultValue`. An absent or missing value displays the first option. Changing the available options clamps the displayed selection without emitting a user change.
+
+## Compose columns [#composition]
+
+Combine independently labelled wheels inside a named group. Application code owns date validity, dependent columns, formatting, and persistence.
+
+<ComponentPreview name="wheel-picker-composed" />
+
+## Keyboard and accessibility [#accessibility]
+
+The wheel is a single focusable listbox with `aria-activedescendant` and selected options. Supply a localized `aria-label` or `aria-labelledby`. Arrow Up/Down selects the previous/next value; Home/End reaches the boundaries, and Page Up/Down moves by one visible page. Selection stops at either end.
+
+With reduced motion, the same list and keyboard controls remain available as a flat snapping list, without cylinder rotation or animated scrolling. `disabled` and empty options remove the wheel from the Tab sequence and prevent changes. `name` submits the selected value through a hidden input; native form reset restores an uncontrolled default. Tick sound is opt in, synthesized locally, and does not block selection when audio is unavailable.
+
+<ComponentPreview name="wheel-picker-states" />
+
+## Material [#material]
+
+The default is a solid working control using SUI semantic colors and 14px text. `glass` or `frosted` applies the shared material to its frame; individual rows stay ordinary. Keyboard focus remains visible. The viewport keeps native touch scrolling and contains overscroll at its boundaries.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `options` | `readonly WheelPickerOption[]` | Required; unique values. |
+| `value`, `defaultValue` | `string` | Controlled value or initial uncontrolled value. |
+| `onValueChange` | `(value: string) => void` | Called for a user selection. |
+| `visibleCount` | `number` | `5`; normalized to an odd count from 3 to 11. |
+| `itemHeight` | `number` | `36` pixels; minimum 24. |
+| `disabled` | `boolean` | `false`. |
+| `sound` | `boolean` | `false`; optional local tick. |
+| `name` | `string` | Optional form field name. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Ordinary by default. |
+| Other props | Native div props | Includes labels, `ref`, `className`, `style`, and event handlers. |
+
+Exports `WheelPicker`, `WheelPickerProps`, and `WheelPickerOption`. The interaction references [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker); this SUI implementation uses native scrolling and its existing motion preference hook without adding a motion dependency.

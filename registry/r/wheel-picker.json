@@ -1,0 +1,873 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "wheel-picker",
+  "title": "Wheel Picker",
+  "description": "SUI component: wheel-picker. Includes its local dependencies and SUI styles.",
+  "dependencies": [
+    "@fontsource-variable/inter@^5.3.0",
+    "cn@^0.4.0",
+    "shadcn@^4.21.3",
+    "tw-animate-css@^1.4.0"
+  ],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "packages/ui/src/components/wheel-picker.tsx",
+      "content": "\"use client\";\n\nimport { cn } from \"cn\";\nimport {\n  type ComponentProps,\n  type PointerEvent,\n  useCallback,\n  useEffect,\n  useId,\n  useLayoutEffect,\n  useRef,\n  useState,\n} from \"react\";\nimport { useReducedMotion } from \"@/hooks/use-reduced-motion\";\nimport { type GlassProps, withGlass } from \"@/lib/glass/with-glass\";\n\nexport type WheelPickerOption = string | { label: string; value: string };\nexport interface WheelPickerProps\n  extends GlassProps,\n    Omit<ComponentProps<\"div\">, \"defaultValue\" | \"onChange\" | \"children\"> {\n  options: readonly WheelPickerOption[];\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  /** An odd number of visible rows, from 3 to 11. */\n  visibleCount?: number;\n  itemHeight?: number;\n  disabled?: boolean;\n  /** Optional synthesized tick; never plays before user interaction. */\n  sound?: boolean;\n  /** Includes the selected value in native form submission. */\n  name?: string;\n}\n\nconst optionValue = (option: WheelPickerOption) =>\n  typeof option === \"string\" ? option : option.value;\nconst optionLabel = (option: WheelPickerOption) =>\n  typeof option === \"string\" ? option : option.label;\nconst clamp = (value: number, last: number) =>\n  Math.max(0, Math.min(last, value));\n\nfunction WheelPickerImplementation({\n  options,\n  value,\n  defaultValue,\n  onValueChange,\n  visibleCount = 5,\n  itemHeight = 36,\n  disabled = false,\n  sound = false,\n  name,\n  className,\n  style,\n  ref: forwardedRef,\n  onKeyDown,\n  onClick,\n  onPointerDown,\n  onPointerMove,\n  onPointerUp,\n  onPointerCancel,\n  onLostPointerCapture,\n  \"aria-label\": ariaLabel = \"Options\",\n  ...props\n}: WheelPickerProps) {\n  const id = useId();\n  const reducedMotion = useReducedMotion();\n  const controlled = value !== undefined;\n  const [internal, setInternal] = useState(defaultValue);\n  const selectedValue = controlled ? value : internal;\n  const index = Math.max(\n    0,\n    options.findIndex((option) => optionValue(option) === selectedValue),\n  );\n  const selected = options[index];\n  const unavailable = disabled || !options.length;\n  const rowHeight = Number.isFinite(itemHeight) ? Math.max(24, itemHeight) : 36;\n  const rows = Number.isFinite(visibleCount)\n    ? Math.min(11, Math.max(3, Math.floor(visibleCount / 2) * 2 + 1))\n    : 5;\n  const root = useRef<HTMLDivElement>(null);\n  const viewport = useRef<HTMLDivElement>(null);\n  const input = useRef<HTMLInputElement>(null);\n  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);\n  const frame = useRef(0);\n  const audio = useRef<AudioContext | undefined>(undefined);\n  const gesture = useRef<\n    | { pointer: number; y: number; top: number; time: number; option?: number }\n    | undefined\n  >(undefined);\n  const live = useRef({\n    options,\n    index,\n    controlled,\n    unavailable,\n    reducedMotion,\n    rowHeight,\n    rows,\n    onValueChange,\n    sound,\n  });\n  useLayoutEffect(() => {\n    live.current = {\n      options,\n      index,\n      controlled,\n      unavailable,\n      reducedMotion,\n      rowHeight,\n      rows,\n      onValueChange,\n      sound,\n    };\n  });\n\n  const paint = useCallback(() => {\n    const view = viewport.current;\n    if (!view) return;\n    const { rowHeight, rows, reducedMotion } = live.current;\n    const position = view.scrollTop / rowHeight;\n    const half = (rows - 1) / 2;\n    const step = 90 / (half + 1);\n    const radius = rowHeight / Math.tan((step * Math.PI) / 180);\n    for (const element of view.querySelectorAll<HTMLElement>(\n      \"[data-wheel-item]\",\n    )) {\n      const distance = Number(element.dataset.wheelItem) - position;\n      const angle = Math.max(-90, Math.min(90, distance * step));\n      const radians = (angle * Math.PI) / 180;\n      element.style.transform = reducedMotion\n        ? \"none\"\n        : `translateY(${Math.sin(radians) * radius - distance * rowHeight}px) rotateX(${-angle}deg)`;\n      element.style.visibility =\n        !reducedMotion && Math.abs(distance) > half + 0.5\n          ? \"hidden\"\n          : \"visible\";\n    }\n  }, []);\n\n  const tick = useCallback(() => {\n    if (!live.current.sound) return;\n    try {\n      audio.current ??= new AudioContext();\n      const context = audio.current;\n      void context.resume().catch(() => {});\n      const oscillator = context.createOscillator();\n      const gain = context.createGain();\n      oscillator.frequency.value = 900;\n      gain.gain.setValueAtTime(0.025, context.currentTime);\n      gain.gain.exponentialRampToValueAtTime(\n        0.001,\n        context.currentTime + 0.025,\n      );\n      oscillator.connect(gain).connect(context.destination);\n      oscillator.start();\n      oscillator.stop(context.currentTime + 0.03);\n      oscillator.onended = () => {\n        oscillator.disconnect();\n        gain.disconnect();\n      };\n    } catch {\n      // Audio support and autoplay permissions never block selection.\n    }\n  }, []);\n\n  const align = useCallback(\n    (target: number, smooth = false) => {\n      const view = viewport.current;\n      if (!view) return;\n      view.scrollTo({\n        top: target * live.current.rowHeight,\n        behavior: smooth && !live.current.reducedMotion ? \"smooth\" : \"instant\",\n      });\n      paint();\n    },\n    [paint],\n  );\n\n  const choose = useCallback(\n    (target: number) => {\n      const state = live.current;\n      const option = state.options[clamp(target, state.options.length - 1)];\n      if (state.unavailable || !option) return;\n      if (target !== state.index) {\n        if (!state.controlled) setInternal(optionValue(option));\n        state.onValueChange?.(optionValue(option));\n        tick();\n      }\n      // The parent owns controlled selection, including rejecting a change.\n      cancelAnimationFrame(frame.current);\n      frame.current = requestAnimationFrame(() => align(live.current.index));\n    },\n    [align, tick],\n  );\n\n  // biome-ignore lint/correctness/useExhaustiveDependencies: Geometry and preference changes repaint the same selection through the live refs.\n  useLayoutEffect(() => {\n    if (!gesture.current) align(index);\n  }, [index, options, align, rowHeight, rows, reducedMotion]);\n\n  useEffect(() => {\n    const form = input.current?.form;\n    if (!form || controlled) return;\n    const reset = () => {\n      setInternal(defaultValue);\n      const target = Math.max(\n        0,\n        options.findIndex((option) => optionValue(option) === defaultValue),\n      );\n      align(target);\n    };\n    form.addEventListener(\"reset\", reset);\n    return () => form.removeEventListener(\"reset\", reset);\n  }, [controlled, defaultValue, options, align]);\n\n  const cancelGesture = useCallback(() => {\n    const active = gesture.current;\n    gesture.current = undefined;\n    if (active && root.current?.hasPointerCapture(active.pointer))\n      root.current.releasePointerCapture(active.pointer);\n    clearTimeout(timer.current);\n    if (viewport.current) viewport.current.style.scrollSnapType = \"\";\n    align(live.current.index);\n  }, [align]);\n\n  useEffect(() => {\n    if (unavailable) cancelGesture();\n    window.addEventListener(\"blur\", cancelGesture);\n    return () => window.removeEventListener(\"blur\", cancelGesture);\n  }, [unavailable, cancelGesture]);\n\n  useEffect(\n    () => () => {\n      clearTimeout(timer.current);\n      cancelAnimationFrame(frame.current);\n      void audio.current?.close().catch(() => {});\n    },\n    [],\n  );\n\n  const endPointer = (\n    event: PointerEvent<HTMLDivElement>,\n    cancelled: boolean,\n  ) => {\n    const active = gesture.current;\n    if (!active || active.pointer !== event.pointerId) return;\n    if (cancelled) {\n      cancelGesture();\n      return;\n    }\n    gesture.current = undefined;\n    if (root.current?.hasPointerCapture(active.pointer))\n      root.current.releasePointerCapture(active.pointer);\n    const top = viewport.current?.scrollTop ?? 0;\n    if (viewport.current) viewport.current.style.scrollSnapType = \"\";\n    if (Math.abs(event.clientY - active.y) < 4 && active.option !== undefined) {\n      choose(active.option);\n      return;\n    }\n    const velocity =\n      (top - active.top) / Math.max(1, performance.now() - active.time);\n    align(\n      clamp(\n        Math.round((top + (reducedMotion ? 0 : velocity * 100)) / rowHeight),\n        options.length - 1,\n      ),\n      true,\n    );\n    clearTimeout(timer.current);\n    timer.current = setTimeout(\n      () => choose(Math.round((viewport.current?.scrollTop ?? 0) / rowHeight)),\n      160,\n    );\n  };\n\n  return (\n    <div\n      {...props}\n      ref={(node) => {\n        root.current = node;\n        if (typeof forwardedRef === \"function\") {\n          const cleanup = forwardedRef(node);\n          if (cleanup)\n            return () => {\n              root.current = null;\n              cleanup();\n            };\n        } else if (forwardedRef) forwardedRef.current = node;\n      }}\n      data-slot=\"wheel-picker\"\n      role=\"listbox\"\n      aria-label={ariaLabel}\n      aria-disabled={unavailable || undefined}\n      aria-activedescendant={selected ? `${id}-${index}` : undefined}\n      tabIndex={unavailable ? -1 : 0}\n      className={cn(\n        \"relative isolate w-40 min-w-0 rounded-3xl bg-card text-foreground text-sm outline-none ring-1 ring-foreground/10 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-3\",\n        unavailable && \"opacity-50\",\n        className,\n      )}\n      style={{ ...style, height: rowHeight * rows }}\n      onClick={(event) => {\n        onClick?.(event);\n        if (event.defaultPrevented || unavailable || gesture.current) return;\n        const option = (event.target as Element).closest<HTMLElement>(\n          \"[data-wheel-option]\",\n        );\n        if (option) choose(Number(option.dataset.wheelOption));\n      }}\n      onKeyDown={(event) => {\n        onKeyDown?.(event);\n        if (event.defaultPrevented || unavailable) return;\n        const targets: Record<string, number> = {\n          ArrowUp: index - 1,\n          ArrowDown: index + 1,\n          Home: 0,\n          End: options.length - 1,\n          PageUp: index - rows,\n          PageDown: index + rows,\n        };\n        const target = targets[event.key];\n        if (target === undefined) return;\n        event.preventDefault();\n        clearTimeout(timer.current);\n        choose(clamp(target, options.length - 1));\n      }}\n      onPointerDown={(event) => {\n        onPointerDown?.(event);\n        if (\n          event.defaultPrevented ||\n          unavailable ||\n          event.pointerType === \"touch\" ||\n          event.button !== 0\n        )\n          return;\n        event.preventDefault();\n        root.current?.focus({ preventScroll: true });\n        if (viewport.current) viewport.current.style.scrollSnapType = \"none\";\n        const optionElement = (event.target as Element).closest<HTMLElement>(\n          \"[data-wheel-option]\",\n        );\n        gesture.current = {\n          option: optionElement\n            ? Number(optionElement.dataset.wheelOption)\n            : undefined,\n          pointer: event.pointerId,\n          y: event.clientY,\n          top: viewport.current?.scrollTop ?? 0,\n          time: performance.now(),\n        };\n        root.current?.setPointerCapture(event.pointerId);\n      }}\n      onPointerMove={(event) => {\n        onPointerMove?.(event);\n        if (\n          event.defaultPrevented ||\n          unavailable ||\n          gesture.current?.pointer !== event.pointerId ||\n          !viewport.current\n        )\n          return;\n        viewport.current.scrollTop =\n          gesture.current.top + gesture.current.y - event.clientY;\n      }}\n      onPointerUp={(event) => {\n        onPointerUp?.(event);\n        endPointer(event, false);\n      }}\n      onPointerCancel={(event) => {\n        onPointerCancel?.(event);\n        endPointer(event, true);\n      }}\n      onLostPointerCapture={(event) => {\n        onLostPointerCapture?.(event);\n        if (gesture.current?.pointer === event.pointerId) cancelGesture();\n      }}\n    >\n      <div\n        aria-hidden=\"true\"\n        className=\"pointer-events-none absolute inset-x-1 top-1/2 z-10 -translate-y-1/2 rounded-xl bg-foreground/5\"\n        style={{ height: rowHeight }}\n      />\n      <div\n        ref={viewport}\n        data-slot=\"wheel-picker-viewport\"\n        className={cn(\n          \"h-full touch-pan-y select-none snap-y snap-mandatory overscroll-contain rounded-[inherit] [-webkit-touch-callout:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden\",\n          unavailable ? \"overflow-hidden\" : \"overflow-y-auto\",\n        )}\n        style={{ perspective: reducedMotion ? undefined : 1000 }}\n        onScroll={() => {\n          paint();\n          clearTimeout(timer.current);\n          if (!gesture.current)\n            timer.current = setTimeout(\n              () =>\n                choose(\n                  Math.round((viewport.current?.scrollTop ?? 0) / rowHeight),\n                ),\n              140,\n            );\n        }}\n      >\n        <div\n          role=\"presentation\"\n          style={{ paddingBlock: (rowHeight * (rows - 1)) / 2 }}\n        >\n          {options.map((option, position) => (\n            <div\n              id={`${id}-${position}`}\n              key={optionValue(option)}\n              role=\"option\"\n              tabIndex={-1}\n              data-wheel-option={position}\n              aria-label={optionLabel(option)}\n              aria-selected={index === position}\n              className=\"snap-center\"\n              style={{ height: rowHeight }}\n            >\n              <span\n                aria-hidden=\"true\"\n                data-wheel-item={position}\n                className={cn(\n                  \"flex h-full items-center justify-center truncate px-3 font-medium [backface-visibility:hidden]\",\n                  index === position\n                    ? \"text-foreground\"\n                    : \"text-muted-foreground\",\n                )}\n              >\n                {optionLabel(option)}\n              </span>\n            </div>\n          ))}\n        </div>\n      </div>\n      {name && (\n        <input\n          ref={input}\n          type=\"hidden\"\n          name={name}\n          value={selected ? optionValue(selected) : \"\"}\n          disabled={disabled}\n        />\n      )}\n    </div>\n  );\n}\n\nconst WheelPicker = withGlass(WheelPickerImplementation);\n\nexport { WheelPicker };\n",
+      "type": "registry:ui",
+      "target": "@ui/wheel-picker.tsx"
+    },
+    {
+      "path": "packages/ui/src/hooks/use-reduced-motion.ts",
+      "content": "\"use client\";\n\nimport { useSyncExternalStore } from \"react\";\n\nlet media: MediaQueryList | undefined;\nfunction getMedia() {\n  if (typeof window === \"undefined\" || !window.matchMedia) return undefined;\n  media ??= window.matchMedia(\"(prefers-reduced-motion: reduce)\");\n  return media;\n}\nfunction subscribe(listener: () => void) {\n  const query = getMedia();\n  query?.addEventListener(\"change\", listener);\n  return () => query?.removeEventListener(\"change\", listener);\n}\nfunction getSnapshot() {\n  return getMedia()?.matches ?? true;\n}\nfunction getServerSnapshot() {\n  return true;\n}\n\nfunction useReducedMotion() {\n  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);\n}\n\nexport { useReducedMotion };\n",
+      "type": "registry:hook",
+      "target": "@hooks/use-reduced-motion.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/backend.ts",
+      "content": "import type { SvgGlassRenderer } from \"@/lib/glass/svg-renderer\";\n\nlet svg: Promise<SvgGlassRenderer | undefined> | undefined;\nlet instance: SvgGlassRenderer | undefined;\nlet failed = false;\nlet controller = new AbortController();\n\n/** CSS-only material where reduced transparency or forced colors are preferred. */\nexport function glassBaseOnly() {\n  return Boolean(\n    window.matchMedia?.(\n      \"(prefers-reduced-transparency: reduce), (forced-colors: active)\",\n    ).matches,\n  );\n}\n\n/** The shared native SVG renderer, unless the browser cannot paint SVG backdrops. */\nexport async function prepareGlassRenderer() {\n  if (glassBaseOnly() || failed) return;\n  const session = controller;\n  svg ??= (async () => {\n    try {\n      const { SvgGlassRenderer } = await import(\"@/lib/glass/svg-renderer\");\n      const renderer = await SvgGlassRenderer.create();\n      if (session.signal.aborted) {\n        renderer.destroy();\n        return;\n      }\n      instance = renderer;\n      return renderer;\n    } catch {\n      if (!session.signal.aborted) failed = true;\n    }\n  })();\n  const renderer = await svg;\n  if (!session.signal.aborted && !failed) return renderer;\n}\n\nexport function failGlassRenderer() {\n  failed = true;\n  instance?.destroy();\n  instance = undefined;\n}\n\nexport function releaseGlassRenderers() {\n  controller.abort();\n  instance?.destroy();\n  instance = undefined;\n  svg = undefined;\n  failed = false;\n  controller = new AbortController();\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/backend.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/color.ts",
+      "content": "export type GlassColor = [number, number, number, number];\n\nlet colorContext: CanvasRenderingContext2D | null | undefined;\n\n/** Resolves any CSS color, including oklch and color-mix, to sRGB channels. */\nexport function parseGlassColor(color: string): GlassColor {\n  if (!color || color === \"transparent\") return [0, 0, 0, 0];\n  if (colorContext === undefined) {\n    const canvas = document.createElement(\"canvas\");\n    canvas.width = canvas.height = 1;\n    colorContext = canvas.getContext(\"2d\", { willReadFrequently: true });\n  }\n  const context = colorContext;\n  if (!context) return [0.5, 0.5, 0.5, 1];\n  context.clearRect(0, 0, 1, 1);\n  context.fillStyle = \"#000\";\n  context.fillStyle = color;\n  context.fillRect(0, 0, 1, 1);\n  const bytes = context.getImageData(0, 0, 1, 1).data;\n  return [bytes[0] / 255, bytes[1] / 255, bytes[2] / 255, bytes[3] / 255];\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/color.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/defaults.ts",
+      "content": "/**\n * Clear liquid glass, a Web approximation of Apple's Clear material: the\n * backdrop stays recognizable through SVG refraction, where `blur` is the\n * refraction blur; its CSS fallback in glass.css blurs 6px. It saturates the\n * backdrop by 1.3. Frosted glass is CSS only and lives in frosted.css.\n */\nexport const glassDefaults = {\n  strength: 22,\n  tintOpacity: 0.12,\n  blur: 4,\n} as const;\n\n/**\n * Edge light: the SUI 1.1 rim lit from the top-left and bottom-right corners\n * (default), or the SUI 1.3 bevel lit from the top and bottom.\n */\nconst glassEdges = [\"diagonal\", \"vertical\"] as const;\n\nexport type GlassEdge = (typeof glassEdges)[number];\n\nexport const glassDefaultEdge: GlassEdge = \"diagonal\";\n\nexport type GlassConfig = {\n  /** Edge light from the top-left and bottom-right corners, or from the top and bottom. */\n  edge?: GlassEdge;\n  /** Refraction strength. */\n  strength?: number;\n  /** The tint color; the component's own background by default. */\n  tint?: string;\n  /** The tint's opacity from 0 to 1. */\n  tintOpacity?: number;\n  /**\n   * A tight glow in the tint behind text and icons, for legibility over busy\n   * backdrops. Off by default.\n   */\n  textGlow?: boolean;\n};\n\n/** One component's settings, as the runtime receives them. */\nexport type GlassConfiguration = GlassConfig & { id: string };\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/defaults.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/dom.ts",
+      "content": "// Attributes whose changes can alter a surface's paint, state or ownership.\nconst GLASS_ATTRIBUTES = [\n  \"class\",\n  \"style\",\n  \"hidden\",\n  \"inert\",\n  \"data-glass\",\n  \"data-frosted\",\n  \"data-glass-scope\",\n  \"data-glass-mounted\",\n  \"data-glass-frozen\",\n  \"data-color\",\n  \"data-state\",\n  \"data-open\",\n  \"data-closed\",\n  \"aria-pressed\",\n  \"data-pressed\",\n  \"aria-checked\",\n  \"data-checked\",\n  \"data-unchecked\",\n  \"aria-selected\",\n  \"data-selected\",\n  \"data-active\",\n  \"data-highlighted\",\n  \"aria-invalid\",\n  \"data-invalid\",\n  \"disabled\",\n  \"aria-hidden\",\n  \"aria-busy\",\n  \"placeholder\",\n  \"value\",\n  \"type\",\n  \"readonly\",\n  \"open\",\n  \"aria-disabled\",\n  \"data-disabled\",\n];\n\nconst OWNED_STYLE =\n  /--glass-(?:filter|edge|initial-edge-shadow|base|opacity):[^;]+;?/g;\n\nfunction styleWithoutGlass(style: string | null) {\n  return (style ?? \"\").replace(OWNED_STYLE, \"\").trim();\n}\n\n/** Style changes on a positioned surface that only move or resize it. */\nexport function geometryMutation(record: MutationRecord) {\n  if (\n    record.type !== \"attributes\" ||\n    record.attributeName !== \"style\" ||\n    !(record.target instanceof HTMLElement) ||\n    record.target.dataset.glass !== \"true\"\n  )\n    return false;\n  const position = getComputedStyle(record.target).position;\n  if (position !== \"absolute\" && position !== \"fixed\") return false;\n  const withoutGeometry = (style: string | null) =>\n    styleWithoutGlass(style)\n      .split(\";\")\n      .map((declaration) => declaration.trim())\n      .filter(\n        (declaration) =>\n          declaration &&\n          !/^(?:translate|transform|width|height|top|left|right|bottom|visibility)\\s*:/.test(\n            declaration,\n          ),\n      )\n      .join(\";\");\n  return (\n    withoutGeometry(record.oldValue) ===\n    withoutGeometry(record.target.getAttribute(\"style\"))\n  );\n}\n\n/** Ignores the runtime's own writes and decorations. */\nfunction relevantMutation(record: MutationRecord) {\n  const element =\n    record.target instanceof Element\n      ? record.target\n      : record.target.parentElement;\n  if (element?.closest(\"[data-glass-decoration]\")) return false;\n  if (\n    record.target instanceof Element &&\n    record.target.getAttribute(\"data-glass\") !== \"true\" &&\n    record.target.closest('[data-glass=\"true\"][data-glass-frozen=\"true\"]')\n  )\n    return false;\n  if (\n    record.type === \"childList\" &&\n    [...record.addedNodes, ...record.removedNodes].every(\n      (node) =>\n        node instanceof Element && node.hasAttribute(\"data-glass-decoration\"),\n    )\n  )\n    return false;\n  if (record.type !== \"attributes\") return true;\n  if (\n    record.target instanceof Element &&\n    record.attributeName !== null &&\n    record.oldValue !== null &&\n    record.oldValue === record.target.getAttribute(record.attributeName)\n  )\n    return false;\n  if (\n    record.attributeName === \"style\" &&\n    record.target instanceof HTMLElement &&\n    record.target.dataset.glass === \"true\"\n  )\n    return (\n      styleWithoutGlass(record.oldValue) !==\n      styleWithoutGlass(record.target.getAttribute(\"style\"))\n    );\n  return true;\n}\n\nexport type GlassObserver = {\n  onResize(entries: ResizeObserverEntry[]): void;\n  onMutation(records: MutationRecord[]): void;\n  schedule(): void;\n};\n\ntype Listener = {\n  callbacks: Set<EventListener>;\n  listener: EventListener;\n  capture: boolean;\n};\n\n/** Document observation shared by every configuration group. */\nexport class GlassDom {\n  private readonly owners = new Map<Element, GlassObserver>();\n  private readonly mutationObserver: MutationObserver;\n  private readonly resizeObserver: ResizeObserver;\n  private readonly intersectionObserver: IntersectionObserver;\n  private readonly listeners = new Map<EventTarget, Map<string, Listener>>();\n  private groups?: Map<string, Set<HTMLElement>>;\n  readonly appearance = window.matchMedia?.(\"(prefers-color-scheme: dark)\");\n\n  constructor(private readonly observers: () => Iterable<GlassObserver>) {\n    this.resizeObserver = new ResizeObserver((entries) => {\n      const batches = new Map<GlassObserver, ResizeObserverEntry[]>();\n      for (const entry of entries) {\n        const owner = this.owners.get(entry.target);\n        if (!owner) continue;\n        const batch = batches.get(owner);\n        if (batch) batch.push(entry);\n        else batches.set(owner, [entry]);\n      }\n      for (const [owner, batch] of batches) owner.onResize(batch);\n    });\n    // Surfaces that scroll into view get their filters on the next pass.\n    this.intersectionObserver = new IntersectionObserver((entries) => {\n      const owners = new Set<GlassObserver>();\n      for (const entry of entries) {\n        const owner = this.owners.get(entry.target);\n        if (owner && entry.isIntersecting) owners.add(owner);\n      }\n      for (const owner of owners) owner.schedule();\n    });\n    this.mutationObserver = new MutationObserver((records) =>\n      this.mutated(records),\n    );\n    // Text changes cannot repaint a surface; size changes reach the resize\n    // observer instead.\n    this.mutationObserver.observe(document.documentElement, {\n      attributes: true,\n      attributeOldValue: true,\n      attributeFilter: GLASS_ATTRIBUTES,\n      childList: true,\n      subtree: true,\n    });\n  }\n\n  private mutated(records: MutationRecord[]) {\n    const relevant = records.filter(relevantMutation);\n    if (!relevant.length) return;\n    if (\n      relevant.some(\n        (record) =>\n          record.type === \"childList\" ||\n          [\n            \"data-glass\",\n            \"data-frosted\",\n            \"data-glass-scope\",\n            \"data-glass-mounted\",\n          ].includes(record.attributeName ?? \"\"),\n      )\n    )\n      this.groups = undefined;\n    for (const observer of this.observers()) observer.onMutation(relevant);\n  }\n\n  /** Mounted surfaces of one configuration group. */\n  discover(id: string) {\n    // Include pending mounts before their MutationObserver callback is delivered.\n    this.mutated(this.mutationObserver.takeRecords());\n    if (!this.groups) {\n      this.groups = new Map();\n      for (const element of document.querySelectorAll<HTMLElement>(\n        '[data-glass=\"true\"]',\n      )) {\n        const scope = element.dataset.glassScope;\n        if (!scope || element.dataset.glassMounted === \"false\") continue;\n        const elements = this.groups.get(scope) ?? new Set<HTMLElement>();\n        elements.add(element);\n        this.groups.set(scope, elements);\n      }\n    }\n    return this.groups.get(id) ?? new Set<HTMLElement>();\n  }\n\n  owner(element: HTMLElement) {\n    return this.owners.get(element);\n  }\n\n  observe(element: HTMLElement, owner: GlassObserver) {\n    this.owners.set(element, owner);\n    this.resizeObserver.observe(element);\n    this.intersectionObserver.observe(element);\n  }\n\n  unobserve(element: HTMLElement) {\n    this.owners.delete(element);\n    this.resizeObserver.unobserve(element);\n    this.intersectionObserver.unobserve(element);\n  }\n\n  /** Shares one native listener per target and event across all groups. */\n  listen(\n    target: EventTarget,\n    type: string,\n    callback: EventListener,\n    options: boolean | AddEventListenerOptions = false,\n  ) {\n    let events = this.listeners.get(target);\n    if (!events) {\n      events = new Map();\n      this.listeners.set(target, events);\n    }\n    let event = events.get(type);\n    if (!event) {\n      const callbacks = new Set<EventListener>();\n      event = {\n        callbacks,\n        listener: (value) => {\n          for (const handler of callbacks) handler(value);\n        },\n        capture:\n          typeof options === \"boolean\" ? options : Boolean(options.capture),\n      };\n      events.set(type, event);\n      target.addEventListener(type, event.listener, options);\n    }\n    const registered = event;\n    registered.callbacks.add(callback);\n    return () => {\n      registered.callbacks.delete(callback);\n      if (registered.callbacks.size) return;\n      target.removeEventListener(type, registered.listener, registered.capture);\n      events.delete(type);\n      if (!events.size) this.listeners.delete(target);\n    };\n  }\n\n  destroy() {\n    this.mutationObserver.disconnect();\n    this.resizeObserver.disconnect();\n    this.intersectionObserver.disconnect();\n    this.owners.clear();\n    for (const [target, events] of this.listeners)\n      for (const [type, event] of events)\n        target.removeEventListener(type, event.listener, event.capture);\n    this.listeners.clear();\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/dom.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/edge.ts",
+      "content": "import { type GlassEdge, glassDefaultEdge } from \"@/lib/glass/defaults\";\n\nexport function glassRadii(\n  width: number,\n  height: number,\n  radii: [string, string, string, string],\n) {\n  const corners = radii.map((value) => {\n    const [horizontal = \"0\", vertical = horizontal] = value.split(/\\s+/);\n    const resolve = (length: string, size: number) =>\n      Math.max(\n        0,\n        (Number.parseFloat(length) || 0) *\n          (length.endsWith(\"%\") ? size / 100 : 1),\n      );\n    return { x: resolve(horizontal, width), y: resolve(vertical, height) };\n  });\n  const [tl, tr, br, bl] = corners;\n  const scale = Math.min(\n    1,\n    width / (tl.x + tr.x),\n    width / (bl.x + br.x),\n    height / (tl.y + bl.y),\n    height / (tr.y + br.y),\n  );\n  return corners.map((radius) => ({\n    x: radius.x * scale,\n    y: radius.y * scale,\n  }));\n}\n\nfunction brightness(color: readonly number[]) {\n  return Math.min(\n    1,\n    Math.max(0, color[0] * 0.2126 + color[1] * 0.7152 + color[2] * 0.0722),\n  );\n}\n\nfunction surfaceBrightness(\n  foreground: readonly number[],\n  background?: readonly number[],\n) {\n  return background ? brightness(background) : 1 - brightness(foreground);\n}\n\ntype Corner = { x: number; y: number };\n\n/** Rounded outline inset by a distance, following elliptical corners. */\nfunction outlinePath(\n  width: number,\n  height: number,\n  corners: Corner[],\n  requestedInset: number,\n) {\n  const inset = Math.min(requestedInset, width / 2, height / 2);\n  const [tl, tr, br, bl] = corners.map((radius) => ({\n    x: Math.max(0, radius.x - inset),\n    y: Math.max(0, radius.y - inset),\n  }));\n  const right = width - inset;\n  const bottom = height - inset;\n  return `M${inset + tl.x} ${inset}H${right - tr.x}A${tr.x} ${tr.y} 0 0 1 ${right} ${inset + tr.y}V${bottom - br.y}A${br.x} ${br.y} 0 0 1 ${right - br.x} ${bottom}H${inset + bl.x}A${bl.x} ${bl.y} 0 0 1 ${inset} ${bottom - bl.y}V${inset + tl.y}A${tl.x} ${tl.y} 0 0 1 ${inset + tl.x} ${inset}Z`;\n}\n\ntype EdgeShape = {\n  width: number;\n  height: number;\n  corners: Corner[];\n  opacity: number;\n  pixelRatio: number;\n};\n\n/**\n * The SUI 1.1 rim: a thin stroke lit from the top-left and bottom-right\n * corners, fading along the sides.\n */\nfunction diagonalEdge(\n  { width, height, corners, opacity }: EdgeShape,\n  color: readonly number[],\n) {\n  // The 1.1 stroke, the same on every screen.\n  const line = 0.9;\n  const softness = 0.55;\n  const stroke = `rgb(${color\n    .slice(0, 3)\n    .map((channel) => Math.round((0.8 + channel * 0.2) * 255))\n    .join(\" \")})`;\n  const [topLeft, , bottomRight] = corners;\n  // Each light sits on its corner arc and reaches along both adjacent sides.\n  const arc = 1 - Math.SQRT1_2;\n  const reach = Math.max(12, Math.min(width, height) * 0.7);\n  const reachX = Math.max(reach, width * 0.65);\n  const reachY = Math.max(reach, height * 0.65);\n  const lights = [\n    { x: topLeft.x * arc, y: topLeft.y * arc, opacity },\n    {\n      x: width - bottomRight.x * arc,\n      y: height - bottomRight.y * arc,\n      opacity: opacity * 0.7,\n    },\n  ];\n  const outline = outlinePath(width, height, corners, 0.65);\n  return `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width}\" height=\"${height}\" viewBox=\"0 0 ${width} ${height}\">\n    <defs>\n      ${lights\n        .map(\n          (\n            light,\n            index,\n          ) => `<radialGradient id=\"light${index}\" gradientUnits=\"userSpaceOnUse\" cx=\"0\" cy=\"0\" r=\"1\" gradientTransform=\"translate(${light.x} ${light.y}) scale(${reachX} ${reachY})\">\n        <stop stop-color=\"${stroke}\" stop-opacity=\".85\"/>\n        <stop offset=\".5\" stop-color=\"${stroke}\" stop-opacity=\".36\"/>\n        <stop offset=\".85\" stop-color=\"${stroke}\" stop-opacity=\".06\"/>\n        <stop offset=\"1\" stop-color=\"${stroke}\" stop-opacity=\"0\"/>\n      </radialGradient>`,\n        )\n        .join(\"\")}\n      <filter id=\"soft\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\" color-interpolation-filters=\"sRGB\">\n        <feGaussianBlur stdDeviation=\"${softness}\"/>\n      </filter>\n    </defs>\n    ${lights\n      .map(\n        (light, index) =>\n          `<path d=\"${outline}\" fill=\"none\" stroke=\"url(#light${index})\" stroke-width=\"${line}\" opacity=\"${light.opacity}\" filter=\"url(#soft)\"/>`,\n      )\n      .join(\"\")}\n  </svg>`;\n}\n\n/** The SUI 1.3 bevel, lit by top and bottom reflections. */\nfunction verticalEdge({\n  width,\n  height,\n  corners,\n  opacity,\n  pixelRatio,\n}: EdgeShape) {\n  const outline = (inset: number) => outlinePath(width, height, corners, inset);\n  // Tiny surfaces such as a pressed Switch or Slider thumb keep a visible rim.\n  const bevel = Math.min(2.5, Math.max(1.25, Math.min(width, height) * 0.045));\n  // Small controls on 1x screens would light a sub-pixel band that breaks into dots,\n  // so the height map keeps at least about one device pixel.\n  const device = 1 / Math.max(pixelRatio, 1);\n  const softness = Math.max(bevel * 0.46, device * 0.6);\n  const reflections = [\n    { id: \"top\", azimuth: 270, opacity, stops: [0.95, 0.72, 0.5] },\n    {\n      id: \"bottom\",\n      azimuth: 90,\n      opacity: opacity * 0.85,\n      stops: [0.5, 0.72, 0.95],\n    },\n  ];\n  // A blurred silhouette supplies bevel normals. Lighting varies through its thickness,\n  // rather than painting a constant-width bright stroke around the whole surface.\n  // Saturated band coverage clips the feather without dimming subpixel bevels twice.\n  return `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width}\" height=\"${height}\" viewBox=\"0 0 ${width} ${height}\">\n    <defs>\n      <clipPath id=\"inside\"><path d=\"${outline(0)}\"/></clipPath>\n      <filter id=\"soft\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\">\n        <feGaussianBlur stdDeviation=\"${bevel * 0.2}\" result=\"soft\"/>\n        <feComponentTransfer in=\"SourceAlpha\" result=\"band\"><feFuncA type=\"linear\" slope=\"2\"/></feComponentTransfer>\n        <feComposite in=\"soft\" in2=\"band\" operator=\"in\"/>\n      </filter>\n      <mask id=\"bevel\" maskUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"${width}\" height=\"${height}\">\n        <path d=\"${outline(bevel / 2)}\" fill=\"none\" stroke=\"white\" stroke-width=\"${bevel}\" filter=\"url(#soft)\"/>\n      </mask>\n      ${reflections\n        .map(\n          ({ id, azimuth, stops }) => `\n      <linearGradient id=\"${id}Fade\">\n        <stop stop-color=\"white\" stop-opacity=\"${stops[0]}\"/>\n        <stop offset=\".5\" stop-color=\"white\" stop-opacity=\"${stops[1]}\"/>\n        <stop offset=\"1\" stop-color=\"white\" stop-opacity=\"${stops[2]}\"/>\n      </linearGradient>\n      <mask id=\"${id}Light\" maskUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"${width}\" height=\"${height}\">\n        <rect width=\"${width}\" height=\"${height}\" fill=\"url(#${id}Fade)\"/>\n      </mask>\n      <filter id=\"${id}Reflection\" x=\"-5%\" y=\"-5%\" width=\"110%\" height=\"110%\" color-interpolation-filters=\"sRGB\">\n        <feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"${softness}\" result=\"height\"/>\n        <feSpecularLighting in=\"height\" surfaceScale=\"${softness * (1.12 / 0.46)}\" specularConstant=\"1.6\" specularExponent=\"26\" lighting-color=\"white\">\n          <feDistantLight azimuth=\"${azimuth}\" elevation=\"32\"/>\n        </feSpecularLighting>\n        <feComposite in2=\"SourceAlpha\" operator=\"in\"/>\n      </filter>`,\n        )\n        .join(\"\")}\n    </defs>\n    <g clip-path=\"url(#inside)\" mask=\"url(#bevel)\">\n      ${reflections\n        .map(\n          ({ id, opacity: strength }) => `\n      <g mask=\"url(#${id}Light)\" opacity=\"${strength}\">\n        <path d=\"${outline(0)}\" fill=\"white\" filter=\"url(#${id}Reflection)\"/>\n      </g>`,\n        )\n        .join(\"\")}\n    </g>\n  </svg>`;\n}\n\nexport type GlassEdgeOptions = {\n  /** Built-in strength from {@link glassHighlight}. */\n  highlight: number;\n  style?: GlassEdge;\n  /** Foreground color, which tints the diagonal rim. */\n  color?: readonly number[];\n  /** Surface tint, which dims the vertical bevel over bright materials. */\n  background?: readonly number[];\n  pixelRatio?: number;\n};\n\n/**\n * Shortens the markup without changing the picture: hundredths of a CSS\n * pixel are invisible, and indentation only lengthens the data URI.\n */\nfunction compact(svg: string) {\n  return svg\n    .replace(/-?\\d*\\.\\d{3,}/g, (number) =>\n      String(Math.round(Number(number) * 100) / 100),\n    )\n    .replace(/>\\s+</g, \"><\")\n    .replace(/\\s{2,}/g, \" \");\n}\n\n// Surfaces of one size, shape and color, like a row of buttons, share an\n// edge; the most recent ones are kept.\nconst edges = new Map<string, string>();\nconst edgeCacheSize = 128;\n\n/** The edge highlight as a CSS background image. */\nexport function glassEdge(\n  width: number,\n  height: number,\n  radii: [string, string, string, string],\n  options: GlassEdgeOptions,\n) {\n  const key = JSON.stringify([width, height, radii, options]);\n  const cached = edges.get(key);\n  if (cached !== undefined) {\n    edges.delete(key);\n    edges.set(key, cached);\n    return cached;\n  }\n  const edge = renderEdge(width, height, radii, options);\n  edges.set(key, edge);\n  if (edges.size > edgeCacheSize)\n    edges.delete(edges.keys().next().value as string);\n  return edge;\n}\n\nfunction renderEdge(\n  width: number,\n  height: number,\n  radii: [string, string, string, string],\n  {\n    highlight,\n    style = glassDefaultEdge,\n    color = [1, 1, 1],\n    background,\n    pixelRatio = 1,\n  }: GlassEdgeOptions,\n) {\n  if (highlight <= 0 || width <= 0 || height <= 0) return \"none\";\n  const shape = {\n    width,\n    height,\n    corners: glassRadii(width, height, radii),\n    pixelRatio,\n  };\n  const svg =\n    style === \"vertical\"\n      ? verticalEdge({\n          ...shape,\n          opacity:\n            Math.min(1, highlight * 1.7) *\n            (0.9 - surfaceBrightness(color, background) * 0.25),\n        })\n      : diagonalEdge({ ...shape, opacity: Math.min(1, highlight * 2) }, color);\n  return `url(\"data:image/svg+xml,${encodeURIComponent(compact(svg))}\")`;\n}\n\n/** Edge highlight strength: full from 2x, dimmer where device pixels are larger. */\nexport function glassHighlight(pixelRatio = 1) {\n  return Math.min(0.3, Math.max(0.15, 0.15 * pixelRatio));\n}\n\nexport function glassShadow(\n  color: readonly number[] = [1, 1, 1],\n  background?: readonly number[],\n) {\n  const opacity = Number(\n    Math.min(\n      0.1 * (1 + surfaceBrightness(color, background) * 0.3),\n      0.28,\n    ).toFixed(3),\n  );\n  // One soft drop shadow: two diagonal offsets read as a dark ring on small screens.\n  return `0 1px 3px -1px rgb(0 0 0 / ${opacity})`;\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/edge.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/geometry.ts",
+      "content": "import { glassRadii } from \"@/lib/glass/edge\";\n\n/** Untransformed border-box size, so scaled ancestors do not distort filters. */\nexport function glassLayoutSize(\n  element: HTMLElement,\n  rect = element.getBoundingClientRect(),\n) {\n  const style = getComputedStyle(element);\n  const dimension = (axis: \"width\" | \"height\") => {\n    const value = Number.parseFloat(style[axis]);\n    if (Number.isFinite(value) && value > 0) {\n      if (style.boxSizing === \"border-box\") return value;\n      const sides = axis === \"width\" ? [\"left\", \"right\"] : [\"top\", \"bottom\"];\n      return (\n        value +\n        sides.reduce(\n          (sum, side) =>\n            sum +\n            (Number.parseFloat(style.getPropertyValue(`padding-${side}`)) ||\n              0) +\n            (Number.parseFloat(\n              style.getPropertyValue(`border-${side}-width`),\n            ) || 0),\n          0,\n        )\n      );\n    }\n    return (\n      (axis === \"width\" ? element.offsetWidth : element.offsetHeight) ||\n      rect[axis]\n    );\n  };\n  return { width: dimension(\"width\"), height: dimension(\"height\") };\n}\n\n/** Border radii resolved against the layout size and scaled to the painted box. */\nexport function glassSurfaceRadii(\n  element: HTMLElement,\n  rect: DOMRect,\n  style: CSSStyleDeclaration,\n): [string, string, string, string] {\n  const size = glassLayoutSize(element, rect);\n  const corners = glassRadii(size.width, size.height, [\n    style.borderTopLeftRadius,\n    style.borderTopRightRadius,\n    style.borderBottomRightRadius,\n    style.borderBottomLeftRadius,\n  ]);\n  // Hundredths of a pixel keep sub-pixel layout jitter from redrawing edges.\n  const round = (value: number) => Math.round(value * 100) / 100;\n  return corners.map(\n    ({ x, y }) =>\n      `${round((x * rect.width) / size.width)}px ${round((y * rect.height) / size.height)}px`,\n  ) as [string, string, string, string];\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/geometry.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/material.ts",
+      "content": "type RGB = [number, number, number];\ntype RGBA = [number, number, number, number];\n\nfunction matches(left: RGBA, right: RGBA) {\n  if (left[3] === 0) return false;\n  // Compare premultiplied bytes: low-alpha Canvas colors lose RGB precision.\n  const scale = left[3] * 255;\n  return left\n    .slice(0, 3)\n    .every(\n      (value, index) =>\n        Math.abs(\n          Math.round(value * scale) - Math.round(right[index] * scale),\n        ) <= 1,\n    );\n}\n\n/** Keep semantic paint independent from the transparency of the glass tint. */\nexport function glassMaterial({\n  paint,\n  tint,\n  opacity,\n  primary,\n  foreground,\n  background,\n  text,\n  overrideTint,\n  surfaceColors = [],\n  destructive,\n  customPaint = false,\n}: {\n  paint: RGBA;\n  tint: RGBA;\n  opacity: number;\n  primary: RGBA;\n  foreground: RGBA;\n  background: RGBA;\n  text: RGBA;\n  overrideTint?: RGBA;\n  surfaceColors?: RGBA[];\n  destructive?: RGBA;\n  customPaint?: boolean;\n}) {\n  const chromatic =\n    Math.max(...paint.slice(0, 3)) - Math.min(...paint.slice(0, 3)) > 0.04;\n  const surface = surfaceColors.find(\n    (color) => color[3] > 0 && matches(paint, color),\n  );\n  const semantic =\n    paint[3] > 0 &&\n    (customPaint ||\n      (primary[3] > 0 && matches(paint, primary)) ||\n      (destructive && destructive[3] > 0 && matches(paint, destructive)) ||\n      (!surface && (paint[3] < 1 || (chromatic && !matches(paint, tint)))) ||\n      (foreground[3] > 0 &&\n        background[3] > 0 &&\n        matches(paint, foreground) &&\n        matches(text, background)));\n  if (!semantic) {\n    const base = overrideTint ?? surface ?? (paint[3] > 0 ? paint : tint);\n    return { tint: base.slice(0, 3) as RGB, opacity: opacity * base[3] };\n  }\n  const glassTint = overrideTint ?? tint;\n  const neutral = opacity * glassTint[3] * (1 - paint[3]);\n  const combined = paint[3] + neutral;\n  return {\n    tint: paint\n      .slice(0, 3)\n      .map(\n        (channel, index) =>\n          (channel * paint[3] + glassTint[index] * neutral) / combined,\n      ) as RGB,\n    opacity: combined,\n  };\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/material.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/refraction.ts",
+      "content": "// A narrower band keeps small controls from bending half their height.\nconst glassMaxBevelWidth = 12;\nconst glassBevelFraction = 0.15;\nexport const glassMaxEdgeClarity = 0.8;\n\nexport function glassBevelWidth(width: number, height: number) {\n  return Math.min(\n    glassMaxBevelWidth,\n    Math.min(width, height) * glassBevelFraction,\n  );\n}\n\nexport function glassRefractionStrength(\n  strength: number,\n  width: number,\n  height: number,\n) {\n  const bevel = glassBevelWidth(width, height);\n  // The smoothstep profile has a maximum slope of 1.5 / bevel. With\n  // the normal map's 0.45 scale and this gain, the sampling slope stays\n  // above 0.1 even at saturation, while the lens becomes more pronounced.\n  return ((bevel * strength) / (bevel + strength)) * (4 / 3);\n}\n\nexport function glassRefractionProfile(depth: number, bevel: number) {\n  const t = Math.max(0, Math.min(1, depth / bevel));\n  return 1 - t * t * (3 - 2 * t);\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/refraction.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/runtime.ts",
+      "content": "import type { RefObject } from \"react\";\nimport {\n  failGlassRenderer,\n  glassBaseOnly,\n  prepareGlassRenderer,\n  releaseGlassRenderers,\n} from \"@/lib/glass/backend\";\nimport { parseGlassColor as parseColor } from \"@/lib/glass/color\";\nimport {\n  type GlassConfig,\n  type GlassConfiguration,\n  glassDefaultEdge,\n  glassDefaults,\n} from \"@/lib/glass/defaults\";\nimport { GlassDom, type GlassObserver, geometryMutation } from \"@/lib/glass/dom\";\nimport { glassEdge, glassHighlight, glassRadii, glassShadow } from \"@/lib/glass/edge\";\nimport { glassLayoutSize, glassSurfaceRadii } from \"@/lib/glass/geometry\";\nimport { glassMaterial } from \"@/lib/glass/material\";\nimport type { SvgGlassRenderer } from \"@/lib/glass/svg-renderer\";\n\nconst managers = new Map<string, GlassManager>();\nlet glassDom: GlassDom | undefined;\nlet queue = Promise.resolve();\n\nconst clamp = (\n  value: number | undefined,\n  fallback: number,\n  low: number,\n  high: number,\n) =>\n  Math.min(\n    high,\n    Math.max(low, Number.isFinite(value) ? (value as number) : fallback),\n  );\n\nfunction visible(element: Element) {\n  const bounds = element.getBoundingClientRect();\n  const style = getComputedStyle(element);\n  return (\n    element.isConnected &&\n    style.visibility !== \"hidden\" &&\n    style.display !== \"none\" &&\n    !element.closest(\"[hidden],[inert]\") &&\n    bounds.width > 0 &&\n    bounds.height > 0 &&\n    bounds.right > 0 &&\n    bounds.bottom > 0 &&\n    bounds.left < innerWidth &&\n    bounds.top < innerHeight\n  );\n}\n\n/** Resolves tint and paint from a hidden clone, so live states stay untouched. */\nfunction nativeMaterial(element: HTMLElement, configuration: GlassConfig) {\n  const probe = element.cloneNode(false) as HTMLElement;\n  probe.removeAttribute(\"data-glass-state\");\n  probe.removeAttribute(\"id\");\n  probe.setAttribute(\"data-glass-decoration\", \"\");\n  probe.setAttribute(\"aria-hidden\", \"true\");\n  probe.style.position = \"fixed\";\n  probe.style.visibility = \"hidden\";\n  probe.style.pointerEvents = \"none\";\n  try {\n    element.parentElement?.append(probe);\n    const style = getComputedStyle(probe);\n    const token = (name: string) =>\n      parseColor(style.getPropertyValue(name).trim());\n    return glassMaterial({\n      paint: parseColor(style.backgroundColor),\n      tint: parseColor(style.getPropertyValue(\"--popover\").trim() || \"#fff\"),\n      opacity: clamp(\n        configuration.tintOpacity,\n        glassDefaults.tintOpacity,\n        0,\n        1,\n      ),\n      primary: token(\"--primary\"),\n      destructive: token(\"--destructive\"),\n      surfaceColors: [\n        \"--background\",\n        \"--card\",\n        \"--popover\",\n        \"--muted\",\n        \"--secondary\",\n        \"--accent\",\n        \"--input\",\n      ].map(token),\n      customPaint: Boolean(\n        element.style.background || element.style.backgroundColor,\n      ),\n      foreground: token(\"--foreground\"),\n      background: token(\"--background\"),\n      text: parseColor(style.color),\n      overrideTint:\n        configuration.tint === undefined\n          ? undefined\n          : parseColor(configuration.tint),\n    });\n  } finally {\n    probe.remove();\n  }\n}\n\nconst ownedStyles = [\n  \"--glass-filter\",\n  \"--glass-edge\",\n  \"--glass-initial-edge-shadow\",\n  \"--glass-opacity\",\n  \"--glass-base\",\n] as const;\n\ntype SurfaceState = {\n  // A DOM lease restores the caller's styles; React owns mounted surfaces' styles.\n  styles?: {\n    property: string;\n    value: string;\n    priority: string;\n    written?: string;\n  }[];\n  svg?: SvgGlassRenderer;\n  tint: [number, number, number];\n  opacity: number;\n  edgeKey?: string;\n  edgeDirty?: boolean;\n};\n\nclass GlassManager implements GlassObserver {\n  leases = 0;\n  private readonly surfaces = new Map<HTMLElement, SurfaceState>();\n  private timer: ReturnType<typeof setTimeout> | undefined;\n  private resizeTimer: ReturnType<typeof setTimeout> | undefined;\n  private queued = false;\n  private dirty = false;\n  private disposed = false;\n  /** Every material needs reading, or only these surfaces' materials. */\n  private materialsDirty = true;\n  private readonly dirtyMaterials = new Set<HTMLElement>();\n  private lastRender = 0;\n  private lastResize = 0;\n  private configuration: Required<Pick<GlassConfiguration, \"id\" | \"edge\">> &\n    GlassConfiguration;\n  private readonly removeListeners: () => void;\n\n  constructor(configuration: GlassConfiguration) {\n    this.configuration = this.resolve(configuration);\n    this.scan();\n    const dom = glassDom as GlassDom;\n    const releases: (() => void)[] = [];\n    const listen = (\n      target: EventTarget,\n      type: string,\n      callback: EventListener,\n      options?: boolean | AddEventListenerOptions,\n    ) => releases.push(dom.listen(target, type, callback, options));\n    const update = () => {\n      this.materialsDirty = true;\n      this.schedule();\n    };\n    listen(window, \"resize\", update);\n    // Moving to a screen with another pixel ratio does not always fire resize.\n    let releaseDensity: (() => void) | undefined;\n    let ratio = window.devicePixelRatio;\n    const density = () => {\n      releaseDensity?.();\n      ratio = window.devicePixelRatio;\n      const query = window.matchMedia?.(`(resolution: ${ratio}dppx)`);\n      releaseDensity =\n        query &&\n        dom.listen(query, \"change\", () => {\n          if (window.devicePixelRatio === ratio) return;\n          // Re-arm outside the dispatch that is still iterating listeners.\n          queueMicrotask(density);\n          update();\n        });\n    };\n    density();\n    releases.push(() => releaseDensity?.());\n    if (dom.appearance) listen(dom.appearance, \"change\", update);\n    listen(document, \"visibilitychange\", () => this.schedule());\n    // Hover, focus and color transitions change the paint of the surfaces\n    // around the target only.\n    const interaction = (event: Event) => {\n      if (event.target instanceof Element) this.invalidate(event.target);\n    };\n    for (const type of [\"pointerover\", \"pointerout\", \"focusin\", \"focusout\"])\n      listen(document, type, interaction, true);\n    const transition = (event: Event) => {\n      if (\n        [\"color\", \"background-color\", \"opacity\"].includes(\n          (event as TransitionEvent).propertyName,\n        )\n      )\n        interaction(event);\n    };\n    listen(document, \"transitionend\", transition, true);\n    listen(document, \"transitioncancel\", transition, true);\n    this.removeListeners = () => {\n      for (const release of releases) release();\n    };\n    this.schedule();\n  }\n\n  private resolve(configuration: GlassConfiguration) {\n    return {\n      ...configuration,\n      edge: configuration.edge ?? glassDefaultEdge,\n    };\n  }\n\n  onResize(entries: ResizeObserverEntry[]) {\n    for (const { target } of entries) {\n      const state = this.surfaces.get(target as HTMLElement);\n      if (state) state.edgeDirty = true;\n    }\n    // A single resize updates on the next task. A surface that keeps\n    // resizing, such as an animating sheet, settles first, so its normal map\n    // and edge are rebuilt once instead of on every frame.\n    const now = performance.now();\n    const settling = now - this.lastResize < 150;\n    this.lastResize = now;\n    clearTimeout(this.resizeTimer);\n    if (!settling) {\n      this.schedule(true);\n      return;\n    }\n    this.resizeTimer = setTimeout(() => {\n      this.resizeTimer = undefined;\n      this.schedule(true);\n    }, 150);\n  }\n\n  onMutation(records: MutationRecord[]) {\n    const surfaces = [...this.surfaces.keys()];\n    const ownsScope = (node: Node) =>\n      node instanceof Element &&\n      (node.getAttribute(\"data-glass-scope\") === this.configuration.id ||\n        [...node.querySelectorAll(\"[data-glass-scope]\")].some(\n          (surface) =>\n            surface.getAttribute(\"data-glass-scope\") === this.configuration.id,\n        ));\n    // Paint inherits from ancestors; content inside a surface cannot change its fill.\n    const relevant = records.filter((record) =>\n      record.type === \"childList\"\n        ? [...record.addedNodes, ...record.removedNodes].some(\n            (node) =>\n              ownsScope(node) ||\n              surfaces.some((surface) => node.contains(surface)),\n          )\n        : ownsScope(record.target) ||\n          (record.attributeName === \"data-glass-scope\" &&\n            record.oldValue === this.configuration.id) ||\n          surfaces.some((surface) => record.target.contains(surface)),\n    );\n    if (!relevant.length) return;\n    if (relevant.every(geometryMutation)) {\n      for (const record of relevant) {\n        const state = this.surfaces.get(record.target as HTMLElement);\n        if (state) state.edgeDirty = true;\n      }\n      this.schedule(true);\n      return;\n    }\n    this.materialsDirty = true;\n    this.scan();\n    this.schedule();\n  }\n\n  update(configuration: GlassConfiguration, preserveSettings = false) {\n    const next = this.resolve(\n      preserveSettings\n        ? { ...this.configuration, ...configuration }\n        : configuration,\n    );\n    const previous = this.configuration;\n    const same =\n      previous.edge === next.edge &&\n      previous.strength === next.strength &&\n      previous.tint === next.tint &&\n      previous.tintOpacity === next.tintOpacity;\n    this.configuration = next;\n    if (!same) this.materialsDirty = true;\n    this.scan();\n    this.schedule();\n  }\n\n  refresh(target?: HTMLElement) {\n    if (!target) {\n      this.materialsDirty = true;\n      this.schedule();\n      return;\n    }\n    let found = false;\n    for (const surface of this.surfaces.keys()) {\n      if (!target.contains(surface)) continue;\n      this.dirtyMaterials.add(surface);\n      found = true;\n    }\n    if (found) this.schedule();\n  }\n\n  /** Marks the surfaces around an element for a fresh material read. */\n  private invalidate(element: Element) {\n    let found = false;\n    for (const surface of this.surfaces.keys()) {\n      if (!surface.contains(element)) continue;\n      this.dirtyMaterials.add(surface);\n      found = true;\n    }\n    if (found) this.schedule();\n  }\n\n  private scan() {\n    const dom = glassDom as GlassDom;\n    const elements = dom.discover(this.configuration.id);\n    for (const [element, state] of this.surfaces) {\n      if (elements.has(element)) continue;\n      this.dirtyMaterials.delete(element);\n      dom.unobserve(element);\n      this.release(element, state);\n      this.surfaces.delete(element);\n    }\n    for (const element of elements) {\n      if (this.surfaces.has(element)) continue;\n      const previous = dom.owner(element);\n      if (previous && previous !== this)\n        (previous as GlassManager).drop(element);\n      const state: SurfaceState = {\n        tint: [0, 0, 0],\n        opacity: 0,\n        styles: element.hasAttribute(\"data-glass-mounted\")\n          ? undefined\n          : ownedStyles.map((property) => ({\n              property,\n              value: element.style.getPropertyValue(property),\n              priority: element.style.getPropertyPriority(property),\n            })),\n      };\n      this.surfaces.set(element, state);\n      this.updateMaterial(element, state);\n      element.dataset.glassState = \"loading\";\n      dom.observe(element, this);\n    }\n  }\n\n  private drop(element: HTMLElement) {\n    const state = this.surfaces.get(element);\n    if (!state) return;\n    this.dirtyMaterials.delete(element);\n    glassDom?.unobserve(element);\n    this.release(element, state);\n    this.surfaces.delete(element);\n  }\n\n  private updateMaterial(element: HTMLElement, state: SurfaceState) {\n    const material = nativeMaterial(element, this.configuration);\n    state.tint = material.tint;\n    state.opacity = material.opacity;\n    this.writeStyle(\n      element,\n      state,\n      \"--glass-base\",\n      `rgb(${state.tint.map((channel) => Math.round(channel * 255)).join(\", \")})`,\n    );\n    this.writeStyle(\n      element,\n      state,\n      \"--glass-opacity\",\n      `${state.opacity * 100}%`,\n    );\n    this.updateEdge(element, state);\n  }\n\n  private updateEdge(element: HTMLElement, state: SurfaceState) {\n    state.edgeDirty = false;\n    const rect = element.getBoundingClientRect();\n    const style = getComputedStyle(element);\n    const radii = glassSurfaceRadii(element, rect, style);\n    const color = parseColor(\n      style.getPropertyValue(\"--foreground\").trim() || style.color,\n    );\n    const pixelRatio = window.devicePixelRatio || 1;\n    const highlight = glassHighlight(pixelRatio);\n    // Sub-pixel layout jitter must not redraw the edge.\n    const width = Math.round(rect.width * 100) / 100;\n    const height = Math.round(rect.height * 100) / 100;\n    const key = JSON.stringify([\n      width,\n      height,\n      radii,\n      color,\n      state.tint,\n      pixelRatio,\n      this.configuration.edge,\n    ]);\n    if (state.edgeKey === key) return;\n    state.edgeKey = key;\n    this.writeStyle(\n      element,\n      state,\n      \"--glass-initial-edge-shadow\",\n      glassShadow(color, state.tint),\n    );\n    this.writeStyle(\n      element,\n      state,\n      \"--glass-edge\",\n      glassEdge(width, height, radii, {\n        highlight,\n        style: this.configuration.edge,\n        color,\n        background: state.tint,\n        pixelRatio,\n      }),\n    );\n  }\n\n  /** Coalesces updates: geometry changes run on the next task, the rest throttle. */\n  schedule(immediate = false) {\n    if (this.disposed || document.hidden) return;\n    this.dirty = true;\n    if (this.timer || this.queued) return;\n    const delay = immediate\n      ? 0\n      : Math.max(0, 100 - (performance.now() - this.lastRender));\n    this.timer = setTimeout(() => {\n      this.timer = undefined;\n      if (this.disposed || document.hidden) return;\n      this.queued = true;\n      queue = queue\n        .then(() => this.render())\n        .catch(() => this.fallback())\n        .finally(() => {\n          this.queued = false;\n          if (this.dirty && !this.disposed) this.schedule();\n        });\n    }, delay);\n  }\n\n  private async render() {\n    if (this.disposed || document.hidden) return;\n    this.dirty = false;\n    this.lastRender = performance.now();\n    this.scan();\n    const active = [...this.surfaces].filter(([element]) => visible(element));\n    if (!active.length) return;\n    // Surfaces out of view keep their pending read until they come into view.\n    if (this.materialsDirty)\n      for (const element of this.surfaces.keys())\n        this.dirtyMaterials.add(element);\n    this.materialsDirty = false;\n    for (const [element, state] of active) {\n      if (this.dirtyMaterials.delete(element))\n        this.updateMaterial(element, state);\n      else if (state.edgeDirty) this.updateEdge(element, state);\n    }\n    if (glassBaseOnly()) {\n      for (const [element, state] of active) this.restoreCss(element, state);\n      return;\n    }\n    // Opaque paint covers the backdrop and a disabled backdrop has nothing to\n    // refract (the TabBar lens), so they keep CSS with their shared highlight\n    // and never load the SVG renderer on their own.\n    const refracting = active.filter(([element, state]) => {\n      if (element.dataset.glassFrozen === \"true\") return false;\n      if (\n        state.opacity !== 1 &&\n        getComputedStyle(element).backdropFilter !== \"none\"\n      )\n        return true;\n      this.restoreCss(element, state);\n      return false;\n    });\n    if (!refracting.length) return;\n    const renderer = await prepareGlassRenderer();\n    if (this.disposed) return;\n    if (!renderer) {\n      this.fallback();\n      return;\n    }\n    for (const [element, state] of refracting) {\n      if (\n        element.dataset.glassFrozen === \"true\" ||\n        this.surfaces.get(element) !== state\n      )\n        continue;\n      try {\n        this.applySvg(element, state, renderer);\n      } catch {\n        failGlassRenderer();\n        this.fallback();\n        return;\n      }\n    }\n  }\n\n  private applySvg(\n    element: HTMLElement,\n    state: SurfaceState,\n    renderer: SvgGlassRenderer,\n  ) {\n    const style = getComputedStyle(element);\n    const { width, height } = glassLayoutSize(element);\n    const corners = glassRadii(width, height, [\n      style.borderTopLeftRadius,\n      style.borderTopRightRadius,\n      style.borderBottomRightRadius,\n      style.borderBottomLeftRadius,\n    ]);\n    const filter = renderer.filter(element, {\n      width,\n      height,\n      radius: [corners[0].x, corners[1].x, corners[2].x, corners[3].x],\n      radiusY: [corners[0].y, corners[1].y, corners[2].y, corners[3].y],\n      strength: clamp(\n        this.configuration.strength,\n        glassDefaults.strength,\n        0,\n        64,\n      ),\n      blur: glassDefaults.blur,\n    });\n    if (state.svg && state.svg !== renderer) state.svg.release(element);\n    state.svg = renderer;\n    if (element.style.getPropertyValue(\"--glass-filter\") !== filter)\n      this.writeStyle(element, state, \"--glass-filter\", filter);\n    element.dataset.glassState = \"ready\";\n    element.dataset.glassRenderer = \"svg\";\n  }\n\n  private restoreCss(\n    element: HTMLElement,\n    state: SurfaceState,\n    status: \"css\" | \"fallback\" = \"css\",\n  ) {\n    state.svg?.release(element);\n    state.svg = undefined;\n    this.writeStyle(element, state, \"--glass-filter\", \"\");\n    element.dataset.glassState = status;\n    delete element.dataset.glassRenderer;\n  }\n\n  private fallback() {\n    for (const [element, state] of this.surfaces)\n      this.restoreCss(element, state, \"fallback\");\n  }\n\n  private writeStyle(\n    element: HTMLElement,\n    state: SurfaceState,\n    property: string,\n    value: string,\n  ) {\n    const saved = state.styles?.find((style) => style.property === property);\n    // A caller that rewrote the property since our last write owns the new value.\n    if (\n      saved?.written !== undefined &&\n      (element.style.getPropertyValue(property) !== saved.written ||\n        element.style.getPropertyPriority(property) !== \"\")\n    ) {\n      saved.value = element.style.getPropertyValue(property);\n      saved.priority = element.style.getPropertyPriority(property);\n    }\n    element.style.setProperty(property, value);\n    if (saved) saved.written = element.style.getPropertyValue(property);\n  }\n\n  private release(element: HTMLElement, state: SurfaceState) {\n    state.svg?.release(element);\n    for (const property of ownedStyles) {\n      const saved = state.styles?.find((style) => style.property === property);\n      if (!saved) {\n        element.style.removeProperty(property);\n        continue;\n      }\n      if (\n        element.style.getPropertyValue(property) !== saved.written ||\n        element.style.getPropertyPriority(property) !== \"\"\n      )\n        continue;\n      element.style.setProperty(property, saved.value, saved.priority);\n    }\n    delete element.dataset.glassState;\n    delete element.dataset.glassRenderer;\n  }\n\n  destroy() {\n    this.disposed = true;\n    if (this.timer) clearTimeout(this.timer);\n    clearTimeout(this.resizeTimer);\n    this.removeListeners();\n    for (const [element, state] of this.surfaces) {\n      glassDom?.unobserve(element);\n      this.release(element, state);\n    }\n    this.surfaces.clear();\n  }\n}\n\nexport function acquireGlass(configuration?: GlassConfiguration) {\n  const resolved = configuration ?? { id: \"default\" };\n  let manager = managers.get(resolved.id);\n  if (!manager) {\n    glassDom ??= new GlassDom(() => managers.values());\n    manager = new GlassManager(resolved);\n    managers.set(resolved.id, manager);\n  } else if (Object.keys(resolved).some((key) => key !== \"id\"))\n    manager.update(resolved, true);\n  manager.leases++;\n  let released = false;\n  return () => {\n    if (released) return;\n    released = true;\n    if (--manager.leases > 0) return;\n    manager.destroy();\n    managers.delete(resolved.id);\n    if (!managers.size) {\n      glassDom?.destroy();\n      glassDom = undefined;\n      releaseGlassRenderers();\n    }\n  };\n}\n\nexport type GlassTarget = HTMLElement | null | RefObject<HTMLElement | null>;\n\n/** Re-measures materials and edges, for surfaces inside the target or everywhere. */\nexport function refreshGlass(target?: GlassTarget) {\n  const element = target && \"current\" in target ? target.current : target;\n  if (target !== undefined && !element) return;\n  for (const manager of managers.values())\n    manager.refresh(element ?? undefined);\n}\n\nexport function updateGlassConfiguration(configuration: GlassConfiguration) {\n  managers.get(configuration.id)?.update(configuration);\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/runtime.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/svg-renderer.ts",
+      "content": "import {\n  glassBevelWidth,\n  glassMaxEdgeClarity,\n  glassRefractionProfile,\n  glassRefractionStrength,\n} from \"@/lib/glass/refraction\";\n\ntype Corners = [number, number, number, number];\n\nexport type SvgGlassGeometry = {\n  width: number;\n  height: number;\n  /** Horizontal corner radii: top-left, top-right, bottom-right, bottom-left. */\n  radius: Corners;\n  /** Vertical corner radii for elliptical corners; defaults to `radius`. */\n  radiusY?: Corners;\n  strength: number;\n  blur?: number;\n};\n\nlet filterSequence = 0;\n\n/** Signed distance to the rounded outline: negative inside, positive outside. */\nexport function glassRoundedDistance(\n  x: number,\n  y: number,\n  frame: SvgGlassGeometry,\n) {\n  const { width, height, radius } = frame;\n  const vertical = frame.radiusY ?? radius;\n  let distance = Math.max(-x, x - width, -y, y - height);\n  let corner = -1;\n  let centerX = 0;\n  let centerY = 0;\n  if (x < radius[0] && y < vertical[0]) {\n    corner = 0;\n    centerX = radius[0];\n    centerY = vertical[0];\n  } else if (x > width - radius[1] && y < vertical[1]) {\n    corner = 1;\n    centerX = width - radius[1];\n    centerY = vertical[1];\n  } else if (x > width - radius[2] && y > height - vertical[2]) {\n    corner = 2;\n    centerX = width - radius[2];\n    centerY = height - vertical[2];\n  } else if (x < radius[3] && y > height - vertical[3]) {\n    corner = 3;\n    centerX = radius[3];\n    centerY = height - vertical[3];\n  }\n  if (corner < 0 || !radius[corner] || !vertical[corner]) return distance;\n  const rx = radius[corner];\n  const ry = vertical[corner];\n  const px = x - centerX;\n  const py = y - centerY;\n  const k0 = Math.hypot(px / rx, py / ry);\n  const k1 = Math.hypot(px / (rx * rx), py / (ry * ry));\n  distance = Math.max(\n    distance,\n    k1 === 0 ? -Math.min(rx, ry) : (k0 * (k0 - 1)) / k1,\n  );\n  return distance;\n}\n\nfunction glassOptics(x: number, y: number, frame: SvgGlassGeometry) {\n  const distance = glassRoundedDistance(x, y, frame);\n  const bevelWidth = glassBevelWidth(frame.width, frame.height);\n  if (distance <= -bevelWidth) return [0, 0, 0];\n  const gradientX =\n    glassRoundedDistance(x + 0.4, y, frame) -\n    glassRoundedDistance(x - 0.4, y, frame);\n  const gradientY =\n    glassRoundedDistance(x, y + 0.4, frame) -\n    glassRoundedDistance(x, y - 0.4, frame);\n  const length = Math.hypot(gradientX, gradientY) || 1;\n  const bevel = glassRefractionProfile(Math.max(-distance, 0), bevelWidth);\n  let dx = (-gradientX / length) * bevel * 0.45;\n  let dy = (-gradientY / length) * bevel * 0.45;\n  const clarity = Math.hypot(dx, dy) / 0.45;\n  const vertical = frame.radiusY ?? frame.radius;\n  let corner = x < frame.width / 2 ? 0 : 1;\n  if (y >= frame.height / 2) corner = 3 - corner;\n  const depthX = Math.min(x, frame.width - x);\n  const depthY = Math.min(y, frame.height - y);\n  if (\n    depthX >= 0 &&\n    depthY >= 0 &&\n    depthX < bevelWidth &&\n    depthY < bevelWidth &&\n    frame.radius[corner] === 0 &&\n    vertical[corner] === 0 &&\n    frame.radius.every((radius) => radius <= frame.width / 2) &&\n    vertical.every((radius) => radius <= frame.height / 2)\n  ) {\n    // Adjacent flat edges bend independently; curved corner regions stay intact.\n    dx =\n      (x < frame.width / 2 ? 1 : -1) *\n      glassRefractionProfile(depthX, bevelWidth) *\n      0.45;\n    dy =\n      (y < frame.height / 2 ? 1 : -1) *\n      glassRefractionProfile(depthY, bevelWidth) *\n      0.45;\n  }\n  return [dx, dy, clarity];\n}\n\n/** Share of the sharp edge layer kept at a device pixel ratio. */\nexport function glassEdgeDensity(pixelRatio = 1) {\n  return pixelRatio >= 2 ? 1 : 0.4;\n}\n\nexport function glassDisplacement(\n  x: number,\n  y: number,\n  frame: SvgGlassGeometry,\n) {\n  const [dx, dy] = glassOptics(x, y, frame);\n  return [dx, dy];\n}\n\nasync function decodedSvg(svg: string) {\n  const url = URL.createObjectURL(new Blob([svg], { type: \"image/svg+xml\" }));\n  const image = new window.Image();\n  image.src = url;\n  let timer: ReturnType<typeof setTimeout> | undefined;\n  try {\n    await Promise.race([\n      image.decode(),\n      new Promise<never>((_, reject) => {\n        timer = setTimeout(\n          () => reject(new Error(\"SVG rendering timed out\")),\n          3000,\n        );\n      }),\n    ]);\n    return image;\n  } finally {\n    if (timer) clearTimeout(timer);\n    URL.revokeObjectURL(url);\n  }\n}\n\nexport class SvgGlassRenderer {\n  private disposed = false;\n  private readonly maps = new Map<\n    string,\n    { normal: string; clarity: string }\n  >();\n  private root: SVGSVGElement | undefined;\n  private readonly filters = new Map<\n    HTMLElement,\n    { filter: SVGFilterElement; key: string }\n  >();\n\n  static async create() {\n    if (!window.CSS?.supports(\"backdrop-filter\", 'url(\"#glass-probe\")'))\n      throw new Error(\"Native SVG backdrop filtering unavailable\");\n    // WebKit parses URL filters but does not paint SVG backdrops (WebKit #245510).\n    const agent = window.navigator.userAgent;\n    if (/AppleWebKit\\//.test(agent) && !/(Chrome|Chromium)\\//.test(agent))\n      throw new Error(\"Native SVG backdrop filtering unavailable\");\n    // Verify inline SVG displacement after excluding the unsupported backdrop engine.\n    const image = await decodedSvg(\n      `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"4\" height=\"1\"><defs><filter id=\"probe\" filterUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"4\" height=\"1\" color-interpolation-filters=\"sRGB\"><feFlood flood-color=\"rgb(255,128,0)\" result=\"map\"/><feDisplacementMap in=\"SourceGraphic\" in2=\"map\" scale=\"2\" xChannelSelector=\"R\" yChannelSelector=\"G\"/></filter></defs><g filter=\"url(#probe)\"><rect width=\"2\" height=\"1\" fill=\"red\"/><rect x=\"2\" width=\"2\" height=\"1\" fill=\"blue\"/></g></svg>`,\n    );\n    const canvas = document.createElement(\"canvas\");\n    canvas.width = 4;\n    canvas.height = 1;\n    const context = canvas.getContext(\"2d\");\n    if (!context) throw new Error(\"SVG rasterization unavailable\");\n    context.drawImage(image, 0, 0);\n    const pixel = context.getImageData(1, 0, 1, 1).data;\n    if (pixel[2] < 200 || pixel[0] > 40)\n      throw new Error(\"SVG displacement unavailable\");\n    return new SvgGlassRenderer();\n  }\n\n  private geometryMaps(frame: SvgGlassGeometry) {\n    const key = JSON.stringify([\n      frame.width,\n      frame.height,\n      frame.radius,\n      frame.radiusY,\n    ]);\n    const existing = this.maps.get(key);\n    if (existing) return existing;\n    const scale = Math.min(2, 1024 / Math.max(frame.width, frame.height));\n    const canvas = document.createElement(\"canvas\");\n    canvas.width = Math.max(1, Math.ceil(frame.width * scale));\n    canvas.height = Math.max(1, Math.ceil(frame.height * scale));\n    const context = canvas.getContext(\"2d\");\n    if (!context) throw new Error(\"SVG displacement map unavailable\");\n    const normal = context.createImageData(canvas.width, canvas.height);\n    // Edge clarity gets its own gray map: wide-gamut screens convert the\n    // normal map's colors, which would leak displacement into a third\n    // channel, while gray converts to itself.\n    const clarity = context.createImageData(canvas.width, canvas.height);\n    for (let y = 0; y < canvas.height; y++) {\n      for (let x = 0; x < canvas.width; x++) {\n        const px = ((x + 0.5) * frame.width) / canvas.width;\n        const py = ((y + 0.5) * frame.height) / canvas.height;\n        const [dx, dy, edge] = glassOptics(px, py, frame);\n        const offset = (y * canvas.width + x) * 4;\n        normal.data[offset] = Math.round(128 + dx * 256);\n        normal.data[offset + 1] = Math.round(128 + dy * 256);\n        normal.data[offset + 3] = 255;\n        clarity.data.fill(Math.round(edge * 255), offset, offset + 3);\n        clarity.data[offset + 3] = 255;\n      }\n    }\n    const encode = (pixels: ImageData) => {\n      context.putImageData(pixels, 0, 0);\n      return canvas.toDataURL(\"image/png\");\n    };\n    const result = { normal: encode(normal), clarity: encode(clarity) };\n    if (this.maps.size >= 32)\n      this.maps.delete(this.maps.keys().next().value ?? \"\");\n    this.maps.set(key, result);\n    return result;\n  }\n\n  filter(element: HTMLElement, frame: SvgGlassGeometry) {\n    if (this.disposed) throw new Error(\"SVG renderer disposed\");\n    if (\n      ![\n        frame.width,\n        frame.height,\n        frame.strength,\n        ...frame.radius,\n        ...(frame.radiusY ?? frame.radius),\n      ].every(Number.isFinite) ||\n      frame.width <= 0 ||\n      frame.height <= 0 ||\n      frame.strength < 0 ||\n      frame.strength > 64 ||\n      [...frame.radius, ...(frame.radiusY ?? frame.radius)].some(\n        (radius) => radius < 0,\n      )\n    )\n      throw new Error(\"Invalid SVG glass geometry\");\n    // Displacing the unblurred backdrop aliases on low-density screens.\n    const density = glassEdgeDensity(window.devicePixelRatio);\n    const key = JSON.stringify([\n      frame.width,\n      frame.height,\n      frame.radius,\n      frame.radiusY,\n      frame.strength,\n      frame.blur,\n      density,\n    ]);\n    let entry = this.filters.get(element);\n    if (!entry) {\n      const document = element.ownerDocument;\n      if (!this.root) {\n        this.root = document.createElementNS(\n          \"http://www.w3.org/2000/svg\",\n          \"svg\",\n        );\n        this.root.setAttribute(\"data-glass-decoration\", \"true\");\n        this.root.setAttribute(\"aria-hidden\", \"true\");\n        this.root.style.cssText =\n          \"position:absolute;width:0;height:0;overflow:hidden\";\n        document.body.append(this.root);\n      }\n      const filter = document.createElementNS(\n        \"http://www.w3.org/2000/svg\",\n        \"filter\",\n      );\n      filter.id = `glass-svg-${++filterSequence}`;\n      this.root.append(filter);\n      entry = { filter, key: \"\" };\n      this.filters.set(element, entry);\n    }\n    if (entry.key !== key) {\n      const { width, height } = frame;\n      const maps = this.geometryMaps(frame);\n      const strength = glassRefractionStrength(frame.strength, width, height);\n      const clarity =\n        Math.min(strength / glassBevelWidth(width, height), 1) *\n        glassMaxEdgeClarity *\n        density;\n      const blur = frame.blur ?? 4;\n      const margin = frame.strength + blur * 3 + 2;\n      const filter = entry.filter;\n      filter.setAttribute(\"filterUnits\", \"userSpaceOnUse\");\n      filter.setAttribute(\"x\", String(-margin));\n      filter.setAttribute(\"y\", String(-margin));\n      filter.setAttribute(\"width\", String(width + margin * 2));\n      filter.setAttribute(\"height\", String(height + margin * 2));\n      filter.setAttribute(\"color-interpolation-filters\", \"sRGB\");\n      // SourceGraphic is the live browser backdrop. Only the geometric maps are\n      // encoded; there is no DOM snapshot or background PNG here.\n      // Material saturation follows in CSS after this filter.\n      filter.innerHTML = `<feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"${blur}\" result=\"blurred\"/><feImage href=\"${maps.normal}\" x=\"0\" y=\"0\" width=\"${width}\" height=\"${height}\" preserveAspectRatio=\"none\" result=\"encoded\"/><feImage href=\"${maps.clarity}\" x=\"0\" y=\"0\" width=\"${width}\" height=\"${height}\" preserveAspectRatio=\"none\" result=\"bevel\"/><feComponentTransfer in=\"encoded\" result=\"normal\"><feFuncR type=\"linear\" slope=\"0.99609375\"/><feFuncG type=\"linear\" slope=\"0.99609375\"/></feComponentTransfer><feDisplacementMap in=\"blurred\" in2=\"normal\" scale=\"${strength}\" xChannelSelector=\"R\" yChannelSelector=\"G\" result=\"refracted\"/><feDisplacementMap in=\"SourceGraphic\" in2=\"normal\" scale=\"${strength}\" xChannelSelector=\"R\" yChannelSelector=\"G\" result=\"sharp\"/><feColorMatrix in=\"bevel\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${clarity} 0 0 0 0\" result=\"clarity\"/><feComposite in=\"sharp\" in2=\"clarity\" operator=\"in\" result=\"edge\"/><feComposite in=\"edge\" in2=\"refracted\" operator=\"over\"/>`;\n      entry.key = key;\n    }\n    return `url(\"#${entry.filter.id}\")`;\n  }\n\n  release(element: HTMLElement) {\n    this.filters.get(element)?.filter.remove();\n    this.filters.delete(element);\n  }\n\n  destroy() {\n    this.disposed = true;\n    this.maps.clear();\n    this.root?.remove();\n    this.root = undefined;\n    this.filters.clear();\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/svg-renderer.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/glass/with-glass.tsx",
+      "content": "\"use client\";\n\nimport {\n  type ComponentType,\n  type CSSProperties,\n  useEffectEvent,\n  useId,\n  useLayoutEffect,\n  useMemo,\n  useState,\n} from \"react\";\nimport type { GlassConfig } from \"@/lib/glass/defaults\";\nimport { acquireGlass, updateGlassConfiguration } from \"@/lib/glass/runtime\";\n\nexport type { GlassConfig, GlassEdge } from \"@/lib/glass/defaults\";\n\n/**\n * `glass` turns on Clear liquid glass, with its own settings or the\n * defaults; `frosted` turns on the CSS-only frosted material, and `glass`\n * wins when both are set. Nothing is inherited: a component is glass only\n * when it says so. Inside another glass layer it keeps its tint and edge\n * light but does not blur the backdrop again.\n */\nexport type GlassProps = { glass?: boolean | GlassConfig; frosted?: boolean };\n\ntype StyleProp =\n  | CSSProperties\n  | ((state: unknown) => CSSProperties | undefined)\n  | undefined;\n\n/**\n * Adds the tint settings to a component's style, or to its style callback, so\n * the first paint already uses them before the runtime reads the material.\n */\nfunction withTintStyle(style: StyleProp, configuration: GlassConfig) {\n  const tint: Record<string, string> = {};\n  if (configuration.tint) tint[\"--glass-base\"] = configuration.tint;\n  if (Number.isFinite(configuration.tintOpacity))\n    tint[\"--glass-opacity\"] =\n      `${Math.min(1, Math.max(0, configuration.tintOpacity ?? 0)) * 100}%`;\n  if (!Object.keys(tint).length) return style;\n  if (typeof style === \"function\")\n    return (state: unknown) => ({ ...style(state), ...tint });\n  return { ...style, ...tint };\n}\n\nconst noSettings: GlassConfig = {};\n\nexport function withGlass<P extends object>(Component: ComponentType<P>) {\n  function GlassComponent({\n    glass = false,\n    frosted = false,\n    ...props\n  }: P & GlassProps) {\n    const id = useId();\n    const [mounted, setMounted] = useState(false);\n    const clear = glass !== false;\n    const settings = typeof glass === \"object\" ? glass : noSettings;\n    // Inline settings are new on every render; keying by content keeps one\n    // configuration, so the runtime only hears about real changes.\n    const key = JSON.stringify(settings);\n    // biome-ignore lint/correctness/useExhaustiveDependencies: the key captures the settings' content.\n    const configuration = useMemo(() => settings, [key]);\n    const initialConfiguration = useEffectEvent(() => configuration);\n    useLayoutEffect(() => {\n      if (!clear) return;\n      setMounted(true);\n      return acquireGlass({ ...initialConfiguration(), id });\n    }, [clear, id]);\n    useLayoutEffect(() => {\n      if (clear) updateGlassConfiguration({ ...configuration, id });\n    }, [clear, configuration, id]);\n    if (clear)\n      return (\n        <Component\n          {...(props as P)}\n          style={withTintStyle(\n            (props as { style?: StyleProp }).style,\n            configuration,\n          )}\n          data-glass=\"true\"\n          data-glass-scope={id}\n          data-glass-text-glow={String(configuration.textGlow ?? false)}\n          data-glass-state=\"loading\"\n          data-glass-mounted={mounted}\n        />\n      );\n    if (frosted) return <Component {...(props as P)} data-frosted=\"true\" />;\n    return <Component {...(props as P)} />;\n  }\n  GlassComponent.displayName = `Glass(${Component.displayName ?? Component.name})`;\n  return GlassComponent;\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/glass/with-glass.tsx"
+    }
+  ],
+  "cssVars": {
+    "theme": {
+      "font-heading": "var(--font-sans)",
+      "color-sidebar-ring": "var(--sidebar-ring)",
+      "color-sidebar-border": "var(--sidebar-border)",
+      "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+      "color-sidebar-accent": "var(--sidebar-accent)",
+      "color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+      "color-sidebar-primary": "var(--sidebar-primary)",
+      "color-sidebar-foreground": "var(--sidebar-foreground)",
+      "color-sidebar": "var(--sidebar)",
+      "color-chart-5": "var(--chart-5)",
+      "color-chart-4": "var(--chart-4)",
+      "color-chart-3": "var(--chart-3)",
+      "color-chart-2": "var(--chart-2)",
+      "color-chart-1": "var(--chart-1)",
+      "color-ring": "var(--ring)",
+      "color-input": "var(--input)",
+      "color-border": "var(--border)",
+      "color-destructive": "var(--destructive)",
+      "color-destructive-foreground": "var(--destructive-foreground)",
+      "color-accent-foreground": "var(--accent-foreground)",
+      "color-accent": "var(--accent)",
+      "color-muted-foreground": "var(--muted-foreground)",
+      "color-muted": "var(--muted)",
+      "color-secondary-foreground": "var(--secondary-foreground)",
+      "color-secondary": "var(--secondary)",
+      "color-primary-foreground": "var(--primary-foreground)",
+      "color-primary": "var(--primary)",
+      "color-popover-foreground": "var(--popover-foreground)",
+      "color-popover": "var(--popover)",
+      "color-card-foreground": "var(--card-foreground)",
+      "color-card": "var(--card)",
+      "color-foreground": "var(--foreground)",
+      "color-background": "var(--background)",
+      "font-sans": "\"Inter Variable\", sans-serif",
+      "radius-xs": "calc(var(--radius) * 0.25)",
+      "radius-sm": "calc(var(--radius) * 0.5)",
+      "radius-md": "calc(var(--radius) * 0.75)",
+      "radius-lg": "var(--radius)",
+      "radius-xl": "calc(var(--radius) * 1.5)",
+      "radius-2xl": "calc(var(--radius) * 2)",
+      "radius-3xl": "calc(var(--radius) * 3)",
+      "radius-4xl": "calc(var(--radius) * 4)",
+      "radius-5xl": "calc(var(--radius) * 5)",
+      "radius-6xl": "calc(var(--radius) * 6)"
+    },
+    "light": {
+      "radius": "0.5rem",
+      "background": "oklch(0.97071377 0.00265048 286.35036)",
+      "foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "card": "oklch(1 0 0)",
+      "card-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "popover": "oklch(1 0 0)",
+      "popover-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "primary": "oklch(0.52196619 0.1770896 255.82973)",
+      "primary-foreground": "oklch(1 0 0)",
+      "secondary": "oklch(0.93243246 0.00670095 286.26905)",
+      "secondary-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "muted": "oklch(0.93243246 0.00670095 286.26905)",
+      "muted-foreground": "oklch(0.5007042 0.0046993 286.22878)",
+      "accent": "oklch(0.95747203 0.02050834 254.91347)",
+      "accent-foreground": "oklch(0.48848495 0.1645945 255.64262)",
+      "destructive": "oklch(0.577 0.245 27.325)",
+      "destructive-foreground": "color-mix( in oklab, var(--destructive) 75%, var(--foreground) )",
+      "border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
+      "input": "oklch(0.83115757 0.00689828 286.24868)",
+      "ring": "oklch(0.52196619 0.1770896 255.82973)",
+      "chart-1": "oklch(0.52196619 0.1770896 255.82973)",
+      "chart-2": "oklch(0.55844958 0.14613572 147.50221)",
+      "chart-3": "oklch(0.51857386 0.16637669 312.97461)",
+      "chart-4": "oklch(0.57335411 0.13071559 63.06154)",
+      "chart-5": "oklch(0.56125302 0.18494209 12.58196)",
+      "sidebar": "oklch(0.97071377 0.00265048 286.35036)",
+      "sidebar-foreground": "oklch(0.23157626 0.00380518 286.09885)",
+      "sidebar-primary": "oklch(0.52196619 0.1770896 255.82973)",
+      "sidebar-primary-foreground": "oklch(1 0 0)",
+      "sidebar-accent": "oklch(0.95747203 0.02050834 254.91347)",
+      "sidebar-accent-foreground": "oklch(0.48848495 0.1645945 255.64262)",
+      "sidebar-border": "oklch(0.23157626 0.00380518 286.09885 / 16%)",
+      "sidebar-ring": "oklch(0.52196619 0.1770896 255.82973)"
+    },
+    "dark": {
+      "background": "oklch(0.200616 0.00196907 286.22089)",
+      "foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "card": "oklch(0.23157626 0.00380518 286.09885)",
+      "card-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "popover": "oklch(0.23157626 0.00380518 286.09885)",
+      "popover-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "primary": "oklch(0.62425384 0.20557728 255.48612)",
+      "primary-foreground": "oklch(0 0 0)",
+      "secondary": "oklch(0.29390059 0.00358161 286.17729)",
+      "secondary-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "muted": "oklch(0.29390059 0.00358161 286.17729)",
+      "muted-foreground": "oklch(0.71054175 0.00717721 286.21564)",
+      "accent": "oklch(0.31864243 0.0686499 250.85957)",
+      "accent-foreground": "oklch(0.85422911 0.07542523 248.72497)",
+      "destructive": "oklch(0.704 0.191 22.216)",
+      "destructive-foreground": "color-mix( in oklab, var(--destructive) 75%, var(--foreground) )",
+      "border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
+      "input": "oklch(0.40237522 0.00330792 286.25012)",
+      "ring": "oklch(0.62425384 0.20557728 255.48612)",
+      "chart-1": "oklch(0.62425384 0.20557728 255.48612)",
+      "chart-2": "oklch(0.75555079 0.20824556 146.98359)",
+      "chart-3": "oklch(0.65604853 0.22741447 312.41572)",
+      "chart-4": "oklch(0.78236525 0.17105514 67.22306)",
+      "chart-5": "oklch(0.70783992 0.18913575 11.59117)",
+      "sidebar": "oklch(0.200616 0.00196907 286.22089)",
+      "sidebar-foreground": "oklch(0.97071377 0.00265048 286.35036)",
+      "sidebar-primary": "oklch(0.62425384 0.20557728 255.48612)",
+      "sidebar-primary-foreground": "oklch(0 0 0)",
+      "sidebar-accent": "oklch(0.31864243 0.0686499 250.85957)",
+      "sidebar-accent-foreground": "oklch(0.85422911 0.07542523 248.72497)",
+      "sidebar-border": "oklch(0.97071377 0.00265048 286.35036 / 20%)",
+      "sidebar-ring": "oklch(0.62425384 0.20557728 255.48612)"
+    }
+  },
+  "css": {
+    "@import \"tw-animate-css\"": {},
+    "@import \"shadcn/tailwind.css\"": {},
+    "@import \"@fontsource-variable/inter\"": {},
+    "@property --otp-focus-angle": {
+      "syntax": "\"<angle>\"",
+      "inherits": "false",
+      "initial-value": "0deg"
+    },
+    "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not( [data-glass=\"true\"] )": {
+      "background": "linear-gradient( color-mix(in oklch, var(--background), var(--input) 55%) 0 0 ) padding-box, conic-gradient( from var(--otp-focus-angle), transparent 0% 18%, var(--ring) 30% 48%, transparent 60% 100% ) border-box",
+      "animation": "input-otp-focus 1.8s linear infinite"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+      "pointer-events": "none",
+      "animation": "input-otp-collapse 380ms cubic-bezier(0.65, 0, 0.35, 1) var(--otp-collapse-delay, 0ms) both"
+    },
+    "[data-slot=\"input-otp-state\"]": {
+      "animation": "input-otp-reveal 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 240ms both"
+    },
+    "[data-slot=\"input-otp-state-icon\"][data-spinning]": {
+      "animation": "input-otp-spin 750ms linear infinite"
+    },
+    "[data-slot=\"input-otp-halo\"]": {
+      "position": "absolute",
+      "inset": "--spacing(-1)",
+      "border-radius": "inherit",
+      "box-shadow": "0 0 0 2px color-mix(in oklch, var(--primary) 25%, transparent)",
+      "animation": "input-otp-halo 700ms ease-out 100ms both"
+    },
+    "[data-slot=\"input-otp-particles\"] > span": {
+      "position": "absolute",
+      "width": "--spacing(1)",
+      "height": "--spacing(2)",
+      "border-radius": "999px",
+      "background": "var(--primary)",
+      "animation": "input-otp-particle 850ms cubic-bezier(0.16, 1, 0.3, 1) var(--otp-particle-delay) both"
+    },
+    "[data-slot=\"input-otp-particles\"] > span:nth-child(3n + 1)": {
+      "background": "var(--ring)"
+    },
+    "[data-slot=\"input-otp-particles\"] > span:nth-child(3n + 2)": {
+      "background": "var(--accent-foreground)"
+    },
+    "[data-slot=\"input-otp-feedback-clock\"]": {
+      "position": "absolute",
+      "width": "1px",
+      "height": "1px",
+      "opacity": "0",
+      "pointer-events": "none",
+      "animation": "input-otp-feedback var(--otp-feedback-duration, 1250ms) linear both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-slot\"]": {
+      "pointer-events": "none",
+      "animation": "input-otp-restore 380ms cubic-bezier(0.16, 1, 0.3, 1) both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-state\"]": {
+      "animation": "input-otp-dismiss 180ms ease-in both"
+    },
+    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-feedback-clock\"]": {
+      "animation-name": "input-otp-restoration",
+      "animation-duration": "380ms"
+    },
+    "[data-slot=\"input-otp\"][data-complete][data-feedback=\"restored\"] [data-slot=\"input-otp-slot\"]": {
+      "box-shadow": "0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent)"
+    },
+    "@media (prefers-reduced-motion: reduce)": {
+      "[data-slot=\"input-otp-state\"], [data-slot=\"input-otp-state-icon\"], [data-slot=\"input-otp-halo\"], [data-slot=\"input-otp-feedback-clock\"]": {
+        "animation": "none"
+      },
+      "[data-slot=\"input-otp-state\"]": {
+        "opacity": "1",
+        "scale": "1"
+      },
+      "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not( [data-glass=\"true\"] ), [data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-state\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-feedback-clock\"]": {
+        "animation": "none"
+      },
+      "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+        "opacity": "0"
+      },
+      "[data-slot=\"input-otp-particles\"]": {
+        "display": "none"
+      },
+      "html[data-appearance-transition]::view-transition-new(root)": {
+        "animation": "none"
+      }
+    },
+    "@custom-variant glass (&:is([data-glass=\"true\"], [data-frosted=\"true\"]))": {},
+    "@custom-variant glass-off": {
+      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+        "@slot": {}
+      }
+    },
+    "@layer components.glass": {
+      ":where([data-slot=\"card\"]:is([data-glass=\"true\"], [data-frosted=\"true\"])) > :where([data-slot=\"card-header\"], [data-slot=\"card-footer\"]), :where([data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-frosted=\"true\"])) > :where([data-slot=\"accordion-item\"])": {
+        "border-color": "color-mix(in srgb, var(--foreground) 12%, transparent)",
+        "@variant glass-off": {
+          "border-color": "revert-layer"
+        }
+      },
+      ":where([data-slot=\"accordion\"]):has( > [data-slot=\"accordion-item\"]:is( [data-glass=\"true\"], [data-frosted=\"true\"] ) )": {
+        "border-color": "transparent",
+        "@variant glass-off": {
+          "border-color": "revert-layer"
+        }
+      },
+      ":where( [data-slot=\"accordion\"] > [data-slot=\"accordion-item\"]:is( [data-glass=\"true\"], [data-frosted=\"true\"] ) )": {
+        "&:first-child": {
+          "border-top-left-radius": "inherit",
+          "border-top-right-radius": "inherit",
+          "@variant glass-off": {
+            "border-top-left-radius": "revert-layer",
+            "border-top-right-radius": "revert-layer"
+          }
+        },
+        "&:last-child": {
+          "border-bottom-left-radius": "inherit",
+          "border-bottom-right-radius": "inherit",
+          "@variant glass-off": {
+            "border-bottom-left-radius": "revert-layer",
+            "border-bottom-right-radius": "revert-layer"
+          }
+        }
+      }
+    },
+    "[data-glass=\"true\"], [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"], [data-slot=\"accordion-item\"][data-glass=\"true\"] > * > [data-slot=\"accordion-trigger\"]": {
+      "border-color": "transparent",
+      "outline": "none",
+      "--tw-ring-color": "transparent",
+      "--tw-inset-ring-shadow": "0 0 #0000",
+      "--tw-ring-shadow": "0 0 #0000",
+      "--tw-ring-offset-shadow": "0 0 #0000",
+      "@variant glass-off": {
+        "border-color": "revert-layer",
+        "outline": "revert-layer",
+        "--tw-ring-color": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer",
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-ring-offset-shadow": "revert-layer"
+      }
+    },
+    ":is( [data-glass=\"true\"], [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"], [data-slot=\"accordion-item\"][data-glass=\"true\"] > * > [data-slot=\"accordion-trigger\"] ):focus-visible, [data-glass=\"true\"]:is( [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"combobox-chips\"], [data-slot=\"tag-input\"], [data-slot=\"wheel-picker\"] ):has(:focus-visible)": {
+      "outline": "2px solid var(--ring)",
+      "outline-offset": "3px",
+      "@media (forced-colors: active)": {
+        "outline-color": "Highlight"
+      }
+    },
+    "[data-glass=\"true\"][data-glass-state]": {
+      "--glass-edge": "none",
+      "--glass-initial-edge-shadow": "initial",
+      "--glass-backdrop-blur": "6px",
+      "--glass-initial-edge-color": "color-mix( in srgb, color-mix(in srgb, var(--foreground) 12%, white) 28%, transparent )",
+      "background-color": "color-mix( in srgb, var(--glass-base, var(--popover)) var(--glass-opacity, 12%), transparent )",
+      "background-image": "var(--glass-edge, none)",
+      "background-size": "100% 100%",
+      "background-repeat": "no-repeat",
+      "background-origin": "border-box",
+      "background-clip": "border-box",
+      "box-shadow": "var( --glass-initial-edge-shadow, inset 0.8px 0.8px 0.4px -0.6px var(--glass-initial-edge-color), inset -0.8px -0.8px 0.4px -0.6px color-mix(in srgb, var(--glass-initial-edge-color) 70%, transparent), 0 1px 3px -1px rgb(0 0 0 / 0.1) ), var(--glass-press, 0 0 #0000), var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)",
+      "-webkit-backdrop-filter": "blur(var(--glass-backdrop-blur)) saturate(1.3)",
+      "backdrop-filter": "blur(var(--glass-backdrop-blur)) saturate(1.3)",
+      "&:where([data-slot=\"tab-bar-indicator\"])": {
+        "background-color": "transparent",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none"
+      },
+      "&:where([data-glass-state=\"ready\"][data-glass-renderer=\"svg\"])": {
+        "-webkit-backdrop-filter": "var(--glass-filter) saturate(1.3)",
+        "backdrop-filter": "var(--glass-filter) saturate(1.3)"
+      },
+      "@variant glass-off": {
+        "--glass-initial-edge-shadow": "0 0 #0000",
+        "background-color": "var(--glass-base, var(--popover))",
+        "background-image": "none",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none",
+        "text-shadow": "none"
+      },
+      "--glass-halo": "var(--glass-base, var(--popover))",
+      "--glass-icon-glow": "drop-shadow( 0 0 1px color-mix(in srgb, var(--glass-halo) 85%, transparent) ) drop-shadow( 0 0 2.5px color-mix(in srgb, var(--glass-halo) 50%, transparent) )",
+      "text-shadow": "0 0 0.08em color-mix(in srgb, var(--glass-halo) 90%, transparent), 0 0 0.25em color-mix(in srgb, var(--glass-halo) 60%, transparent)",
+      "&[data-glass-text-glow=\"false\"]": {
+        "--glass-icon-glow": "none",
+        "text-shadow": "none"
+      },
+      "& :where(svg.lucide)": {
+        "filter": "var(--glass-icon-glow)",
+        "@variant glass-off": {
+          "filter": "revert-layer"
+        }
+      }
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"])": {
+      "& :where(.text-muted-foreground)": {
+        "color": "color-mix(in oklab, var(--muted-foreground) 40%, var(--foreground))",
+        "@variant glass-off": {
+          "color": "revert-layer"
+        }
+      },
+      "&::placeholder, & ::placeholder": {
+        "color": "color-mix(in oklab, var(--muted-foreground) 65%, var(--foreground))",
+        "@variant glass-off": {
+          "color": "revert-layer"
+        }
+      }
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"input\"], [data-slot=\"textarea\"], [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"select-trigger\"], [data-slot=\"combobox-chips\"], [data-slot=\"tag-input\"] ):focus-within": {
+      "--glass-press": "inset 0 0 0 100vmax rgb(255 255 255 / 0.08)"
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( button, [role=\"button\"], a[href] ):not(:disabled, [aria-disabled=\"true\"])": {
+      "transition-property": "color, background-color, box-shadow, scale",
+      "transition-duration": "160ms",
+      "transition-timing-function": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+      "&:active": {
+        "--glass-press": "inset 0 0 0 100vmax rgb(255 255 255 / 0.1)"
+      }
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"alert-dialog-content\"], [data-slot=\"bottom-sheet-popup\"], [data-slot=\"combobox-content\"], [data-slot=\"context-menu-content\"], [data-slot=\"context-menu-sub-content\"], [data-slot=\"dialog-content\"], [data-slot=\"drawer-content\"], [data-slot=\"drawer-popup\"], [data-slot=\"dropdown-menu-content\"], [data-slot=\"dropdown-menu-sub-content\"], [data-slot=\"hover-card-content\"], [data-slot=\"menubar-content\"], [data-slot=\"menubar-sub-content\"], [data-slot=\"navigation-menu-popup\"], [data-slot=\"popover-content\"], [data-slot=\"select-content\"], [data-slot=\"sheet-content\"], [data-slot=\"tab-bar-list\"], [data-slot=\"toast\"], [data-slot=\"tooltip-content\"] )": {
+      "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.24), 0 2px 8px -4px rgb(0 0 0 / 0.08)",
+      ":where(.dark) &": {
+        "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.5), 0 2px 8px -4px rgb(0 0 0 / 0.2)"
+      }
+    },
+    "[data-slot=\"accordion\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > [data-slot=\"accordion-item\"][data-open][class~=\"data-open:bg-muted/50\"], [data-slot=\"select-content\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > :is( [data-slot=\"select-scroll-up-button\"], [data-slot=\"select-scroll-down-button\"] )": {
+      "background-color": "transparent",
+      "@variant glass-off": {
+        "background-color": "revert-layer"
+      }
+    },
+    "[data-slot=\"toggle-group\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > [data-slot=\"toggle-group-item\"][data-variant=\"outline\"], [data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > :is( [data-variant=\"outline\"], [data-variant=\"secondary\"], [data-variant=\"ghost\"], [data-slot=\"button-group-text\"], [data-slot=\"input\"], [data-slot=\"select-trigger\"] )": {
+      "background-color": "transparent",
+      "border-color": "transparent"
+    },
+    "[data-slot=\"toggle-group\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > [data-slot=\"toggle-group-item\"][data-variant=\"outline\"]:is( [data-pressed], :hover ):not(:disabled)": {
+      "background-color": "color-mix(in srgb, var(--foreground) 10%, transparent)"
+    },
+    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > :is( [data-variant=\"outline\"], [data-variant=\"secondary\"], [data-variant=\"ghost\"], [data-slot=\"input\"], [data-slot=\"select-trigger\"] ):is(:hover, :focus-visible, [aria-expanded=\"true\"]):not(:disabled), [data-slot=\"pagination-content\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) [data-slot=\"pagination-link\"]:not([data-active=\"true\"]):hover": {
+      "background-color": "color-mix(in srgb, var(--foreground) 8%, transparent)"
+    },
+    "[data-slot=\"button-group\"]:is([data-glass=\"true\"], [data-frosted=\"true\"]) > :is( [data-variant=\"outline\"], [data-variant=\"secondary\"], [data-variant=\"ghost\"], [data-slot=\"button-group-text\"], [data-slot=\"input\"], [data-slot=\"select-trigger\"] ) + :is( [data-variant=\"outline\"], [data-variant=\"secondary\"], [data-variant=\"ghost\"], [data-slot=\"button-group-text\"], [data-slot=\"input\"], [data-slot=\"select-trigger\"] )": {
+      "--glass-divider": "color-mix(in srgb, var(--foreground) 16%, transparent)",
+      "background-image": "linear-gradient(var(--glass-divider), var(--glass-divider))",
+      "background-position": "left center",
+      "background-repeat": "no-repeat",
+      "background-size": "1px 50%",
+      "&:dir(rtl)": {
+        "background-position": "right center"
+      }
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]) :is([role=\"separator\"], [data-slot=\"separator-line\"]):not( [data-slot=\"resizable-handle\"] )": {
+      "background-color": "color-mix(in srgb, var(--foreground) 12%, transparent)",
+      "@variant glass-off": {
+        "background-color": "revert-layer"
+      }
+    },
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]) :is([data-glass=\"true\"], [data-frosted=\"true\"]):not([data-glass-lens])": {
+      "-webkit-backdrop-filter": "none",
+      "backdrop-filter": "none"
+    },
+    "[data-frosted=\"true\"]": {
+      "--frosted-tint": "var(--frosted-base, var(--popover))",
+      "--frosted-shadow": "0 1px 3px -1px rgb(0 0 0 / 0.13)",
+      "background-color": "color-mix( in srgb, var(--frosted-tint) var(--frosted-opacity, 65%), transparent )",
+      "box-shadow": "var(--frosted-shadow), var(--glass-press, 0 0 #0000), var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000)",
+      "-webkit-backdrop-filter": "blur(var(--frosted-blur, 24px)) saturate(1.3)",
+      "backdrop-filter": "blur(var(--frosted-blur, 24px)) saturate(1.3)",
+      "border-color": "transparent",
+      "@media (prefers-contrast: more)": {
+        "border-color": "revert-layer"
+      },
+      "&:where(.dark *)": {
+        "--frosted-shadow": "0 1px 3px -1px rgb(0 0 0 / 0.1)"
+      },
+      "&:where([class~=\"bg-foreground\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--foreground))"
+      },
+      "&:where([class~=\"bg-background\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--background))"
+      },
+      "&:where([class~=\"bg-card\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--card))"
+      },
+      "&:where([class*=\"bg-muted\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--muted))"
+      },
+      "&:where([class~=\"bg-secondary\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--secondary))"
+      },
+      "&:where([class~=\"bg-accent\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--accent))"
+      },
+      "&:where([class*=\"bg-input\"])": {
+        "--frosted-tint": "var(--frosted-base, var(--input))"
+      },
+      "&:is([class~=\"bg-primary\"], [class~=\"bg-destructive\"])": {
+        "background-color": "revert-layer"
+      },
+      "@variant glass-off": {
+        "--frosted-shadow": "0 0 #0000",
+        "background-color": "var(--frosted-tint)",
+        "-webkit-backdrop-filter": "none",
+        "backdrop-filter": "none",
+        "border-color": "revert-layer"
+      }
+    },
+    "[data-frosted=\"true\"]:not(:focus-visible, :has(> :focus-visible))": {
+      "--tw-ring-shadow": "0 0 #0000",
+      "--tw-inset-ring-shadow": "0 0 #0000",
+      "@media (prefers-contrast: more)": {
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer"
+      },
+      "@variant glass-off": {
+        "--tw-ring-shadow": "revert-layer",
+        "--tw-inset-ring-shadow": "revert-layer"
+      }
+    },
+    "html[data-appearance-transition]::view-transition-old(root)": {
+      "animation": "none",
+      "mix-blend-mode": "normal"
+    },
+    "html[data-appearance-transition]::view-transition-new(root)": {
+      "mix-blend-mode": "normal"
+    },
+    "html[data-appearance-transition=\"rectangle\"]::view-transition-new(root)": {
+      "animation": "appearance-rectangle 400ms ease-out"
+    },
+    "html[data-appearance-transition=\"circle\"]::view-transition-new(root)": {
+      "animation": "appearance-circle 700ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "html[data-appearance-transition=\"circle-blur\"]::view-transition-new(root)": {
+      "animation": "appearance-circle-soft 700ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "@property --appearance-reveal": {
+      "syntax": "\"<number>\"",
+      "inherits": "false",
+      "initial-value": "0"
+    },
+    "html[data-appearance-transition=\"blinds\"]::view-transition-new(root)": {
+      "mask-image": "repeating-linear-gradient( 90deg, #000 0 calc(var(--appearance-reveal) * 72px), transparent calc(var(--appearance-reveal) * 72px) 72px )",
+      "animation": "appearance-blinds 700ms ease-out"
+    },
+    "[data-slot=\"toast\"]": {
+      "&[data-type=\"success\"]": {
+        "--toast-accent": "oklch(0.696 0.17 162.48)"
+      },
+      "&[data-type=\"info\"]": {
+        "--toast-accent": "oklch(0.685 0.169 237.323)"
+      },
+      "&[data-type=\"warning\"]": {
+        "--toast-accent": "oklch(0.769 0.188 70.08)"
+      },
+      "&[data-type=\"error\"]": {
+        "--toast-accent": "var(--destructive)"
+      }
+    },
+    "@layer utilities": {
+      "[data-slot=\"toast\"][data-type=\"error\"] [data-slot=\"toast-icon\"]": {
+        "color": "var(--toast-accent)"
+      },
+      "[data-slot=\"toast-viewport\"][data-colorful=\"true\"] [data-slot=\"toast\"]:is( [data-type=\"success\"], [data-type=\"info\"], [data-type=\"warning\"], [data-type=\"error\"] )": {
+        "--frosted-base": "color-mix( in oklab, var(--toast-accent) 12%, var(--popover) )",
+        "border-color": "color-mix(in oklab, var(--toast-accent) 35%, transparent)",
+        "background-color": "color-mix( in oklab, var(--toast-accent) 12%, var(--popover) )",
+        "& :is([data-slot=\"toast-icon\"], [data-slot=\"toast-title\"])": {
+          "color": "color-mix(in oklab, var(--toast-accent) 85%, var(--foreground))"
+        }
+      }
+    },
+    "@custom-variant dark (&:is(.dark *))": {},
+    "@layer base": {
+      "*": {
+        "@apply border-border outline-ring/50": {}
+      },
+      "body": {
+        "@apply bg-background text-foreground": {}
+      },
+      "button:not(:disabled), [role=\"button\"]:not(:disabled)": {
+        "cursor": "pointer"
+      }
+    },
+    "@layer component-animations": {
+      "@keyframes loader-spin": {
+        "to": {
+          "transform": "rotate(360deg)"
+        }
+      },
+      "@keyframes loader-dash": {
+        "0%": {
+          "stroke-dasharray": "2 98",
+          "stroke-dashoffset": "0"
+        },
+        "50%": {
+          "stroke-dasharray": "70 30",
+          "stroke-dashoffset": "-15"
+        },
+        "100%": {
+          "stroke-dasharray": "2 98",
+          "stroke-dashoffset": "-100"
+        }
+      },
+      "@keyframes loader-dot": {
+        "0%, 100%": {
+          "transform": "translateY(0)",
+          "opacity": "0.45"
+        },
+        "50%": {
+          "transform": "translateY(calc(var(--loader-size) * -0.22))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-bar": {
+        "0%, 100%": {
+          "transform": "scaleY(0.3)"
+        },
+        "50%": {
+          "transform": "scaleY(1)"
+        }
+      },
+      "@keyframes loader-matrix": {
+        "0%, 100%": {
+          "opacity": "0.2",
+          "transform": "scale(0.7)"
+        },
+        "50%": {
+          "opacity": "1",
+          "transform": "scale(1)"
+        }
+      },
+      "@keyframes loader-opacity": {
+        "0%, 100%": {
+          "opacity": "0.2"
+        },
+        "50%": {
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-metaball-first": {
+        "0%, 100%": {
+          "transform": "translateX(0)"
+        },
+        "50%": {
+          "transform": "translateX(33px)"
+        }
+      },
+      "@keyframes loader-metaball-second": {
+        "0%, 100%": {
+          "transform": "translateX(0)"
+        },
+        "50%": {
+          "transform": "translateX(-33px)"
+        }
+      },
+      "@keyframes loader-newton-left": {
+        "0%, 100%": {
+          "transform": "rotate(-30deg)"
+        },
+        "33.33%, 66.66%": {
+          "transform": "rotate(0)"
+        }
+      },
+      "@keyframes loader-newton-right": {
+        "0%, 33.33%, 100%": {
+          "transform": "rotate(0)"
+        },
+        "66.66%": {
+          "transform": "rotate(30deg)"
+        }
+      },
+      "@keyframes loader-helix-left": {
+        "0%, 100%": {
+          "transform": "translateX(0)",
+          "opacity": "0.55"
+        },
+        "50%": {
+          "transform": "translateX(calc(var(--loader-size) * 0.42))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-helix-right": {
+        "0%, 100%": {
+          "transform": "translateX(0)",
+          "opacity": "0.55"
+        },
+        "50%": {
+          "transform": "translateX(calc(var(--loader-size) * -0.42))",
+          "opacity": "1"
+        }
+      },
+      "@keyframes loader-morph-pose": {
+        "0%, 10%": {
+          "transform": "rotate(0deg) scale(1)"
+        },
+        "20%, 30%": {
+          "transform": "rotate(72deg) scale(0.88)"
+        },
+        "40%, 50%": {
+          "transform": "rotate(144deg) scale(1)"
+        },
+        "60%, 70%": {
+          "transform": "rotate(216deg) scale(0.88)"
+        },
+        "80%, 90%": {
+          "transform": "rotate(288deg) scale(1)"
+        },
+        "100%": {
+          "transform": "rotate(360deg) scale(1)"
+        }
+      },
+      "@keyframes loader-morph-shape": {
+        "0%, 10%, 100%": {
+          "clip-path": "polygon( 50.00% 4.00%, 61.91% 5.57%, 73.00% 10.16%, 82.53% 17.47%, 89.84% 27.00%, 94.43% 38.09%, 96.00% 50.00%, 94.43% 61.91%, 89.84% 73.00%, 82.53% 82.53%, 73.00% 89.84%, 61.91% 94.43%, 50.00% 96.00%, 38.09% 94.43%, 27.00% 89.84%, 17.47% 82.53%, 10.16% 73.00%, 5.57% 61.91%, 4.00% 50.00%, 5.57% 38.09%, 10.16% 27.00%, 17.47% 17.47%, 27.00% 10.16%, 38.09% 5.57% )"
+        },
+        "20%, 30%": {
+          "clip-path": "polygon( 82.53% 17.47%, 82.53% 28.32%, 82.53% 39.16%, 82.53% 50.00%, 82.53% 60.84%, 82.53% 71.68%, 82.53% 82.53%, 71.68% 82.53%, 60.84% 82.53%, 50.00% 82.53%, 39.16% 82.53%, 28.32% 82.53%, 17.47% 82.53%, 17.47% 71.68%, 17.47% 60.84%, 17.47% 50.00%, 17.47% 39.16%, 17.47% 28.32%, 17.47% 17.47%, 28.32% 17.47%, 39.16% 17.47%, 50.00% 17.47%, 60.84% 17.47%, 71.68% 17.47% )"
+        },
+        "40%, 50%": {
+          "clip-path": "polygon( 50.00% 4.00%, 54.98% 12.62%, 59.96% 21.25%, 64.94% 29.88%, 69.92% 38.50%, 74.90% 47.12%, 79.88% 55.75%, 84.86% 64.38%, 89.84% 73.00%, 79.88% 73.00%, 69.92% 73.00%, 59.96% 73.00%, 50.00% 73.00%, 40.04% 73.00%, 30.08% 73.00%, 20.12% 73.00%, 10.16% 73.00%, 15.14% 64.38%, 20.12% 55.75%, 25.10% 47.13%, 30.08% 38.50%, 35.06% 29.88%, 40.04% 21.25%, 45.02% 12.62% )"
+        },
+        "60%, 70%": {
+          "clip-path": "polygon( 50.00% 4.00%, 59.96% 9.75%, 69.92% 15.50%, 79.88% 21.25%, 89.84% 27.00%, 89.84% 38.50%, 89.84% 50.00%, 89.84% 61.50%, 89.84% 73.00%, 79.88% 78.75%, 69.92% 84.50%, 59.96% 90.25%, 50.00% 96.00%, 40.04% 90.25%, 30.08% 84.50%, 20.12% 78.75%, 10.16% 73.00%, 10.16% 61.50%, 10.16% 50.00%, 10.16% 38.50%, 10.16% 27.00%, 20.12% 21.25%, 30.08% 15.50%, 40.04% 9.75% )"
+        },
+        "80%, 90%": {
+          "clip-path": "polygon( 50.00% 4.00%, 57.67% 11.67%, 65.33% 19.33%, 73.00% 27.00%, 80.67% 34.67%, 88.33% 42.33%, 96.00% 50.00%, 88.33% 57.67%, 80.67% 65.33%, 73.00% 73.00%, 65.33% 80.67%, 57.67% 88.33%, 50.00% 96.00%, 42.33% 88.33%, 34.67% 80.67%, 27.00% 73.00%, 19.33% 65.33%, 11.67% 57.67%, 4.00% 50.00%, 11.67% 42.33%, 19.33% 34.67%, 27.00% 27.00%, 34.67% 19.33%, 42.33% 11.67% )"
+        }
+      },
+      "@keyframes input-otp-focus": {
+        "to": {
+          "--otp-focus-angle": "360deg"
+        }
+      },
+      "@keyframes input-otp-collapse": {
+        "to": {
+          "transform": "translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px)) scale(0.86)",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-restore": {
+        "from": {
+          "transform": "translate(var(--otp-collapse-x, 0px), var(--otp-collapse-y, 0px)) scale(0.86)",
+          "opacity": "0"
+        },
+        "to": {
+          "transform": "translate(0, 0) scale(1)",
+          "opacity": "1"
+        }
+      },
+      "@keyframes input-otp-dismiss": {
+        "from": {
+          "opacity": "1",
+          "scale": "1"
+        },
+        "to": {
+          "opacity": "0",
+          "scale": "0.72"
+        }
+      },
+      "@keyframes input-otp-restoration": {
+        "from": {
+          "opacity": "0"
+        },
+        "to": {
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-reveal": {
+        "from": {
+          "scale": "0.72",
+          "opacity": "0"
+        },
+        "to": {
+          "scale": "1",
+          "opacity": "1"
+        }
+      },
+      "@keyframes input-otp-spin": {
+        "to": {
+          "rotate": "360deg"
+        }
+      },
+      "@keyframes input-otp-halo": {
+        "0%": {
+          "scale": "0.96",
+          "opacity": "0"
+        },
+        "35%": {
+          "scale": "1.04",
+          "opacity": "0.5"
+        },
+        "100%": {
+          "scale": "1.1",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-particle": {
+        "from": {
+          "transform": "translate(0, 0) scale(0.45)",
+          "opacity": "1"
+        },
+        "to": {
+          "transform": "translate(var(--otp-particle-x), var(--otp-particle-y)) rotate(var(--otp-particle-rotation)) scale(1)",
+          "opacity": "0"
+        }
+      },
+      "@keyframes input-otp-feedback": {
+        "from": {
+          "opacity": "0"
+        },
+        "to": {
+          "opacity": "0"
+        }
+      },
+      "@keyframes appearance-rectangle": {
+        "from": {
+          "clip-path": "var(--appearance-clip)"
+        },
+        "to": {
+          "clip-path": "inset(0)"
+        }
+      },
+      "@keyframes appearance-circle": {
+        "from": {
+          "clip-path": "circle(0 at var(--appearance-x) var(--appearance-y))"
+        },
+        "to": {
+          "clip-path": "circle(150vmax at var(--appearance-x) var(--appearance-y))"
+        }
+      },
+      "@keyframes appearance-circle-soft": {
+        "from": {
+          "clip-path": "circle(0 at var(--appearance-x) var(--appearance-y))",
+          "filter": "blur(10px)"
+        },
+        "to": {
+          "clip-path": "circle(150vmax at var(--appearance-x) var(--appearance-y))",
+          "filter": "blur(0)"
+        }
+      },
+      "@keyframes appearance-blinds": {
+        "from": {
+          "--appearance-reveal": "0"
+        },
+        "to": {
+          "--appearance-reveal": "1"
+        }
+      }
+    }
+  },
+  "meta": {
+    "source": "https://github.com/draco-china/sui",
+    "tailwindVersion": "4",
+    "base": "base",
+    "entrypoints": [
+      "@/components/ui/wheel-picker"
+    ]
+  },
+  "categories": [
+    "sui",
+    "components"
+  ],
+  "type": "registry:ui"
+}

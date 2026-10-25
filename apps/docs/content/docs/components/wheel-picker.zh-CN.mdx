@@ -1,0 +1,66 @@
+---
+title: 滚轮选择器
+description: 支持原生惯性滚动、吸附、键盘选择与可选玻璃材质的圆柱滚轮。
+---
+
+WheelPicker 从有序列表中选择一个值。触摸和触控板使用原生惯性滚动与吸附；鼠标或手写笔拖动同一个滚动区域。视觉圆柱跟随滚动位置，不会重复创建可访问列表。
+
+<ComponentPreview name="wheel-picker-demo" />
+
+## 安装 [#installation]
+
+```sh
+bunx --bun shadcn@latest add draco-china/sui/wheel-picker
+```
+
+按[安装指南](/zh-CN/docs/installation)加载 SUI 基础样式。默认包含明暗配色，其他预设按需加载。
+
+## 用法 [#usage]
+
+```tsx
+import { WheelPicker } from "@workspace/ui/components/wheel-picker";
+
+<WheelPicker
+  aria-label="时长（分钟）"
+  options={["15", "30", "45", "60"]}
+  defaultValue="30"
+  name="duration_minutes"
+/>;
+```
+
+选项支持字符串或 `{ label, value }` 对象，值必须唯一。通过 `value` 和 `onValueChange` 控制选择；父组件拥有最终值，可以拒绝变更请求。非受控模式使用 `defaultValue`。未指定或找不到值时显示第一项。选项变化会约束显示位置，不会自动触发用户变更回调。
+
+## 组合多列 [#composition]
+
+把分别具有名称的滚轮放在一个有名称的组中。日期有效性、联动选项、格式和持久化由应用负责。
+
+<ComponentPreview name="wheel-picker-composed" />
+
+## 键盘与可访问性 [#accessibility]
+
+滚轮是一个可聚焦的 listbox，使用 `aria-activedescendant` 和选中项状态。请提供本地化的 `aria-label` 或 `aria-labelledby`。上下方向键选择前后项，Home/End 到达两端，Page Up/Down 移动一个可视页；到达边界后不循环。
+
+减少动态效果时保留同一列表和键盘操作，使用平面的吸附列表，不旋转圆柱或平滑滚动。`disabled` 或空选项会移除 Tab 焦点并阻止变更。`name` 通过隐藏输入参与原生表单提交；表单重置会恢复非受控默认值。刻度音默认关闭，仅在本地合成，音频不可用不会阻断选择。
+
+<ComponentPreview name="wheel-picker-states" />
+
+## 材质 [#material]
+
+默认是使用 SUI 语义色和 14px 文字的实色控件。`glass` 或 `frosted` 为边框区域应用共享材质，选项行保持普通，键盘焦点始终可见。滚动区域使用原生触摸滚动，在边界处限制滚动传递。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `options` | `readonly WheelPickerOption[]` | 必填，值唯一。 |
+| `value`、`defaultValue` | `string` | 受控值或非受控初始值。 |
+| `onValueChange` | `(value: string) => void` | 用户选择时调用。 |
+| `visibleCount` | `number` | `5`，规范为 3–11 的奇数。 |
+| `itemHeight` | `number` | `36` 像素，最小 24。 |
+| `disabled` | `boolean` | `false`。 |
+| `sound` | `boolean` | `false`，可选本地刻度音。 |
+| `name` | `string` | 可选表单字段名。 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 默认普通材质。 |
+| 其他属性 | 原生 div 属性 | 名称、`ref`、`className`、`style` 与事件回调。 |
+
+导出 `WheelPicker`、`WheelPickerProps` 和 `WheelPickerOption`。交互参考 [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker)，SUI 实现使用原生滚动和已有的减少动态效果钩子，无需新增动态效果依赖。

@@ -21,6 +21,9 @@ export const examples = {
     import("./variants/block-delete-resource-error"),
   "block-delete-resource-insensitive": () =>
     import("./variants/block-delete-resource-insensitive"),
+  "wheel-picker-demo": () => import("./variants/wheel-picker-demo"),
+  "wheel-picker-composed": () => import("./variants/wheel-picker-composed"),
+  "wheel-picker-states": () => import("./variants/wheel-picker-states"),
   "accordion-basic": () => import("./variants/accordion-basic"),
   "accordion-borders": () => import("./variants/accordion-borders"),
   "accordion-card": () => import("./variants/accordion-card"),
@@ -629,6 +632,10 @@ export const sourceFiles = {
     import("./variants/block-delete-resource-error.tsx?raw"),
   "block-delete-resource-insensitive": () =>
     import("./variants/block-delete-resource-insensitive.tsx?raw"),
+  "wheel-picker-demo": () => import("./variants/wheel-picker-demo.tsx?raw"),
+  "wheel-picker-composed": () =>
+    import("./variants/wheel-picker-composed.tsx?raw"),
+  "wheel-picker-states": () => import("./variants/wheel-picker-states.tsx?raw"),
   "accordion-basic": () => import("./variants/accordion-basic.tsx?raw"),
   "accordion-borders": () => import("./variants/accordion-borders.tsx?raw"),
   "accordion-card": () => import("./variants/accordion-card.tsx?raw"),
