@@ -280,6 +280,7 @@ test("empty table status is outside the named keyboard scroll region", async () 
   expect(region?.getAttribute("aria-label")).toBe("Records");
   expect(region?.getAttribute("tabindex")).toBe("0");
   expect(status?.textContent).toContain("No data");
+  if (!status) throw new Error("Missing viewport-wide table status");
   expect(region?.contains(status)).toBe(false);
   expect(region?.querySelector("thead")).not.toBeNull();
 });
