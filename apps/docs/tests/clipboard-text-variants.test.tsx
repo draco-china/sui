@@ -19,7 +19,7 @@ test("ClipboardText offers shadcn-style variants", () => {
   // The default follows the theme color, like shadcn/ui default variants.
   expect(filled?.getAttribute("data-variant")).toBe("default");
   expect(filled?.className).toContain("bg-primary/10");
-  expect(filled?.className).toContain("text-primary");
+  expect(filled?.className).toContain("text-accent-foreground");
 
   const outline = root({ text: "bun run dev", variant: "outline" });
   expect(outline?.getAttribute("data-variant")).toBe("outline");

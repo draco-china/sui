@@ -43,6 +43,9 @@ export function createThemeTokens(
     surface,
     accent,
     raisedSurface,
+    // Neutral selection pills composite foreground over the raised surface.
+    // Text roles must remain readable there too, without changing the seed fill.
+    dark ? "#59595B" : "#D8D8DD",
     ...(dark ? ["#161617", "#1D1D1F", "#2C2C2E"] : ["#F5F5F7", "#E8E8ED"]),
   ];
   const accessible = (color: string, minimum: number) => {

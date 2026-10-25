@@ -146,17 +146,17 @@ const alertVariants = cva("", {
     {
       element: "title",
       variant: "note",
-      class: "text-primary",
+      class: "text-accent-foreground",
     },
     {
       element: "title",
       variant: "tip",
-      class: "text-primary",
+      class: "text-accent-foreground",
     },
     {
       element: "title",
       variant: "important",
-      class: "text-primary",
+      class: "text-accent-foreground",
     },
     {
       element: "title",
@@ -166,7 +166,7 @@ const alertVariants = cva("", {
     {
       element: "title",
       variant: "caution",
-      class: "text-destructive",
+      class: "text-destructive-foreground",
     },
   ],
   defaultVariants: {
@@ -572,7 +572,7 @@ const markdownComponents: Components = {
     return (
       <a
         className={cn(
-          "font-medium text-primary underline underline-offset-4 hover:text-primary/80",
+          "font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground",
           className,
         )}
         {...elementProps}

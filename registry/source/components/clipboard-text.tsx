@@ -23,7 +23,7 @@ const clipboardTextVariants = cva("gap-1 font-mono text-sm", {
   variants: {
     variant: {
       // Follows the theme color with a light tint, like other default variants.
-      default: "bg-primary/10 text-primary",
+      default: "bg-primary/10 text-accent-foreground",
       // A bordered field for cards and panels with their own background.
       outline: "border-border bg-transparent",
       // The neutral secondary fill.
@@ -122,7 +122,9 @@ function ClipboardText({
                     <CopyIcon
                       status={status}
                       aria-hidden="true"
-                      className={cn(status === "error" && "text-destructive")}
+                      className={cn(
+                        status === "error" && "text-destructive-foreground",
+                      )}
                     />
                   </InputGroupButton>
                 </TooltipTrigger>

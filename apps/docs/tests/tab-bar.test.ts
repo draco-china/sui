@@ -49,6 +49,9 @@ test("Tab Bar items show no hover fill, only the selection pill", async () => {
   for (const item of items) {
     expect(item).not.toContain("hover:bg-muted");
     expect(item).toContain("hover:bg-transparent");
-    expect(item).toContain("data-[active=true]:bg-foreground/8");
+    expect(item).toContain(
+      "group-data-[lens=false]/tab-bar:data-[active=true]:bg-foreground/8",
+    );
+    expect(item).toContain("data-[active=true]:text-accent-foreground");
   }
 });

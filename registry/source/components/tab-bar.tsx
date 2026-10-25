@@ -33,7 +33,7 @@ const tabBarVariants = cva(
 // As on iOS, items show no hover fill: the selection pill alone marks one, so
 // the ghost button's hover is cleared.
 const tabBarItemVariants = cva(
-  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-transparent focus-visible:z-20 group-glass/tab-bar:active:translate-y-0 data-[active=true]:bg-foreground/8 data-[active=true]:text-primary data-[active=true]:hover:text-primary group-data-[lens=true]/tab-bar:data-[active=true]:bg-transparent dark:data-[active=true]:bg-foreground/12 dark:hover:bg-transparent",
+  "relative z-10 min-w-0 shrink-0 flex-col rounded-full font-medium transition-[background-color,box-shadow] hover:bg-transparent focus-visible:z-20 group-glass/tab-bar:active:translate-y-0 data-[active=true]:text-accent-foreground data-[active=true]:hover:text-accent-foreground group-data-[lens=false]/tab-bar:data-[active=true]:bg-foreground/8 group-data-[lens=false]/tab-bar:dark:data-[active=true]:bg-foreground/12 dark:hover:bg-transparent",
   {
     variants: {
       size: {

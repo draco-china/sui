@@ -421,8 +421,8 @@ describe("theme colors", () => {
           background,
           surface,
           ...(dark
-            ? ["#2E2E2E", "#161617", "#1D1D1F", "#2C2C2E"]
-            : ["#EEEEEE", "#F5F5F7", "#E8E8ED"]),
+            ? ["#2E2E2E", "#161617", "#1D1D1F", "#2C2C2E", "#59595B"]
+            : ["#EEEEEE", "#F5F5F7", "#E8E8ED", "#D8D8DD"]),
         ]) {
           expect(
             contrastRatio(tokens["--accent-foreground"] ?? "", bg),
