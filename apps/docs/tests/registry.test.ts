@@ -355,3 +355,22 @@ test("RSC installations preserve client boundaries for every interactive public 
     button?.files?.some((file) => file.path.endsWith("/class-name.ts")),
   ).toBe(false);
 }, 30_000);
+
+test("registry CSS compacts formatting while preserving quoted and escaped whitespace", () => {
+  const result = registryStyles(String.raw`.a,
+    .b { color: color-mix(
+      in oklab,
+      red 75%,
+      black
+    ); content: "two  spaces"; --escaped: foo\  bar; }
+    [title="two  spaces"] { content: 'line\
+break'; }`);
+  expect(result.css[".a, .b"]).toEqual({
+    color: "color-mix( in oklab, red 75%, black )",
+    content: '"two  spaces"',
+    "--escaped": String.raw`foo\  bar`,
+  });
+  expect(result.css['[title="two  spaces"]']).toEqual({
+    content: "'line\\\nbreak'",
+  });
+});

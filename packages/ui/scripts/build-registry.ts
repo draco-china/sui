@@ -152,18 +152,27 @@ function mergeCss(target: CssObject, key: string, value: string | CssObject) {
   }
 }
 
+/** Compact formatting only; whitespace inside strings and escapes is data. */
+function compactCssWhitespace(value: string) {
+  return value.replace(
+    /("(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|\\[\s\S])|\s+/g,
+    (match, literal: string | undefined) => literal ?? (match ? " " : ""),
+  );
+}
+
 function cssNodes(nodes: readonly ChildNode[]): CssObject {
   const result: CssObject = {};
   for (const node of nodes) {
     if (node.type === "comment") continue;
     if (node.type === "decl") {
-      result[node.prop] = `${node.value}${node.important ? " !important" : ""}`;
+      result[node.prop] =
+        `${compactCssWhitespace(node.value)}${node.important ? " !important" : ""}`;
     } else {
       let key: string;
-      if (node.type === "rule") key = node.selector;
+      if (node.type === "rule") key = compactCssWhitespace(node.selector);
       else {
         key = `@${node.name}`;
-        if (node.params) key += ` ${node.params}`;
+        if (node.params) key += ` ${compactCssWhitespace(node.params)}`;
       }
       mergeCss(result, key, cssNodes(node.nodes ?? []));
     }
@@ -196,7 +205,7 @@ export function registryStyles(source: string) {
         if (child.type !== "decl")
           throw new Error("Token blocks must contain declarations only");
         tokens[child.prop.slice(2)] =
-          `${child.value}${child.important ? " !important" : ""}`;
+          `${compactCssWhitespace(child.value)}${child.important ? " !important" : ""}`;
       });
       node.remove();
     }
@@ -566,6 +575,9 @@ export async function buildRegistry(
 ) {
   const registry = await createRegistry();
   const payloads = registryPayloads(registry);
+  const githubPayloads = githubOutput
+    ? githubRegistryPayloads(registry)
+    : undefined;
   const outputs = new Set([output]);
   if (publishedOutput) outputs.add(publishedOutput);
   else if (output === registryOutput) outputs.add(publishedRegistryOutput);
@@ -578,8 +590,7 @@ export async function buildRegistry(
     for (const [name, content] of payloads)
       await writeFile(join(directory, name), content);
   }
-  if (githubOutput) {
-    const githubPayloads = githubRegistryPayloads(registry);
+  if (githubOutput && githubPayloads) {
     for (const path of await githubSourceFiles(githubOutput)) {
       if (
         !githubPayloads.has(relative(githubOutput, path).replaceAll("\\", "/"))
