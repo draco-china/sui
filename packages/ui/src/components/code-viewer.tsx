@@ -210,7 +210,7 @@ export function CodeViewer({
               {title}
             </span>
           ) : null}
-          <span className="font-medium text-muted-foreground/65 text-sm">
+          <span className="font-medium text-muted-foreground text-sm">
             {lang}
           </span>
           <span className="ml-auto">

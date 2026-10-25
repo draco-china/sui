@@ -37,6 +37,8 @@ import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
 
 未设置 `theme` 时，内容跟随周围主题。通过 `className` 调整容器布局。`labels.empty` 定制空状态，`note`、`tip`、`important`、`warning` 和 `caution` 翻译提示块标题。`labels.code` 接受 [CodeViewer 的反馈文案](/zh-CN/docs/components/code-viewer#api-reference)，用于翻译内嵌代码块的复制、加载与失败反馈。Markdown 正文由应用提供，不会自动翻译。
 
+主题改变时，内容会双向跟随周围的明暗模式。显式设置 `theme="dark"` 会创建局部深色边界；移除后恢复继承。代码块只显示一次语言名；需要额外的文件标题时，可直接使用 CodeViewer。
+
 ## API 参考 [#api-reference]
 
 | 属性 | 类型 | 默认值／说明 |

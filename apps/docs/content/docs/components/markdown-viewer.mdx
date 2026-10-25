@@ -35,7 +35,7 @@ Embedded HTML is parsed and sanitized before rendering. Common safe formatting, 
 
 ## Theme and localization [#theme]
 
-The content follows the surrounding theme unless `theme` is supplied. Use `className` for container layout. `labels.empty` customizes the empty state, while `note`, `tip`, `important`, `warning`, and `caution` translate alert headings. `labels.code` accepts [CodeViewer labels](/docs/components/code-viewer#api-reference) for embedded code blocks, including copy, loading, and failure feedback. Markdown content itself is provided by your application and is not translated automatically.
+The content follows the surrounding theme in both directions when appearance changes. An explicit `theme="dark"` creates a local dark boundary; removing it resumes inheritance. Fenced code displays its language once; use CodeViewer directly when a separate file title is needed. Use `className` for container layout. `labels.empty` customizes the empty state, while `note`, `tip`, `important`, `warning`, and `caution` translate alert headings. `labels.code` accepts [CodeViewer labels](/docs/components/code-viewer#api-reference) for embedded code blocks, including copy, loading, and failure feedback. Markdown content itself is provided by your application and is not translated automatically.
 
 ## API reference [#api-reference]
 

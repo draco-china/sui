@@ -110,6 +110,9 @@ mock.module("../../../../packages/ui/src/lib/editor/monaco-client.tsx", () => ({
   },
 }));
 const { Editor } = await import("@workspace/ui/components/editor");
+const { MarkdownViewer } = await import(
+  "@workspace/ui/components/markdown-viewer"
+);
 const { CodeViewer } = await import("@workspace/ui/components/code-viewer");
 const { DiffViewer } = await import("@workspace/ui/components/diff-viewer");
 const { useStreamingScroll } = await import(
@@ -140,6 +143,45 @@ function button(label: string) {
       node.textContent === label || node.getAttribute("aria-label") === label,
   );
 }
+
+scenario(
+  "Markdown follows inherited themes through light dark light without owning a dark boundary",
+);
+await render(<MarkdownViewer content="# Theme cycle" />);
+for (const dark of [false, true, false]) {
+  await act(async () => {
+    window.document.documentElement.classList.toggle("dark", dark);
+    await Bun.sleep(30);
+  });
+  assert.equal(
+    host
+      .querySelector('[data-slot="markdown-viewer"]')
+      ?.classList.contains("dark"),
+    false,
+  );
+}
+scenario(
+  "Markdown explicit dark overrides can be removed and caller theme boundaries remain supported",
+);
+await render(<MarkdownViewer content="# Explicit theme" theme="dark" />);
+assert(
+  host
+    .querySelector('[data-slot="markdown-viewer"]')
+    ?.classList.contains("dark"),
+);
+await render(<MarkdownViewer content="# Inherit again" />);
+assert.equal(
+  host
+    .querySelector('[data-slot="markdown-viewer"]')
+    ?.classList.contains("dark"),
+  false,
+);
+await render(<MarkdownViewer content="# Caller boundary" className="dark" />);
+assert(
+  host
+    .querySelector('[data-slot="markdown-viewer"]')
+    ?.classList.contains("dark"),
+);
 
 scenario("an uncontrolled editor reports edits and previews them sandboxed");
 const changes: string[] = [];

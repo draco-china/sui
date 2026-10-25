@@ -52,3 +52,9 @@ test("raw HTML cannot restyle the page or ask for passwords", () => {
   expect(html).not.toContain('type="password"');
   expect(html).toContain("overlay");
 });
+
+test("fenced code names its language once and keeps the source", () => {
+  const html = render("```typescript\nconst answer = 42;\n```");
+  expect(html.match(/>typescript</g)).toHaveLength(1);
+  expect(html).toContain("const answer = 42;");
+});

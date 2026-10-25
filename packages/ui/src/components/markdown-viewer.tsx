@@ -232,7 +232,9 @@ export function MarkdownViewer({
         data-slot="markdown-viewer"
         className={cn(
           "max-w-none text-foreground text-sm",
-          resolvedTheme === "dark" && "dark",
+          // Only an explicit override owns a local theme boundary. Mirroring
+          // the inherited theme here would make the observer read its own output.
+          theme === "dark" && "dark",
           "[&_.contains-task-list]:list-none [&_.contains-task-list]:pl-0 [&_.task-list-item]:my-1 [&_.task-list-item]:flex [&_.task-list-item]:items-start [&_.task-list-item]:gap-2 [&_.task-list-item_input]:mt-1",
           "[&_.footnotes]:mt-10 [&_.footnotes]:border-t [&_.footnotes]:pt-4 [&_.footnotes]:text-sm",
           className,
@@ -623,7 +625,6 @@ const markdownComponents: Components = {
         theme={resolvedTheme}
         labels={labels?.code}
         className="not-prose my-5 shadow-sm"
-        title={lang}
       />
     );
   },
