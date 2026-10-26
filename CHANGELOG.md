@@ -1,3 +1,17 @@
+## [3.1.0](https://github.com/draco-china/sui/compare/v3.0.1...v3.1.0) (2026-10-26)
+
+### Features
+
+* **wheel-picker:** add native scroll selection and accessible cylinder motion ([9f8be09](https://github.com/draco-china/sui/commit/9f8be097666c5aa510ec043a8dbf52d88c105065))
+
+### Bug Fixes
+
+* **data-table:** keep empty and recovery states within the viewport ([c5f3011](https://github.com/draco-china/sui/commit/c5f3011e18a132987987e286f2ebd3b04f76fb94))
+* **glass:** preserve keyboard focus and inverse frosted tooltips ([3e89cc0](https://github.com/draco-china/sui/commit/3e89cc0635a35085a1d207dacc832f87122714ea))
+* **registry:** compact CSS safely before validating all outputs ([ca93995](https://github.com/draco-china/sui/commit/ca939959596f92cc5c7ceb1186674ae9b75598be))
+* **theme:** use readable semantic ink on neutral and danger surfaces ([c237407](https://github.com/draco-china/sui/commit/c237407245251c59692c53f3a98db02be3583de3))
+* **viewer:** restore inherited themes and readable code headers ([068959f](https://github.com/draco-china/sui/commit/068959fa27db8b4af1cecb8ca5d80554e03bfac3))
+
 ## [3.0.1](https://github.com/draco-china/sui/compare/v3.0.0...v3.0.1) (2026-10-17)
 
 ### Bug Fixes
