@@ -84,7 +84,9 @@ window.HTMLElement.prototype.removeEventListener = function (
 };
 const { act, useState } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { ImageViewer } = await import("@workspace/ui/components/image-viewer");
+const { Image, ImageGroup, ImagePreview } = await import(
+  "@workspace/ui/components/image"
+);
 const wait = () => new Promise((resolve) => setTimeout(resolve, 40));
 async function interaction(callback: () => void) {
   await act(async () => {
@@ -94,7 +96,7 @@ async function interaction(callback: () => void) {
 }
 function popup(name: string) {
   const matching = [
-    ...document.querySelectorAll<HTMLElement>('[data-slot="image-viewer"]'),
+    ...document.querySelectorAll<HTMLElement>('[data-slot="image-preview"]'),
   ].find(
     (candidate) =>
       candidate.querySelector('[data-slot="dialog-title"]')?.textContent ===
@@ -200,7 +202,7 @@ function ControlledGallery() {
       >
         Open third photo
       </button>
-      <ImageViewer
+      <ImagePreview
         images={images}
         open={open}
         index={index}
@@ -210,7 +212,7 @@ function ControlledGallery() {
           changes.push(next);
           if (commitIndex) setIndex(next);
         }}
-        onClose={() => {
+        onOpenChange={() => {
           closeCount++;
           setOpen(false);
         }}
@@ -225,7 +227,7 @@ const root = createRoot(host);
 scenario("a closed controlled viewer renders no popup");
 await interaction(() => root.render(<ControlledGallery />));
 assert.equal(
-  document.querySelector('[data-slot="image-viewer"]'),
+  document.querySelector('[data-slot="image-preview"]'),
   null,
   "closed viewer should have no popup",
 );
@@ -453,7 +455,7 @@ assert.equal(
 scenario("Escape closes once, restores focus and drops the wheel listener");
 await key(panel, "Escape");
 assert.equal(closeCount, 1, "Escape requests close once");
-assert.equal(document.querySelector('[data-slot="image-viewer"]'), null);
+assert.equal(document.querySelector('[data-slot="image-preview"]'), null);
 assert.equal(
   document.activeElement,
   opener,
@@ -484,13 +486,13 @@ const localRoot = createRoot(localHost);
 const otherRoot = createRoot(otherHost);
 await interaction(() =>
   localRoot.render(
-    <ImageViewer
+    <ImagePreview
       images={gallery}
       open
       initialIndex={1}
       labels={{ viewer: "Local gallery" }}
       onIndexChange={(next) => localChanges.push(next)}
-      onClose={() => localClose++}
+      onOpenChange={() => localClose++}
     />,
   ),
 );
@@ -499,18 +501,18 @@ assert.equal(mainImage(localPanel).getAttribute("src"), gallery[1]);
 await loadImage(localPanel);
 await interaction(() =>
   otherRoot.render(
-    <ImageViewer
+    <ImagePreview
       images="/solo.png"
       open
       labels={{ viewer: "Other gallery" }}
-      onClose={() => {}}
+      onOpenChange={() => {}}
     />,
   ),
 );
 const otherPanel = popup("Other gallery");
 await loadImage(otherPanel);
 assert.equal(
-  otherPanel.querySelector('[data-slot="image-viewer-thumbnails"]'),
+  otherPanel.querySelector('[data-slot="image-preview-thumbnails"]'),
   null,
   "single image does not expose a redundant gallery strip",
 );
@@ -579,17 +581,17 @@ document.body.append(emptyHost);
 const emptyRoot = createRoot(emptyHost);
 await interaction(() =>
   emptyRoot.render(
-    <ImageViewer
+    <ImagePreview
       images={[]}
       open
-      onClose={() => {
+      onOpenChange={() => {
         throw new Error("empty close");
       }}
     />,
   ),
 );
 assert.equal(
-  document.querySelector('[data-slot="image-viewer"]'),
+  document.querySelector('[data-slot="image-preview"]'),
   null,
   "empty galleries do not mount a modal or actions",
 );
@@ -603,12 +605,12 @@ const controlsRoot = createRoot(controlsHost);
 for (const enabled of [true, false]) {
   await interaction(() =>
     controlsRoot.render(
-      <ImageViewer
+      <ImagePreview
         glass={enabled}
         images={gallery}
         open
         labels={{ viewer: "Glass controls" }}
-        onClose={() => {}}
+        onOpenChange={() => {}}
       />,
     ),
   );
@@ -633,7 +635,7 @@ for (const enabled of [true, false]) {
       label,
     );
   for (const thumbnail of controlsPanel.querySelectorAll(
-    '[data-slot="image-viewer-thumbnails"] button',
+    '[data-slot="image-preview-thumbnails"] button',
   ))
     assert.equal(
       thumbnail.hasAttribute("data-glass"),
@@ -648,4 +650,92 @@ await interaction(() => controlsRoot.unmount());
 controlsHost.remove();
 assert.equal(wheelTargets.size, 0);
 assert.equal(ownListeners(mediaListeners), 0);
+scenario("an Image without preview is a plain picture");
+const imageHost = document.createElement("div");
+document.body.append(imageHost);
+const imageRoot = createRoot(imageHost);
+await interaction(() =>
+  imageRoot.render(<Image src="/plain.png" alt="Plain" width={120} />),
+);
+const plain = imageHost.querySelector<HTMLElement>('[data-slot="image"]');
+assert.ok(plain);
+assert.equal(plain.tagName, "SPAN", "no preview means no button");
+assert.equal(plain.style.width, "120px");
+assert.equal(plain.dataset.state, "loading");
+await interaction(() =>
+  imageHost.querySelector("img")?.dispatchEvent(new window.Event("load")),
+);
+assert.equal(plain.dataset.state, "ready");
+
+scenario("a failed Image shows its fallback");
+await interaction(() =>
+  imageRoot.render(
+    <Image src="/broken.png" alt="Broken" fallback={<b>No photo</b>} />,
+  ),
+);
+await interaction(() =>
+  imageHost.querySelector("img")?.dispatchEvent(new window.Event("error")),
+);
+assert.equal(imageHost.querySelector("b")?.textContent, "No photo");
+
+scenario("a previewable Image opens its larger source");
+const imageOpens: boolean[] = [];
+await interaction(() =>
+  imageRoot.render(
+    <Image
+      src="/thumb.png"
+      alt="Cover"
+      preview={{
+        src: "/full.png",
+        onOpenChange: (open) => imageOpens.push(open),
+      }}
+      labels={{ viewer: "Cover preview" }}
+    />,
+  ),
+);
+const trigger = imageHost.querySelector<HTMLButtonElement>(
+  'button[data-slot="image"]',
+);
+assert.ok(trigger);
+assert.equal(trigger.getAttribute("aria-label"), "Preview Cover");
+await interaction(() => trigger.click());
+const coverPanel = popup("Cover preview");
+assert.equal(mainImage(coverPanel).getAttribute("src"), "/full.png");
+assert.equal(mainImage(coverPanel).getAttribute("alt"), "Cover");
+await interaction(() => button(coverPanel, "Close image viewer").click());
+assert.deepEqual(imageOpens, [true, false]);
+
+scenario("an ImageGroup opens on the clicked image in document order");
+const groupIndexes: number[] = [];
+await interaction(() =>
+  imageRoot.render(
+    <ImageGroup
+      labels={{ viewer: "Group preview" }}
+      preview={{ onIndexChange: (index) => groupIndexes.push(index) }}
+    >
+      <Image src="/a.png" alt="A" />
+      <Image src="/b.png" alt="B" preview={{ src: "/b-full.png" }} />
+      <Image src="/skip.png" alt="Skip" preview={false} />
+      <Image src="/c.png" alt="C" />
+    </ImageGroup>,
+  ),
+);
+const triggers = imageHost.querySelectorAll<HTMLButtonElement>(
+  'button[data-slot="image"]',
+);
+assert.equal(triggers.length, 3, "preview={false} opts out of the group");
+await interaction(() => triggers[1].click());
+const groupPanel = popup("Group preview");
+assert.equal(mainImage(groupPanel).getAttribute("src"), "/b-full.png");
+assert.equal(
+  groupPanel.querySelectorAll('[data-slot="image-preview-thumbnails"] button')
+    .length,
+  3,
+);
+await interaction(() => button(groupPanel, "Next image").click());
+assert.equal(mainImage(groupPanel).getAttribute("src"), "/c.png");
+assert.deepEqual(groupIndexes, [1, 2]);
+await interaction(() => imageRoot.unmount());
+imageHost.remove();
+
 await window.happyDOM.close();

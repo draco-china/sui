@@ -3144,9 +3144,9 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "image-viewer",
-      "title": "Image Viewer",
-      "description": "SUI component: image-viewer. Includes its local dependencies and SUI styles.",
+      "name": "image",
+      "title": "Image",
+      "description": "SUI component: image. Includes its local dependencies and SUI styles.",
       "dependencies": [
         "@base-ui/react@^1.8.0",
         "@fontsource-variable/inter@^5.3.0",
@@ -3177,9 +3177,29 @@
           "target": "@ui/dialog.tsx"
         },
         {
-          "path": "packages/ui/src/components/image-viewer.tsx",
+          "path": "packages/ui/src/components/image.tsx",
           "type": "registry:ui",
-          "target": "@ui/image-viewer.tsx"
+          "target": "@ui/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/group.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/image.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/labels.ts",
+          "type": "registry:ui",
+          "target": "@ui/image/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/components/image/preview.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/preview.tsx"
         },
         {
           "path": "packages/ui/src/components/morph-icon.tsx",
@@ -3267,7 +3287,7 @@
         "tailwindVersion": "4",
         "base": "base",
         "entrypoints": [
-          "@/components/ui/image-viewer"
+          "@/components/ui/image"
         ]
       },
       "categories": [
@@ -8743,9 +8763,29 @@
           "target": "@ui/html-viewer.tsx"
         },
         {
-          "path": "packages/ui/src/components/image-viewer.tsx",
+          "path": "packages/ui/src/components/image.tsx",
           "type": "registry:ui",
-          "target": "@ui/image-viewer.tsx"
+          "target": "@ui/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/group.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/image.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/labels.ts",
+          "type": "registry:ui",
+          "target": "@ui/image/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/components/image/preview.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/preview.tsx"
         },
         {
           "path": "packages/ui/src/components/inline-copy-text.tsx",
@@ -9268,7 +9308,11 @@
           "@/components/ui/glass",
           "@/components/ui/hover-card",
           "@/components/ui/html-viewer",
-          "@/components/ui/image-viewer",
+          "@/components/ui/image",
+          "@/components/ui/image/group",
+          "@/components/ui/image/image",
+          "@/components/ui/image/labels",
+          "@/components/ui/image/preview",
           "@/components/ui/inline-copy-text",
           "@/components/ui/input-group",
           "@/components/ui/input-otp",

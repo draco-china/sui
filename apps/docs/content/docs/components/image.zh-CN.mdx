@@ -1,0 +1,91 @@
+---
+title: Image
+description: 带加载与失败状态的图片，可选开启全屏预览，支持缩放、旋转与画廊
+---
+
+<ComponentPreview name="image-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/image
+```
+
+通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { Image, ImageGroup } from "@workspace/ui/components/image";
+
+// 单张图片，点击打开全屏预览
+<Image src="/photos/cover.jpg" alt="封面" width={240} height={160} preview />
+
+// 画廊：点击任意一张即可浏览全部
+<ImageGroup>
+  {photos.map((photo) => (
+    <Image key={photo.id} src={photo.thumb} alt={photo.name} preview={{ src: photo.full }} />
+  ))}
+</ImageGroup>
+```
+
+## 图片 [#image]
+
+`Image` 在一个盒子中显示图片，尺寸由 `width`、`height`（数字为像素）或 `className` 决定。`fit` 设置 `object-fit`，默认 `cover`。加载中显示脉动占位；加载失败时显示 `fallback`，未提供时显示默认图标和 `error` 文案。盒子通过 `data-state` 暴露 `loading`、`ready` 或 `error`。其余 `<img>` 属性（如 `loading="lazy"`）会透传。
+
+## 预览 [#preview]
+
+`preview` 默认关闭，图片就是普通图片。开启 `preview` 后图片变为可打开全屏预览的按钮，可访问名称来自 `labels.preview(alt)`。传入对象可以预览更大的 `src`，或通过 `open`、`defaultOpen`、`onOpenChange` 控制预览；`container` 指定 Portal 容器。
+
+预览中，滚轮和双指手势缩放，拖拽平移，工具栏可缩放、旋转和重置。方向键切换，`+`/`-` 缩放，`0` 重置。加载失败时提供重试。预览基于共享的 [Dialog](/zh-CN/docs/components/dialog) 管理焦点与关闭。
+
+<ComponentPreview name="image-fallback" />
+
+## 画廊 [#group]
+
+`ImageGroup` 把内部的 Image 串成一个画廊，自身不渲染包裹元素。点击哪张就从哪张打开，切换和缩略图按文档顺序排列。图片默认参与画廊，设置 `preview={false}` 可排除；有 `preview.src` 时使用它。通过 `preview={{ open, onOpenChange, index, onIndexChange }}` 控制画廊预览，索引从 0 开始。
+
+## 无缩略图的预览 [#image-preview]
+
+`ImagePreview` 是单独的全屏查看器，用于从其他控件打开图片。它接收 `images`（一个或多个 URL，或 `{ src, alt }` 项）、`open`、`onOpenChange`，以及可选的受控 `index` 与 `onIndexChange`，或非受控的 `initialIndex`。非受控预览每次打开都会回到 `initialIndex`。空列表不渲染任何内容。
+
+<ComponentPreview name="image-preview-controlled" />
+
+## 文案与玻璃 [#accessibility]
+
+`labels` 可自定义预览按钮、工具栏、导航、缩略图和位置播报，传入 `imageLabelsZhCN` 使用中文。函数文案接收从 1 开始的位置。`Image`、`ImageGroup` 或 `ImagePreview` 上的 `glass` 和 `frosted` 只作用于预览控件，对话框、图片和缩略图保持普通样式。
+
+## API 参考 [#api-reference]
+
+### Image
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `src`、`alt` | `string` | 必填。 |
+| `width`、`height` | `number \| string` | 盒子尺寸，数字为像素。 |
+| `fit` | `CSSProperties["objectFit"]` | `"cover"`。 |
+| `fallback` | `ReactNode` | 图标与 `labels.error`。 |
+| `preview` | `boolean \| { src, open, defaultOpen, onOpenChange, container }` | `false`；在 ImageGroup 内除非为 `false` 否则开启。 |
+| `labels` | `Partial<ImageLabels>` | 英文文案。 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | `false`；仅作用于预览控件。 |
+
+### ImageGroup
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `preview` | `{ open, onOpenChange, index, onIndexChange, container }` | 非受控。 |
+| `alt` | `string` | 没有自身 alt 的图片使用的描述。 |
+| `labels`、`glass`、`frosted` | 同 Image | 作用于共享的预览。 |
+
+### ImagePreview
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `images` | `ImagePreviewItem \| ImagePreviewItem[]` | 必填，URL 或 `{ src, alt }` 项。 |
+| `open` / `onOpenChange` | `boolean` / `(open: boolean) => void` | 必填。 |
+| `index` / `initialIndex` | `number` | 受控 / `0`。 |
+| `onIndexChange` | `(index: number) => void` | 报告从 0 开始的索引。 |
+| `alt` | `string` | `labels.defaultAlt`。 |
+| `container` | Portal 容器 | 可选。 |
+
+模块导出 `ImageProps`、`ImageGroupProps`、`ImagePreviewProps`、`ImagePreviewItem` 和 `ImageLabels`。模态行为参见 [Base UI Dialog API](https://base-ui.com/react/components/dialog)。

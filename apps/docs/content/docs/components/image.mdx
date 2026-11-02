@@ -1,0 +1,91 @@
+---
+title: Image
+description: An image with loading and failure states, and an optional fullscreen preview with zoom, rotation and a gallery.
+---
+
+<ComponentPreview name="image-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/image
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { Image, ImageGroup } from "@workspace/ui/components/image";
+
+// One image that opens a fullscreen preview
+<Image src="/photos/cover.jpg" alt="Cover" width={240} height={160} preview />
+
+// A gallery: clicking any image previews them all
+<ImageGroup>
+  {photos.map((photo) => (
+    <Image key={photo.id} src={photo.thumb} alt={photo.name} preview={{ src: photo.full }} />
+  ))}
+</ImageGroup>
+```
+
+## Image [#image]
+
+`Image` renders a picture in a box sized by `width` and `height` (numbers are pixels) or by `className`. `fit` sets `object-fit` and defaults to `cover`. While loading, a pulsing placeholder fills the box; if loading fails, `fallback` replaces it, or a default icon and the `error` label. The box exposes `data-state` as `loading`, `ready` or `error`. Other `<img>` attributes such as `loading="lazy"` pass through.
+
+## Preview [#preview]
+
+`preview` is off by default, so an image stays a plain picture. `preview` turns the image into a button that opens a fullscreen preview; its accessible name comes from `labels.preview(alt)`. Pass an object to preview a larger `src`, or to control the preview with `open`, `defaultOpen` and `onOpenChange`. `container` chooses the Portal container.
+
+Inside the preview, wheel and pinch gestures zoom, dragging pans, and the toolbar zooms, rotates and resets. Arrow keys navigate, `+`/`-` zoom and `0` resets. Loading failures offer a retry. The preview uses the shared [Dialog](/docs/components/dialog) for focus management and dismissal.
+
+<ComponentPreview name="image-fallback" />
+
+## Gallery [#group]
+
+`ImageGroup` turns the Images inside it into one gallery, without rendering a wrapper element. Clicking an image opens the preview on that image, with navigation and thumbnails in document order. Images take part unless they set `preview={false}`, and each one's `preview.src` is used when present. Control the group's preview through `preview={{ open, onOpenChange, index, onIndexChange }}`, with zero-based indexes.
+
+## Preview without thumbnails [#image-preview]
+
+`ImagePreview` is the fullscreen viewer on its own, for opening images from other controls. It takes `images` (one or more URLs, or `{ src, alt }` items), `open`, `onOpenChange`, and an optional controlled `index` with `onIndexChange` or an uncontrolled `initialIndex`. Opening an uncontrolled preview restores `initialIndex`. An empty list renders nothing.
+
+<ComponentPreview name="image-preview-controlled" />
+
+## Labels and glass [#accessibility]
+
+`labels` customizes the preview button, toolbar, navigation, thumbnail and position announcements; pass `imageLabelsZhCN` for Chinese. Function labels receive one-based positions. `glass` and `frosted` on `Image`, `ImageGroup` or `ImagePreview` apply only to the preview's controls; the dialog, images and thumbnails keep their normal styles.
+
+## API reference [#api-reference]
+
+### Image
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `src`, `alt` | `string` | Required. |
+| `width`, `height` | `number \| string` | Box size; numbers are pixels. |
+| `fit` | `CSSProperties["objectFit"]` | `"cover"`. |
+| `fallback` | `ReactNode` | Icon and `labels.error`. |
+| `preview` | `boolean \| { src, open, defaultOpen, onOpenChange, container }` | `false`; inside ImageGroup, on unless `false`. |
+| `labels` | `Partial<ImageLabels>` | English labels. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; preview controls only. |
+
+### ImageGroup
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `preview` | `{ open, onOpenChange, index, onIndexChange, container }` | Uncontrolled. |
+| `alt` | `string` | Alt text for images without their own. |
+| `labels`, `glass`, `frosted` | As Image | Applied to the shared preview. |
+
+### ImagePreview
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `images` | `ImagePreviewItem \| ImagePreviewItem[]` | Required URL(s) or `{ src, alt }` items. |
+| `open` / `onOpenChange` | `boolean` / `(open: boolean) => void` | Required. |
+| `index` / `initialIndex` | `number` | Controlled / `0`. |
+| `onIndexChange` | `(index: number) => void` | Reports the zero-based index. |
+| `alt` | `string` | `labels.defaultAlt`. |
+| `container` | Portal container | Optional. |
+
+The module exports `ImageProps`, `ImageGroupProps`, `ImagePreviewProps`, `ImagePreviewItem` and `ImageLabels`. The modal behavior is documented in the [Base UI Dialog API](https://base-ui.com/react/components/dialog).

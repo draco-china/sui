@@ -14,7 +14,7 @@ import {
 import { DiffViewer } from "@workspace/ui/components/diff-viewer";
 import { GlassSurface } from "@workspace/ui/components/glass";
 import { HtmlViewer } from "@workspace/ui/components/html-viewer";
-import { ImageViewer } from "@workspace/ui/components/image-viewer";
+import { ImagePreview } from "@workspace/ui/components/image";
 import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
@@ -156,10 +156,10 @@ describe("viewer SSR and untrusted content", () => {
     expect(changed).toBe(false);
     expect(
       renderToStaticMarkup(
-        <ImageViewer
+        <ImagePreview
           images={[]}
           open
-          onClose={() => {
+          onOpenChange={() => {
             throw new Error("SSR close");
           }}
         />,

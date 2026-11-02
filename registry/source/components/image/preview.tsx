@@ -31,61 +31,33 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
 import { ViewerButton } from "@/components/ui/viewer/controls";
+import { type ImageLabelOverrides, imageLabels } from "@/components/ui/image/labels";
 
-export type ImageViewerLabels = {
-  defaultAlt: string;
-  viewer: string;
-  zoomOut: string;
-  zoomIn: string;
-  rotateCounterclockwise: string;
-  rotateClockwise: string;
-  reset: string;
-  close: string;
-  previous: string;
-  next: string;
-  loading: string;
-  error: string;
-  retry: string;
-  imageAlt: (alt: string, index: number) => string;
-  open: (alt: string, index: number) => string;
-  thumbnail: (alt: string, index: number) => string;
-  position: (index: number, total: number) => string;
-};
-export interface ImageViewerProps extends GlassProps {
-  images: string | string[];
+export type ImagePreviewItem = string | { src: string; alt?: string };
+
+export interface ImagePreviewProps extends GlassProps {
+  images: ImagePreviewItem | ImagePreviewItem[];
   open: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   index?: number;
   initialIndex?: number;
   onIndexChange?: (index: number) => void;
+  /** Alt text for items without their own, numbered by position. */
   alt?: string;
   container?: ComponentProps<typeof DialogPrimitive.Portal>["container"];
   className?: string;
-  labels?: Partial<ImageViewerLabels>;
+  labels?: ImageLabelOverrides;
 }
-const defaultLabels: ImageViewerLabels = {
-  defaultAlt: "Image",
-  viewer: "Image viewer",
-  zoomOut: "Zoom out",
-  zoomIn: "Zoom in",
-  rotateCounterclockwise: "Rotate counterclockwise",
-  rotateClockwise: "Rotate clockwise",
-  reset: "Reset image",
-  close: "Close image viewer",
-  previous: "Previous image",
-  next: "Next image",
-  loading: "Loading image…",
-  error: "Unable to load image",
-  retry: "Retry",
-  imageAlt: (alt, index) => `${alt} ${index}`,
-  open: (alt, index) => `Open ${alt} ${index}`,
-  thumbnail: (alt, index) => `${alt} thumbnail ${index}`,
-  position: (index, total) => `Image ${index} of ${total}`,
-};
-function ImageViewer({
+
+function itemSrc(item: ImagePreviewItem) {
+  return typeof item === "string" ? item : item.src;
+}
+
+/** The fullscreen viewer behind Image's preview, usable on its own. */
+function ImagePreview({
   images,
   open,
-  onClose,
+  onOpenChange,
   index: controlledIndex,
   initialIndex = 0,
   onIndexChange,
@@ -95,17 +67,18 @@ function ImageViewer({
   glass,
   frosted,
   labels,
-}: ImageViewerProps) {
+}: ImagePreviewProps) {
   // glass and frosted apply to the toolbar and navigation buttons.
   const material = { glass, frosted };
-  const text = { ...defaultLabels, ...labels };
-  const list = Array.isArray(images) ? images : [images];
+  const text = { ...imageLabels, ...labels };
+  const items = Array.isArray(images) ? images : [images];
+  const list = items.map(itemSrc);
   const [localIndex, setIndex] = useState(initialIndex);
   const index = normalizeImageIndex(controlledIndex ?? localIndex, list.length);
   const [transform, setTransform] = useState(defaultImageTransform);
   const [dragging, setDragging] = useState(false);
   const reducedMotion = useReducedMotion();
-  const close = onClose;
+  const close = () => onOpenChange(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{
@@ -240,6 +213,11 @@ function ImageViewer({
   }
   if (!list.length) return null;
   const resolvedAlt = alt ?? text.defaultAlt;
+  const altAt = (position: number) => {
+    const item = items[position];
+    if (typeof item === "object" && item.alt) return item.alt;
+    return text.imageAlt(resolvedAlt, position + 1);
+  };
   return (
     <Dialog
       open={open}
@@ -250,7 +228,7 @@ function ImageViewer({
       <DialogPrimitive.Portal container={container}>
         <DialogOverlay />
         <DialogPrimitive.Popup
-          data-slot="image-viewer"
+          data-slot="image-preview"
           aria-describedby={undefined}
           className={cn(
             "fixed inset-0 z-50 flex h-dvh w-screen flex-col bg-background text-foreground text-sm outline-none",
@@ -388,7 +366,7 @@ function ImageViewer({
               ref={imageRef}
               key={key}
               src={list[index]}
-              alt={text.imageAlt(resolvedAlt, index + 1)}
+              alt={altAt(index)}
               draggable={false}
               onLoad={() => setLoad({ key, state: "ready" })}
               onError={() => setLoad({ key, state: "error" })}
@@ -429,7 +407,7 @@ function ImageViewer({
           </div>
           {list.length > 1 && (
             <div
-              data-slot="image-viewer-thumbnails"
+              data-slot="image-preview-thumbnails"
               className="shrink-0 overflow-x-auto px-3 py-2"
             >
               <div className="mx-auto flex w-max gap-2">
@@ -465,4 +443,4 @@ function ImageViewer({
   );
 }
 
-export { ImageViewer };
+export { ImagePreview };

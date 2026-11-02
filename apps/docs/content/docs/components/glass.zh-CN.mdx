@@ -107,7 +107,7 @@ CSS 材质是它的回退：在表面完成测量前、浏览器无法绘制 SVG
 - 玻璃 `ButtonGroup` 是一个胶囊，按钮落在它的材质上；组中组需要给每个内层组单独写 `glass`。`Toolbar`、`TabsList`、`PaginationContent` 和 `Command` 同理。
 - 写了玻璃的表单字段（`Input`、`Textarea`、`InputGroup`、`SelectTrigger`、`ComboboxChips`、`TagInput`、`SensitiveInput`、`ClipboardText`）像 iOS 搜索框一样呈胶囊状，聚焦时略微提亮。
 - 写了 `glass` 的 `Switch` 和 `Slider` 只在拖动时把滑块变成清透镜片。按下的按钮会轻微放大，玻璃按钮还会提亮。
-- 自己渲染玻璃部件的组件会把属性传下去：`TabBar`（标签栏和镜片）、`NavigationMenu`（弹出层）、`Toaster`（通知）、`ImageViewer`（控件）、`ColorPicker`（触发器和弹出层）、`PaginationControls` 和 `PaginationPageSize`。
+- 自己渲染玻璃部件的组件会把属性传下去：`TabBar`（标签栏和镜片）、`NavigationMenu`（弹出层）、`Toaster`（通知）、`Image`（预览控件）、`ColorPicker`（触发器和弹出层）、`PaginationControls` 和 `PaginationPageSize`。
 - Card、二维码、Accordion、Calendar、编辑器和查看器属于内容。`Card` 和 `QRCode` 接受 `glass` 或 `frosted`，例如用于媒体上的小组件。
 
 <ComponentPreview name="glass-controls" />

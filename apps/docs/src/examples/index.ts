@@ -585,8 +585,10 @@ export const examples = {
   "glass-dynamic": () => import("./variants/glass-dynamic"),
   "html-viewer-demo": () => import("./variants/html-viewer-demo"),
   "html-viewer-sandbox": () => import("./variants/html-viewer-sandbox"),
-  "image-viewer-controlled": () => import("./variants/image-viewer-controlled"),
-  "image-viewer-demo": () => import("./variants/image-viewer-demo"),
+  "image-demo": () => import("./variants/image-demo"),
+  "image-fallback": () => import("./variants/image-fallback"),
+  "image-preview-controlled": () =>
+    import("./variants/image-preview-controlled"),
   "locale-toggle-demo": () => import("./variants/locale-toggle-demo"),
   "locale-toggle-select": () => import("./variants/locale-toggle-select"),
   "markdown-viewer-demo": () => import("./variants/markdown-viewer-demo"),
@@ -1263,9 +1265,10 @@ export const sourceFiles = {
   "glass-dynamic": () => import("./variants/glass-dynamic.tsx?raw"),
   "html-viewer-demo": () => import("./variants/html-viewer-demo.tsx?raw"),
   "html-viewer-sandbox": () => import("./variants/html-viewer-sandbox.tsx?raw"),
-  "image-viewer-controlled": () =>
-    import("./variants/image-viewer-controlled.tsx?raw"),
-  "image-viewer-demo": () => import("./variants/image-viewer-demo.tsx?raw"),
+  "image-demo": () => import("./variants/image-demo.tsx?raw"),
+  "image-fallback": () => import("./variants/image-fallback.tsx?raw"),
+  "image-preview-controlled": () =>
+    import("./variants/image-preview-controlled.tsx?raw"),
   "locale-toggle-demo": () => import("./variants/locale-toggle-demo.tsx?raw"),
   "locale-toggle-select": () =>
     import("./variants/locale-toggle-select.tsx?raw"),
