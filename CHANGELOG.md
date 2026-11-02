@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/draco-china/sui/compare/v4.0.0...v4.0.1) (2026-11-02)
+
+### Bug Fixes
+
+* **glass:** keep the theme background until the material is measured ([4350c0b](https://github.com/draco-china/sui/commit/4350c0b15f293dc7d850922774a46e1353083167))
+
 ## [4.0.0](https://github.com/draco-china/sui/compare/v3.1.0...v4.0.0) (2026-11-02)
 
 ### ⚠ BREAKING CHANGES
