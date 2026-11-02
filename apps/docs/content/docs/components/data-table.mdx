@@ -104,7 +104,9 @@ Every active condition appears as a removable chip under the toolbar.
 
 ## Layout
 
-The default `layout="fill"` takes the height of its parent like an admin page: the query form and toolbar stay at the top, rows scroll with a sticky header, and pagination stays at the bottom. Give the parent a height, for example `AppMain` with `flex-1 min-h-0`, or a fixed `h-[640px]` container. Use `layout="auto"` inside cards and dialogs to grow with the rows.
+The default `layout="fill"` takes the height of its parent like an admin page: the query form and toolbar stay at the top, rows scroll with a sticky header, and pagination stays at the bottom. Give the parent a height, for example `AppMain` with `flex-1 min-h-0`, or a fixed `h-[640px]` container. The table itself is only as tall as its rows: with a few rows the space falls between the table and the pagination, and with many it stops at the space left and scrolls. Use `layout="auto"` inside cards and dialogs to grow with the rows.
+
+<ComponentPreview name="data-table-fill-few-rows" align="start" />
 
 On narrow screens rows become cards. Mark the heading column with `primary`, or set `responsive={false}` to keep the table.
 

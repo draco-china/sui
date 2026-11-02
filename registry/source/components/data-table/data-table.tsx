@@ -15,8 +15,9 @@ interface DataTableFrameProps {
   /** Buttons at the end of the toolbar, before plugin controls. */
   readonly toolbar?: ReactNode;
   /**
-   * `fill` takes the parent's height: the rows scroll and the pagination
-   * stays at the bottom. `auto` grows with its rows.
+   * `fill` takes the parent's height: the table is as tall as its rows up to
+   * the space left, then scrolls, and the pagination stays at the bottom.
+   * `auto` grows with its rows.
    */
   readonly layout?: "fill" | "auto";
   /** Shows rows as cards on narrow screens; defaults to true. */
@@ -67,11 +68,15 @@ function DataTableFrame<TData>({
           <>
             <DataTableSlotContent slot="header" />
             <DataTableToolbar title={title} actions={toolbar} />
+            {/* A few rows keep their own height; the space goes between the
+                table and the pagination rather than into an empty table. */}
             <DataTableContent
               responsive={responsive}
-              className={cn("rounded-xl border", fill && "flex-1")}
+              className={cn("rounded-xl border", fill && "flex-initial")}
             />
-            {table.paginated && <DataTablePagination />}
+            {table.paginated && (
+              <DataTablePagination className={cn(fill && "mt-auto")} />
+            )}
           </>
         )}
         <div

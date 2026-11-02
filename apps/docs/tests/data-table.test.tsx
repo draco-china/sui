@@ -259,6 +259,22 @@ describe("server rendering", () => {
     expect(html).toContain("暂无数据");
     expect(html).toContain("共 0 条");
   });
+  test("fill sizes the table by its rows and pins the pagination", () => {
+    const tag = (html: string, pattern: RegExp) => html.match(pattern)?.[0];
+    const content = /<[^>]*class="[^"]*rounded-xl border[^"]*"[^>]*>/;
+    const pagination = /<[^>]*data-slot="data-table-pagination"[^>]*>/;
+    const fill = renderToString(
+      <DataTable rowKey="id" columns={columns} data={rows} />,
+    );
+    expect(tag(fill, content)).toContain("flex-initial");
+    expect(tag(fill, content)).not.toMatch(/\sflex-1[\s"]/);
+    expect(tag(fill, pagination)).toContain("mt-auto");
+    const auto = renderToString(
+      <DataTable rowKey="id" layout="auto" columns={columns} data={rows} />,
+    );
+    expect(tag(auto, content)).not.toContain("flex-initial");
+    expect(tag(auto, pagination)).not.toContain("mt-auto");
+  });
   test("remote tables render skeleton rows before the first response", () => {
     const html = renderToString(
       <DataTable

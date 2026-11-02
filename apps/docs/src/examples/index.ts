@@ -8,6 +8,8 @@ export const examples = {
   "navigation-progress-demo": () =>
     import("./variants/navigation-progress-demo"),
   "data-table-demo": () => import("./variants/data-table-demo"),
+  "data-table-fill-few-rows": () =>
+    import("./variants/data-table-fill-few-rows"),
   "data-table-local": () => import("./variants/data-table-local"),
   "data-table-value-types": () => import("./variants/data-table-value-types"),
   "data-table-query-form": () => import("./variants/data-table-query-form"),
@@ -634,6 +636,8 @@ export const sourceFiles = {
   "navigation-progress-demo": () =>
     import("./variants/navigation-progress-demo.tsx?raw"),
   "data-table-demo": () => import("./variants/data-table-demo.tsx?raw"),
+  "data-table-fill-few-rows": () =>
+    import("./variants/data-table-fill-few-rows.tsx?raw"),
   "data-table-local": () => import("./variants/data-table-local.tsx?raw"),
   "data-table-value-types": () =>
     import("./variants/data-table-value-types.tsx?raw"),
