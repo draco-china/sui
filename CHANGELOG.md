@@ -1,3 +1,69 @@
+## [4.0.0](https://github.com/draco-china/sui/compare/v3.1.0...v4.0.0) (2026-11-02)
+
+### ⚠ BREAKING CHANGES
+
+* **chat:** import chat components from @workspace/ui/chat/*; the
+old component paths and doc links are dropped without redirects.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **charts:** import Chart from @workspace/ui/charts/chart; it
+installs to components/charts and its docs live under /docs/charts.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **clipboard:** the failed label is now copyFailed, and
+copyButtonLabels and copyButtonLabelsZhCN are replaced by
+clipboardLabels and clipboardLabelsZhCN. InlineCopyText is renamed
+CopyText, with the copy-text slot. ClipboardText and SensitiveInput are
+removed.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **feedback:** WheelPicker no longer accepts sound; use
+feedback="sound" or enable sound on FeedbackProvider. InputOTP's
+feedbackDuration is now resultDuration.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **viewers:** import viewers from @workspace/ui/viewers/*.
+ViewerButton and ViewerCopyButton are replaced by TooltipButton and
+CopyButton. CodeViewer and DiffViewer take language instead of lang,
+and DiffViewer's filename is now title.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **image:** ImageViewer is removed. Use Image with preview,
+ImageGroup, or ImagePreview, whose onClose is now onOpenChange.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **select:** Combobox, Autocomplete and NativeSelect are removed;
+use Select. SelectItem goes inside SelectList, items must be an array,
+alignItemWithTrigger and the scroll buttons are gone, and plain selects
+no longer show a search box; add SelectSearch where filtering is wanted.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **code-editor:** Editor and its toolbar, fullscreen and preview props
+are removed. Use CodeEditor with plugins from @sui/code-editor.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+* **data-table:** import DataTable from components/data-table; the block
+API is gone.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **charts:** move Chart into a charts category and add chart components ([b54062c](https://github.com/draco-china/sui/commit/b54062c717d106d7a9ecbdb45055b42f6a7bf3f7))
+* **code-editor:** replace Editor with a plugin-based CodeEditor ([35e3ca6](https://github.com/draco-china/sui/commit/35e3ca6237a8440b0fb39cd4aeb62b9475dfe0e5))
+* **data-table:** replace the data-table block with a config-driven DataTable ([9abf6bb](https://github.com/draco-china/sui/commit/9abf6bba7ee203d194184694071e40029ca03356))
+* **feedback:** add haptics, tick sounds and FeedbackProvider ([c74497b](https://github.com/draco-china/sui/commit/c74497b3dd3d66b25b2628e9cf63068e292b3c5a))
+* **image:** replace ImageViewer with Image, ImageGroup and ImagePreview ([5636709](https://github.com/draco-china/sui/commit/5636709b38b67431067ab1ee8235e72284cad1a4))
+* **layouts:** add AppShell, AppSidebar, AppHeader, AppMain, TopNav, SectionLayout and AuthLayout ([2e677c3](https://github.com/draco-china/sui/commit/2e677c3d6d9e062106561becdbf8b2e812ff5ec4))
+* **motion:** drive tabs, bottom sheet and wheel picker with Motion ([102f3bb](https://github.com/draco-china/sui/commit/102f3bb7ca66824da49b63d5e464f4781d27ecb8))
+* **select:** unify select, combobox and autocomplete on one Select ([712fe8e](https://github.com/draco-china/sui/commit/712fe8ecbe915892938df010a8ad02c9713ccf15))
+* **viewers:** move viewers to their own folder and align them with CodeEditor ([67e7140](https://github.com/draco-china/sui/commit/67e71408a4c801669264d595ff5f5ca5dd4282f9))
+
+### Code Refactoring
+
+* **chat:** move chat components into their own chat category ([888d369](https://github.com/draco-china/sui/commit/888d3693502f667fe53137eb2abd525bc5b9936f))
+* **clipboard:** share copy labels and compose the copy components ([495506b](https://github.com/draco-china/sui/commit/495506b9eac9275d7e23873e578f26f69d1c3624))
+
 ## [3.1.0](https://github.com/draco-china/sui/compare/v3.0.1...v3.1.0) (2026-10-26)
 
 ### Features
