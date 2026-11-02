@@ -39,6 +39,12 @@ Object.assign(globalThis, {
   SVGElement: window.SVGElement,
   MutationObserver: window.MutationObserver,
   IntersectionObserver: FakeIntersectionObserver,
+  // Tabs measure their list; sizes do not matter here.
+  ResizeObserver: class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
   getComputedStyle: window.getComputedStyle.bind(window),
   requestAnimationFrame: window.requestAnimationFrame.bind(window),
   cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
@@ -57,7 +63,9 @@ const { AppHeader } = await import("@workspace/ui/layouts/app-header");
 const { LayoutProvider, matchPath } = await import(
   "@workspace/ui/layouts/layout-provider"
 );
-const { SectionNav } = await import("@workspace/ui/layouts/section-layout");
+const { SectionLayout, SectionNav } = await import(
+  "@workspace/ui/layouts/section-layout"
+);
 type LinkProps = import("@workspace/ui/layouts/types").LayoutLinkProps;
 
 const host = document.createElement("div");
@@ -199,5 +207,65 @@ await act(async () => {
   fireEvent.click(account);
 });
 assert.deepEqual(visited, ["/settings/account"]);
+
+scenario("sections are tabs by default, and a capped column when vertical");
+const sections = [
+  { title: "Profile", href: "/settings" },
+  { title: "Account", href: "/settings/account" },
+  { title: "Display", href: "/settings/display" },
+];
+await act(async () => {
+  root.render(
+    <LayoutProvider currentPath="/settings">
+      <SectionLayout title="Settings" orientation="vertical" items={sections}>
+        Content
+      </SectionLayout>
+    </LayoutProvider>,
+  );
+});
+const aside = document.querySelector("aside");
+assert.ok(aside?.className.includes("lg:max-w-64"), "the column has a cap");
+assert.ok(aside?.className.includes("lg:min-w-48"), "and a floor");
+const asideLists = [...(aside?.querySelectorAll('[role="tablist"]') ?? [])];
+assert.deepEqual(
+  asideLists.map((list) => list.getAttribute("aria-orientation")),
+  ["vertical", null],
+  "a column of tabs from lg up, and a row below it",
+);
+visited.length = 0;
+await act(async () => {
+  root.render(
+    <LayoutProvider
+      currentPath="/settings"
+      onNavigate={(href) => visited.push(href)}
+    >
+      <SectionLayout title="Settings" items={sections}>
+        Content
+      </SectionLayout>
+    </LayoutProvider>,
+  );
+});
+assert.equal(document.querySelector("aside"), null, "no side column");
+const tablist = document.querySelector('[role="tablist"]');
+const labelledBy = tablist?.getAttribute("aria-labelledby");
+assert.ok(labelledBy, "the tabs are named by an element");
+assert.equal(
+  document.getElementById(labelledBy)?.textContent,
+  "Settings",
+  "the page title names the tabs",
+);
+const tabs = [...document.querySelectorAll<HTMLElement>('[role="tab"]')];
+assert.equal(tabs.length, 3);
+assert.equal(
+  tabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.textContent,
+  "ProfileProfile",
+  "the current section's tab is selected",
+);
+const display = tabs.find((tab) => tab.textContent?.startsWith("Display"));
+assert.ok(display);
+await act(async () => {
+  fireEvent.click(display);
+});
+assert.deepEqual(visited, ["/settings/display"], "choosing a tab navigates");
 await act(async () => root.unmount());
 await window.happyDOM.abort();

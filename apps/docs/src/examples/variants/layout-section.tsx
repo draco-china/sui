@@ -39,7 +39,6 @@ export default function LayoutSection({ locale }: ExampleProps) {
             ? "管理账户设置和邮件偏好。"
             : "Manage your account settings and email preferences."
         }
-        navLabel={zh ? "设置" : "Settings"}
         items={items}
       >
         <h2 className="font-medium text-lg">{current?.title}</h2>

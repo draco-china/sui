@@ -3,7 +3,7 @@ title: Section Layout
 description: 带标题和独立二级导航的页面，例如设置页和账户页
 ---
 
-改编自 shadcn-admin 的设置页。导航在 `lg` 断点以上纵向排列，平板上为可横向滚动的一行，手机上为原生下拉框。选择选项时调用布局的 `onNavigate`。
+改编自 shadcn-admin 的设置页。各分区在所有尺寸下都以[标签页](/zh-CN/docs/components/tabs)显示在标题与内容之间，超出页面宽度时可以滚动。选择某一项时调用布局的 `onNavigate`，标签页的无障碍名称取自 `title`。
 
 <ComponentPreview name="layout-section" />
 
@@ -26,6 +26,12 @@ import { SectionLayout } from "@workspace/ui/layouts/section-layout"
 ```
 
 在 `AppShell` 内时，链接和激活状态来自它的 `currentPath` 和 `linkComponent`；在其他位置，用 `LayoutProvider` 包裹并传入相同属性。
+## 纵向 [#vertical]
+
+`orientation="vertical"` 在 `lg` 断点以上把标签页纵向排列在侧栏中，侧栏与内容之间有一条分隔线。侧栏宽度为页面的五分之一，但限制在 192 到 256px 之间；`lg` 以下仍为可滚动的一行。适合分区较多、或分区标题较长的页面。
+
+<ComponentPreview name="layout-section-vertical" />
+
 ## API
 
 | 属性 | 默认值 | 说明 |
@@ -33,6 +39,6 @@ import { SectionLayout } from "@workspace/ui/layouts/section-layout"
 | `title` | 必填 | 页面标题。 |
 | `description` | — | 标题下方的说明。 |
 | `items` | 必填 | 链接 `{ title, href, icon?, disabled? }`。 |
-| `navLabel` | `"Section"` | 导航和下拉框的无障碍名称。 |
+| `orientation` | `"horizontal"` | `"vertical"` 在 `lg` 以上把标签页纵向排列在侧栏中。 |
 
-`SectionNav` 单独渲染导航。
+`SectionTabs` 单独渲染标签页，用 `orientation` 设为纵向。`SectionNav` 渲染原先的链接导航：`lg` 以上为链接，平板上为可滚动的一行，手机上为下拉框。
