@@ -523,9 +523,12 @@ function TableScrollbar({
   orientation: "horizontal" | "vertical";
 }) {
   return (
+    // The vertical track starts below the sticky header (h-11), so the
+    // header stays on top and the thumb only runs beside the rows. Base UI
+    // sets `top` inline, hence the important modifier.
     <ScrollAreaPrimitive.Scrollbar
       orientation={orientation}
-      className="z-30 flex touch-none select-none p-0.5 opacity-70 transition-opacity hover:opacity-100 data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col"
+      className="z-30 flex touch-none select-none p-0.5 opacity-70 transition-opacity hover:opacity-100 data-[orientation=vertical]:top-11! data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col"
     >
       <ScrollAreaPrimitive.Thumb className="flex-1 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60" />
     </ScrollAreaPrimitive.Scrollbar>
