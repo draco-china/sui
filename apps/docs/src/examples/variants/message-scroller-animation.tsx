@@ -30,6 +30,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -142,17 +143,19 @@ export function MessageScrollerAnimation() {
               setPresetId(value as MessageAnimationId);
             }}
           >
-            <SelectTrigger aria-label="Animation preset">
+            <SelectTrigger aria-label="Animation preset" className="w-fit">
               <SelectValue>{preset.name}</SelectValue>
             </SelectTrigger>
             <SelectContent align="start" side="top">
-              <SelectGroup>
-                {Object.values(MESSAGE_ANIMATIONS).map((animation) => (
-                  <SelectItem key={animation.id} value={animation.id}>
-                    {animation.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
+              <SelectList>
+                <SelectGroup>
+                  {Object.values(MESSAGE_ANIMATIONS).map((animation) => (
+                    <SelectItem key={animation.id} value={animation.id}>
+                      {animation.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectList>
             </SelectContent>
           </Select>
           <Button

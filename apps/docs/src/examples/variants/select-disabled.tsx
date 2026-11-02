@@ -3,6 +3,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -18,21 +19,23 @@ export function SelectDisabled() {
   ];
   return (
     <Select items={items} disabled>
-      <SelectTrigger className="w-full max-w-48">
+      <SelectTrigger className="max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectGroup>
-          {items.map((item) => (
-            <SelectItem
-              key={item.value}
-              value={item.value}
-              disabled={item.disabled}
-            >
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <SelectList>
+          <SelectGroup>
+            {items.map((item) => (
+              <SelectItem
+                key={item.value}
+                value={item.value}
+                disabled={item.disabled}
+              >
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectList>
       </SelectContent>
     </Select>
   );

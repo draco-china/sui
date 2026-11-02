@@ -4,6 +4,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectList,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
@@ -27,27 +28,29 @@ export function SelectGroups() {
   ];
   return (
     <Select items={allItems}>
-      <SelectTrigger className="w-full max-w-48">
+      <SelectTrigger className="max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Fruits</SelectLabel>
-          {fruits.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-        <SelectSeparator />
-        <SelectGroup>
-          <SelectLabel>Vegetables</SelectLabel>
-          {vegetables.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <SelectList>
+          <SelectGroup>
+            <SelectLabel>Fruits</SelectLabel>
+            {fruits.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+          <SelectSeparator />
+          <SelectGroup>
+            <SelectLabel>Vegetables</SelectLabel>
+            {vegetables.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectList>
       </SelectContent>
     </Select>
   );

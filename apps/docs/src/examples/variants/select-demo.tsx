@@ -4,6 +4,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -26,18 +27,20 @@ const items = [
 export function SelectDemo() {
   return (
     <Select items={items}>
-      <SelectTrigger className="w-full max-w-48">
+      <SelectTrigger className="max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="max-h-64">
-        <SelectGroup>
-          <SelectLabel>Fruits</SelectLabel>
-          {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <SelectList>
+          <SelectGroup>
+            <SelectLabel>Fruits</SelectLabel>
+            {items.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectList>
       </SelectContent>
     </Select>
   );

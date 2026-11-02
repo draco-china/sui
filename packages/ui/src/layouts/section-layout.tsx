@@ -2,9 +2,13 @@
 
 import { buttonVariants } from "@workspace/ui/components/button";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@workspace/ui/components/native-select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectList,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Separator } from "@workspace/ui/components/separator";
 import { cn } from "cn";
 import type * as React from "react";
@@ -17,29 +21,34 @@ type SectionNavProps = {
   className?: string;
 };
 
-/** Vertical from `lg` up, a scrolling row on tablets, a native select on phones. */
+/** Vertical from `lg` up, a scrolling row on tablets, a select on phones. */
 function SectionNav({ items, label = "Section", className }: SectionNavProps) {
   const { Link, isActive, navigate } = useLayout();
   const current = items.find((item) => isActive(item.href));
   return (
     <>
-      <NativeSelect
-        aria-label={label}
-        className="w-full md:hidden"
-        value={current?.href ?? ""}
-        onChange={(event) => navigate(event.target.value)}
+      <Select
+        items={items.map((item) => ({ value: item.href, label: item.title }))}
+        value={current?.href ?? null}
+        onValueChange={(value) => value && navigate(value)}
       >
-        {!current && <NativeSelectOption value="" disabled hidden />}
-        {items.map((item) => (
-          <NativeSelectOption
-            key={item.href}
-            value={item.href}
-            disabled={item.disabled}
-          >
-            {item.title}
-          </NativeSelectOption>
-        ))}
-      </NativeSelect>
+        <SelectTrigger aria-label={label} className="md:hidden">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectList>
+            {items.map((item) => (
+              <SelectItem
+                key={item.href}
+                value={item.href}
+                disabled={item.disabled}
+              >
+                {item.title}
+              </SelectItem>
+            ))}
+          </SelectList>
+        </SelectContent>
+      </Select>
       <nav
         aria-label={label}
         className={cn(

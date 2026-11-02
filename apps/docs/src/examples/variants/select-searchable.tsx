@@ -1,19 +1,15 @@
 "use client";
 
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@workspace/ui/components/item";
+  Select,
+  SelectContent,
+  SelectEmpty,
+  SelectItem,
+  SelectList,
+  SelectSearch,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 
 const countries = [
   { code: "", value: "", continent: "", label: "Select country" },
@@ -68,34 +64,25 @@ const countries = [
   },
 ];
 
-export function ComboboxWithCustomItems() {
+export function SelectSearchable() {
   return (
-    <Combobox
-      items={countries.filter((country) => country.code !== "")}
-      itemToStringValue={(country: (typeof countries)[number]) => country.label}
-    >
-      <ComboboxInput placeholder="Search countries..." />
-      <ComboboxContent>
-        <ComboboxEmpty>No countries found.</ComboboxEmpty>
-        <ComboboxList>
-          {(country) => (
-            <ComboboxItem key={country.code} value={country}>
-              <Item size="xs" className="p-0">
-                <ItemContent>
-                  <ItemTitle className="whitespace-nowrap">
-                    {country.label}
-                  </ItemTitle>
-                  <ItemDescription>
-                    {country.continent} ({country.code})
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            </ComboboxItem>
+    <Select items={countries} defaultValue={countries[0]}>
+      <SelectTrigger className="max-w-64">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectSearch placeholder="Search" />
+        <SelectEmpty>No items found.</SelectEmpty>
+        <SelectList>
+          {(item) => (
+            <SelectItem key={item.code} value={item}>
+              {item.label}
+            </SelectItem>
           )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+        </SelectList>
+      </SelectContent>
+    </Select>
   );
 }
 
-export default ComboboxWithCustomItems;
+export default SelectSearchable;

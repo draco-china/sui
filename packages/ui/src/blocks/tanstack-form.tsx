@@ -30,6 +30,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -452,13 +453,18 @@ export function ProfileForm({
                             <SelectValue placeholder={labels.rolePlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectGroup>
-                              {roles.map((role) => (
-                                <SelectItem key={role.value} value={role.value}>
-                                  {role.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
+                            <SelectList>
+                              <SelectGroup>
+                                {roles.map((role) => (
+                                  <SelectItem
+                                    key={role.value}
+                                    value={role.value}
+                                  >
+                                    {role.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectList>
                           </SelectContent>
                         </Select>
                         {invalid && (

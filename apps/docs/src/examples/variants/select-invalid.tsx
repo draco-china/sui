@@ -4,6 +4,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -24,13 +25,15 @@ export function SelectInvalid() {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectGroup>
-            {items.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectGroup>
+          <SelectList>
+            <SelectGroup>
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectList>
         </SelectContent>
       </Select>
       <FieldError>Please select a fruit.</FieldError>

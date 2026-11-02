@@ -9,9 +9,13 @@ import {
 } from "@workspace/ui/components/breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@workspace/ui/components/native-select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectList,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -146,32 +150,48 @@ export default function LayoutAppShell({ locale }: ExampleProps) {
         </AppHeader>
         <AppMain className="space-y-4">
           <div className="flex flex-wrap gap-3">
-            <NativeSelect
-              size="sm"
-              aria-label={zh ? "侧栏样式" : "Sidebar variant"}
+            <Select
               value={variant}
-              onChange={(event) =>
-                setVariant(event.target.value as LayoutVariant)
+              onValueChange={(value) =>
+                value && setVariant(value as LayoutVariant)
               }
             >
-              <NativeSelectOption value="inset">inset</NativeSelectOption>
-              <NativeSelectOption value="sidebar">sidebar</NativeSelectOption>
-              <NativeSelectOption value="floating">floating</NativeSelectOption>
-            </NativeSelect>
-            <NativeSelect
-              size="sm"
-              aria-label={zh ? "折叠方式" : "Collapse behavior"}
+              <SelectTrigger
+                size="sm"
+                className="w-fit"
+                aria-label={zh ? "侧栏样式" : "Sidebar variant"}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectList>
+                  <SelectItem value="inset">inset</SelectItem>
+                  <SelectItem value="sidebar">sidebar</SelectItem>
+                  <SelectItem value="floating">floating</SelectItem>
+                </SelectList>
+              </SelectContent>
+            </Select>
+            <Select
               value={collapsible}
-              onChange={(event) =>
-                setCollapsible(event.target.value as LayoutCollapsible)
+              onValueChange={(value) =>
+                value && setCollapsible(value as LayoutCollapsible)
               }
             >
-              <NativeSelectOption value="icon">icon</NativeSelectOption>
-              <NativeSelectOption value="offcanvas">
-                offcanvas
-              </NativeSelectOption>
-              <NativeSelectOption value="none">none</NativeSelectOption>
-            </NativeSelect>
+              <SelectTrigger
+                size="sm"
+                className="w-fit"
+                aria-label={zh ? "折叠方式" : "Collapse behavior"}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectList>
+                  <SelectItem value="icon">icon</SelectItem>
+                  <SelectItem value="offcanvas">offcanvas</SelectItem>
+                  <SelectItem value="none">none</SelectItem>
+                </SelectList>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((index) => (

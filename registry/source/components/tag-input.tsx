@@ -3,16 +3,16 @@
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { Button } from "@/components/ui/button";
 import {
-  Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-  useComboboxAnchor,
-} from "@/components/ui/combobox";
+  Select,
+  SelectChip,
+  SelectChips,
+  SelectChipsInput,
+  SelectContent,
+  SelectEmpty,
+  SelectItem,
+  SelectList,
+  useSelectAnchor,
+} from "@/components/ui/select";
 import { cn } from "cn";
 import { XIcon } from "lucide-react";
 import * as React from "react";
@@ -96,7 +96,7 @@ function TagInput({
     [sourceValues],
   );
   const query = controlledInputValue ?? internalInputValue;
-  const anchor = useComboboxAnchor();
+  const anchor = useSelectAnchor();
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const composing = React.useRef(false);
   const highlighted = React.useRef<string | undefined>(undefined);
@@ -238,7 +238,7 @@ function TagInput({
   };
 
   return (
-    <Combobox
+    <Select
       multiple
       items={items}
       value={values}
@@ -288,7 +288,7 @@ function TagInput({
         setMessage("");
       }}
     >
-      <ComboboxChips
+      <SelectChips
         ref={anchor}
         glass={glass}
         frosted={frosted}
@@ -301,7 +301,7 @@ function TagInput({
         )}
       >
         {values.map((value) => (
-          <ComboboxChip key={value} showRemove={false} aria-label={value}>
+          <SelectChip key={value} showRemove={false} aria-label={value}>
             <span className="max-w-48 truncate">{value}</span>
             <ComboboxPrimitive.ChipRemove
               data-slot="tag-input-remove"
@@ -312,9 +312,9 @@ function TagInput({
             >
               <XIcon aria-hidden="true" className="size-3" />
             </ComboboxPrimitive.ChipRemove>
-          </ComboboxChip>
+          </SelectChip>
         ))}
-        <ComboboxChipsInput
+        <SelectChipsInput
           {...props}
           ref={assignRef}
           data-slot="tag-input-control"
@@ -364,21 +364,19 @@ function TagInput({
             commit(query.slice(0, start) + text + query.slice(end));
           }}
         />
-      </ComboboxChips>
-      <ComboboxContent anchor={anchor}>
-        <ComboboxEmpty>
-          {labels?.empty ?? "No suggestions found."}
-        </ComboboxEmpty>
-        <ComboboxList>
+      </SelectChips>
+      <SelectContent anchor={anchor}>
+        <SelectEmpty>{labels?.empty ?? "No suggestions found."}</SelectEmpty>
+        <SelectList>
           {(item: string) => (
-            <ComboboxItem key={item} value={item}>
+            <SelectItem key={item} value={item}>
               {canCreate && item === candidate
                 ? (labels?.createValue?.(item) ?? `Add "${item}"`)
                 : item}
-            </ComboboxItem>
+            </SelectItem>
           )}
-        </ComboboxList>
-      </ComboboxContent>
+        </SelectList>
+      </SelectContent>
       <span
         data-slot="tag-input-status"
         id={statusId}
@@ -387,7 +385,7 @@ function TagInput({
       >
         {message}
       </span>
-    </Combobox>
+    </Select>
   );
 }
 

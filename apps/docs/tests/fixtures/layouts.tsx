@@ -182,12 +182,21 @@ await act(async () => {
     </LayoutProvider>,
   );
 });
-const select = document.querySelector<HTMLSelectElement>("select");
-assert.ok(select);
-assert.equal(select.value, "/settings");
-assert.equal(select.getAttribute("aria-label"), "Settings");
+const sectionTrigger = document.querySelector<HTMLElement>(
+  '[data-slot="select-trigger"]',
+);
+assert.ok(sectionTrigger);
+assert.equal(sectionTrigger.textContent, "Profile");
+assert.equal(sectionTrigger.getAttribute("aria-label"), "Settings");
 await act(async () => {
-  fireEvent.change(select, { target: { value: "/settings/account" } });
+  fireEvent.click(sectionTrigger);
+});
+const account = [
+  ...document.querySelectorAll<HTMLElement>('[data-slot="select-item"]'),
+].find((item) => item.textContent === "Account");
+assert.ok(account);
+await act(async () => {
+  fireEvent.click(account);
 });
 assert.deepEqual(visited, ["/settings/account"]);
 await act(async () => root.unmount());

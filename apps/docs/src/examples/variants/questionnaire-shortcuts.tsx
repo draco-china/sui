@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@workspace/ui/components/native-select";
-import {
   Questionnaire,
   QuestionnaireActions,
   QuestionnaireChoice,
@@ -15,6 +11,14 @@ import {
   QuestionnaireSubmit,
   QuestionnaireTitle,
 } from "@workspace/ui/components/questionnaire";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectList,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { toast } from "@workspace/ui/components/toast";
 import * as React from "react";
 
@@ -27,6 +31,12 @@ const items = [
 ] as const;
 
 type ShortcutMode = React.ComponentProps<typeof Questionnaire>["shortcuts"];
+
+const shortcutOptions = [
+  { value: "none", label: "No shortcuts" },
+  { value: "letters", label: "Letters" },
+  { value: "numbers", label: "Numbers" },
+];
 
 export function QuestionnaireShortcuts() {
   const [shortcuts, setShortcuts] = React.useState<ShortcutMode>("letters");
@@ -46,21 +56,31 @@ export function QuestionnaireShortcuts() {
 
   return (
     <div className="relative mx-auto flex h-full w-full max-w-md flex-col">
-      <NativeSelect
-        aria-label="Shortcut style"
-        className="absolute inset-e-0 top-0"
+      <Select
+        items={shortcutOptions}
         value={shortcuts ?? "none"}
-        onChange={(event) => {
-          const value = event.target.value;
+        onValueChange={(value) =>
           setShortcuts(
             value === "letters" || value === "numbers" ? value : undefined,
-          );
-        }}
+          )
+        }
       >
-        <NativeSelectOption value="none">No shortcuts</NativeSelectOption>
-        <NativeSelectOption value="letters">Letters</NativeSelectOption>
-        <NativeSelectOption value="numbers">Numbers</NativeSelectOption>
-      </NativeSelect>
+        <SelectTrigger
+          aria-label="Shortcut style"
+          className="absolute inset-e-0 top-0 w-fit"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align="end">
+          <SelectList>
+            {shortcutOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectList>
+        </SelectContent>
+      </Select>
 
       <Questionnaire
         className="mt-auto"

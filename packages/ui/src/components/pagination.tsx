@@ -8,6 +8,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -355,21 +356,23 @@ function PaginationControls({
               <SelectTrigger
                 className={cn(
                   paginationControlClassName,
-                  "h-9 min-w-14 justify-center gap-1 px-2",
+                  "h-9 w-fit min-w-14 justify-center gap-1 px-2",
                 )}
                 aria-label={labels.pageNumber}
               >
                 <SelectValue>{page}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {Array.from(
-                  { length: pageCount ?? 1 },
-                  (_, index) => index + 1,
-                ).map((number) => (
-                  <SelectItem key={number} value={number}>
-                    {number}
-                  </SelectItem>
-                ))}
+                <SelectList>
+                  {Array.from(
+                    { length: pageCount ?? 1 },
+                    (_, index) => index + 1,
+                  ).map((number) => (
+                    <SelectItem key={number} value={number}>
+                      {number}
+                    </SelectItem>
+                  ))}
+                </SelectList>
               </SelectContent>
             </Select>
           ) : (
@@ -490,16 +493,18 @@ function PaginationPageSize({
           glass={glass}
           frosted={frosted}
           aria-label={context.labels.pageSize}
-          className={cn(paginationControlClassName, "min-w-18")}
+          className={cn(paginationControlClassName, "w-fit min-w-18")}
         >
           <SelectValue>{size}</SelectValue>
         </SelectTrigger>
         <SelectContent glass={glass} frosted={frosted}>
-          {sizes.map((number) => (
-            <SelectItem key={number} value={number}>
-              {number}
-            </SelectItem>
-          ))}
+          <SelectList>
+            {sizes.map((number) => (
+              <SelectItem key={number} value={number}>
+                {number}
+              </SelectItem>
+            ))}
+          </SelectList>
         </SelectContent>
       </Select>
     </div>

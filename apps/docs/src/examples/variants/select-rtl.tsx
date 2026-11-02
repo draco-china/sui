@@ -6,6 +6,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectList,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
@@ -98,23 +99,25 @@ export function SelectRtl() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent dir={dir} data-lang={dir === "rtl" ? language : undefined}>
-        <SelectGroup>
-          <SelectLabel>{t.fruits}</SelectLabel>
-          {fruits.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-        <SelectSeparator />
-        <SelectGroup>
-          <SelectLabel>{t.vegetables}</SelectLabel>
-          {vegetables.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <SelectList>
+          <SelectGroup>
+            <SelectLabel>{t.fruits}</SelectLabel>
+            {fruits.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+          <SelectSeparator />
+          <SelectGroup>
+            <SelectLabel>{t.vegetables}</SelectLabel>
+            {vegetables.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectList>
       </SelectContent>
     </Select>
   );

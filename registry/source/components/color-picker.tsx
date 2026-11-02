@@ -34,6 +34,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -245,15 +246,17 @@ function ColorPicker({
         }}
         disabled={disabled}
       >
-        <SelectTrigger aria-label={text.format} className="w-full">
+        <SelectTrigger aria-label={text.format}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {colorFormats.map((format) => (
-            <SelectItem key={format} value={format}>
-              {format.toUpperCase()}
-            </SelectItem>
-          ))}
+          <SelectList>
+            {colorFormats.map((format) => (
+              <SelectItem key={format} value={format}>
+                {format.toUpperCase()}
+              </SelectItem>
+            ))}
+          </SelectList>
         </SelectContent>
       </Select>
       <div className="flex items-center gap-2">

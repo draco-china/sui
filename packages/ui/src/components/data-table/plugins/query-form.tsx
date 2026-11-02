@@ -12,6 +12,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -123,15 +124,17 @@ function SelectField({
       value={value === undefined ? null : String(value)}
       onValueChange={(next) => onChange(next ?? undefined)}
     >
-      <SelectTrigger id={id} className="w-full">
+      <SelectTrigger id={id}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {items.map((item) => (
-          <SelectItem key={String(item.value)} value={item.value}>
-            {item.label}
-          </SelectItem>
-        ))}
+        <SelectList>
+          {items.map((item) => (
+            <SelectItem key={String(item.value)} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectList>
       </SelectContent>
     </Select>
   );

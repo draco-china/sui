@@ -430,7 +430,7 @@
         "--tw-ring-offset-shadow": "revert-layer"
       }
     },
-    ":is( [data-glass=\"true\"], [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"], [data-slot=\"accordion-item\"][data-glass=\"true\"] > * > [data-slot=\"accordion-trigger\"] ):focus-visible, [data-glass=\"true\"]:is( [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"combobox-chips\"], [data-slot=\"tag-input\"], [data-slot=\"wheel-picker\"] ):has(:focus-visible)": {
+    ":is( [data-glass=\"true\"], [data-slot=\"tabs-list\"][data-glass=\"true\"] [data-slot=\"tabs-trigger\"], [data-slot=\"accordion-item\"][data-glass=\"true\"] > * > [data-slot=\"accordion-trigger\"] ):focus-visible, [data-glass=\"true\"]:is( [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"select-chips\"], [data-slot=\"tag-input\"], [data-slot=\"wheel-picker\"] ):has(:focus-visible)": {
       "outline": "2px solid var(--ring)",
       "outline-offset": "3px",
       "@media (forced-colors: active)": {
@@ -496,7 +496,7 @@
         }
       }
     },
-    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"input\"], [data-slot=\"textarea\"], [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"select-trigger\"], [data-slot=\"combobox-chips\"], [data-slot=\"tag-input\"] ):focus-within": {
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"input\"], [data-slot=\"textarea\"], [data-slot=\"input-group\"], [data-slot=\"sensitive-input\"], [data-slot=\"select-trigger\"], [data-slot=\"select-chips\"], [data-slot=\"tag-input\"] ):focus-within": {
       "--glass-press": "inset 0 0 0 100vmax rgb(255 255 255 / 0.08)"
     },
     ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( button, [role=\"button\"], a[href] ):not(:disabled, [aria-disabled=\"true\"])": {
@@ -507,7 +507,7 @@
         "--glass-press": "inset 0 0 0 100vmax rgb(255 255 255 / 0.1)"
       }
     },
-    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"alert-dialog-content\"], [data-slot=\"bottom-sheet-popup\"], [data-slot=\"combobox-content\"], [data-slot=\"context-menu-content\"], [data-slot=\"context-menu-sub-content\"], [data-slot=\"dialog-content\"], [data-slot=\"drawer-content\"], [data-slot=\"drawer-popup\"], [data-slot=\"dropdown-menu-content\"], [data-slot=\"dropdown-menu-sub-content\"], [data-slot=\"hover-card-content\"], [data-slot=\"menubar-content\"], [data-slot=\"menubar-sub-content\"], [data-slot=\"navigation-menu-popup\"], [data-slot=\"popover-content\"], [data-slot=\"select-content\"], [data-slot=\"sheet-content\"], [data-slot=\"tab-bar-list\"], [data-slot=\"toast\"], [data-slot=\"tooltip-content\"] )": {
+    ":is([data-glass=\"true\"], [data-frosted=\"true\"]):is( [data-slot=\"alert-dialog-content\"], [data-slot=\"bottom-sheet-popup\"], [data-slot=\"context-menu-content\"], [data-slot=\"context-menu-sub-content\"], [data-slot=\"dialog-content\"], [data-slot=\"drawer-content\"], [data-slot=\"drawer-popup\"], [data-slot=\"dropdown-menu-content\"], [data-slot=\"dropdown-menu-sub-content\"], [data-slot=\"hover-card-content\"], [data-slot=\"menubar-content\"], [data-slot=\"menubar-sub-content\"], [data-slot=\"navigation-menu-popup\"], [data-slot=\"popover-content\"], [data-slot=\"select-content\"], [data-slot=\"sheet-content\"], [data-slot=\"tab-bar-list\"], [data-slot=\"toast\"], [data-slot=\"tooltip-content\"] )": {
       "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.24), 0 2px 8px -4px rgb(0 0 0 / 0.08)",
       ":where(.dark) &": {
         "--tw-shadow": "0 14px 36px -14px rgb(0 0 0 / 0.5), 0 2px 8px -4px rgb(0 0 0 / 0.2)"

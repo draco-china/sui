@@ -1,12 +1,12 @@
 ---
 title: Select
-description: Displays a list of options for the user to pick from—triggered by a button.
+description: Pick one or more values from a list—as a plain dropdown, a searchable list or a text input with suggestions.
 base: base
 component: true
 featured: true
 links:
-  doc: https://base-ui.com/react/components/select
-  api: https://base-ui.com/react/components/select#api-reference
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
 ---
 
 <ComponentPreview name="select-demo" />
@@ -27,6 +27,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
@@ -44,48 +45,79 @@ const items = [
     <SelectValue placeholder="Theme" />
   </SelectTrigger>
   <SelectContent>
-    <SelectGroup>
+    <SelectList>
       {items.map((item) => (
         <SelectItem key={item.value} value={item.value}>
           {item.label}
         </SelectItem>
       ))}
-    </SelectGroup>
+    </SelectList>
   </SelectContent>
 </Select>
 ```
 
 ## Composition
 
-Use the following composition to build a `Select`:
+`Select` takes its shape from the parts you put in it. Every shape shares `SelectContent`, `SelectList` and `SelectItem`.
 
 ```text
 Select
-├── SelectTrigger
+├── SelectTrigger            ← plain dropdown
 │   └── SelectValue
+├── SelectInput              ← text input as the trigger
+├── SelectChips              ← multiple values as chips
+│   ├── SelectChip
+│   └── SelectChipsInput
 └── SelectContent
-    ├── SelectGroup
-    │   ├── SelectLabel
-    │   ├── SelectItem
-    │   └── SelectItem
-    ├── SelectSeparator
-    └── SelectGroup
-        ├── SelectLabel
-        ├── SelectItem
+    ├── SelectSearch         ← search box inside the popup
+    ├── SelectEmpty
+    └── SelectList
+        ├── SelectGroup
+        │   ├── SelectLabel
+        │   └── SelectItem
+        ├── SelectSeparator
         └── SelectItem
 ```
 
-## Align Item With Trigger
+## Searchable
 
-Use `alignItemWithTrigger` on `SelectContent` to control whether the selected item aligns with the trigger. When `true` (default), the popup positions so the selected item appears over the trigger. When `false`, the popup aligns to the trigger edge.
+The popup has no search box until you add one: put `SelectSearch` inside `SelectContent` to filter the list. Static `SelectItem` children are filtered too when `Select` has `items`. Without it the arrow keys and Enter still work.
 
-<ComponentPreview name="select-align-item" />
+<ComponentPreview name="select-searchable" />
+
+## Input
+
+Use `SelectInput` outside `SelectContent` to make the text input the trigger.
+
+<ComponentPreview name="select-input" />
+
+## Clear
+
+Add `showClear` to `SelectInput` to show a button that clears the value.
+
+<ComponentPreview name="select-clear" />
+
+## Multiple
+
+Set `multiple` on `Select` and show the values with `SelectChips`. Pass the anchor from `useSelectAnchor` to `SelectContent` so the popup lines up with the chips.
+
+<ComponentPreview name="select-multiple" />
+
+## Free Text
+
+Control `inputValue` to keep whatever the user types, including text that matches no item. The list only suggests.
+
+<ComponentPreview name="select-free-text" />
 
 ## Groups
 
 Use `SelectGroup`, `SelectLabel`, and `SelectSeparator` to organize items.
 
 <ComponentPreview name="select-groups" />
+
+With a search input, render groups from `items` with `SelectCollection`.
+
+<ComponentPreview name="select-input-groups" />
 
 ## Scrollable
 
@@ -120,4 +152,4 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## API Reference
 
-See the [Base UI Select](https://base-ui.com/react/components/select#api-reference) documentation.
+`Select` is built on Base UI Combobox. See the [Base UI Combobox](https://base-ui.com/react/components/combobox#api-reference) documentation.

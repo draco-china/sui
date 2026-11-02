@@ -1,12 +1,12 @@
 ---
 title: Select
-description: "显示选项列表供用户选择（由按钮触发）"
+description: "从列表中选择一个或多个值：普通下拉、可搜索列表，或带建议的输入框"
 base: base
 component: true
 featured: true
 links:
-  doc: https://base-ui.com/react/components/select
-  api: https://base-ui.com/react/components/select#api-reference
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
 ---
 
 <ComponentPreview name="select-demo" />
@@ -27,6 +27,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
@@ -44,48 +45,79 @@ const items = [
     <SelectValue placeholder="Theme" />
   </SelectTrigger>
   <SelectContent>
-    <SelectGroup>
+    <SelectList>
       {items.map((item) => (
         <SelectItem key={item.value} value={item.value}>
           {item.label}
         </SelectItem>
       ))}
-    </SelectGroup>
+    </SelectList>
   </SelectContent>
 </Select>
 ```
 
 ## 组合结构 [#composition]
 
-使用以下组合来构建 `Select`：
+`Select` 的形态由放入的子组件决定，所有形态都共用 `SelectContent`、`SelectList` 和 `SelectItem`。
 
 ```text
 Select
-├── SelectTrigger
+├── SelectTrigger            ← 普通下拉
 │   └── SelectValue
+├── SelectInput              ← 输入框作为触发器
+├── SelectChips              ← 多选，以标签展示
+│   ├── SelectChip
+│   └── SelectChipsInput
 └── SelectContent
-    ├── SelectGroup
-    │   ├── SelectLabel
-    │   ├── SelectItem
-    │   └── SelectItem
-    ├── SelectSeparator
-    └── SelectGroup
-        ├── SelectLabel
-        ├── SelectItem
+    ├── SelectSearch         ← 弹层内的搜索框
+    ├── SelectEmpty
+    └── SelectList
+        ├── SelectGroup
+        │   ├── SelectLabel
+        │   └── SelectItem
+        ├── SelectSeparator
         └── SelectItem
 ```
 
-## 将选项与触发器对齐 [#align-item-with-trigger]
+## 可搜索 [#searchable]
 
-在`SelectContent`上使用`alignItemWithTrigger`来控制所选项目是否与触发器对齐。当 `true`（默认）时，弹出位置使所选项目出现在触发器上方。当 `false` 时，弹出窗口与触发边缘对齐。
+弹层默认没有搜索框，需要时在 `SelectContent` 中放一个 `SelectSearch` 即可过滤列表。`Select` 传入 `items` 时，静态写的 `SelectItem` 也会被过滤。不加搜索框时，方向键和 Enter 依然可用。
 
-<ComponentPreview name="select-align-item" />
+<ComponentPreview name="select-searchable" />
+
+## 输入框 [#input]
+
+把 `SelectInput` 放在 `SelectContent` 之外，输入框就成为触发器。
+
+<ComponentPreview name="select-input" />
+
+## 清空 [#clear]
+
+给 `SelectInput` 加上 `showClear`，显示清空按钮。
+
+<ComponentPreview name="select-clear" />
+
+## 多选 [#multiple]
+
+在 `Select` 上设置 `multiple`，用 `SelectChips` 展示已选值。把 `useSelectAnchor` 返回的 anchor 传给 `SelectContent`，让弹层与标签区域对齐。
+
+<ComponentPreview name="select-multiple" />
+
+## 自由输入 [#free-text]
+
+受控 `inputValue` 即可保留用户输入的任意文字，包括不在列表中的内容，列表只作为建议。
+
+<ComponentPreview name="select-free-text" />
 
 ## 分组 [#groups]
 
 使用 `SelectGroup`、`SelectLabel` 和 `SelectSeparator` 整理物品。
 
 <ComponentPreview name="select-groups" />
+
+带搜索时，用 `SelectCollection` 从 `items` 渲染分组。
+
+<ComponentPreview name="select-input-groups" />
 
 ## 可滚动区域 [#scrollable]
 
@@ -120,4 +152,4 @@ Select
 
 ## API 参考 [#api-reference]
 
-请参阅[Base UI Select](https://base-ui.com/react/components/select#api-reference) 文档。
+`Select` 基于 Base UI Combobox 实现，请参阅 [Base UI Combobox](https://base-ui.com/react/components/combobox#api-reference) 文档。

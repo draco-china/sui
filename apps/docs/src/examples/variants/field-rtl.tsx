@@ -17,6 +17,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -211,13 +212,15 @@ export function FieldRtl() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
-                      <SelectGroup>
-                        {months.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {getMonthLabel(item.value)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
+                      <SelectList>
+                        <SelectGroup>
+                          {months.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {getMonthLabel(item.value)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectList>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -234,13 +237,15 @@ export function FieldRtl() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
-                      <SelectGroup>
-                        {years.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
+                      <SelectList>
+                        <SelectGroup>
+                          {years.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectList>
                     </SelectContent>
                   </Select>
                 </Field>

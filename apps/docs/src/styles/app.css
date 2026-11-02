@@ -551,8 +551,11 @@ body {
   --preview-tint: color-mix(in srgb, var(--primary), transparent 78%);
   background-color: rgb(0 0 0 / 20%);
 }
-.preview-canvas > * {
-  max-width: 100%;
+/* Layered so an example's own max-w-* utility can narrow it further. */
+@layer base {
+  .preview-canvas > * {
+    max-width: 100%;
+  }
 }
 .preview-canvas [data-slot="message"] {
   max-width: 100%;

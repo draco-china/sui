@@ -4,6 +4,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -37,7 +38,7 @@ function LanguageSelect({
     <Select
       value={editor.language}
       disabled={editor.disabled || options.size < 2}
-      items={Object.fromEntries(options)}
+      items={[...options].map(([value, label]) => ({ value, label }))}
       onValueChange={(next) => {
         if (next !== null && next !== editor.language) onChange(next);
       }}
@@ -46,16 +47,18 @@ function LanguageSelect({
         type="button"
         size="sm"
         aria-label={editor.labels.language}
-        className="max-w-36 bg-transparent text-muted-foreground"
+        className="w-fit max-w-36 bg-transparent text-muted-foreground"
       >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {[...options].map(([value, label]) => (
-          <SelectItem key={value} value={value}>
-            {label}
-          </SelectItem>
-        ))}
+        <SelectList>
+          {[...options].map(([value, label]) => (
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
+          ))}
+        </SelectList>
       </SelectContent>
     </Select>
   );

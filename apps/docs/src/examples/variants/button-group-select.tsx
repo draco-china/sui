@@ -8,6 +8,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
 } from "@workspace/ui/components/select";
 import { ArrowRightIcon } from "lucide-react";
@@ -30,16 +31,18 @@ export default function ButtonGroupSelect() {
           value={currency}
           onValueChange={(value) => setCurrency(value as string)}
         >
-          <SelectTrigger className="font-mono">{currency}</SelectTrigger>
-          <SelectContent alignItemWithTrigger={false} align="start">
-            <SelectGroup>
-              {CURRENCIES.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.value}{" "}
-                  <span className="text-muted-foreground">{item.label}</span>
-                </SelectItem>
-              ))}
-            </SelectGroup>
+          <SelectTrigger className="w-fit font-mono">{currency}</SelectTrigger>
+          <SelectContent align="start">
+            <SelectList>
+              <SelectGroup>
+                {CURRENCIES.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.value}{" "}
+                    <span className="text-muted-foreground">{item.label}</span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectList>
           </SelectContent>
         </Select>
         <Input placeholder="10.00" pattern="[0-9]*" />

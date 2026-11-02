@@ -114,7 +114,7 @@
 [data-glass="true"]:is(
   [data-slot="input-group"],
   [data-slot="sensitive-input"],
-  [data-slot="combobox-chips"],
+  [data-slot="select-chips"],
   [data-slot="tag-input"],
   [data-slot="wheel-picker"]
 ):has(:focus-visible) {
@@ -253,7 +253,7 @@
   [data-slot="input-group"],
   [data-slot="sensitive-input"],
   [data-slot="select-trigger"],
-  [data-slot="combobox-chips"],
+  [data-slot="select-chips"],
   [data-slot="tag-input"]
 ):focus-within {
   --glass-press: inset 0 0 0 100vmax rgb(255 255 255 / 0.08);
@@ -280,7 +280,6 @@
 :is([data-glass="true"], [data-frosted="true"]):is(
   [data-slot="alert-dialog-content"],
   [data-slot="bottom-sheet-popup"],
-  [data-slot="combobox-content"],
   [data-slot="context-menu-content"],
   [data-slot="context-menu-sub-content"],
   [data-slot="dialog-content"],

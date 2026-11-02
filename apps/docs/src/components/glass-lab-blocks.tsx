@@ -38,14 +38,6 @@ import {
 } from "@workspace/ui/components/carousel";
 import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox";
-import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -103,7 +95,10 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 import {
   Select,
   SelectContent,
+  SelectEmpty,
+  SelectInput,
   SelectItem,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
@@ -510,36 +505,35 @@ function Popups({ zh }: { zh: boolean }) {
             items={fruits.map((value) => ({ value, label: value }))}
             defaultValue="Blueberry"
           >
-            <SelectTrigger
-              className="w-full"
-              aria-label={zh ? "水果" : "Fruit"}
-            >
+            <SelectTrigger aria-label={zh ? "水果" : "Fruit"}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent {...material}>
-              {fruits.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
+              <SelectList>
+                {fruits.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectList>
             </SelectContent>
           </Select>
-          <Combobox items={cities}>
-            <ComboboxInput
+          <Select items={cities}>
+            <SelectInput
               placeholder={zh ? "城市" : "City"}
               aria-label={zh ? "城市" : "City"}
             />
-            <ComboboxContent {...material}>
-              <ComboboxEmpty>{zh ? "没有结果" : "No results"}</ComboboxEmpty>
-              <ComboboxList>
+            <SelectContent {...material}>
+              <SelectEmpty>{zh ? "没有结果" : "No results"}</SelectEmpty>
+              <SelectList>
                 {(item: string) => (
-                  <ComboboxItem key={item} value={item}>
+                  <SelectItem key={item} value={item}>
                     {item}
-                  </ComboboxItem>
+                  </SelectItem>
                 )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
+              </SelectList>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-wrap gap-2">
           <DropdownMenu>
@@ -847,11 +841,13 @@ function Forms({ zh }: { zh: boolean }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent {...material}>
-              {fruits.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
+              <SelectList>
+                {fruits.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectList>
             </SelectContent>
           </Select>
         </div>

@@ -6,6 +6,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectList,
   SelectTrigger,
 } from "@workspace/ui/components/select";
 import { cva } from "class-variance-authority";
@@ -241,9 +242,7 @@ function LocaleToggle({
     <Select
       value={value}
       disabled={disabled || changing || unique.length === 0}
-      items={Object.fromEntries(
-        unique.map((option) => [option.value, option.label]),
-      )}
+      items={unique}
       onValueChange={(nextValue) => {
         if (nextValue !== null) void change(nextValue);
       }}
@@ -278,13 +277,15 @@ function LocaleToggle({
         </Tooltip>
       </TooltipProvider>
       <SelectContent glass={glass} frosted={frosted}>
-        <SelectGroup>
-          {unique.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <SelectList>
+          <SelectGroup>
+            {unique.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectList>
       </SelectContent>
     </Select>
   );
