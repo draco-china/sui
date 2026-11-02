@@ -1,3 +1,9 @@
+## [5.2.1](https://github.com/draco-china/sui/compare/v5.2.0...v5.2.1) (2026-11-02)
+
+### Bug Fixes
+
+* **sidebar:** keep a collapsed group label from taking clicks ([c8f7c34](https://github.com/draco-china/sui/commit/c8f7c34b0e76ff3dd1da880df3710b4d7a5a6f33))
+
 ## [5.2.0](https://github.com/draco-china/sui/compare/v5.1.0...v5.2.0) (2026-11-02)
 
 ### Features
