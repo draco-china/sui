@@ -1,3 +1,9 @@
+## [5.3.1](https://github.com/draco-china/sui/compare/v5.3.0...v5.3.1) (2026-11-02)
+
+### Bug Fixes
+
+* **app-main:** pad the content evenly ([94b055a](https://github.com/draco-china/sui/commit/94b055a80142cf69b08f744f0f1ea7f35754eb74))
+
 ## [5.3.0](https://github.com/draco-china/sui/compare/v5.2.1...v5.3.0) (2026-11-02)
 
 ### Features
