@@ -106,12 +106,31 @@ function resetScroll(container: HTMLElement) {
   if (body) body.scrollTop = 0;
 }
 
+// Offset and scroll heights are rounded whole pixels; summed, they can come
+// up a fraction short of fractional content, which then overflows a sheet
+// sized to fit it and shows a needless scrollbar. Heights here are exact,
+// and the total is rounded up.
+const exactHeight = (element: HTMLElement) =>
+  element.getBoundingClientRect().height;
+
 // A collapsed header still reserves its full height in the layout.
 function headerHeight(header: HTMLElement | null) {
   if (!header) return 0;
   if (header.hasAttribute("data-collapsed") && header.dataset.naturalHeight)
     return Number(header.dataset.naturalHeight);
-  return header.offsetHeight;
+  return exactHeight(header);
+}
+
+/** The body's content height, exact even while it scrolls or is clipped. */
+function bodyHeight(body: HTMLElement) {
+  const last = body.lastElementChild;
+  if (!last) return body.scrollHeight;
+  const bottom =
+    last.getBoundingClientRect().bottom -
+    body.getBoundingClientRect().top +
+    body.scrollTop +
+    (Number.parseFloat(getComputedStyle(body).paddingBottom) || 0);
+  return Math.max(body.scrollHeight, bottom);
 }
 
 function measureChrome(popup: HTMLElement, container: HTMLElement): Chrome {
@@ -125,14 +144,14 @@ function measureChrome(popup: HTMLElement, container: HTMLElement): Chrome {
     if (!(child instanceof HTMLElement)) continue;
     const slot = child.dataset.slot;
     if (slot === "bottom-sheet-header") natural += headerHeight(child);
-    // The body may be scrolling, so its content height is its scroll height.
-    else if (slot === "bottom-sheet-body") natural += child.scrollHeight;
-    else natural += child.offsetHeight;
+    else if (slot === "bottom-sheet-body") natural += bodyHeight(child);
+    else natural += exactHeight(child);
   }
+  const footer = part(container, "footer");
   return {
-    header: headerHeight(part(container, "header")),
-    footer: part(container, "footer")?.offsetHeight ?? 0,
-    natural,
+    header: Math.ceil(headerHeight(part(container, "header"))),
+    footer: footer ? Math.ceil(exactHeight(footer)) : 0,
+    natural: Math.ceil(natural),
   };
 }
 
