@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/draco-china/sui/compare/v5.0.0...v5.0.1) (2026-11-02)
+
+### Bug Fixes
+
+* **data-table:** show one clear button in the keyword search ([483a42d](https://github.com/draco-china/sui/commit/483a42de9019aee9ca2ebc2dc120e3d91dfeddb9))
+* **data-table:** size fill tables by their rows ([a8bdfd7](https://github.com/draco-china/sui/commit/a8bdfd7c9a9a009c6b41198b21e37c4c612b0498))
+
 ## [5.0.0](https://github.com/draco-china/sui/compare/v4.0.1...v5.0.0) (2026-11-02)
 
 ### ⚠ BREAKING CHANGES
