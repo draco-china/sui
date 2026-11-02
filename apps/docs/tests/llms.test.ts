@@ -6,6 +6,7 @@ import type { Locale } from "../src/lib/i18n";
 import {
   type LLMContent,
   type LLMPage,
+  llmGroupOf,
   llmsResponse,
   renderLLMIndex,
   toLLMMarkdown,
@@ -154,6 +155,38 @@ describe("LLM Markdown conversion", () => {
       );
       expect(response.status).toBe(404);
     }
+  });
+
+  test("the index follows the sidebar groups and every page belongs to one", () => {
+    for (const locale of ["en-US", "zh-CN"] as const) {
+      const all = pages(locale);
+      expect(
+        all.filter((page) => llmGroupOf(page) === -1).map((page) => page.path),
+      ).toEqual([]);
+      const index = renderLLMIndex(all, locale, "https://docs.test");
+      const guides = index.split("\n\n## ")[1] ?? "";
+      expect(guides).not.toMatch(/slug=[\w-]+%2F/);
+    }
+    const index = renderLLMIndex(pages("en-US"), "en-US", "https://docs.test");
+    expect(
+      [...index.matchAll(/^## (.+)$/gm)].map(([, heading]) => heading),
+    ).toEqual([
+      "Getting started",
+      "Resources",
+      "Components",
+      "Blocks",
+      "Layouts",
+      "Viewers",
+      "Chat",
+      "Charts",
+      "Utils",
+      "Optional",
+    ]);
+    const charts = index.split("## Charts\n\n")[1]?.split("\n\n## ")[0];
+    expect(charts).toContain("slug=charts%2Fbar-chart");
+    expect(index.indexOf("[Introduction]")).toBeLessThan(
+      index.indexOf("[Installation]"),
+    );
   });
 
   test("both locale indexes cover the same dynamically discovered slugs", () => {

@@ -15,7 +15,7 @@ description: 以纯文本读取 SUI 文档和完整示例
 
 这些路径属于当前文档站的访问地址。GitHub raw 托管 [registry](/zh-CN/docs/registry) JSON，LLM 接口则由文档站提供。
 
-索引按指南、组件、Blocks 和工具整理页面，并链接到对应 Markdown。建议先读取索引，再读取任务相关页面。完整文档包含所有页面，通常比单次请求所需的上下文更大。
+索引与文档侧边栏的分组一致，按开始使用、资源、组件、Blocks、布局、查看器、聊天、图表和工具整理页面，并链接到对应 Markdown。建议先读取索引，再读取任务相关页面。完整文档包含所有页面，通常比单次请求所需的上下文更大。
 
 ## 读取单个页面 [#read-one-page]
 
@@ -24,7 +24,7 @@ description: 以纯文本读取 SUI 文档和完整示例
 | 参数 | 可选值 | 默认值 |
 | --- | --- | --- |
 | `locale` | `en-US`、`zh-CN` | `en-US` |
-| `slug` | 不含 `/docs/` 的文档路径，如 `components/button`、`blocks/tanstack-form` 或 `theming` | 省略时返回简介 |
+| `slug` | 不含 `/docs/` 的文档路径，如 `components/button`、`charts/bar-chart`、`blocks/tanstack-form` 或 `theming` | 省略时返回简介 |
 
 无效语言和不存在的文档返回 `404`。显式访问 `/en-US/llms.txt` 或 `/en-US/llms-full.txt` 时，会重定向到没有语言前缀的英文地址。
 
@@ -39,9 +39,9 @@ description: 以纯文本读取 SUI 文档和完整示例
 ## 请求示例 [#example-request]
 
 ```text
-读取 SUI 的 llms.txt，再阅读 Field 和 Copy Button 文档。
-组合一个带标签的敏感输入框，校验信息由应用提供。
-验证逻辑和翻译文案保留在应用中。
+读取 SUI 的 llms.txt，再阅读 Data Table 文档。
+用查询表单、URL 同步和 CSV 导出构建一个远程用户表格。
+请求函数和翻译文案保留在应用中。
 安装源码后，使用我的 components.json 中配置的导入别名。
 ```
 

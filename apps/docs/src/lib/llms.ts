@@ -1,3 +1,4 @@
+import navigation from "../../content/docs/meta.json";
 import { defaultLocale, isLocale, type Locale, localePath } from "./i18n";
 
 export interface LLMPage {
@@ -17,12 +18,17 @@ const messages = {
   "en-US": {
     summary:
       "SUI is a collection of composable React components built on Base UI and Tailwind CSS. These documents include complete examples from the workspace.",
-    guides: "Getting started",
-    components: "Components",
-    blocks: "Blocks",
-    layouts: "Layouts",
-    viewers: "Viewers",
-    utils: "Utils",
+    groups: {
+      "Getting Started": "Getting started",
+      Resources: "Resources",
+      Components: "Components",
+      Blocks: "Blocks",
+      Layouts: "Layouts",
+      Viewers: "Viewers",
+      Chat: "Chat",
+      Charts: "Charts",
+      Utils: "Utils",
+    } as Record<string, string>,
     full: "Complete documentation",
     source: "Page",
     example: "Example",
@@ -30,44 +36,76 @@ const messages = {
   "zh-CN": {
     summary:
       "SUI 是基于 Base UI 和 Tailwind CSS 构建的可组合 React 组件库。本文档包含工作区中的完整示例源码",
-    guides: "开始使用",
-    components: "组件",
-    blocks: "Blocks",
-    layouts: "布局",
-    viewers: "查看器",
-    utils: "工具",
+    groups: {
+      "Getting Started": "开始使用",
+      Resources: "资源",
+      Components: "组件",
+      Blocks: "Blocks",
+      Layouts: "布局",
+      Viewers: "查看器",
+      Chat: "聊天",
+      Charts: "图表",
+      Utils: "工具",
+    } as Record<string, string>,
     full: "完整文档",
     source: "页面",
     example: "示例",
   },
 } as const;
 
-/** Reference sections in index order, after the guides. */
-const sections = [
-  "components",
-  "blocks",
-  "layouts",
-  "viewers",
-  "utils",
-] as const;
-type Section = (typeof sections)[number];
-
-/** The page's reference section, or undefined for a guide. */
-function sectionOf(page: LLMPage): Section | undefined {
-  return sections.find((section) => section === page.slugs[0]);
+interface Group {
+  /** The sidebar separator, such as `Components`. */
+  readonly label: string;
+  /** Top-level pages in sidebar order; `index` is the introduction. */
+  readonly pages: string[];
+  readonly directories: string[];
 }
 
+/**
+ * Index groups in sidebar order, read from the navigation in `meta.json`,
+ * so a new docs category gets its own group instead of joining the guides.
+ */
+export const llmGroups = navigation.pages.reduce<Group[]>((groups, entry) => {
+  const separator = /^---(.+)---$/.exec(entry);
+  if (separator)
+    groups.push({ label: separator[1] ?? entry, pages: [], directories: [] });
+  else if (entry.startsWith("..."))
+    groups.at(-1)?.directories.push(entry.slice(3));
+  else groups.at(-1)?.pages.push(entry);
+  return groups;
+}, []);
+
+function pageKey(page: LLMPage) {
+  return page.slugs.join("/") || "index";
+}
+
+/** The page's group in the navigation, or -1 when the sidebar omits it. */
+export function llmGroupOf(page: LLMPage) {
+  return llmGroups.findIndex(
+    (group) =>
+      group.pages.includes(pageKey(page)) ||
+      group.directories.includes(page.slugs[0] ?? ""),
+  );
+}
+
+/** A page the sidebar omits stays reachable at the end of the first group. */
+function groupRank(page: LLMPage) {
+  return Math.max(0, llmGroupOf(page));
+}
+
+/** Groups in sidebar order; guides as listed, directory pages alphabetical. */
 function sortedPages(pages: LLMPage[]) {
-  const rank = (page: LLMPage) => {
-    const section = sectionOf(page);
-    return section ? sections.indexOf(section) + 1 : 0;
+  const position = (page: LLMPage) => {
+    const listed = llmGroups[groupRank(page)]?.pages ?? [];
+    const at = listed.indexOf(pageKey(page));
+    return at === -1 ? listed.length : at;
   };
   return [...pages].sort((a, b) => {
-    const difference = rank(a) - rank(b);
+    const difference = groupRank(a) - groupRank(b);
     if (difference) return difference;
-    if (rank(a))
-      return a.slugs.join("/").localeCompare(b.slugs.join("/"), "en-US");
-    return a.title.localeCompare(b.title, "en-US");
+    const listed = position(a) - position(b);
+    if (listed) return listed;
+    return a.slugs.join("/").localeCompare(b.slugs.join("/"), "en-US");
   });
 }
 
@@ -96,45 +134,18 @@ export function renderLLMIndex(
 ) {
   const text = messages[locale];
   const ordered = sortedPages(pages);
-  const inSection = (section?: Section) =>
-    ordered.filter((page) => sectionOf(page) === section);
-  const guides = inSection(undefined);
-  const components = inSection("components");
-  const blocks = inSection("blocks");
-  const layouts = inSection("layouts");
-  const viewers = inSection("viewers");
-  const utils = inSection("utils");
+  const sections = llmGroups.flatMap((group, index) => {
+    const members = ordered.filter((page) => groupRank(page) === index);
+    if (members.length === 0) return [];
+    return [
+      `## ${text.groups[group.label] ?? group.label}`,
+      members.map((page) => pageLink(origin, locale, page)).join("\n"),
+    ];
+  });
   return [
     "# SUI",
     `> ${text.summary}`,
-    `## ${text.guides}`,
-    guides.map((page) => pageLink(origin, locale, page)).join("\n"),
-    `## ${text.components}`,
-    components.map((page) => pageLink(origin, locale, page)).join("\n"),
-    ...(blocks.length
-      ? [
-          `## ${text.blocks}`,
-          blocks.map((page) => pageLink(origin, locale, page)).join("\n"),
-        ]
-      : []),
-    ...(layouts.length
-      ? [
-          `## ${text.layouts}`,
-          layouts.map((page) => pageLink(origin, locale, page)).join("\n"),
-        ]
-      : []),
-    ...(viewers.length
-      ? [
-          `## ${text.viewers}`,
-          viewers.map((page) => pageLink(origin, locale, page)).join("\n"),
-        ]
-      : []),
-    ...(utils.length
-      ? [
-          `## ${text.utils}`,
-          utils.map((page) => pageLink(origin, locale, page)).join("\n"),
-        ]
-      : []),
+    ...sections,
     "## Optional",
     `- [${text.full}](${origin}${localePath(locale, "/llms-full.txt")})`,
   ]
@@ -225,7 +236,7 @@ export async function toLLMMarkdown(
     } else if (name === "ComponentIndex") {
       result += sortedPages(context.pages)
         .filter(
-          (page) => sectionOf(page) === "components" && page.slugs.length > 1,
+          (page) => page.slugs[0] === "components" && page.slugs.length > 1,
         )
         .map((page) => pageLink(context.origin, context.locale, page))
         .join("\n");

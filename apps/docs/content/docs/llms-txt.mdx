@@ -15,7 +15,7 @@ Use the LLM endpoints to give an assistant the current SUI APIs and examples. Th
 
 Use these paths on the current documentation origin. GitHub raw hosts the [registry](/docs/registry) JSON, while the documentation site supplies these text endpoints.
 
-The index groups guides, components, Blocks, and utilities and links to their Markdown. Start with the index and read the relevant pages. The complete reference includes every page and can be much larger than one assistant request needs.
+The index follows the documentation sidebar, grouping pages under Getting started, Resources, Components, Blocks, Layouts, Viewers, Chat, Charts, and Utils, and links to their Markdown. Start with the index and read the relevant pages. The complete reference includes every page and can be much larger than one assistant request needs.
 
 ## Read one page [#read-one-page]
 
@@ -24,7 +24,7 @@ The index groups guides, components, Blocks, and utilities and links to their Ma
 | Parameter | Values | Default |
 | --- | --- | --- |
 | `locale` | `en-US`, `zh-CN` | `en-US` |
-| `slug` | Document path without `/docs/`, such as `components/button`, `blocks/tanstack-form`, or `theming` | Introduction when omitted |
+| `slug` | Document path without `/docs/`, such as `components/button`, `charts/bar-chart`, `blocks/tanstack-form`, or `theming` | Introduction when omitted |
 
 Unknown locales and documents return `404`. An explicit `/en-US/llms.txt` or `/en-US/llms-full.txt` redirects to the corresponding English path without the prefix.
 
@@ -39,9 +39,9 @@ The page header provides **Copy Markdown** and **Open**. Copy Markdown returns t
 ## Example request [#example-request]
 
 ```text
-Read SUI's llms.txt, then the Field and Copy Button pages.
-Compose a labeled secret input with an external validation message.
-Keep validation and translated feedback in my application.
+Read SUI's llms.txt, then the Data Table page.
+Build a remote user table with a query form, URL sync, and CSV export.
+Keep the request function and translated labels in my application.
 Use the import aliases from my components.json when installing source.
 ```
 
