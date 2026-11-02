@@ -283,7 +283,7 @@ reduce = false;
 const soundChanges: string[] = [];
 const sounding = render(
   <WheelPicker
-    sound
+    feedback="sound"
     options={options}
     defaultValue="30"
     onValueChange={(v) => soundChanges.push(v)}
@@ -341,7 +341,9 @@ await act(async () => {
 });
 assert.deepEqual(soundChanges, ["60"]);
 assert.equal(sources.length, 2, "settling on the nearest row must stay silent");
-sounding.rerender(<WheelPicker sound options={options} value="15" />);
+sounding.rerender(
+  <WheelPicker feedback="sound" options={options} value="15" />,
+);
 await act(async () => {
   await Bun.sleep(400);
 });
@@ -354,7 +356,7 @@ scenario(
 );
 reduce = true;
 const direct = render(
-  <WheelPicker sound options={options} defaultValue="15" />,
+  <WheelPicker feedback="sound" options={options} defaultValue="15" />,
 );
 const startTicks = sources.length;
 await act(async () => {
@@ -376,8 +378,8 @@ scenario(
 const beforeShared = contexts.length;
 const columns = render(
   <>
-    <WheelPicker sound options={options} aria-label="A" />
-    <WheelPicker sound options={options} aria-label="B" />
+    <WheelPicker feedback="sound" options={options} aria-label="A" />
+    <WheelPicker feedback="sound" options={options} aria-label="B" />
   </>,
 );
 await act(async () => {
@@ -394,7 +396,7 @@ assert(shared);
 columns.rerender(
   <>
     <WheelPicker options={options} aria-label="A" />
-    <WheelPicker sound options={options} aria-label="B" />
+    <WheelPicker feedback="sound" options={options} aria-label="B" />
   </>,
 );
 assert.equal(shared.closed, false);
@@ -405,8 +407,8 @@ scenario("disabled, empty and sound-off wheels never initialize audio");
 const beforeSilent = contexts.length;
 const silent = render(
   <>
-    <WheelPicker sound disabled options={options} />
-    <WheelPicker sound options={[]} />
+    <WheelPicker feedback="sound" disabled options={options} />
+    <WheelPicker feedback="sound" options={[]} />
     <WheelPicker options={options} />
   </>,
 );
@@ -432,7 +434,7 @@ for (const ctor of [
     value: ctor,
     configurable: true,
   });
-  const noAudio = render(<WheelPicker sound options={options} />);
+  const noAudio = render(<WheelPicker feedback="sound" options={options} />);
   await act(async () => {
     fireEvent.keyDown(noAudio.getByRole("listbox"), { key: "End" });
   });

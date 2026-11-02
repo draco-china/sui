@@ -75,6 +75,7 @@ TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass`（可带
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
 | `onItemActivate` | `(value: string) => void` | 可选的激活通知 |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
+| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；选中和长按时反馈。 |
 | 其他属性 | 原生 nav 属性 | 包含 `aria-label`、`className`、`style` 和 `ref` |
 
 模块导出 `TabBar` 及其公共属性和条目类型，应用路由仍由应用管理。

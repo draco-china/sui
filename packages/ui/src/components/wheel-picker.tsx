@@ -19,6 +19,11 @@ import {
 } from "react";
 import { type GlassProps, withGlass } from "../lib/glass/with-glass";
 import { createTickPlayer } from "../lib/tick-sound";
+import {
+  type FeedbackOption,
+  useFeedback,
+  useFeedbackSettings,
+} from "./feedback";
 
 export type WheelPickerOption = string | { label: string; value: string };
 export interface WheelPickerProps
@@ -32,8 +37,11 @@ export interface WheelPickerProps
   visibleCount?: number;
   itemHeight?: number;
   disabled?: boolean;
-  /** Optional synthesized tick; never plays before user interaction. */
-  sound?: boolean;
+  /**
+   * Selection haptic and tick per row crossed; follows `FeedbackProvider` when
+   * unset. The tick never plays before user interaction.
+   */
+  feedback?: FeedbackOption;
   /** Includes the selected value in native form submission. */
   name?: string;
 }
@@ -81,7 +89,7 @@ function WheelPickerImplementation({
   visibleCount = 5,
   itemHeight = 36,
   disabled = false,
-  sound = false,
+  feedback,
   name,
   className,
   style,
@@ -124,6 +132,8 @@ function WheelPickerImplementation({
     undefined,
   );
   const lastTick = useRef(index);
+  const trigger = useFeedback(feedback);
+  const { sound } = useFeedbackSettings(feedback);
   const drag = useRef<Drag | undefined>(undefined);
   const live = useRef({
     options,
@@ -197,13 +207,19 @@ function WheelPickerImplementation({
 
   // Ticks follow the nearest row as the drum crosses it, independently of the
   // value committed once it settles.
-  const tickAt = useCallback((at: number) => {
-    const state = live.current;
-    const row = clamp(Math.round(at), state.options.length - 1);
-    if (row === lastTick.current) return;
-    lastTick.current = row;
-    if (state.sound && !state.unavailable) tickPlayer.current?.play();
-  }, []);
+  const tickAt = useCallback(
+    (at: number) => {
+      const state = live.current;
+      const row = clamp(Math.round(at), state.options.length - 1);
+      if (row === lastTick.current) return;
+      lastTick.current = row;
+      if (state.unavailable) return;
+      if (state.sound) tickPlayer.current?.play();
+      // The picker voices its own tick, so feedback adds only the haptic.
+      trigger("selection", false);
+    },
+    [trigger],
+  );
 
   // A silent glide follows rows without sounding them.
   const silentGlide = useRef(false);

@@ -4,6 +4,7 @@ import { OTPField } from "@base-ui/react/otp-field";
 import { cn } from "cn";
 import { MinusIcon } from "lucide-react";
 import * as React from "react";
+import { type FeedbackOption, useFeedback } from "@/components/ui/feedback";
 import { type IconNode, MorphIcon } from "@/components/ui/morph-icon";
 
 type InputOTPStatus = "idle" | "loading" | "success" | "error";
@@ -13,8 +14,10 @@ type InputOTPProps = Omit<
 > & {
   length?: number;
   status?: InputOTPStatus;
-  feedbackDuration?: number;
+  resultDuration?: number;
   onStatusChange?: (status: InputOTPStatus) => void;
+  /** Haptics and sound when `status` turns to success or error. */
+  feedback?: FeedbackOption;
 };
 const loaderShape: IconNode = [["path", { d: "M12 2a10 10 0 1 0 10 10" }]];
 const successShape: IconNode = [["path", { d: "m20 6-11 11-5-5" }]];
@@ -35,11 +38,13 @@ function InputOTP({
   length = 6,
   children,
   status = "idle",
-  feedbackDuration = 1250,
+  resultDuration = 1250,
   onStatusChange,
   readOnly,
+  feedback,
   ...props
 }: InputOTPProps) {
+  const trigger = useFeedback(feedback);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const markerRef = React.useRef<HTMLSpanElement>(null);
   const focusOwned = React.useRef(false);
@@ -47,21 +52,29 @@ function InputOTP({
   const completedCallback = React.useRef(-1);
   const onStatusChangeRef = React.useRef(onStatusChange);
   onStatusChangeRef.current = onStatusChange;
-  const [feedback, setFeedback] = React.useState({
+  const [result, setResult] = React.useState({
     status,
-    phase: "feedback" as "feedback" | "restoring" | "done",
+    phase: "hold" as "hold" | "restoring" | "done",
     cycle: 0,
   });
-  if (feedback.status !== status)
-    setFeedback({ status, phase: "feedback", cycle: feedback.cycle + 1 });
-  const finished = feedback.status === status && feedback.phase === "done";
-  const restoring = status === "error" && feedback.phase === "restoring";
+  if (result.status !== status)
+    setResult({ status, phase: "hold", cycle: result.cycle + 1 });
+  const finished = result.status === status && result.phase === "done";
+  // Taps once per result cycle, so a field mounted with a status stays quiet.
+  const notifiedCycle = React.useRef(result.cycle);
+  React.useEffect(() => {
+    if (notifiedCycle.current === result.cycle) return;
+    notifiedCycle.current = result.cycle;
+    if (status === "success") trigger("success");
+    if (status === "error") trigger("error");
+  }, [result.cycle, status, trigger]);
+  const restoring = status === "error" && result.phase === "restoring";
   const busy =
     status === "loading" ||
     status === "success" ||
     (status === "error" && !finished);
-  const duration = Number.isFinite(feedbackDuration)
-    ? Math.max(0, feedbackDuration)
+  const duration = Number.isFinite(resultDuration)
+    ? Math.max(0, resultDuration)
     : 1250;
 
   React.useEffect(() => {
@@ -70,8 +83,8 @@ function InputOTP({
       mounted.current = false;
     };
   }, []);
-  const finishFeedback = React.useCallback(
-    (cycle: number, stage: "feedback" | "restoring" = "feedback") => {
+  const finishResult = React.useCallback(
+    (cycle: number, stage: "hold" | "restoring" = "hold") => {
       if (!mounted.current) return;
       const marker = markerRef.current;
       const animation = marker
@@ -82,7 +95,7 @@ function InputOTP({
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
         !!animation &&
         animation !== "none";
-      setFeedback((current) => {
+      setResult((current) => {
         if (
           current.cycle !== cycle ||
           current.phase !== stage ||
@@ -90,7 +103,7 @@ function InputOTP({
         )
           return current;
         const phase =
-          current.status === "error" && stage === "feedback" && animated
+          current.status === "error" && stage === "hold" && animated
             ? "restoring"
             : "done";
         return { ...current, phase };
@@ -143,9 +156,9 @@ function InputOTP({
   React.useEffect(() => {
     if ((status !== "success" && status !== "error") || finished || restoring)
       return;
-    const cycle = feedback.cycle;
+    const cycle = result.cycle;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const complete = () => finishFeedback(cycle);
+    const complete = () => finishResult(cycle);
     const marker = markerRef.current;
     const animation = marker ? getComputedStyle(marker).animationName : "none";
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -159,14 +172,14 @@ function InputOTP({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [status, finished, restoring, feedback.cycle, duration, finishFeedback]);
+  }, [status, finished, restoring, result.cycle, duration, finishResult]);
   React.useEffect(() => {
     if (!restoring) return;
-    const cycle = feedback.cycle;
+    const cycle = result.cycle;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const marker = markerRef.current;
     const animation = marker ? getComputedStyle(marker).animationName : "none";
-    const complete = () => finishFeedback(cycle, "restoring");
+    const complete = () => finishResult(cycle, "restoring");
     const motionChange = () => {
       if (media.matches) complete();
     };
@@ -179,15 +192,15 @@ function InputOTP({
       if (timer) clearTimeout(timer);
       media.removeEventListener("change", motionChange);
     };
-  }, [restoring, feedback.cycle, finishFeedback]);
+  }, [restoring, result.cycle, finishResult]);
   React.useEffect(() => {
     if (
       !finished ||
       (status !== "success" && status !== "error") ||
-      completedCallback.current === feedback.cycle
+      completedCallback.current === result.cycle
     )
       return;
-    completedCallback.current = feedback.cycle;
+    completedCallback.current = result.cycle;
     const root = rootRef.current;
     const active = root?.ownerDocument.activeElement;
     if (
@@ -202,8 +215,8 @@ function InputOTP({
     }
     focusOwned.current = false;
     if (status === "error") onStatusChangeRef.current?.("idle");
-  }, [finished, status, feedback.cycle]);
-  const activeFeedback = restoring ? "restoring" : "active";
+  }, [finished, status, result.cycle]);
+  const activeResult = restoring ? "restoring" : "active";
   return (
     <OTPField.Root
       {...props}
@@ -215,7 +228,7 @@ function InputOTP({
       }}
       data-slot="input-otp"
       data-status={status}
-      data-feedback={busy ? activeFeedback : "restored"}
+      data-result={busy ? activeResult : "restored"}
       aria-busy={status === "loading" || undefined}
       readOnly={readOnly || busy}
       className={(state) =>
@@ -227,7 +240,7 @@ function InputOTP({
       style={(state) =>
         ({
           ...(typeof style === "function" ? style(state) : style),
-          "--otp-feedback-duration": `${duration}ms`,
+          "--otp-result-duration": `${duration}ms`,
         }) as React.CSSProperties
       }
     >
@@ -285,22 +298,22 @@ function InputOTP({
       {(status === "success" || status === "error") && !finished && (
         <span
           ref={markerRef}
-          key={feedback.cycle}
-          data-slot="input-otp-feedback-clock"
+          key={result.cycle}
+          data-slot="input-otp-result-clock"
           aria-hidden="true"
           onAnimationEnd={(event) => {
             if (
               event.target === event.currentTarget &&
-              event.animationName === "input-otp-feedback" &&
+              event.animationName === "input-otp-result" &&
               !restoring
             )
-              finishFeedback(feedback.cycle);
+              finishResult(result.cycle);
             if (
               event.target === event.currentTarget &&
               event.animationName === "input-otp-restoration" &&
               restoring
             )
-              finishFeedback(feedback.cycle, "restoring");
+              finishResult(result.cycle, "restoring");
           }}
         />
       )}

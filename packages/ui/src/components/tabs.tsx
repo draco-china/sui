@@ -19,6 +19,7 @@ import {
 } from "motion/react";
 import * as React from "react";
 import { withGlass } from "../lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 /** Whether trigger icons show on every tab or only on the selected one. */
 type TabsIconDisplay = "always" | "selected";
@@ -44,8 +45,11 @@ function Tabs({
   className,
   orientation = "horizontal",
   icons = "always",
+  feedback,
+  onValueChange,
   ...props
 }: TabsPrimitive.Root.Props & {
+  feedback?: FeedbackOption;
   /**
    * With "selected", a trigger's `icon` springs open only on the selected tab
    * and folds away when another is chosen.
@@ -56,6 +60,7 @@ function Tabs({
     () => ({ orientation, icons }),
     [orientation, icons],
   );
+  const trigger = useFeedback(feedback);
   return (
     <TabsContext.Provider value={context}>
       <TabsPrimitive.Root
@@ -67,6 +72,10 @@ function Tabs({
             typeof className === "function" ? className(state) : className,
           )
         }
+        onValueChange={(value, eventDetails) => {
+          onValueChange?.(value, eventDetails);
+          trigger("selection");
+        }}
         {...props}
       />
     </TabsContext.Provider>

@@ -129,6 +129,7 @@ Localize the visible reveal hint with `labels.reveal`, its keyboard instructions
 | `onCopySuccess` | `(value: string) => void` | — | Called after the current value is successfully written. |
 | `onCopyError` | `(error: Error) => void` | — | Called when the clipboard write fails. |
 | `resetDelay` | `number` | `1500` | Successful copy feedback duration in milliseconds. |
+| `feedback` | `FeedbackOption` | — | Follows `FeedbackProvider`; haptics when a copy succeeds or fails. |
 | `labels` | `{ reveal?: string; instruction?: string; hidden?: string; show?: string; hide?: string; copy?: string; pending?: string; copied?: string; failed?: string }` | English labels | Reveal hint, keyboard instructions, hidden announcement, action names, and copy feedback. |
 | `className` | `string` | — | Additional group classes. |
 | `inputClassName` | `string` | — | Additional input classes. |

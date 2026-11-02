@@ -32,6 +32,18 @@ SOFTWARE.
 const DURATION = 0.016; // seconds, short enough to stay distinct during a fling
 const MASTER_GAIN = 0.055;
 
+// Variants reuse the same modes, pitched and stretched: a tap reads as a
+// softer, lower press, and the toggle pair rises when switched on and falls
+// when switched off, like the UISwitch click.
+export type TickVariant = "tick" | "tap" | "toggle-on" | "toggle-off";
+
+const VARIANTS: Record<TickVariant, { pitch: number; length: number }> = {
+  tick: { pitch: 1, length: 1 },
+  tap: { pitch: 0.72, length: 1.4 },
+  "toggle-on": { pitch: 1.18, length: 1.1 },
+  "toggle-off": { pitch: 0.86, length: 1.1 },
+};
+
 const MODES = [
   { frequency: 980, decay: 0.0038, gain: 0.5, phase: 0 },
   { frequency: 1820, decay: 0.0024, gain: 0.3, phase: 0.65 },
@@ -57,12 +69,17 @@ function getAudioContextCtor(): AudioContextCtor | undefined {
 // created a player has called `dispose()`.
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
-let clickBuffer: AudioBuffer | null = null;
+const buffers = new Map<TickVariant, AudioBuffer>();
 let consumers = 0;
 
-function buildClickBuffer(context: AudioContext): AudioBuffer {
+function buildClickBuffer(
+  context: AudioContext,
+  variant: TickVariant,
+): AudioBuffer {
+  const { pitch, length: stretch } = VARIANTS[variant];
+  const duration = DURATION * stretch;
   const sampleRate = context.sampleRate;
-  const length = Math.ceil(DURATION * sampleRate);
+  const length = Math.ceil(duration * sampleRate);
   const buffer = context.createBuffer(1, length, sampleRate);
   const data = buffer.getChannelData(0);
 
@@ -71,12 +88,12 @@ function buildClickBuffer(context: AudioContext): AudioBuffer {
   for (let i = 0; i < length; i++) {
     const t = i / sampleRate;
     const attack = Math.min(1, t / 0.00012);
-    const fadeOut = Math.min(1, (DURATION - t) / 0.001);
+    const fadeOut = Math.min(1, (duration - t) / 0.001);
     let resonance = 0;
     for (const mode of MODES) {
       resonance +=
-        Math.sin(2 * Math.PI * mode.frequency * t + mode.phase) *
-        Math.exp(-t / mode.decay) *
+        Math.sin(2 * Math.PI * mode.frequency * pitch * t + mode.phase) *
+        Math.exp(-t / (mode.decay * stretch)) *
         mode.gain;
     }
 
@@ -105,7 +122,16 @@ function ensureContext() {
   masterGain = ctx.createGain();
   masterGain.gain.value = MASTER_GAIN;
   masterGain.connect(ctx.destination);
-  clickBuffer = buildClickBuffer(ctx);
+}
+
+function getBuffer(variant: TickVariant): AudioBuffer | undefined {
+  if (!ctx) return undefined;
+  let buffer = buffers.get(variant);
+  if (!buffer) {
+    buffer = buildClickBuffer(ctx, variant);
+    buffers.set(variant, buffer);
+  }
+  return buffer;
 }
 
 function prepareContext() {
@@ -118,7 +144,7 @@ function prepareContext() {
   }
 }
 
-interface TickPlayer {
+export interface TickPlayer {
   prepare: () => void;
   play: () => void;
   dispose: () => void;
@@ -131,7 +157,7 @@ interface TickPlayer {
  * last consumer is gone. Safe during SSR or in browsers without Web Audio:
  * `prepare()` and `play()` become silent no-ops.
  */
-export function createTickPlayer(): TickPlayer {
+export function createTickPlayer(variant: TickVariant = "tick"): TickPlayer {
   consumers++;
   let disposed = false;
   let activeSource: AudioBufferSourceNode | null = null;
@@ -149,13 +175,14 @@ export function createTickPlayer(): TickPlayer {
       if (disposed) return;
       try {
         prepareContext();
-        if (!ctx || !masterGain || !clickBuffer) return;
+        const buffer = getBuffer(variant);
+        if (!ctx || !masterGain || !buffer) return;
         // A fast fling can cross rows more quickly than the tail of a tick.
         // Cutting that tail keeps the feedback dry instead of stacking into a
         // louder metallic ring.
         activeSource?.stop();
         const source = ctx.createBufferSource();
-        source.buffer = clickBuffer;
+        source.buffer = buffer;
         source.connect(masterGain);
         source.onended = () => {
           source.disconnect();
@@ -186,7 +213,7 @@ export function createTickPlayer(): TickPlayer {
         masterGain?.disconnect();
         ctx = null;
         masterGain = null;
-        clickBuffer = null;
+        buffers.clear();
       }
     },
   };

@@ -4,6 +4,7 @@ import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { withGlass } from "../lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 const toggleVariants = cva(
   "group/toggle inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-3xl font-medium text-sm outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-pressed:border-primary/40 aria-pressed:bg-accent aria-pressed:text-accent-foreground aria-pressed:hover:bg-accent aria-pressed:hover:text-accent-foreground aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -31,12 +32,20 @@ function ToggleImplementation({
   className,
   variant = "default",
   size = "default",
+  feedback,
+  onPressedChange,
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: TogglePrimitive.Props &
+  VariantProps<typeof toggleVariants> & { feedback?: FeedbackOption }) {
+  const trigger = useFeedback(feedback);
   return (
     <TogglePrimitive
       data-slot="toggle"
       className={cn(toggleVariants({ variant, size }), className)}
+      onPressedChange={(pressed, eventDetails) => {
+        onPressedChange?.(pressed, eventDetails);
+        trigger("selection", pressed ? "toggle-on" : "toggle-off");
+      }}
       {...props}
     />
   );

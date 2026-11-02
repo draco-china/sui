@@ -102,7 +102,7 @@ const [value, setValue] = useState("");
 
 请求返回后设置 `success` 或 `error`。成功状态会持续显示，直到业务显式设置 `status="idle"`，例如用户选择重新输入时。
 
-失败时，X 显示 `feedbackDuration` 指定的时长，随后淡出，槽位在约 `380` 毫秒内反向移动、展开回原位。展开期间仍保持只读；展开结束后恢复编辑与符合条件的焦点，不改变真实值或掩码设置。只有失败恢复后才通过 `onStatusChange` 请求 `idle`，将它连接到状态 setter，使重试操作同时恢复可用。
+失败时，X 显示 `resultDuration` 指定的时长，随后淡出，槽位在约 `380` 毫秒内反向移动、展开回原位。展开期间仍保持只读；展开结束后恢复编辑与符合条件的焦点，不改变真实值或掩码设置。只有失败恢复后才通过 `onStatusChange` 请求 `idle`，将它连接到状态 setter，使重试操作同时恢复可用。
 
 ```tsx
 const id = useId();
@@ -143,7 +143,7 @@ const feedback = {
 
 `InputOTPStatus` 从同一个组件模块导入。请求取消与过期响应由应用处理；可运行示例会在卸载时清理本地计时器，并忽略已经失效的请求。
 
-`feedbackDuration` 默认是 `1250` 毫秒，用于失败结果停留，不会为 `loading` 设置超时。失败在停留结束后反向展开，成功则继续保留勾号，直到业务重置状态。
+`resultDuration` 默认是 `1250` 毫秒，用于失败结果停留，不会为 `loading` 设置超时。失败在停留结束后反向展开，成功则继续保留勾号，直到业务重置状态。
 
 减少动态效果时关闭位移与粒子，仍保留结果停留时间；失败随后直接恢复输入，成功仍保持勾号。动画样式不可用时由计时器完成闭环，时长为零时跳过结果停留。恢复后仍遵循显式设置的 `disabled` 与 `readOnly`。若失败反馈前焦点属于该字段，且用户没有主动移到其他控件，恢复时会聚焦第一个槽位。
 
@@ -231,7 +231,8 @@ const feedback = {
 | `onValueComplete` | `(value, details) => void` | 通知输入完成，不负责验证 |
 | `status` | `InputOTPStatus` | `"idle"`；受控验证反馈 |
 | `onStatusChange` | `(status: InputOTPStatus) => void` | 失败恢复后请求 `"idle"` |
-| `feedbackDuration` | `number` | `1250` 毫秒；失败反向展开前的结果停留时间 |
+| `resultDuration` | `number` | `1250` 毫秒；失败反向展开前的结果停留时间 |
+| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；`status` 变为成功或失败时触发触感 |
 | `mask` | `boolean` | `false`；隐藏字符显示，不改变真实值 |
 
 `InputOTPGroup` 接受 div 属性，`InputOTPSeparator` 接受 Base UI 分隔符属性。`InputOTPSlot` 接受 Base UI OTP 输入属性与 `HTMLInputElement` 引用，位置由槽位顺序决定。

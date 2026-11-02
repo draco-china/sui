@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { ExampleProps } from "./types";
 
 export const examples = {
+  "feedback-demo": () => import("./variants/feedback-demo"),
   "long-text-demo": () => import("./variants/long-text-demo"),
   "long-text-table": () => import("./variants/long-text-table"),
   "navigation-progress-demo": () =>
@@ -609,6 +610,7 @@ export const examples = {
 >;
 
 export const sourceFiles = {
+  "feedback-demo": () => import("./variants/feedback-demo.tsx?raw"),
   "layout-app-shell": () => import("./variants/layout-app-shell.tsx?raw"),
   "layout-top-nav": () => import("./variants/layout-top-nav.tsx?raw"),
   "layout-section": () => import("./variants/layout-section.tsx?raw"),

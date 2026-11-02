@@ -4,6 +4,7 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 import { cn } from "cn";
 import { type ComponentProps, useEffect, useState } from "react";
 import { withGlass } from "../lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 // With `glass`, as on Apple platforms, the thumb becomes a clear glass lens
 // only while pressed; a lens sits on glass, so it also works inside a layer.
@@ -18,13 +19,17 @@ function Switch({
   className,
   size = "default",
   glass = false,
+  feedback,
   onPointerDown,
+  onCheckedChange,
   ...props
 }: SwitchPrimitive.Root.Props & {
   size?: "sm" | "default";
   glass?: boolean;
+  feedback?: FeedbackOption;
 }) {
   const [pressed, setPressed] = useState(false);
+  const trigger = useFeedback(feedback);
   useEffect(() => {
     if (!pressed) return;
     const release = () => setPressed(false);
@@ -46,6 +51,10 @@ function Switch({
       onPointerDown={(event) => {
         onPointerDown?.(event);
         if (!props.disabled && !props.readOnly) setPressed(true);
+      }}
+      onCheckedChange={(checked, eventDetails) => {
+        onCheckedChange?.(checked, eventDetails);
+        trigger("light", checked ? "toggle-on" : "toggle-off");
       }}
       {...props}
     >

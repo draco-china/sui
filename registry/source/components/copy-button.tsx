@@ -3,6 +3,7 @@
 import { cn } from "cn";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { CopyIcon } from "@/components/ui/copy-icon";
+import type { FeedbackOption } from "@/components/ui/feedback";
 import { TooltipButton, type TooltipButtonProps } from "@/components/ui/tooltip-button";
 
 export const copyButtonLabels = {
@@ -22,6 +23,8 @@ export const copyButtonLabelsZhCN: CopyButtonLabels = {
 export interface CopyButtonProps
   extends Omit<TooltipButtonProps, "tooltip" | "value" | "onClick"> {
   readonly value: string;
+  /** Haptics for a finished copy; follows `FeedbackProvider` when unset. */
+  readonly feedback?: FeedbackOption;
   readonly labels?: Partial<CopyButtonLabels>;
 }
 
@@ -33,10 +36,11 @@ export function CopyButton({
   size = "icon-sm",
   disabled,
   className,
+  feedback,
   ...props
 }: Readonly<CopyButtonProps>) {
   const text = { ...copyButtonLabels, ...labels };
-  const { status, copy } = useClipboard(value);
+  const { status, copy } = useClipboard(value, { feedback });
   const message = {
     idle: text.copy,
     pending: text.copy,

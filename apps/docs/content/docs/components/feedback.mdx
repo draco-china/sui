@@ -1,0 +1,99 @@
+---
+title: Feedback
+description: Opt-in haptics and click sounds for controls, in the spirit of Apple platforms.
+base: base
+component: true
+---
+
+`FeedbackProvider` turns on short haptics, and optionally soft synthesized clicks, for the controls inside it. Feedback is off by default, so components behave exactly like their primitives until you enable it.
+
+<ComponentPreview name="feedback-demo" previewClassName="h-auto" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/feedback
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage
+
+```tsx showLineNumbers
+import { FeedbackProvider } from "@workspace/ui/components/feedback"
+```
+
+```tsx showLineNumbers
+<FeedbackProvider haptics>
+  {/* Your app content */}
+</FeedbackProvider>
+```
+
+Add `sound` for clicks as well. Most Apple controls stay quiet, so haptics alone is the closer match.
+
+## Per component
+
+Every supported component takes a `feedback` prop that overrides the provider for that instance.
+
+| Value | Effect |
+| --- | --- |
+| unset | Follows the nearest `FeedbackProvider`; silent without one. |
+| `true` | Haptics and sound. |
+| `"haptic"` | Haptics only. |
+| `"sound"` | Sound only. |
+| `false` | Silent, even inside an enabled provider. |
+
+```tsx showLineNumbers
+<Switch feedback="haptic" />
+<Button feedback>Save</Button>
+```
+
+`Button` stays silent unless `feedback` is set, even inside an enabled provider, because most buttons should not tap back.
+
+## Moments
+
+| Component | When | Haptic |
+| --- | --- | --- |
+| `Switch` | Toggled | light; rising or falling click |
+| `Checkbox`, `RadioGroup`, `Toggle` | Selection changes | selection |
+| `Tabs`, `ToggleGroup`, `TabBar` | Selection changes | selection |
+| `TabBar` | Long press, then each item passed while sliding | medium, then selection |
+| `Slider` | Reaching either end; each step when there are 20 or fewer | light; selection |
+| `BottomSheet`, `Drawer` | Settling on a detent or snap point | light |
+| `WheelPicker` | Each row crossed | selection, tick |
+| `Toaster` | A success, warning or error toast appears | notification |
+| `CopyButton`, `ClipboardText`, `InlineCopyText`, `SensitiveInput` | Copy succeeds or fails | success or error |
+| `InputOTP` | `status` turns success or error | success or error |
+| `Button` | Clicked | light; medium for `destructive` |
+
+## Platform support
+
+- **Android and other browsers with the Vibration API** play a timed pattern for each kind.
+- **iOS 18 and later** have no Vibration API. A hidden `<input type="checkbox" switch>` plays the system Taptic click, so notification kinds differ by the number of clicks.
+- **Desktop** has no haptics; only sound plays.
+
+Browsers only allow haptics during a user gesture. Feedback that follows asynchronous work, such as a copy result or a toast, may not vibrate on iOS. Sound never plays before the first user interaction.
+
+## useFeedback
+
+`useFeedback` returns a stable `trigger(kind, sound)` for your own components. It follows the provider and accepts the same `feedback` option.
+
+```tsx showLineNumbers
+import { type FeedbackOption, useFeedback } from "@workspace/ui/components/feedback"
+
+function Stepper({ feedback }: { feedback?: FeedbackOption }) {
+  const trigger = useFeedback(feedback)
+  return <button onClick={() => trigger("selection", "tick")}>+</button>
+}
+```
+
+`kind` is one of `"selection"`, `"light"`, `"medium"`, `"heavy"`, `"success"`, `"warning"` or `"error"`. `sound` is `"tick"`, `"tap"`, `"toggle-on"` or `"toggle-off"`, or `false` for haptics only. Pass `{ optIn: true }` as the second argument to ignore the provider, as `Button` does.
+
+## API Reference
+
+### FeedbackProvider
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `haptics` | `boolean` | `false` |
+| `sound` | `boolean` | `false` |

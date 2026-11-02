@@ -4,6 +4,7 @@ import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer";
 import { cn } from "cn";
 import * as React from "react";
 import { withGlass } from "../lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 type DrawerContextProps = {
   hasSnapPoints: boolean;
@@ -29,10 +30,14 @@ function Drawer({
   showSwipeHandle = false,
   snapPoints,
   swipeDirection = "down",
+  feedback,
+  onSnapPointChange,
   ...props
 }: DrawerPrimitive.Root.Props & {
   showSwipeHandle?: boolean;
+  feedback?: FeedbackOption;
 }) {
+  const trigger = useFeedback(feedback);
   const hasSnapPoints = snapPoints != null && snapPoints.length > 0;
   const contextValue = React.useMemo(
     () => ({ hasSnapPoints, modal, showSwipeHandle, swipeDirection }),
@@ -46,6 +51,10 @@ function Drawer({
         modal={modal}
         snapPoints={snapPoints}
         swipeDirection={swipeDirection}
+        onSnapPointChange={(snapPoint, eventDetails) => {
+          onSnapPointChange?.(snapPoint, eventDetails);
+          trigger("light");
+        }}
         {...props}
       />
     </DrawerContext.Provider>

@@ -7,6 +7,7 @@ import type { VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import * as React from "react";
 import { withGlass } from "../lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants> & {
@@ -28,12 +29,16 @@ function ToggleGroupImplementation({
   orientation = "horizontal",
   style,
   children,
+  feedback,
+  onValueChange,
   ...props
 }: ToggleGroupPrimitive.Props &
   VariantProps<typeof toggleVariants> & {
     spacing?: number;
     orientation?: "horizontal" | "vertical";
+    feedback?: FeedbackOption;
   }) {
+  const trigger = useFeedback(feedback);
   return (
     <ToggleGroupPrimitive
       data-slot="toggle-group"
@@ -52,6 +57,10 @@ function ToggleGroupImplementation({
         "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
         className,
       )}
+      onValueChange={(groupValue, eventDetails) => {
+        onValueChange?.(groupValue, eventDetails);
+        trigger("selection");
+      }}
       {...props}
     >
       <ToggleGroupContext.Provider

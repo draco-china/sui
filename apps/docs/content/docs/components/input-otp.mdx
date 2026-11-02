@@ -102,7 +102,7 @@ The application controls `status` and owns the verification request:
 
 After your request resolves, set `success` or `error`. Success remains displayed until your application explicitly sets `status="idle"`, such as when the user chooses to enter a new code.
 
-Error holds the X for `feedbackDuration`, then fades it out while the slots move back out to their original positions over about `380` milliseconds. The field stays read-only during this reverse transition. Once it finishes, editing and eligible focus are restored without changing the value or mask setting. `onStatusChange` requests `idle` only after error restoration. Connect it to your status setter so retry controls become available too.
+Error holds the X for `resultDuration`, then fades it out while the slots move back out to their original positions over about `380` milliseconds. The field stays read-only during this reverse transition. Once it finishes, editing and eligible focus are restored without changing the value or mask setting. `onStatusChange` requests `idle` only after error restoration. Connect it to your status setter so retry controls become available too.
 
 ```tsx
 const id = useId();
@@ -143,7 +143,7 @@ const feedback = {
 
 Import `InputOTPStatus` from the same component module. Keep request cancellation and stale-response handling in the application; the live example cancels its local timer on unmount and ignores superseded requests.
 
-`feedbackDuration` defaults to `1250` milliseconds for the error result hold and does not time out `loading`. Error unfolds after that hold; success keeps its check until your application resets the status.
+`resultDuration` defaults to `1250` milliseconds for the error result hold and does not time out `loading`. Error unfolds after that hold; success keeps its check until your application resets the status.
 
 Reduced motion disables movement and particles while preserving the result hold. Error then returns to inputs without the animated transition; success still keeps its check. Timers complete the lifecycle when animation styles are unavailable. Zero duration skips the result hold. Restoration respects explicit `disabled` and `readOnly` settings. After an error, focus returns to the first slot when the field owned focus before feedback and the user has not moved focus elsewhere.
 
@@ -231,7 +231,8 @@ Use the shared `DirectionProvider` from `@workspace/ui/components/direction` wit
 | `onValueComplete` | `(value, details) => void` | Reports completed entry; does not verify it |
 | `status` | `InputOTPStatus` | `"idle"`; controlled verification feedback |
 | `onStatusChange` | `(status: InputOTPStatus) => void` | Requests `"idle"` after error restoration |
-| `feedbackDuration` | `number` | `1250` ms; error result hold before unfolding |
+| `resultDuration` | `number` | `1250` ms; error result hold before unfolding |
+| `feedback` | `FeedbackOption` | follows `FeedbackProvider`; haptics when `status` turns success or error |
 | `mask` | `boolean` | `false`; hides characters without changing the real value |
 
 `InputOTPGroup` accepts div props. `InputOTPSeparator` accepts Base UI separator props. `InputOTPSlot` accepts Base UI OTP input props and an `HTMLInputElement` ref. Slot order determines position.

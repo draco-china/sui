@@ -12,8 +12,10 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 import { type GlassProps, withGlass } from "../lib/glass/with-glass";
+import type { HapticKind } from "../lib/haptics";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 const toast = ToastPrimitive.createToastManager();
 
@@ -222,12 +224,35 @@ function ToastIcon({ type }: { type: string | undefined }) {
   );
 }
 
+const notificationHaptics: Partial<Record<string, HapticKind>> = {
+  success: "success",
+  warning: "warning",
+  error: "error",
+};
+
 function ToastList({
   side = "top",
   glass,
   frosted,
-}: { side?: "top" | "bottom" } & GlassProps) {
+  feedback,
+}: { side?: "top" | "bottom"; feedback?: FeedbackOption } & GlassProps) {
   const { toasts } = ToastPrimitive.useToastManager();
+  const trigger = useFeedback(feedback);
+  // Each toast taps once per status it reaches, so a promise toast that
+  // settles from loading into success or error still reports the outcome.
+  const notified = React.useRef(new Map<string, string | undefined>());
+  React.useEffect(() => {
+    const seen = notified.current;
+    const live = new Set<string>();
+    for (const item of toasts) {
+      live.add(item.id);
+      if (seen.has(item.id) && seen.get(item.id) === item.type) continue;
+      seen.set(item.id, item.type);
+      const kind = item.type && notificationHaptics[item.type];
+      if (kind) trigger(kind);
+    }
+    for (const id of seen.keys()) if (!live.has(id)) seen.delete(id);
+  }, [toasts, trigger]);
 
   return toasts.map((toastItem) => (
     <Toast
@@ -259,9 +284,12 @@ function Toaster({
   colorful = true,
   glass,
   frosted,
+  feedback,
   ...props
 }: ToastPrimitive.Provider.Props &
   GlassProps & {
+    /** Haptics for success, warning and error toasts. */
+    feedback?: FeedbackOption;
     /** Where toasts appear; top center by default. */
     position?: ToastPosition;
     /** Tints success, info, warning and error toasts with their status color. */
@@ -276,6 +304,7 @@ function Toaster({
             side={toastSide(position)}
             glass={glass}
             frosted={frosted}
+            feedback={feedback}
           />
         </ToastViewport>
       </ToastPortal>

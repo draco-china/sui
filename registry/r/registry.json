@@ -66,6 +66,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -119,6 +124,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -231,6 +246,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -284,6 +304,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -393,6 +423,11 @@
           "target": "@ui/bottom-sheet.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/hooks/use-bottom-sheet-controller.ts",
           "type": "registry:hook",
           "target": "@hooks/use-bottom-sheet-controller.ts"
@@ -456,6 +491,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -662,6 +707,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -715,6 +765,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -760,6 +820,11 @@
           "target": "@ui/calendar.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -813,6 +878,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -947,6 +1022,11 @@
           "target": "@ui/carousel.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -1000,6 +1080,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -1071,6 +1161,21 @@
           "path": "packages/ui/src/components/checkbox.tsx",
           "type": "registry:ui",
           "target": "@ui/checkbox.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -1118,6 +1223,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -1203,6 +1313,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -1352,6 +1472,11 @@
           "target": "@ui/copy-icon.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -1457,6 +1582,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/highlight/provider.tsx",
           "type": "registry:lib",
           "target": "@lib/highlight/provider.tsx"
@@ -1465,6 +1595,11 @@
           "path": "packages/ui/src/lib/highlight/shiki.ts",
           "type": "registry:lib",
           "target": "@lib/highlight/shiki.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         },
         {
           "path": "packages/ui/src/types/worker.d.ts",
@@ -1547,6 +1682,11 @@
           "path": "packages/ui/src/components/color-picker.tsx",
           "type": "registry:ui",
           "target": "@ui/color-picker.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -1642,6 +1782,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -1690,6 +1840,11 @@
           "path": "packages/ui/src/components/dialog.tsx",
           "type": "registry:ui",
           "target": "@ui/dialog.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -1760,6 +1915,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -1900,6 +2065,11 @@
           "target": "@ui/copy-icon.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/morph-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/morph-icon.tsx"
@@ -1973,6 +2143,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -2010,6 +2190,11 @@
           "target": "@ui/copy-icon.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/morph-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/morph-icon.tsx"
@@ -2018,6 +2203,16 @@
           "path": "packages/ui/src/hooks/use-clipboard.ts",
           "type": "registry:hook",
           "target": "@hooks/use-clipboard.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -2223,6 +2418,11 @@
           "target": "@ui/empty.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/inline-copy-text.tsx",
           "type": "registry:ui",
           "target": "@ui/inline-copy-text.tsx"
@@ -2351,6 +2551,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -2393,6 +2603,11 @@
           "path": "packages/ui/src/components/dialog.tsx",
           "type": "registry:ui",
           "target": "@ui/dialog.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/lib/glass/backend.ts",
@@ -2448,6 +2663,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -2519,6 +2744,11 @@
           "target": "@ui/drawer.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/glass/backend.ts",
           "type": "registry:lib",
           "target": "@lib/glass/backend.ts"
@@ -2572,6 +2802,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -2706,6 +2946,49 @@
         "base": "base",
         "entrypoints": [
           "@/components/ui/empty"
+        ]
+      },
+      "categories": [
+        "sui",
+        "components"
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "feedback",
+      "title": "Feedback",
+      "description": "SUI component: feedback. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/ui/feedback"
         ]
       },
       "categories": [
@@ -2968,6 +3251,11 @@
           "target": "@ui/dialog.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/image.tsx",
           "type": "registry:ui",
           "target": "@ui/image.tsx"
@@ -3061,6 +3349,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -3100,6 +3398,11 @@
           "target": "@ui/copy-icon.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/inline-copy-text.tsx",
           "type": "registry:ui",
           "target": "@ui/inline-copy-text.tsx"
@@ -3113,6 +3416,16 @@
           "path": "packages/ui/src/hooks/use-clipboard.ts",
           "type": "registry:hook",
           "target": "@hooks/use-clipboard.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -3149,6 +3462,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -3219,6 +3537,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -3253,6 +3581,11 @@
       "registryDependencies": [],
       "files": [
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-otp.tsx",
           "type": "registry:ui",
           "target": "@ui/input-otp.tsx"
@@ -3261,6 +3594,16 @@
           "path": "packages/ui/src/components/morph-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/morph-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -3537,6 +3880,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -3625,6 +3973,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -3897,6 +4255,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/message-scroller.tsx",
           "type": "registry:ui",
           "target": "@ui/message-scroller.tsx"
@@ -3955,6 +4318,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -4195,6 +4568,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -4283,6 +4661,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -4547,6 +4935,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/questionnaire.tsx",
           "type": "registry:ui",
           "target": "@ui/questionnaire.tsx"
@@ -4605,6 +4998,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -4637,9 +5040,24 @@
       "registryDependencies": [],
       "files": [
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/radio-group.tsx",
           "type": "registry:ui",
           "target": "@ui/radio-group.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -4749,6 +5167,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -4822,6 +5245,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -4865,6 +5298,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -4955,6 +5393,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5029,6 +5477,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/sheet.tsx",
           "type": "registry:ui",
           "target": "@ui/sheet.tsx"
@@ -5087,6 +5540,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5124,6 +5587,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -5214,6 +5682,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5280,6 +5758,11 @@
       "registryDependencies": [],
       "files": [
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/slider.tsx",
           "type": "registry:ui",
           "target": "@ui/slider.tsx"
@@ -5338,6 +5821,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5369,6 +5862,11 @@
       "devDependencies": [],
       "registryDependencies": [],
       "files": [
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
         {
           "path": "packages/ui/src/components/switch.tsx",
           "type": "registry:ui",
@@ -5428,6 +5926,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5465,6 +5973,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/tab-bar.tsx",
@@ -5525,6 +6038,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5599,6 +6122,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/tabs.tsx",
           "type": "registry:ui",
           "target": "@ui/tabs.tsx"
@@ -5657,6 +6185,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5694,6 +6232,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -5774,6 +6317,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -5903,6 +6456,11 @@
           "target": "@ui/button.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/morph-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/morph-icon.tsx"
@@ -5971,6 +6529,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6008,6 +6576,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/toast.tsx",
@@ -6068,6 +6641,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6100,6 +6683,11 @@
       "devDependencies": [],
       "registryDependencies": [],
       "files": [
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
         {
           "path": "packages/ui/src/components/toggle-group.tsx",
           "type": "registry:ui",
@@ -6164,6 +6752,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6196,6 +6794,11 @@
       "devDependencies": [],
       "registryDependencies": [],
       "files": [
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
         {
           "path": "packages/ui/src/components/toggle.tsx",
           "type": "registry:ui",
@@ -6255,6 +6858,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6291,6 +6904,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -6356,6 +6974,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6392,6 +7020,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/tooltip-button.tsx",
@@ -6457,6 +7090,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6579,6 +7222,11 @@
       "registryDependencies": [],
       "files": [
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/wheel-picker.tsx",
           "type": "registry:ui",
           "target": "@ui/wheel-picker.tsx"
@@ -6639,6 +7287,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/tick-sound.ts",
           "type": "registry:lib",
           "target": "@lib/tick-sound.ts"
@@ -6695,6 +7348,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/field.tsx",
@@ -6790,6 +7448,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6850,6 +7518,11 @@
           "path": "packages/ui/src/components/checkbox.tsx",
           "type": "registry:ui",
           "target": "@ui/checkbox.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/field.tsx",
@@ -6945,6 +7618,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -6982,6 +7665,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -7077,6 +7765,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7148,6 +7846,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -7253,6 +7956,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7305,6 +8018,11 @@
           "path": "packages/ui/src/components/dropdown-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/dropdown-menu.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -7415,6 +8133,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7541,6 +8269,11 @@
           "target": "@ui/dropdown-menu.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input.tsx",
           "type": "registry:ui",
           "target": "@ui/input.tsx"
@@ -7644,6 +8377,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7681,6 +8424,11 @@
           "path": "packages/ui/src/components/button.tsx",
           "type": "registry:ui",
           "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -7776,6 +8524,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7818,6 +8576,11 @@
           "path": "packages/ui/src/components/dropdown-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/dropdown-menu.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/navigation-menu.tsx",
@@ -7893,6 +8656,16 @@
           "path": "packages/ui/src/lib/glass/with-glass.tsx",
           "type": "registry:lib",
           "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         }
       ],
       "meta": {
@@ -7943,6 +8716,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/morph-icon.tsx",
@@ -8030,6 +8808,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/highlight/provider.tsx",
           "type": "registry:lib",
           "target": "@lib/highlight/provider.tsx"
@@ -8038,6 +8821,11 @@
           "path": "packages/ui/src/lib/highlight/shiki.ts",
           "type": "registry:lib",
           "target": "@lib/highlight/shiki.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         },
         {
           "path": "packages/ui/src/viewers/code-viewer.tsx",
@@ -8104,6 +8892,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/morph-icon.tsx",
@@ -8186,6 +8979,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/highlight/provider.tsx",
           "type": "registry:lib",
           "target": "@lib/highlight/provider.tsx"
@@ -8194,6 +8992,11 @@
           "path": "packages/ui/src/lib/highlight/shiki.ts",
           "type": "registry:lib",
           "target": "@lib/highlight/shiki.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         },
         {
           "path": "packages/ui/src/viewers/diff-viewer.tsx",
@@ -8305,6 +9108,11 @@
           "path": "packages/ui/src/components/dialog.tsx",
           "type": "registry:ui",
           "target": "@ui/dialog.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
         },
         {
           "path": "packages/ui/src/components/image.tsx",
@@ -8422,6 +9230,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/highlight/provider.tsx",
           "type": "registry:lib",
           "target": "@lib/highlight/provider.tsx"
@@ -8430,6 +9243,11 @@
           "path": "packages/ui/src/lib/highlight/shiki.ts",
           "type": "registry:lib",
           "target": "@lib/highlight/shiki.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
         },
         {
           "path": "packages/ui/src/viewers/code-viewer.tsx",
@@ -9055,6 +9873,11 @@
           "target": "@ui/empty.tsx"
         },
         {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
           "path": "packages/ui/src/components/field.tsx",
           "type": "registry:ui",
           "target": "@ui/field.tsx"
@@ -9470,6 +10293,11 @@
           "target": "@lib/glass/with-glass.tsx"
         },
         {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
           "path": "packages/ui/src/lib/highlight/provider.tsx",
           "type": "registry:lib",
           "target": "@lib/highlight/provider.tsx"
@@ -9634,6 +10462,7 @@
           "@/components/ui/drawer",
           "@/components/ui/dropdown-menu",
           "@/components/ui/empty",
+          "@/components/ui/feedback",
           "@/components/ui/field",
           "@/components/ui/glass",
           "@/components/ui/hover-card",
@@ -9717,6 +10546,7 @@
           "@/lib/glass/runtime",
           "@/lib/glass/svg-renderer",
           "@/lib/glass/with-glass",
+          "@/lib/haptics",
           "@/lib/highlight/provider",
           "@/lib/highlight/shiki",
           "@/lib/qr-code/finder",

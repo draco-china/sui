@@ -151,6 +151,7 @@ Sensitive Input 组合了 `InputGroup`、`InputGroupInput`、`InputGroupAddon` �
 | `onCopySuccess` | `(value: string) => void` | — | 当前值成功写入剪贴板后调用 |
 | `onCopyError` | `(error: Error) => void` | — | 写入剪贴板失败时调用 |
 | `resetDelay` | `number` | `1500` | 成功复制反馈的持续时间，单位为毫秒 |
+| `feedback` | `FeedbackOption` | — | 跟随 `FeedbackProvider`；复制成功或失败时反馈。 |
 | `labels` | `{ reveal?: string; instruction?: string; hidden?: string; show?: string; hide?: string; copy?: string; pending?: string; copied?: string; failed?: string }` | 英文标签 | 揭示提示、键盘说明、隐藏播报、动作名称与复制反馈 |
 | `className` | `string` | — | 输入组的额外类名 |
 | `inputClassName` | `string` | — | 输入框的额外类名 |

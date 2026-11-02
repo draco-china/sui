@@ -4,6 +4,7 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { withGlass } from "@/lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "@/components/ui/feedback";
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-4xl border border-transparent bg-clip-padding font-medium text-sm outline-none transition-[box-shadow,scale] duration-150 ease-out focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 motion-safe:active:not-aria-[haspopup]:scale-[1.04] dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -44,13 +45,22 @@ function ButtonImplementation({
   className,
   variant = "default",
   size = "default",
+  feedback,
+  onClick,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & { feedback?: FeedbackOption }) {
+  // Plain buttons stay quiet unless asked, as on Apple platforms.
+  const trigger = useFeedback(feedback, { optIn: true });
   return (
     <ButtonPrimitive
       data-slot="button"
       data-variant={variant}
       className={cn(buttonVariants({ variant, size }), className)}
+      onClick={(event) => {
+        onClick?.(event);
+        trigger(variant === "destructive" ? "medium" : "light");
+      }}
       {...props}
     />
   );

@@ -21,7 +21,7 @@ export default function Example({ locale }: ExampleProps) {
         options={["5", "10", "15", "20", "30", "45", "60", "90"]}
         value={value}
         onValueChange={setValue}
-        sound={sound}
+        feedback={sound ? "sound" : false}
       />
       <div className="flex items-center gap-2">
         <Switch id={soundId} checked={sound} onCheckedChange={setSound} />

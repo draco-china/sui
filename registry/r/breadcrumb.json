@@ -151,7 +151,7 @@
       "background": "linear-gradient( color-mix(in oklch, var(--background), var(--input) 55%) 0 0 ) padding-box, conic-gradient( from var(--otp-focus-angle), transparent 0% 18%, var(--ring) 30% 48%, transparent 60% 100% ) border-box",
       "animation": "input-otp-focus 1.8s linear infinite"
     },
-    "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+    "[data-slot=\"input-otp\"][data-result=\"active\"] [data-slot=\"input-otp-slot\"]": {
       "pointer-events": "none",
       "animation": "input-otp-collapse 380ms cubic-bezier(0.65, 0, 0.35, 1) var(--otp-collapse-delay, 0ms) both"
     },
@@ -182,40 +182,40 @@
     "[data-slot=\"input-otp-particles\"] > span:nth-child(3n + 2)": {
       "background": "var(--accent-foreground)"
     },
-    "[data-slot=\"input-otp-feedback-clock\"]": {
+    "[data-slot=\"input-otp-result-clock\"]": {
       "position": "absolute",
       "width": "1px",
       "height": "1px",
       "opacity": "0",
       "pointer-events": "none",
-      "animation": "input-otp-feedback var(--otp-feedback-duration, 1250ms) linear both"
+      "animation": "input-otp-result var(--otp-result-duration, 1250ms) linear both"
     },
-    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-slot\"]": {
+    "[data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-slot\"]": {
       "pointer-events": "none",
       "animation": "input-otp-restore 380ms cubic-bezier(0.16, 1, 0.3, 1) both"
     },
-    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-state\"]": {
+    "[data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-state\"]": {
       "animation": "input-otp-dismiss 180ms ease-in both"
     },
-    "[data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-feedback-clock\"]": {
+    "[data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-result-clock\"]": {
       "animation-name": "input-otp-restoration",
       "animation-duration": "380ms"
     },
-    "[data-slot=\"input-otp\"][data-complete][data-feedback=\"restored\"] [data-slot=\"input-otp-slot\"]": {
+    "[data-slot=\"input-otp\"][data-complete][data-result=\"restored\"] [data-slot=\"input-otp-slot\"]": {
       "box-shadow": "0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent)"
     },
     "@media (prefers-reduced-motion: reduce)": {
-      "[data-slot=\"input-otp-state\"], [data-slot=\"input-otp-state-icon\"], [data-slot=\"input-otp-halo\"], [data-slot=\"input-otp-feedback-clock\"]": {
+      "[data-slot=\"input-otp-state\"], [data-slot=\"input-otp-state-icon\"], [data-slot=\"input-otp-halo\"], [data-slot=\"input-otp-result-clock\"]": {
         "animation": "none"
       },
       "[data-slot=\"input-otp-state\"]": {
         "opacity": "1",
         "scale": "1"
       },
-      "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not( [data-glass=\"true\"] ), [data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-state\"], [data-slot=\"input-otp\"][data-feedback=\"restoring\"] [data-slot=\"input-otp-feedback-clock\"]": {
+      "[data-slot=\"input-otp-slot\"]:where([data-focused][tabindex=\"0\"]):not( [data-glass=\"true\"] ), [data-slot=\"input-otp\"][data-result=\"active\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-slot\"], [data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-state\"], [data-slot=\"input-otp\"][data-result=\"restoring\"] [data-slot=\"input-otp-result-clock\"]": {
         "animation": "none"
       },
-      "[data-slot=\"input-otp\"][data-feedback=\"active\"] [data-slot=\"input-otp-slot\"]": {
+      "[data-slot=\"input-otp\"][data-result=\"active\"] [data-slot=\"input-otp-slot\"]": {
         "opacity": "0"
       },
       "[data-slot=\"input-otp-particles\"]": {
@@ -743,7 +743,7 @@
           "opacity": "0"
         }
       },
-      "@keyframes input-otp-feedback": {
+      "@keyframes input-otp-result": {
         "from": {
           "opacity": "0"
         },

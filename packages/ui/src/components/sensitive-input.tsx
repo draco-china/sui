@@ -21,6 +21,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import * as React from "react";
 import type { GlassProps } from "../lib/glass/with-glass";
 import { CopyIcon } from "./copy-icon";
+import type { FeedbackOption } from "./feedback";
 
 interface SensitiveInputProps
   extends Omit<React.ComponentProps<"input">, "type">,
@@ -33,6 +34,8 @@ interface SensitiveInputProps
   onCopySuccess?: (value: string) => void;
   onCopyError?: (error: Error) => void;
   resetDelay?: number;
+  /** Haptics for a finished copy; follows `FeedbackProvider` when unset. */
+  feedback?: FeedbackOption;
   labels?: ClipboardLabels & {
     show?: string;
     hide?: string;
@@ -66,6 +69,7 @@ function SensitiveInput({
   onCopySuccess,
   onCopyError,
   resetDelay,
+  feedback,
   labels,
   ...props
 }: SensitiveInputProps) {
@@ -97,6 +101,7 @@ function SensitiveInput({
     resetDelay,
     onCopy: onCopySuccess,
     onCopyError,
+    feedback,
   });
   const mergedRef = React.useCallback(
     (node: HTMLInputElement | null) => {
@@ -139,7 +144,7 @@ function SensitiveInput({
     };
   }, [form, reset]);
 
-  const feedback = {
+  const message = {
     idle: "",
     copied: labels?.copied ?? "Copied",
     error: labels?.failed ?? "Copy failed. Select and copy the value manually.",
@@ -317,7 +322,7 @@ function SensitiveInput({
               type="button"
               size="sm"
               disabled={disabled || status === "pending"}
-              aria-label={feedback || copyLabel}
+              aria-label={message || copyLabel}
               aria-busy={status === "pending"}
               aria-controls={inputId}
               className="h-auto min-h-0 rounded-t-md rounded-b-none border-0 px-2 py-0.5 text-xs leading-4 shadow-none"
@@ -362,12 +367,12 @@ function SensitiveInput({
               </span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{feedback || copyLabel}</TooltipContent>
+          <TooltipContent>{message || copyLabel}</TooltipContent>
         </Tooltip>
       )}
       {copyable && (
         <span className="sr-only" role="status">
-          {feedback}
+          {message}
         </span>
       )}
     </InputGroup>

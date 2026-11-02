@@ -14,6 +14,7 @@ import {
 } from "react";
 import { type GlassProps, withGlass } from "../lib/glass/with-glass";
 import { Button } from "./button";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
 export type TabBarItem = {
   value: string;
@@ -53,6 +54,7 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
     onValueChange: (value: string) => void;
     onItemActivate?: (value: string) => void;
     orientation?: "horizontal" | "vertical";
+    feedback?: FeedbackOption;
   } & GlassProps;
 
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
@@ -84,10 +86,12 @@ export function TabBar({
   size = "default",
   glass: settings = false,
   frosted = false,
+  feedback,
   className,
   ref,
   ...props
 }: TabBarProps) {
+  const trigger = useFeedback(feedback);
   const track = useRef<HTMLDivElement>(null);
   const glass = settings !== false || frosted;
   const [heldValue, setHeldValue] = useState<string | null>(null);
@@ -183,6 +187,7 @@ export function TabBar({
     if (pending.capture) element.setPointerCapture?.(pending.pointerId);
     moveLens.current();
     setHeldValue(pending.value);
+    trigger("medium");
   }
   const [bounds, setBounds] = useState<{
     x: number;
@@ -479,6 +484,8 @@ export function TabBar({
             cancelHold();
             return;
           }
+          if (pending.active && item.value !== pending.value)
+            trigger("selection", "tick");
           pending.value = item.value;
           if (pending.active) setHeldValue(item.value);
         }}
@@ -497,6 +504,7 @@ export function TabBar({
             ) {
               onItemActivate?.(item.value);
               if (item.value !== value) onValueChange(item.value);
+              trigger("light");
             }
           }
           cancelHold();
@@ -574,7 +582,9 @@ export function TabBar({
             onClick={() => {
               if (item.disabled) return;
               onItemActivate?.(item.value);
-              if (item.value !== value) onValueChange(item.value);
+              if (item.value === value) return;
+              onValueChange(item.value);
+              trigger("selection");
             }}
           >
             <span

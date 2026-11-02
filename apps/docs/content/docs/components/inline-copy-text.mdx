@@ -80,6 +80,7 @@ Clipboard access is requested only on activation. If Clipboard API access is una
 | `resetDelay` | `number`, milliseconds | `1500` |
 | `onCopy` | `(value: string) => void` | — |
 | `onCopyError` | `(error: Error) => void` | — |
+| `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; haptics when a copy succeeds or fails. |
 | `labels` | `{ copy?, pending?, copied?, failed? }` | English labels |
 
 Uses the Base UI Button primitive and supports `ref`, `render`, `onClick`, and `className`. Its inline styling does not inherit the regular Button press movement. Calling `event.preventDefault()` in `onClick` cancels copying. `data-copy-status` exposes `idle`, `pending`, `copied`, or `error`. See [Base UI Button](https://base-ui.com/react/components/button) for composition.

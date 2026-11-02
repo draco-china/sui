@@ -40,7 +40,7 @@ import { WheelPicker } from "@workspace/ui/components/wheel-picker";
 
 滚轮是一个可聚焦的 listbox，使用 `aria-activedescendant` 和选中项状态。请提供本地化的 `aria-label` 或 `aria-labelledby`。上下方向键选择前后项，Home/End 到达两端，Page Up/Down 移动一个可视页；到达边界后不循环。
 
-减少动态效果时保留同一列表和键盘操作，使用原地移动的平面列表，不旋转圆柱，也不播放落位动画。`disabled` 或空选项会移除 Tab 焦点并阻止变更。`name` 通过隐藏输入参与原生表单提交；表单重置会恢复非受控默认值。刻度音默认关闭。与 beUI 参考一致，使用本地合成的 16ms 机械点击音：拖动、转动或惯性滑行中最近刻度变化时立即发声，停稳在同一刻度不会重复播放；键盘和直接选择也只播放一次。音频在用户手势开始时准备，多列共享一个音频上下文和缓冲区，快速移动时截断上一声尾音。初始渲染、表单重置和外部值更新保持静音，音频失败不会阻断选择。
+减少动态效果时保留同一列表和键盘操作，使用原地移动的平面列表，不旋转圆柱，也不播放落位动画。`disabled` 或空选项会移除 Tab 焦点并阻止变更。`name` 通过隐藏输入参与原生表单提交；表单重置会恢复非受控默认值。刻度音跟随 `feedback`，默认关闭；设置 `feedback="sound"` 或在 `FeedbackProvider` 中开启 sound 即可。与 beUI 参考一致，使用本地合成的 16ms 机械点击音：拖动、转动或惯性滑行中最近刻度变化时立即发声，停稳在同一刻度不会重复播放；键盘和直接选择也只播放一次。音频在用户手势开始时准备，多列共享一个音频上下文和缓冲区，快速移动时截断上一声尾音。初始渲染、表单重置和外部值更新保持静音，音频失败不会阻断选择。
 
 <ComponentPreview name="wheel-picker-states" />
 
@@ -58,7 +58,7 @@ import { WheelPicker } from "@workspace/ui/components/wheel-picker";
 | `visibleCount` | `number` | `5`，规范为 3–11 的奇数。 |
 | `itemHeight` | `number` | `36` 像素，最小 24。 |
 | `disabled` | `boolean` | `false`。 |
-| `sound` | `boolean` | `false`，可选本地刻度音。 |
+| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；每滚过一行触发 selection 触感与刻度音。 |
 | `name` | `string` | 可选表单字段名。 |
 | `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 默认普通材质。 |
 | 其他属性 | 原生 div 属性 | 名称、`ref`、`className`、`style` 与事件回调。 |

@@ -80,6 +80,7 @@ import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 | `resetDelay` | `number`，毫秒 | `1500` |
 | `onCopy` | `(value: string) => void` | — |
 | `onCopyError` | `(error: Error) => void` | — |
+| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；复制成功或失败时反馈。 |
 | `labels` | `{ copy?, pending?, copied?, failed? }` | 英文文案 |
 
 使用 Base UI Button 原语，支持 `ref`、`render`、`onClick`、`className` 等属性。行内样式不继承普通 Button 的按压位移。在 `onClick` 中调用 `event.preventDefault()` 可取消复制。通过 `data-copy-status` 暴露 `idle`、`pending`、`copied` 或 `error` 状态。组合方式参见 [Base UI Button](https://base-ui.com/react/components/button)。

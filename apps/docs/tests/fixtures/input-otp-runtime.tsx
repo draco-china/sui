@@ -110,10 +110,10 @@ Object.assign(globalThis, {
     const computed = nativeStyle(element);
     // Happy DOM does not expand animation shorthand containing CSS variables.
     if (
-      element.getAttribute("data-slot") === "input-otp-feedback-clock" &&
+      element.getAttribute("data-slot") === "input-otp-result-clock" &&
       !computed.animationName
     )
-      return { animationName: "input-otp-feedback" };
+      return { animationName: "input-otp-result" };
     return computed;
   },
 });
@@ -186,7 +186,7 @@ function App() {
             onValueComplete={(value) => completed.push(value)}
             onValueInvalid={(value) => invalid.push(value)}
             status={status}
-            feedbackDuration={duration}
+            resultDuration={duration}
             onStatusChange={(status) => {
               statusRequests.push(status);
               changeStatus(status);
@@ -451,10 +451,10 @@ assert.equal(
   glyph,
 );
 assert.notEqual(glyph.getAttribute("d"), loader);
-assert.equal(otpRoot.getAttribute("data-feedback"), "active");
-const marker = otpRoot.querySelector('[data-slot="input-otp-feedback-clock"]');
+assert.equal(otpRoot.getAttribute("data-result"), "active");
+const marker = otpRoot.querySelector('[data-slot="input-otp-result-clock"]');
 assert.ok(marker);
-function completeAnimation(element: Element, name = "input-otp-feedback") {
+function completeAnimation(element: Element, name = "input-otp-result") {
   const event = new window.Event("animationend", { bubbles: true });
   Object.defineProperty(event, "animationName", {
     value: name,
@@ -465,7 +465,7 @@ function completeAnimation(element: Element, name = "input-otp-feedback") {
 scenario("after error feedback the slots restore, refocus and stay editable");
 const beforeError = statusRequests.length;
 await interact(() => completeAnimation(marker));
-assert.equal(otpRoot.getAttribute("data-feedback"), "restoring");
+assert.equal(otpRoot.getAttribute("data-result"), "restoring");
 assert.ok(slots().every((slot) => slot.readOnly));
 assert.match(
   nativeStyle(slots()[0] as HTMLInputElement).animation,
@@ -480,7 +480,7 @@ assert.equal(statusRequests.length, beforeError);
 await interact(() => completeAnimation(marker, "input-otp-restoration"));
 assert.equal(statusRequests.at(-1), "idle");
 assert.equal(otpRoot.getAttribute("data-status"), "idle");
-assert.equal(otpRoot.getAttribute("data-feedback"), "restored");
+assert.equal(otpRoot.getAttribute("data-result"), "restored");
 assert.ok(slots().every((slot) => !slot.readOnly));
 assert.ok(slots().every((slot) => slot.type === "password"));
 assert.equal(
@@ -509,7 +509,7 @@ assert.equal(
   28,
 );
 const successMarker = otpRoot.querySelector(
-  '[data-slot="input-otp-feedback-clock"]',
+  '[data-slot="input-otp-result-clock"]',
 );
 assert.ok(successMarker);
 await interact(() => completeAnimation(successMarker));
@@ -531,7 +531,7 @@ await interact(() =>
 );
 await interact(() => setStatus("error"));
 const blurMarker = otpRoot.querySelector(
-  '[data-slot="input-otp-feedback-clock"]',
+  '[data-slot="input-otp-result-clock"]',
 );
 assert.ok(blurMarker);
 await interact(() => completeAnimation(blurMarker));
@@ -623,7 +623,7 @@ await interact(() => setStatus("idle"));
 await interact(() => (document.activeElement as HTMLElement).blur());
 await interact(() => setStatus("error"));
 const cancelledMarker = otpRoot.querySelector(
-  '[data-slot="input-otp-feedback-clock"]',
+  '[data-slot="input-otp-result-clock"]',
 );
 assert.ok(cancelledMarker);
 await interact(() => completeAnimation(cancelledMarker));
@@ -659,7 +659,7 @@ await interact(() => {});
 await act(async () => {
   await new Promise((resolve) => setTimeout(resolve, 100));
 });
-assert.equal(otpRoot.getAttribute("data-feedback"), "restoring");
+assert.equal(otpRoot.getAttribute("data-result"), "restoring");
 await act(async () => {
   await new Promise((resolve) => setTimeout(resolve, 470));
 });

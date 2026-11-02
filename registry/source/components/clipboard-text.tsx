@@ -56,6 +56,7 @@ function ClipboardText({
   resetDelay,
   onCopy,
   onCopyError,
+  feedback,
   labels,
   className,
   render,
@@ -68,8 +69,9 @@ function ClipboardText({
     resetDelay,
     onCopy,
     onCopyError,
+    feedback,
   });
-  const feedback = {
+  const message = {
     idle: "",
     copied: labels?.copied ?? "Copied",
     error: labels?.failed ?? "Copy failed. Select and copy the text manually.",
@@ -115,7 +117,7 @@ function ClipboardText({
                     type="button"
                     size={size === "sm" ? "icon-xs" : "icon-sm"}
                     disabled={disabled || status === "pending"}
-                    aria-label={status === "copied" ? feedback : label}
+                    aria-label={status === "copied" ? message : label}
                     aria-busy={status === "pending"}
                     onClick={() => void copy()}
                   >
@@ -128,11 +130,11 @@ function ClipboardText({
                     />
                   </InputGroupButton>
                 </TooltipTrigger>
-                <TooltipContent>{feedback || label}</TooltipContent>
+                <TooltipContent>{message || label}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <span className="sr-only" role="status">
-              {feedback}
+              {message}
             </span>
           </>
         ),

@@ -3,12 +3,23 @@
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import { cn } from "cn";
+import { type FeedbackOption, useFeedback } from "./feedback";
 
-function RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {
+function RadioGroup({
+  className,
+  feedback,
+  onValueChange,
+  ...props
+}: RadioGroupPrimitive.Props & { feedback?: FeedbackOption }) {
+  const trigger = useFeedback(feedback);
   return (
     <RadioGroupPrimitive
       data-slot="radio-group"
       className={cn("grid w-full gap-3", className)}
+      onValueChange={(value, eventDetails) => {
+        onValueChange?.(value, eventDetails);
+        trigger("selection");
+      }}
       {...props}
     />
   );

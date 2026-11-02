@@ -10,6 +10,7 @@ import type {
   BottomSheetSize,
 } from "@/lib/bottom-sheet";
 import { withGlass } from "@/lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "@/components/ui/feedback";
 
 type BottomSheetShape = Pick<BottomSheetLayout, "expandable" | "full">;
 
@@ -67,6 +68,7 @@ type BottomSheetProps = Omit<
   /** A new key returns the sheet to its default size, scrolled to the top. */
   contentKey?: React.Key;
   labels?: { expand?: string; collapse?: string };
+  feedback?: FeedbackOption;
 };
 
 function BottomSheet({
@@ -85,8 +87,10 @@ function BottomSheet({
   footerMode = "adaptive",
   contentKey,
   labels,
+  feedback,
   ...props
 }: BottomSheetProps) {
+  const trigger = useFeedback(feedback);
   const [_open, _setOpen] = React.useState(defaultOpen);
   const open = openProp ?? _open;
   const openRef = React.useRef(open);
@@ -111,8 +115,10 @@ function BottomSheet({
     (value: BottomSheetSize) => {
       if (sizeProp === undefined) _setSize(value);
       onSizeChange?.(value);
+      // A detent change taps back; the reset after closing stays silent.
+      if (openRef.current) trigger("light");
     },
-    [sizeProp, onSizeChange],
+    [sizeProp, onSizeChange, trigger],
   );
   const setShape = React.useCallback((value: BottomSheetShape) => {
     setShapeState((current) =>

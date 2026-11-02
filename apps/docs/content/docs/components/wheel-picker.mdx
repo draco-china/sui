@@ -40,7 +40,7 @@ Combine independently labelled wheels inside a named group. Application code own
 
 The wheel is a single focusable listbox with `aria-activedescendant` and selected options. Supply a localized `aria-label` or `aria-labelledby`. Arrow Up/Down selects the previous/next value; Home/End reaches the boundaries, and Page Up/Down moves by one visible page. Selection stops at either end.
 
-With reduced motion, the same list and controls remain available as a flat list that moves in place, without cylinder rotation or animated settling. `disabled` and empty options remove the wheel from the Tab sequence and prevent changes. `name` submits the selected value through a hidden input; native form reset restores an uncontrolled default. Tick sound is opt in. Like the beUI reference, it uses a locally synthesized 16ms mechanical click whenever the nearest row changes while dragging, spinning, or coasting; settling on the same row does not play it again. Keyboard and direct selection also tick once. Audio is prepared at the start of a user gesture, shares one context and buffer across columns, and cuts the previous tick tail during rapid movement. Initial rendering, form reset, and external value updates stay silent. Audio failures never block selection.
+With reduced motion, the same list and controls remain available as a flat list that moves in place, without cylinder rotation or animated settling. `disabled` and empty options remove the wheel from the Tab sequence and prevent changes. `name` submits the selected value through a hidden input; native form reset restores an uncontrolled default. Tick sound follows `feedback` and is off by default; set `feedback="sound"` or enable sound on `FeedbackProvider`. Like the beUI reference, it uses a locally synthesized 16ms mechanical click whenever the nearest row changes while dragging, spinning, or coasting; settling on the same row does not play it again. Keyboard and direct selection also tick once. Audio is prepared at the start of a user gesture, shares one context and buffer across columns, and cuts the previous tick tail during rapid movement. Initial rendering, form reset, and external value updates stay silent. Audio failures never block selection.
 
 <ComponentPreview name="wheel-picker-states" />
 
@@ -58,7 +58,7 @@ The default is a solid working control using SUI semantic colors and 14px text. 
 | `visibleCount` | `number` | `5`; normalized to an odd count from 3 to 11. |
 | `itemHeight` | `number` | `36` pixels; minimum 24. |
 | `disabled` | `boolean` | `false`. |
-| `sound` | `boolean` | `false`; optional local tick. |
+| `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; selection haptic and tick per row crossed. |
 | `name` | `string` | Optional form field name. |
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Ordinary by default. |
 | Other props | Native div props | Includes labels, `ref`, `className`, `style`, and event handlers. |

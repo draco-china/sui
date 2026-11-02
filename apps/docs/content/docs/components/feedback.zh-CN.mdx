@@ -1,0 +1,99 @@
+---
+title: Feedback
+description: "可选开启的触感与点击音反馈，参照 Apple 平台的交互手感"
+base: base
+component: true
+---
+
+`FeedbackProvider` 为其内部的控件开启短促的触感反馈，也可以加上合成的轻柔点击音。反馈默认关闭，开启之前组件的行为与底层 primitive 完全一致。
+
+<ComponentPreview name="feedback-demo" previewClassName="h-auto" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/feedback
+```
+
+可以通过 shadcn CLI 安装，也可以直接使用共享的 `@workspace/ui` 包。配置 registry、加载样式和选择导入别名请参考[安装指南](/docs/installation)。
+
+## 使用方法 [#usage]
+
+```tsx showLineNumbers
+import { FeedbackProvider } from "@workspace/ui/components/feedback"
+```
+
+```tsx showLineNumbers
+<FeedbackProvider haptics>
+  {/* 应用内容 */}
+</FeedbackProvider>
+```
+
+加上 `sound` 即可同时播放点击音。Apple 的大多数控件都不出声，所以只开触感更接近原生手感。
+
+## 单个组件 [#per-component]
+
+所有支持的组件都提供 `feedback` 属性，用于覆盖该实例的 Provider 设置。
+
+| 值 | 效果 |
+| --- | --- |
+| 不设置 | 跟随最近的 `FeedbackProvider`；没有 Provider 时不反馈。 |
+| `true` | 触感和声音。 |
+| `"haptic"` | 只有触感。 |
+| `"sound"` | 只有声音。 |
+| `false` | 不反馈，即使所在 Provider 已开启。 |
+
+```tsx showLineNumbers
+<Switch feedback="haptic" />
+<Button feedback>保存</Button>
+```
+
+`Button` 只有设置了 `feedback` 才会反馈，即使在已开启的 Provider 内也一样，因为大多数按钮不应该有触感。
+
+## 触发时机 [#moments]
+
+| 组件 | 时机 | 触感 |
+| --- | --- | --- |
+| `Switch` | 切换 | light；开时升调、关时降调的点击音 |
+| `Checkbox`、`RadioGroup`、`Toggle` | 选中状态变化 | selection |
+| `Tabs`、`ToggleGroup`、`TabBar` | 选中项变化 | selection |
+| `TabBar` | 长按，以及长按后滑过的每一项 | medium，然后 selection |
+| `Slider` | 到达两端；步数不超过 20 时的每一步 | light；selection |
+| `BottomSheet`、`Drawer` | 停靠到某个高度或吸附点 | light |
+| `WheelPicker` | 每滚过一行 | selection、tick |
+| `Toaster` | 出现成功、警告或错误提示 | 通知类 |
+| `CopyButton`、`ClipboardText`、`InlineCopyText`、`SensitiveInput` | 复制成功或失败 | success 或 error |
+| `InputOTP` | `status` 变为成功或失败 | success 或 error |
+| `Button` | 点击 | light；`destructive` 为 medium |
+
+## 平台支持 [#platform-support]
+
+- **Android 及其他支持 Vibration API 的浏览器**：每种反馈对应一段定时震动。
+- **iOS 18 及以上**：没有 Vibration API，改用隐藏的 `<input type="checkbox" switch>` 触发系统 Taptic 点击；通知类反馈用点击次数区分。
+- **桌面端**：没有触感，只播放声音。
+
+浏览器只允许在用户手势内触发触感。复制结果、Toast 这类在异步操作之后才触发的反馈，在 iOS 上可能不会震动。声音在用户首次交互之前不会播放。
+
+## useFeedback [#usefeedback]
+
+`useFeedback` 为自定义组件返回一个稳定的 `trigger(kind, sound)`，同样跟随 Provider，并接受相同的 `feedback` 选项。
+
+```tsx showLineNumbers
+import { type FeedbackOption, useFeedback } from "@workspace/ui/components/feedback"
+
+function Stepper({ feedback }: { feedback?: FeedbackOption }) {
+  const trigger = useFeedback(feedback)
+  return <button onClick={() => trigger("selection", "tick")}>+</button>
+}
+```
+
+`kind` 可选 `"selection"`、`"light"`、`"medium"`、`"heavy"`、`"success"`、`"warning"`、`"error"`。`sound` 可选 `"tick"`、`"tap"`、`"toggle-on"`、`"toggle-off"`，传 `false` 表示只要触感。第二个参数传 `{ optIn: true }` 可忽略 Provider，`Button` 就是这样做的。
+
+## API 参考 [#api-reference]
+
+### FeedbackProvider
+
+| 属性 | 类型 | 默认值 |
+| --- | --- | --- |
+| `haptics` | `boolean` | `false` |
+| `sound` | `boolean` | `false` |

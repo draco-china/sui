@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { type FeedbackOption, useFeedback } from "../components/feedback";
 
 type ClipboardStatus = "idle" | "pending" | "copied" | "error";
 type ClipboardLabels = {
@@ -14,8 +15,13 @@ type ClipboardOptions = {
   resetDelay?: number;
   onCopy?: (value: string) => void;
   onCopyError?: (error: Error) => void;
+  /** Haptics for a finished copy; follows `FeedbackProvider` when unset. */
+  feedback?: FeedbackOption;
 };
-type ClipboardControllerOptions = Omit<ClipboardOptions, "disabled"> & {
+type ClipboardControllerOptions = Omit<
+  ClipboardOptions,
+  "disabled" | "feedback"
+> & {
   writeText: (value: string) => Promise<void>;
   onStatusChange: (status: ClipboardStatus) => void;
 };
@@ -94,6 +100,7 @@ function useClipboard(value: string, options: ClipboardOptions = {}) {
   const [status, setStatus] = useState<ClipboardStatus>("idle");
   const optionsRef = useRef(options);
   optionsRef.current = options;
+  const trigger = useFeedback(options.feedback);
   const [controller] = useState(() =>
     createClipboardController({
       writeText: async (text) => {
@@ -108,8 +115,14 @@ function useClipboard(value: string, options: ClipboardOptions = {}) {
         await navigator.clipboard.writeText(text);
       },
       onStatusChange: setStatus,
-      onCopy: (text) => optionsRef.current.onCopy?.(text),
-      onCopyError: (error) => optionsRef.current.onCopyError?.(error),
+      onCopy: (text) => {
+        trigger("success");
+        optionsRef.current.onCopy?.(text);
+      },
+      onCopyError: (error) => {
+        trigger("error");
+        optionsRef.current.onCopyError?.(error);
+      },
       get resetDelay() {
         return optionsRef.current.resetDelay;
       },

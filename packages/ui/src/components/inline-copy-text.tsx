@@ -54,6 +54,7 @@ function InlineCopyText({
   resetDelay,
   onCopy,
   onCopyError,
+  feedback,
   labels,
   onClick,
   className,
@@ -69,8 +70,9 @@ function InlineCopyText({
     resetDelay,
     onCopy,
     onCopyError,
+    feedback,
   });
-  const feedback = {
+  const message = {
     idle: "",
     copied: labels?.copied ?? "Copied",
     error: labels?.failed ?? "Copy failed. Select and copy the text manually.",
@@ -109,7 +111,7 @@ function InlineCopyText({
         />
       </span>
       <span role="status" className="sr-only">
-        {feedback}
+        {message}
       </span>
     </ButtonPrimitive>
   );

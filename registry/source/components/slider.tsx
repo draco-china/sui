@@ -2,13 +2,18 @@
 
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 import { cn } from "cn";
-import type { ComponentProps } from "react";
+import { type ComponentProps, useRef } from "react";
 import { withGlass } from "@/lib/glass/with-glass";
+import { type FeedbackOption, useFeedback } from "@/components/ui/feedback";
 
 // With `glass`, as on Apple platforms, a thumb becomes a clear glass lens only
 // while dragged; a lens sits on glass, so it also works inside a layer.
 // It grows in layout rather than by transform: scaled SVG backdrops misplace refraction.
 // The lens drops its paint instantly: a fading fill would cover the refraction.
+// Past this many steps a tick per step turns into a buzz, so only the ends
+// tap back, the way a UISlider only clicks at its limits.
+const MAX_DETENTS = 20;
+
 const GlassThumb = withGlass((props: ComponentProps<"div">) => (
   <div data-glass-lens="" {...props} />
 ));
@@ -19,11 +24,20 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  step = 1,
   glass: lens = false,
+  feedback,
+  onValueChange,
   ...props
-}: SliderPrimitive.Root.Props & { glass?: boolean }) {
+}: SliderPrimitive.Root.Props & {
+  glass?: boolean;
+  feedback?: FeedbackOption;
+}) {
   const values = value ?? defaultValue ?? min;
   const thumbCount = Array.isArray(values) ? values.length : 1;
+  const trigger = useFeedback(feedback);
+  const detents = (max - min) / step <= MAX_DETENTS;
+  const atEdge = useRef(false);
 
   return (
     <SliderPrimitive.Root
@@ -33,7 +47,16 @@ function Slider({
       value={value}
       min={min}
       max={max}
+      step={step}
       thumbAlignment="edge"
+      onValueChange={(next, eventDetails) => {
+        onValueChange?.(next, eventDetails);
+        const list = Array.isArray(next) ? next : [next];
+        const edge = list.some((v) => v === min || v === max);
+        if (edge && !atEdge.current) trigger("light");
+        else if (detents) trigger("selection", "tick");
+        atEdge.current = edge;
+      }}
       {...props}
     >
       <SliderPrimitive.Control className="relative flex w-full touch-none select-none items-center data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col data-disabled:opacity-50">
