@@ -161,6 +161,8 @@ assert.equal(
   geometry.getByRole("option", { selected: true }).getAttribute("aria-label"),
   "5",
 );
+geometry.rerender(<WheelPicker options={geometryOptions} defaultValue="5" />);
+assert.equal(visibleRows(), 7, "seven rows by default");
 cleanup();
 
 scenario("disabled and empty wheels prevent changes and have no Tab stop");

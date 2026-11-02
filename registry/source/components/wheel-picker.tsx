@@ -86,7 +86,7 @@ function WheelPickerImplementation({
   value,
   defaultValue,
   onValueChange,
-  visibleCount = 5,
+  visibleCount = 7,
   itemHeight = 36,
   disabled = false,
   feedback,
@@ -118,7 +118,11 @@ function WheelPickerImplementation({
   const rowHeight = Number.isFinite(itemHeight) ? Math.max(24, itemHeight) : 36;
   const rows = Number.isFinite(visibleCount)
     ? Math.min(11, Math.max(3, Math.floor(visibleCount / 2) * 2 + 1))
-    : 5;
+    : 7;
+  // The outer rows tilt away and fill only the middle of a row-per-slot box,
+  // so the drum is as tall as its projection: two radii, plus a little for
+  // the edge rows' own height. A flat, reduced-motion list needs every slot.
+  const drumRadius = rowHeight / Math.tan(Math.PI / (rows + 1));
   const [grabbing, setGrabbing] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -541,6 +545,8 @@ function WheelPickerImplementation({
         } else if (forwardedRef) forwardedRef.current = node;
       }}
       data-slot="wheel-picker"
+      // The drum owns vertical drags, so a bottom sheet around it stays put.
+      data-bottom-sheet-no-drag=""
       role="listbox"
       aria-label={ariaLabel}
       aria-disabled={unavailable || undefined}
@@ -554,7 +560,9 @@ function WheelPickerImplementation({
       )}
       style={{
         ...style,
-        height: rowHeight * rows,
+        height: reducedMotion
+          ? rowHeight * rows
+          : Math.ceil(2 * drumRadius + rowHeight / 4),
         perspective: reducedMotion ? undefined : 1000,
       }}
       onClick={(event) => {
@@ -670,6 +678,7 @@ function WheelPickerImplementation({
           perspective centred where the main drum's is. */}
       <div
         aria-hidden="true"
+        data-slot="wheel-picker-band"
         className="pointer-events-none absolute inset-x-1 top-1/2 z-10 -translate-y-1/2 overflow-hidden rounded-xl bg-foreground/5"
         style={{
           height: rowHeight,

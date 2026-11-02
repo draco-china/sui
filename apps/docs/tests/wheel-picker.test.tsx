@@ -22,4 +22,6 @@ test("wheel SSR exposes one labelled listbox and unique options with stable valu
   expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
   expect(html).toContain('value="l"');
   expect(html).toContain('aria-label="Large"');
+  // The drum owns vertical drags inside a bottom sheet.
+  expect(html).toContain("data-bottom-sheet-no-drag");
 });

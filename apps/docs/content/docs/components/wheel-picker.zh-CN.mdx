@@ -55,7 +55,7 @@ import { WheelPicker } from "@workspace/ui/components/wheel-picker";
 | `options` | `readonly WheelPickerOption[]` | 必填，值唯一。 |
 | `value`、`defaultValue` | `string` | 受控值或非受控初始值。 |
 | `onValueChange` | `(value: string) => void` | 用户选择时调用。 |
-| `visibleCount` | `number` | `5`，规范为 3–11 的奇数。 |
+| `visibleCount` | `number` | `7`，规范为 3–11 的奇数。滚轮高度等于圆柱的投影高度；减少动态效果时每行占满一格。 |
 | `itemHeight` | `number` | `36` 像素，最小 24。 |
 | `disabled` | `boolean` | `false`。 |
 | `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；每滚过一行触发 selection 触感与刻度音。 |
