@@ -69,6 +69,8 @@ export type TabBarSearch = {
   onValueChange?: (value: string) => void;
   onSubmit?: (value: string) => void;
   placeholder?: string;
+  /** Accessible name of the close button; `"Close search"` by default. */
+  closeLabel?: string;
   /** Replaces the field shown while expanded. */
   render?: (state: { open: boolean; close: () => void }) => ReactNode;
 };
@@ -148,14 +150,14 @@ export function TabBar({
   const [queryState, setQueryState] = useState(search?.defaultValue ?? "");
   const query = search?.value ?? queryState;
   const searchBar = useRef<HTMLDivElement>(null);
-  // The field opens to the width the bar and its button took together.
-  const openWidth = useRef<number | null>(null);
+  const searchButton = useRef<HTMLButtonElement>(null);
+  // Closing from inside the field hands focus back to the search button.
+  const restoreFocus = useRef(false);
   const setSearchOpen = (open: boolean) => {
-    if (open) {
-      search?.onActivate?.();
-      const bar = track.current?.offsetWidth ?? 0;
-      const button = searchBar.current?.offsetWidth ?? 0;
-      openWidth.current = bar && button ? bar + button + 8 : null;
+    if (open) search?.onActivate?.();
+    else {
+      restoreFocus.current =
+        searchBar.current?.contains(document.activeElement) ?? false;
     }
     const commit = () => {
       setOpenState(open);
@@ -481,17 +483,22 @@ export function TabBar({
     }
   }, [heldValue]);
 
-  const searchShown = useRef(searchOpen);
+  // Starts closed, so a search open from the first render (defaultOpen or
+  // controlled) still takes its width, without animating in.
+  const searchShown = useRef(false);
+  const searchMounted = useRef(false);
   useLayoutEffect(() => {
+    const first = !searchMounted.current;
+    searchMounted.current = true;
     if (searchShown.current === searchOpen) return;
     searchShown.current = searchOpen;
     const field = searchBar.current;
     const bar = track.current;
-    const duration = reducedMotion.current ? 0 : 0.32;
-    if (searchOpen && field) {
+    const duration = reducedMotion.current || first ? 0 : 0.32;
+    if (searchOpen && field && bar) {
       // Glass rebuilds its rim only once a resize settles, so the field takes
       // its final width at once and a rounded clip reveals it from the button.
-      gsap.set(field, { width: openWidth.current ?? "100%" });
+      gsap.set(field, { width: openWidthOf(field, bar) });
       const { inset, hidden } = buttonClip(field);
       gsap.fromTo(
         field,
@@ -512,6 +519,10 @@ export function TabBar({
     } else if (bar && field) {
       gsap.killTweensOf(field);
       gsap.set(field, { clearProps: "width,clipPath" });
+      if (restoreFocus.current) {
+        restoreFocus.current = false;
+        searchButton.current?.focus();
+      }
       // The field is the button again; the bar fades back in, since fading
       // alone keeps its glass refraction undistorted.
       gsap.fromTo(
@@ -526,6 +537,27 @@ export function TabBar({
         },
       );
     }
+  }, [searchOpen]);
+
+  // An open field follows the viewport, as when a phone rotates, measuring
+  // once per frame however many resize events arrive.
+  useEffect(() => {
+    if (!searchOpen) return;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const field = searchBar.current;
+      const bar = track.current;
+      if (field && bar) gsap.set(field, { width: openWidthOf(field, bar) });
+    };
+    const resize = () => {
+      frame ||= requestAnimationFrame(measure);
+    };
+    window.addEventListener("resize", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(frame);
+    };
   }, [searchOpen]);
 
   if (!items.length) return null;
@@ -762,6 +794,7 @@ export function TabBar({
             />
           ) : (
             <Button
+              ref={searchButton}
               type="button"
               variant="ghost"
               aria-label={search.label ?? "Search"}
@@ -780,6 +813,27 @@ export function TabBar({
       ) : null}
     </nav>
   );
+}
+
+/**
+ * The width the bar and the search button take together, which the open field
+ * fills. The bar is hidden while the field is open, so it is shown for the
+ * read, beside a field at the button's size, as when closed.
+ */
+function openWidthOf(field: HTMLElement, bar: HTMLElement) {
+  const { hidden } = bar;
+  const width = field.style.width;
+  // The closed button is round: as wide as the field is tall.
+  field.style.width = `${field.offsetHeight}px`;
+  bar.hidden = false;
+  const barWidth = bar.offsetWidth;
+  bar.hidden = hidden;
+  field.style.width = width;
+  const gap =
+    Number.parseFloat(
+      getComputedStyle(field.parentElement ?? field).columnGap,
+    ) || 0;
+  return barWidth + gap + field.offsetHeight;
 }
 
 /** A rounded clip that shows only the button's place in the search field. */
@@ -839,7 +893,7 @@ function SearchField({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Close search"
+        aria-label={search.closeLabel ?? "Close search"}
         className="shrink-0 rounded-full"
         onClick={close}
       >

@@ -59,7 +59,7 @@ export function ApplicationNavigation() {
 
 <ComponentPreview name="tab-bar-search" />
 
-搜索框默认非受控（`defaultOpen`、`defaultValue`）；传入 `open`/`onOpenChange` 或 `value`/`onValueChange` 可受控。`placeholder`、`label` 和 `icon` 用于自定义。
+搜索框默认非受控（`defaultOpen`、`defaultValue`）；传入 `open`/`onOpenChange` 或 `value`/`onValueChange` 可受控。`placeholder`、`label`、`closeLabel` 和 `icon` 用于自定义。从搜索框关闭后，焦点回到搜索按钮；视口变化时，展开的搜索框保持与标签栏相同的宽度。
 
 ### 仅按钮 [#search-button]
 
@@ -129,4 +129,5 @@ GSAP 依据按钮实际尺寸移动选中胶囊与镜片。搜索框一开始就
 | `value`、`defaultValue`、`onValueChange` | `string`、`string`、`(value: string) => void` | 搜索内容。 |
 | `onSubmit` | `(value: string) => void` | 按 Enter 时调用。 |
 | `placeholder` | `string` | 默认使用 `label`。 |
+| `closeLabel` | `string` | 默认 `"Close search"`，关闭按钮的无障碍名称。 |
 | `render` | `({ open, close }) => ReactNode` | 替换搜索框。 |

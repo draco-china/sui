@@ -59,7 +59,7 @@ The default bar uses the theme's muted surface. `glass` (optionally with setting
 
 <ComponentPreview name="tab-bar-search" />
 
-The field is uncontrolled by default (`defaultOpen`, `defaultValue`); pass `open`/`onOpenChange` or `value`/`onValueChange` to control it. `placeholder`, `label` and `icon` customize it.
+The field is uncontrolled by default (`defaultOpen`, `defaultValue`); pass `open`/`onOpenChange` or `value`/`onValueChange` to control it. `placeholder`, `label`, `closeLabel` and `icon` customize it. Closing from the field returns focus to the search button, and an open field keeps the bar's width as the viewport changes.
 
 ### Button only [#search-button]
 
@@ -129,4 +129,5 @@ GSAP moves the selection pill and lens using the buttons' measured bounds. The s
 | `value`, `defaultValue`, `onValueChange` | `string`, `string`, `(value: string) => void` | The query. |
 | `onSubmit` | `(value: string) => void` | Called on Enter. |
 | `placeholder` | `string` | Defaults to `label`. |
+| `closeLabel` | `string` | `"Close search"`; the close button's accessible name. |
 | `render` | `({ open, close }) => ReactNode` | Replaces the field. |

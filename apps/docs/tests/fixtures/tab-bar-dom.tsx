@@ -45,6 +45,8 @@ mock.module("../../../../packages/ui/src/lib/glass/runtime", () => ({
   },
   refreshGlass: () => {},
 }));
+// The track's width, which a scenario may change to stand for a resize.
+let trackWidth = 280;
 Object.defineProperties(window.HTMLElement.prototype, {
   offsetLeft: {
     get() {
@@ -58,7 +60,7 @@ Object.defineProperties(window.HTMLElement.prototype, {
   },
   offsetWidth: {
     get() {
-      return this.dataset?.slot === "tab-bar-list" ? 280 : 64;
+      return this.dataset?.slot === "tab-bar-list" ? trackWidth : 64;
     },
   },
   offsetHeight: {
@@ -406,6 +408,66 @@ assert.equal(
   "activity",
   "releasing past the end selects the end item",
 );
+scenario(
+  "search opens at the bar's width, names its close button and hands focus back",
+);
+{
+  motionPreference.matches = true;
+  const searchHost = document.createElement("div");
+  document.body.append(searchHost);
+  const searchRoot = createRoot(searchHost as unknown as HTMLElement);
+  await act(async () => {
+    searchRoot.render(
+      <TabBar
+        aria-label="Sections"
+        value="home"
+        onValueChange={() => {}}
+        items={[{ value: "home", label: "Home" }]}
+        search={{ label: "搜索", closeLabel: "关闭搜索", defaultOpen: true }}
+      />,
+    );
+  });
+  const field = searchHost.querySelector<HappyHTMLElement>(
+    '[data-slot="tab-bar-search"]',
+  );
+  // The mocked bar is 280px and the round button 56px, with no gap in CSS.
+  assert.equal(
+    field?.style.width,
+    "336px",
+    "a field open from the first render takes the bar and button's width",
+  );
+  assert.ok(
+    searchHost.querySelector('button[aria-label="关闭搜索"]'),
+    "the close button is named by closeLabel",
+  );
+  trackWidth = 300;
+  await act(async () => {
+    window.dispatchEvent(new window.Event("resize"));
+    window.dispatchEvent(new window.Event("resize"));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+  trackWidth = 280;
+  assert.equal(
+    field?.style.width,
+    "356px",
+    "an open field follows a resize, measured once per frame",
+  );
+  const input = searchHost.querySelector("input") as HappyHTMLElement;
+  await act(async () => {
+    input.focus();
+    input.dispatchEvent(
+      new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  });
+  assert.equal(
+    document.activeElement?.getAttribute("aria-label"),
+    "搜索",
+    "closing from the field hands focus back to the search button",
+  );
+  await act(async () => searchRoot.unmount());
+  searchHost.remove();
+  motionPreference.matches = false;
+}
 scenario("unmount releases tweens, motion tracking and every glass scope");
 hit = button("Home");
 await pointer(hit, "pointerdown");
