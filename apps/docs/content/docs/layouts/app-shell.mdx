@@ -1,0 +1,119 @@
+---
+title: App Shell
+description: Sidebar application frame with a data-driven navigation, sticky header, and content region.
+---
+
+Adapted from the [shadcn-admin](https://github.com/satnaing/shadcn-admin) layout. `AppShell` composes SUI Sidebar into a full admin frame: it provides layout preferences and a skip link around an `AppSidebar` and an `AppInset`, the page's main landmark. The layouts do not depend on a router. Pass the current location and your router's Link once on `AppShell`, and every navigation inside reads them.
+
+## Sidebar frame
+
+Switch the sidebar style and collapse behavior. With `collapsible="icon"`, collapse the sidebar: sections with nested links open a menu beside it. Scroll the content to see the fixed header gain a shadow.
+
+<ComponentPreview name="layout-app-shell" />
+
+## Top navigation
+
+`TopNav` renders horizontal links from the `lg` breakpoint and a menu button below it. Set `sidebarTrigger={false}` on `AppHeader` when the page has no sidebar.
+
+<ComponentPreview name="layout-top-nav" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/app-shell @sui/app-sidebar @sui/app-header @sui/app-main
+```
+
+Add `@sui/top-nav` for horizontal navigation. Follow the [installation guide](/docs/installation) for registry, dependency, and style setup.
+
+## Usage
+
+```tsx
+import { Link, useLocation, useNavigate } from "@tanstack/react-router"
+import { AppHeader } from "@workspace/ui/layouts/app-header"
+import { AppMain } from "@workspace/ui/layouts/app-main"
+import { AppInset, AppShell } from "@workspace/ui/layouts/app-shell"
+import { AppSidebar } from "@workspace/ui/layouts/app-sidebar"
+import type { LayoutLinkProps } from "@workspace/ui/layouts/types"
+
+function RouterLink({ href, ...props }: LayoutLinkProps) {
+  return <Link to={href} {...props} />
+}
+
+export function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const navigate = useNavigate()
+  return (
+    <AppShell
+      currentPath={pathname}
+      linkComponent={RouterLink}
+      onNavigate={(href) => navigate({ to: href })}
+    >
+      <AppSidebar header={<TeamSwitcher />} navGroups={navGroups} footer={<NavUser />} />
+      <AppInset>
+        <AppHeader fixed breadcrumb={<PageBreadcrumb />}>
+          <Search className="ms-auto" />
+        </AppHeader>
+        <AppMain>{children}</AppMain>
+      </AppInset>
+    </AppShell>
+  )
+}
+```
+
+`navGroups` is a list of `{ title?, items }`. An item is a link `{ title, href, icon?, badge?, disabled? }` or a section `{ title, icon?, items: links }`. A section opens by default when one of its links is active.
+
+Persist preferences yourself: pass `defaultVariant`, `defaultCollapsible`, and `defaultOpen` from a cookie or storage, and save them in `onVariantChange`, `onCollapsibleChange`, and `onOpenChange`. Reading them on the server avoids a flash of the wrong layout. Read and change preferences anywhere inside with `useLayout()`.
+
+## API
+
+### AppShell
+
+Accepts every `SidebarProvider` prop (`defaultOpen`, `open`, `onOpenChange`, `className`) and every `LayoutProvider` prop.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `variant`, `defaultVariant`, `onVariantChange` | `"inset"` | Sidebar style: `sidebar`, `floating`, or `inset`. |
+| `collapsible`, `defaultCollapsible`, `onCollapsibleChange` | `"icon"` | Collapse behavior: `offcanvas`, `icon`, or `none`. |
+| `currentPath` | `""` | Current location for active links. |
+| `linkComponent` | `<a>` | Router link receiving `href`, `className`, `aria-current`, and `onClick`. |
+| `onNavigate` | `location.assign` | Navigation for controls that are not links. |
+| `matcher` | Exact match | `(href, currentPath) => boolean`. The default compares paths exactly, ignoring the query and hash. |
+| `skipLabel` | `"Skip to main content"` | Text of the skip link. |
+
+### AppInset
+
+Content region beside the sidebar, the page's main landmark and the skip link target. Accepts every `SidebarInset` prop. A `fixed` AppMain inside pins it to the viewport height.
+
+### AppSidebar
+
+Accepts `Sidebar` props. `variant` and `collapsible` default to the AppShell preferences.
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `header`, `footer` | — | Brand or team switcher; user menu. |
+| `navGroups` | `[]` | Navigation data rendered with `NavGroup`. |
+| `rail` | `true` | Edge rail that toggles the sidebar. |
+
+`NavGroup` renders one group and can be used on its own inside `SidebarContent`.
+
+### AppHeader
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `fixed` | `false` | Sticks to the top of its scroll container and gains a shadow and blur once content scrolls under it. |
+| `sidebarTrigger` | `true` | Shows the sidebar toggle. Requires an AppShell. |
+| `breadcrumb` | — | Placed after the toggle. |
+
+### AppMain
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `fixed` | `false` | Fills the remaining viewport height and scrolls inside, for boards and tables. |
+| `fluid` | `false` | Spans the full width instead of centering at `max-w-7xl`. |
+
+### TopNav
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `links` | Required | Links `{ title, href, icon?, disabled? }`. |
+| `labels` | English | `navigation` (landmark name) and `menu` (menu button). |

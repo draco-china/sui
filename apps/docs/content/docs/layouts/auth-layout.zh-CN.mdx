@@ -1,0 +1,57 @@
+---
+title: Auth Layout
+description: 登录、注册和找回密码页面的居中或分栏框架
+---
+
+改编自 shadcn-admin 的认证页面。布局只负责放置品牌和表单，不涉及路由。
+
+## 居中
+
+<ComponentPreview name="layout-auth" />
+
+## 分栏
+
+`variant="split"` 会在 `lg` 断点以上于表单旁放置一个面板，可在 `AuthLayoutAside` 中放插图、引言或产品截图。
+
+<ComponentPreview name="layout-auth-split" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/auth-layout
+```
+
+## 用法 [#usage]
+
+```tsx
+import {
+  AuthLayout,
+  AuthLayoutAside,
+  AuthLayoutBrand,
+  AuthLayoutContent,
+} from "@workspace/ui/layouts/auth-layout"
+
+<AuthLayout variant="split">
+  <AuthLayoutContent>
+    <AuthLayoutBrand>
+      <Logo />
+      Acme Inc
+    </AuthLayoutBrand>
+    <SignInForm />
+  </AuthLayoutContent>
+  <AuthLayoutAside className="bg-linear-to-br from-primary/20 to-muted">
+    <Testimonial />
+  </AuthLayoutAside>
+</AuthLayout>
+```
+
+## API
+
+| 组件 | 说明 |
+| --- | --- |
+| `AuthLayout` | 页面框架。`variant` 为 `centered`（默认）或 `split`；`split` 在 `lg` 以上分为两栏。 |
+| `AuthLayoutContent` | 居中的表单列，最大宽度 `max-w-sm`。 |
+| `AuthLayoutBrand` | 表单上方的 Logo 和产品名。 |
+| `AuthLayoutAside` | 仅分栏：表单旁的面板，`lg` 以下隐藏。 |
+
+所有组件都支持对应 `div` 的属性，包括 `className`。

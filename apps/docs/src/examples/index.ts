@@ -17,6 +17,11 @@ export const examples = {
   "block-form-report": () => import("./variants/block-form-report"),
   "block-form-profile": () => import("./variants/block-form-profile"),
   "block-delete-resource": () => import("./variants/block-delete-resource"),
+  "layout-app-shell": () => import("./variants/layout-app-shell"),
+  "layout-top-nav": () => import("./variants/layout-top-nav"),
+  "layout-section": () => import("./variants/layout-section"),
+  "layout-auth": () => import("./variants/layout-auth"),
+  "layout-auth-split": () => import("./variants/layout-auth-split"),
   "block-delete-resource-error": () =>
     import("./variants/block-delete-resource-error"),
   "block-delete-resource-insensitive": () =>
@@ -611,6 +616,11 @@ export const examples = {
 >;
 
 export const sourceFiles = {
+  "layout-app-shell": () => import("./variants/layout-app-shell.tsx?raw"),
+  "layout-top-nav": () => import("./variants/layout-top-nav.tsx?raw"),
+  "layout-section": () => import("./variants/layout-section.tsx?raw"),
+  "layout-auth": () => import("./variants/layout-auth.tsx?raw"),
+  "layout-auth-split": () => import("./variants/layout-auth-split.tsx?raw"),
   "long-text-demo": () => import("./variants/long-text-demo.tsx?raw"),
   "long-text-table": () => import("./variants/long-text-table.tsx?raw"),
   "navigation-progress-demo": () =>

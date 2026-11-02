@@ -65,7 +65,9 @@ function exportsOf(path: string) {
 function workspaceFile(specifier: string) {
   const relative = specifier.replace("@workspace/ui/", "");
   const extension =
-    relative.startsWith("components/") || relative.startsWith("blocks/")
+    relative.startsWith("components/") ||
+    relative.startsWith("blocks/") ||
+    (relative.startsWith("layouts/") && relative !== "layouts/types")
       ? ".tsx"
       : ".ts";
   return join(uiRoot, `${relative}${extension}`);

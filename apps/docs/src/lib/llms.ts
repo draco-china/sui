@@ -20,6 +20,7 @@ const messages = {
     guides: "Getting started",
     components: "Components",
     blocks: "Blocks",
+    layouts: "Layouts",
     utils: "Utils",
     full: "Complete documentation",
     source: "Page",
@@ -31,6 +32,7 @@ const messages = {
     guides: "开始使用",
     components: "组件",
     blocks: "Blocks",
+    layouts: "布局",
     utils: "工具",
     full: "完整文档",
     source: "页面",
@@ -39,7 +41,7 @@ const messages = {
 } as const;
 
 /** Reference sections in index order, after the guides. */
-const sections = ["components", "blocks", "utils"] as const;
+const sections = ["components", "blocks", "layouts", "utils"] as const;
 type Section = (typeof sections)[number];
 
 /** The page's reference section, or undefined for a guide. */
@@ -91,6 +93,7 @@ export function renderLLMIndex(
   const guides = inSection(undefined);
   const components = inSection("components");
   const blocks = inSection("blocks");
+  const layouts = inSection("layouts");
   const utils = inSection("utils");
   return [
     "# SUI",
@@ -103,6 +106,12 @@ export function renderLLMIndex(
       ? [
           `## ${text.blocks}`,
           blocks.map((page) => pageLink(origin, locale, page)).join("\n"),
+        ]
+      : []),
+    ...(layouts.length
+      ? [
+          `## ${text.layouts}`,
+          layouts.map((page) => pageLink(origin, locale, page)).join("\n"),
         ]
       : []),
     ...(utils.length

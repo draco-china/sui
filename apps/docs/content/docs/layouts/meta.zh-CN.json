@@ -1,0 +1,5 @@
+{
+  "title": "Layouts",
+  "defaultOpen": true,
+  "pages": ["app-shell", "section-layout", "auth-layout"]
+}

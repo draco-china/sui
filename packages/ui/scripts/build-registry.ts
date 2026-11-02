@@ -101,6 +101,12 @@ const installRules = [
     type: "registry:component",
   },
   {
+    folder: "layouts/",
+    alias: "@/components/layouts/",
+    target: "@components/layouts/",
+    type: "registry:component",
+  },
+  {
     folder: "hooks/",
     alias: "@/hooks/",
     target: "@hooks/",
@@ -471,11 +477,17 @@ export async function createRegistry() {
     (path) =>
       dirname(path) === join(sourceRoot, "blocks") && path.endsWith(".tsx"),
   );
-  const entries = [...components, ...blocks];
+  const layouts = tree.paths.filter(
+    (path) =>
+      dirname(path) === join(sourceRoot, "layouts") && path.endsWith(".tsx"),
+  );
+  const entries = [...components, ...blocks, ...layouts];
   const items = entries.map((path) =>
     item(
       relative(dirname(path), path).replace(/\.tsx$/, ""),
-      blocks.includes(path) ? "registry:block" : "registry:ui",
+      blocks.includes(path) || layouts.includes(path)
+        ? "registry:block"
+        : "registry:ui",
       [path],
     ),
   );

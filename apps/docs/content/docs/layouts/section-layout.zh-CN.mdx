@@ -1,0 +1,38 @@
+---
+title: Section Layout
+description: 带标题和独立二级导航的页面，例如设置页和账户页
+---
+
+改编自 shadcn-admin 的设置页。导航在 `lg` 断点以上纵向排列，平板上为可横向滚动的一行，手机上为原生下拉框。选择选项时调用布局的 `onNavigate`。
+
+<ComponentPreview name="layout-section" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/section-layout
+```
+
+## 用法 [#usage]
+
+```tsx
+import { SectionLayout } from "@workspace/ui/layouts/section-layout"
+
+<AppMain fixed>
+  <SectionLayout title="设置" description="管理你的账户。" items={items}>
+    <Outlet />
+  </SectionLayout>
+</AppMain>
+```
+
+在 `AppShell` 内时，链接和激活状态来自它的 `currentPath` 和 `linkComponent`；在其他位置，用 `LayoutProvider` 包裹并传入相同属性。
+## API
+
+| 属性 | 默认值 | 说明 |
+| --- | --- | --- |
+| `title` | 必填 | 页面标题。 |
+| `description` | — | 标题下方的说明。 |
+| `items` | 必填 | 链接 `{ title, href, icon?, disabled? }`。 |
+| `navLabel` | `"Section"` | 导航和下拉框的无障碍名称。 |
+
+`SectionNav` 单独渲染导航。

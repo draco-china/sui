@@ -1,0 +1,57 @@
+---
+title: Auth Layout
+description: Centered or split frames for sign-in, sign-up, and recovery pages.
+---
+
+Adapted from the shadcn-admin authentication pages. The layout only places the brand and your form; it has no routing.
+
+## Centered
+
+<ComponentPreview name="layout-auth" />
+
+## Split
+
+`variant="split"` places a panel beside the form from the `lg` breakpoint. Put artwork, a quote, or product screenshots in `AuthLayoutAside`.
+
+<ComponentPreview name="layout-auth-split" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/auth-layout
+```
+
+## Usage
+
+```tsx
+import {
+  AuthLayout,
+  AuthLayoutAside,
+  AuthLayoutBrand,
+  AuthLayoutContent,
+} from "@workspace/ui/layouts/auth-layout"
+
+<AuthLayout variant="split">
+  <AuthLayoutContent>
+    <AuthLayoutBrand>
+      <Logo />
+      Acme Inc
+    </AuthLayoutBrand>
+    <SignInForm />
+  </AuthLayoutContent>
+  <AuthLayoutAside className="bg-linear-to-br from-primary/20 to-muted">
+    <Testimonial />
+  </AuthLayoutAside>
+</AuthLayout>
+```
+
+## API
+
+| Component | Description |
+| --- | --- |
+| `AuthLayout` | Page frame. `variant` is `centered` (default) or `split`; `split` adds a second column from `lg` up. |
+| `AuthLayoutContent` | Centered form column, at most `max-w-sm` wide. |
+| `AuthLayoutBrand` | Logo and product name above the form. |
+| `AuthLayoutAside` | Split only: panel beside the form, hidden below `lg`. |
+
+Every part accepts the props of its `div`, including `className`.

@@ -68,6 +68,8 @@
     "./themes/*.css": "./src/styles/themes/*.css",
     "./blocks/*": "./src/blocks/*.tsx",
     "./blocks/data-table/types": "./src/blocks/data-table/types.ts",
-    "./blocks/data-table/url-state": "./src/blocks/data-table/url-state.ts"
+    "./blocks/data-table/url-state": "./src/blocks/data-table/url-state.ts",
+    "./layouts/*": "./src/layouts/*.tsx",
+    "./layouts/types": "./src/layouts/types.ts"
   }
 }

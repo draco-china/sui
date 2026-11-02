@@ -1,0 +1,39 @@
+---
+title: Section Layout
+description: Page heading with its own sub-navigation, such as settings or account pages.
+---
+
+Adapted from the shadcn-admin settings page. The navigation is vertical from the `lg` breakpoint, a scrolling row on tablets, and a native select on phones. Selecting an option calls the layout's `onNavigate`.
+
+<ComponentPreview name="layout-section" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/section-layout
+```
+
+## Usage
+
+```tsx
+import { SectionLayout } from "@workspace/ui/layouts/section-layout"
+
+<AppMain fixed>
+  <SectionLayout title="Settings" description="Manage your account." items={items}>
+    <Outlet />
+  </SectionLayout>
+</AppMain>
+```
+
+Inside an `AppShell`, links and active state come from its `currentPath` and `linkComponent`. Elsewhere, wrap the page in `LayoutProvider` with the same props.
+
+## API
+
+| Prop | Default | Description |
+| --- | --- | --- |
+| `title` | Required | Page heading. |
+| `description` | — | Text under the heading. |
+| `items` | Required | Links `{ title, href, icon?, disabled? }`. |
+| `navLabel` | `"Section"` | Accessible name of the navigation and the select. |
+
+`SectionNav` renders the navigation alone.

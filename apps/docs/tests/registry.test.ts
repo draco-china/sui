@@ -24,8 +24,8 @@ function targetForImport(name: string) {
   return undefined;
 }
 
-test("each component and block has a complete standalone registry manifest", async () => {
-  for (const directory of ["components", "blocks"]) {
+test("each component, block and layout has a complete standalone registry manifest", async () => {
+  for (const directory of ["components", "blocks", "layouts"]) {
     const entries = await readdir(
       join(repositoryRoot, "packages/ui/src", directory),
     );
@@ -34,7 +34,7 @@ test("each component and block has a complete standalone registry manifest", asy
       const item = registry.items.find((item) => item.name === name);
       expect(item, name).toBeDefined();
       expect(item?.type).toBe(
-        directory === "blocks" ? "registry:block" : "registry:ui",
+        directory === "components" ? "registry:ui" : "registry:block",
       );
       expect(
         item?.files?.some(
