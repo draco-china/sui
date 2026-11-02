@@ -179,3 +179,13 @@ test("Frosted retains the inverse surface tint used by Tooltip", () => {
     "--frosted-tint:var(--frosted-base,var(--foreground))",
   );
 });
+
+test("a surface keeps its theme background until the material is measured", () => {
+  const loading =
+    code.match(
+      /\[data-glass=true\]\[data-glass-state\]:where\(\[data-glass-state=loading\]\)\{[^}]*\}/,
+    )?.[0] ?? "";
+  expect(loading).toContain("background-color:revert-layer");
+  expect(loading).toContain("backdrop-filter:none");
+  expect(loading).toContain("--glass-initial-edge-shadow:0 0 #0000");
+});
