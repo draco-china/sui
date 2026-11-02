@@ -20,7 +20,8 @@ function AppMain({
       data-slot="app-main"
       data-layout={fixed ? "fixed" : "auto"}
       className={cn(
-        "px-4 py-6",
+        // Even padding, aligned with AppHeader's 16px inline edge.
+        "p-4",
         fixed && "flex min-h-0 grow flex-col overflow-auto",
         !fluid &&
           "@7xl/content:mx-auto @7xl/content:w-full @7xl/content:max-w-7xl",
