@@ -305,7 +305,11 @@ function activeChips(table: DataTableInstance<unknown>): Chip[] {
   return chips;
 }
 
-/** Removable chips for every active condition, with a clear-all action. */
+/**
+ * Removable chips for every active condition, with a clear-all action. The
+ * toolbar shows it only with `chips`, since each control already shows its
+ * own value.
+ */
 export function DataTableFilterChips({ className }: { className?: string }) {
   const table = useDataTableContext();
   const chips = activeChips(table);
@@ -313,6 +317,7 @@ export function DataTableFilterChips({ className }: { className?: string }) {
     <AnimatePresence initial={false}>
       {chips.length > 0 && (
         <motion.div
+          data-slot="data-table-filter-chips"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
@@ -329,7 +334,9 @@ export function DataTableFilterChips({ className }: { className?: string }) {
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="inline-flex h-7 max-w-72 items-center gap-1 rounded-full border bg-muted/50 ps-2.5 pe-1 text-xs"
                 >
-                  <span className="text-muted-foreground">{chip.label}:</span>
+                  <span className="whitespace-nowrap text-muted-foreground">
+                    {chip.label}:
+                  </span>
                   <span className="truncate font-medium">{chip.value}</span>
                   <button
                     type="button"
@@ -360,19 +367,27 @@ export function DataTableFilterChips({ className }: { className?: string }) {
 /**
  * The toolbar row. Without children it shows keyword search and quick
  * filters from the column configuration, plugin controls, and `actions`.
+ * Each control shows and clears its own value, so active conditions get one
+ * clear-all button on the row rather than a row of chips; `chips` brings the
+ * chip row back.
  */
 export function DataTableToolbar({
   title,
   actions,
+  chips = false,
   children,
   className,
 }: {
   title?: ReactNode;
   actions?: ReactNode;
+  /** Lists active conditions as removable chips below the row. */
+  chips?: boolean;
   children?: ReactNode;
   className?: string;
 }) {
   const table = useDataTableContext();
+  // The chip row carries its own clear-all button.
+  const clearable = !chips && activeChips(table).length > 0;
   const keyword =
     !table.hasPlugin("queryForm") &&
     table.columns.some((column) => column.keyword);
@@ -390,12 +405,23 @@ export function DataTableToolbar({
             <DataTableSlotContent slot="toolbarStart" />
           </>
         )}
+        {clearable && (
+          <Button
+            data-slot="data-table-clear-filters"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={table.resetQuery}
+          >
+            {table.labels.clearFilters}
+          </Button>
+        )}
         <div className="ms-auto flex items-center gap-1.5">
           {actions}
           <DataTableSlotContent slot="toolbarEnd" />
         </div>
       </div>
-      <DataTableFilterChips />
+      {chips && <DataTableFilterChips />}
     </div>
   );
 }

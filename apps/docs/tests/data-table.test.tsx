@@ -297,6 +297,44 @@ describe("server rendering", () => {
     expect(html).toContain(`aria-labelledby="${label}"`);
     expect(html).not.toContain('type="date"');
   });
+  test("the toolbar stays one row: no chips by default, one clear-all button", () => {
+    const query = { keyword: "Al", search: {}, filters: { status: ["on"] } };
+    const active = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={columns}
+        data={rows}
+        initialState={{ query }}
+      />,
+    );
+    expect(active).not.toContain('data-slot="data-table-filter-chips"');
+    expect(active).toContain('data-slot="data-table-clear-filters"');
+    expect(active).toContain(dataTableLabels.clearFilters);
+    const idle = renderToString(
+      <DataTable rowKey="id" columns={columns} data={rows} />,
+    );
+    expect(idle).not.toContain('data-slot="data-table-clear-filters"');
+  });
+  test("chips lists active conditions below the toolbar", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        chips
+        columns={columns}
+        data={rows}
+        initialState={{
+          query: { keyword: "", search: {}, filters: { status: ["on"] } },
+        }}
+      />,
+    );
+    const chips = html.match(
+      /data-slot="data-table-filter-chips"[\s\S]*$/,
+    )?.[0];
+    expect(chips).toBeTruthy();
+    expect(chips).toContain("whitespace-nowrap");
+    // The chip row carries the clear-all button, so the toolbar does not.
+    expect(html).not.toContain('data-slot="data-table-clear-filters"');
+  });
   test("remote tables render skeleton rows before the first response", () => {
     const html = renderToString(
       <DataTable

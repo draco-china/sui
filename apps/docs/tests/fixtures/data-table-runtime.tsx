@@ -121,13 +121,26 @@ assert.equal(table?.state.query.keyword, "Row 2");
 assert.equal(table?.total, 5);
 await act(async () => table?.setFilter("status", ["off"]));
 assert.deepEqual(cellText(), ["Row 22"]);
-const chips = document.body.textContent ?? "";
-assert.ok(
-  chips.includes("Status:") && chips.includes("Off"),
-  "Active filters show as chips",
+assert.equal(
+  document.querySelector('[data-slot="data-table-filter-chips"]'),
+  null,
+  "The toolbar has no chip row by default",
 );
-await act(async () => table?.resetQuery());
+const clearAll = document.querySelector<HTMLButtonElement>(
+  '[data-slot="data-table-clear-filters"]',
+);
+assert.ok(clearAll, "Active conditions offer one clear-all button");
+await act(async () => {
+  fireEvent.click(clearAll);
+});
+assert.equal(table?.state.query.keyword, "");
+assert.deepEqual(table?.state.query.filters, {});
 assert.equal(table?.total, 23);
+assert.equal(
+  document.querySelector('[data-slot="data-table-clear-filters"]'),
+  null,
+  "Without conditions the button is gone",
+);
 
 scenario("selection persists across pages and the bulk bar clears on Escape");
 await act(async () =>

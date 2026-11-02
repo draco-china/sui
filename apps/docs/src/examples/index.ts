@@ -19,6 +19,7 @@ export const examples = {
   "data-table-drag-sort": () => import("./variants/data-table-drag-sort"),
   "data-table-virtual": () => import("./variants/data-table-virtual"),
   "data-table-composition": () => import("./variants/data-table-composition"),
+  "data-table-chips": () => import("./variants/data-table-chips"),
   "block-form-report": () => import("./variants/block-form-report"),
   "block-form-profile": () => import("./variants/block-form-profile"),
   "block-delete-resource": () => import("./variants/block-delete-resource"),
@@ -660,6 +661,7 @@ export const sourceFiles = {
   "data-table-virtual": () => import("./variants/data-table-virtual.tsx?raw"),
   "data-table-composition": () =>
     import("./variants/data-table-composition.tsx?raw"),
+  "data-table-chips": () => import("./variants/data-table-chips.tsx?raw"),
   "block-form-report": () => import("./variants/block-form-report.tsx?raw"),
   "block-form-profile": () => import("./variants/block-form-profile.tsx?raw"),
   "block-delete-resource": () =>

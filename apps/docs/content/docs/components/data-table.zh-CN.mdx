@@ -76,13 +76,19 @@ const columns: DataTableColumn<User>[] = [
 
 <ComponentPreview name="data-table-query-form" align="start" />
 
-所有生效的条件都会以可单独移除的标签显示在工具栏下方。
-
 ## 高级筛选 [#advanced-filter]
 
 `advancedFilter()` 提供“字段 + 运算符 + 值”的条件构建器，条件之间可选“全部满足”或“满足任一”。可用运算符随列的值类型变化。传入 `storageKey` 可将命名视图保存到本地存储。
 
 <ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## 清除条件 [#clearing-conditions]
+
+工具栏始终只占一行。每个筛选控件本身就会显示并清除自己的值：搜索框、快速筛选的徽标、日期框和查询表单里的字段。只要有生效的条件（关键字、查询字段、快速筛选或高级筛选规则），筛选控件后面就会在同一行出现一个**清空**按钮，一次清除全部条件；没有条件时不显示。查询表单保留自己的**重置**按钮。
+
+传入 `chips` 可以在工具栏下方额外列出可单独移除的条件标签，并带有自己的清空按钮，适合条件没有全部显示在工具栏中的表格。
+
+<ComponentPreview name="data-table-chips" align="start" />
 
 ## 选择、批量操作与展开行 [#selection-bulk-actions-and-expandable-rows]
 
@@ -163,6 +169,7 @@ const columns: DataTableColumn<User>[] = [
 | `initialState` | 初始 `page`、`pageSize`、`sort` 和 `query`。 |
 | `onStateChange` | 每次状态变化后调用。 |
 | `title`、`toolbar` | 工具栏标题和操作按钮。 |
+| `chips` | 默认 `false`；`true` 在工具栏下方列出可单独移除的条件标签。 |
 | `layout` | `fill`（默认）或 `auto`。 |
 | `responsive` | 窄屏显示为卡片，默认 `true`。 |
 | `loading` | 本地数据的加载状态。 |

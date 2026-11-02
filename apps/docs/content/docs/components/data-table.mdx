@@ -76,13 +76,19 @@ Columns with `keyword` share the toolbar search box. Enum columns get quick filt
 
 <ComponentPreview name="data-table-query-form" align="start" />
 
-Every active condition appears as a removable chip under the toolbar.
-
 ## Advanced filter
 
 `advancedFilter()` adds a builder for field, operator and value rules joined with AND or OR. Operators follow the value type of each column. Pass `storageKey` to save named views in local storage.
 
 <ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## Clearing conditions [#clearing-conditions]
+
+The toolbar stays one row. Each control already shows and clears its own value: the search box, the quick-filter badges, the date fields and the query form's fields. While any condition applies (a keyword, a search field, a quick filter or advanced rules), a **Clear all** button follows the filter controls on the same row and resets them together; with no conditions it is hidden. The query form keeps its own **Reset**.
+
+Pass `chips` to also list the active conditions as removable chips below the toolbar, with their own clear-all button, for tables whose conditions are not all visible in the toolbar.
+
+<ComponentPreview name="data-table-chips" align="start" />
 
 ## Selection, bulk actions and expandable rows
 
@@ -163,6 +169,7 @@ English is the default. Pass `labels={dataTableLabelsZhCN}` for Chinese, or over
 | `initialState` | Initial `page`, `pageSize`, `sort` and `query`. |
 | `onStateChange` | Called with the state after each change. |
 | `title`, `toolbar` | Toolbar heading and actions. |
+| `chips` | `false` (default); `true` lists active conditions as removable chips below the toolbar. |
 | `layout` | `fill` (default) or `auto`. |
 | `responsive` | Cards on narrow screens; defaults to `true`. |
 | `loading` | Loading state for local data. |

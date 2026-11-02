@@ -15,6 +15,12 @@ interface DataTableFrameProps {
   /** Buttons at the end of the toolbar, before plugin controls. */
   readonly toolbar?: ReactNode;
   /**
+   * Lists active conditions as removable chips below the toolbar. Off by
+   * default: each control shows and clears its own value, and the toolbar
+   * offers one clear-all button while any condition applies.
+   */
+  readonly chips?: boolean;
+  /**
    * `fill` takes the parent's height: the table is as tall as its rows up to
    * the space left, then scrolls, and the pagination stays at the bottom.
    * `auto` grows with its rows.
@@ -41,6 +47,7 @@ function DataTableFrame<TData>({
   table,
   title,
   toolbar,
+  chips,
   layout = "fill",
   responsive = true,
   className,
@@ -67,7 +74,7 @@ function DataTableFrame<TData>({
         {children ?? (
           <>
             <DataTableSlotContent slot="header" />
-            <DataTableToolbar title={title} actions={toolbar} />
+            <DataTableToolbar title={title} actions={toolbar} chips={chips} />
             {/* A few rows keep their own height; the space goes between the
                 table and the pagination rather than into an empty table. */}
             <DataTableContent
@@ -95,6 +102,7 @@ function DataTableFrame<TData>({
 function DataTableWithState<TData>({
   title,
   toolbar,
+  chips,
   layout,
   responsive,
   className,
@@ -108,6 +116,7 @@ function DataTableWithState<TData>({
       table={table}
       title={title}
       toolbar={toolbar}
+      chips={chips}
       layout={layout}
       responsive={responsive}
       className={className}
