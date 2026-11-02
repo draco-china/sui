@@ -1,9 +1,9 @@
 ---
 title: 滚轮选择器
-description: 支持原生惯性滚动、吸附、键盘选择与可选玻璃材质的圆柱滚轮。
+description: 支持甩动惯性、回弹落位、键盘选择与可选玻璃材质的圆柱滚轮。
 ---
 
-WheelPicker 从有序列表中选择一个值。触摸和触控板使用原生惯性滚动与吸附；鼠标或手写笔拖动同一个滚动区域。视觉圆柱跟随滚动位置，不会重复创建可访问列表。
+WheelPicker 从有序列表中选择一个值。触摸、鼠标和手写笔直接拖动圆柱，越过两端时带橡皮筋阻尼；甩动后按惯性继续滑行，并以轻微回弹停在某一行。鼠标滚轮或触控板连续转动圆柱，停下后吸附到最近一行。中间一行是圆柱裁剪到选中带的清晰副本，文字在穿过选中带时恰好变清晰，且不会重复创建可访问列表。
 
 <ComponentPreview name="wheel-picker-demo" />
 
@@ -40,13 +40,13 @@ import { WheelPicker } from "@workspace/ui/components/wheel-picker";
 
 滚轮是一个可聚焦的 listbox，使用 `aria-activedescendant` 和选中项状态。请提供本地化的 `aria-label` 或 `aria-labelledby`。上下方向键选择前后项，Home/End 到达两端，Page Up/Down 移动一个可视页；到达边界后不循环。
 
-减少动态效果时保留同一列表和键盘操作，使用平面的吸附列表，不旋转圆柱或平滑滚动。`disabled` 或空选项会移除 Tab 焦点并阻止变更。`name` 通过隐藏输入参与原生表单提交；表单重置会恢复非受控默认值。刻度音默认关闭，仅在本地合成，音频不可用不会阻断选择。
+减少动态效果时保留同一列表和键盘操作，使用原地移动的平面列表，不旋转圆柱，也不播放落位动画。`disabled` 或空选项会移除 Tab 焦点并阻止变更。`name` 通过隐藏输入参与原生表单提交；表单重置会恢复非受控默认值。刻度音默认关闭。与 beUI 参考一致，使用本地合成的 16ms 机械点击音：拖动、转动或惯性滑行中最近刻度变化时立即发声，停稳在同一刻度不会重复播放；键盘和直接选择也只播放一次。音频在用户手势开始时准备，多列共享一个音频上下文和缓冲区，快速移动时截断上一声尾音。初始渲染、表单重置和外部值更新保持静音，音频失败不会阻断选择。
 
 <ComponentPreview name="wheel-picker-states" />
 
 ## 材质 [#material]
 
-默认是使用 SUI 语义色和 14px 文字的实色控件。`glass` 或 `frosted` 为边框区域应用共享材质，选项行保持普通，键盘焦点始终可见。滚动区域使用原生触摸滚动，在边界处限制滚动传递。
+默认是使用 SUI 语义色和 14px 文字的实色控件。`glass` 或 `frosted` 为边框区域应用共享材质，选项行保持普通，键盘焦点始终可见。圆柱自己接管手势，拖动或转动时不会带动后方页面滚动。
 
 ## API 参考 [#api-reference]
 
@@ -63,4 +63,4 @@ import { WheelPicker } from "@workspace/ui/components/wheel-picker";
 | `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 默认普通材质。 |
 | 其他属性 | 原生 div 属性 | 名称、`ref`、`className`、`style` 与事件回调。 |
 
-导出 `WheelPicker`、`WheelPickerProps` 和 `WheelPickerOption`。交互参考 [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker)，SUI 实现使用原生滚动和已有的减少动态效果钩子，无需新增动态效果依赖。
+导出 `WheelPicker`、`WheelPickerProps` 和 `WheelPickerOption`。交互参考 [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker)，SUI 实现使用 Motion 驱动圆柱。

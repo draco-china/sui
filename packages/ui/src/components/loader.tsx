@@ -4,8 +4,8 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import { useReducedMotion } from "motion/react";
 import { type CSSProperties, useEffect, useId, useState } from "react";
-import { useReducedMotion } from "../hooks/use-reduced-motion";
 
 const loaderVariantNames = [
   "spinner",
@@ -77,7 +77,7 @@ type LoaderProps = Omit<useRender.ComponentProps<"span">, "children"> & {
   speed?: number;
   label?: string;
 };
-type VisualProps = { size: number; cycle: number; reduce: boolean };
+type VisualProps = { size: number; cycle: number; reduce: boolean | null };
 type LoaderStyle = CSSProperties & {
   "--loader-size"?: string;
   "--loader-cycle": string;
@@ -105,7 +105,7 @@ const glyphs: Partial<Record<LoaderVariant, readonly string[]>> = {
   "ascii-bounce": ["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
 };
 
-function useFrame(periodMs: number, reduce: boolean) {
+function useFrame(periodMs: number, reduce: boolean | null) {
   const [frame, setFrame] = useState(0);
   useEffect(() => {
     if (reduce) return;

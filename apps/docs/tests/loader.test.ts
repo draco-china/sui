@@ -107,9 +107,11 @@ describe("Loader server rendering contract", () => {
       expect(render()).toBe(first);
       expect(first.replace(/<[^>]+>/g, "").trim().length).toBeGreaterThan(0);
     }
+    // Motion leaves the preference unknown on the server, so the server
+    // renders the first animated frame.
     expect(
       renderToStaticMarkup(createElement(Loader, { variant: "scramble" })),
-    ).toContain("LOADING");
+    ).toContain("ALW7FQ1");
     expect(
       renderToStaticMarkup(createElement(Loader, { variant: "percent" })),
     ).toContain("0%");

@@ -63,6 +63,11 @@ Object.assign(globalThis, {
 window.requestAnimationFrame = requestFrame;
 window.cancelAnimationFrame = cancelFrame;
 const listeners = new Set<() => void>();
+// Motion keeps one page-wide reduced-motion listener for its own lifetime.
+const ownListeners = (all: Iterable<unknown>) =>
+  [...all].filter(
+    (listener) => !String(listener).includes("prefersReducedMotion"),
+  ).length;
 let reduced = false;
 window.matchMedia = (media) =>
   ({
@@ -228,7 +233,7 @@ Object.defineProperty(document, "startViewTransition", {
     return { finished: Promise.resolve() };
   },
 });
-const sunPath = path("theme");
+let sunPath = path("theme");
 let explicitMode: string | undefined;
 runThemeTransition(
   () => {
@@ -262,7 +267,7 @@ assert.equal(
   "tooltip composition preserves the native locale button ref",
 );
 const initialSun = sunPath.getAttribute("d");
-const languagePath = path("locale");
+let languagePath = path("locale");
 const english = languagePath.getAttribute("d");
 assert.ok(initialSun && english);
 assert.equal(control("theme").querySelectorAll("svg").length, 1);
@@ -438,12 +443,16 @@ await act(async () => {
   reduced = true;
   for (const listener of listeners) listener();
 });
+// Motion reads the preference when the toggles mount.
+await act(async () => root?.render(<Example key="reduced" />));
+sunPath = path("theme");
+languagePath = path("locale");
 await click("theme");
 assert.equal(transitions, 1, "reduced motion skips the page transition");
 assert.equal(
   sunPath.getAttribute("d"),
-  initialSun,
-  "reduced motion swaps straight to the original sun curve",
+  moon,
+  "reduced motion swaps the remounted sun straight to the moon curve",
 );
 await act(async () => setLocale("zh-CN"));
 assert.equal(
@@ -480,7 +489,11 @@ assert.equal(
   "destroyed morphs and pending portal frames stop scheduling work",
 );
 await act(async () => lateNavigation());
-assert.equal(listeners.size, 0, "unmount releases media subscriptions");
+assert.equal(
+  ownListeners(listeners),
+  0,
+  "unmount releases media subscriptions",
+);
 assert.equal(
   cancelledNavigationCalls,
   beforeTeardownNavigation,

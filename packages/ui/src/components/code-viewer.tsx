@@ -2,8 +2,8 @@
 
 import { cn } from "cn";
 import { ChevronRight, FileCode2 } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "../hooks/use-reduced-motion";
 import {
   useHighlightedLines,
   useStreamingScroll,

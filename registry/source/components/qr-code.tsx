@@ -5,8 +5,8 @@ import { useRender } from "@base-ui/react/use-render";
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import { CircleAlertIcon } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
-import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { type GlassProps, withGlass } from "@/lib/glass/with-glass";
 import { applyQRCodeFinderGeometry } from "@/lib/qr-code/finder";
 

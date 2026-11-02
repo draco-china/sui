@@ -1,9 +1,9 @@
 ---
 title: Wheel Picker
-description: A cylindrical scroll picker with native momentum, snapping, keyboard selection, and optional glass.
+description: A cylindrical drum picker with flick momentum, a bouncing detent, keyboard selection, and optional glass.
 ---
 
-WheelPicker selects one value from an ordered list. Touch and trackpad scrolling use native momentum and scroll snapping; mouse or pen dragging moves the same scroll viewport. The visual drum follows its position without creating a duplicate accessible list.
+WheelPicker selects one value from an ordered list. Touch, mouse and pen drag the drum directly, rubber-banding past either end; a flick coasts on with momentum and settles on a row with a small bounce. A mouse wheel or trackpad spins it continuously and snaps once it goes idle. The centre row is a crisp copy of the drum clipped to the selection band, so labels sharpen exactly as they cross it, without a duplicate accessible list.
 
 <ComponentPreview name="wheel-picker-demo" />
 
@@ -40,13 +40,13 @@ Combine independently labelled wheels inside a named group. Application code own
 
 The wheel is a single focusable listbox with `aria-activedescendant` and selected options. Supply a localized `aria-label` or `aria-labelledby`. Arrow Up/Down selects the previous/next value; Home/End reaches the boundaries, and Page Up/Down moves by one visible page. Selection stops at either end.
 
-With reduced motion, the same list and keyboard controls remain available as a flat snapping list, without cylinder rotation or animated scrolling. `disabled` and empty options remove the wheel from the Tab sequence and prevent changes. `name` submits the selected value through a hidden input; native form reset restores an uncontrolled default. Tick sound is opt in, synthesized locally, and does not block selection when audio is unavailable.
+With reduced motion, the same list and controls remain available as a flat list that moves in place, without cylinder rotation or animated settling. `disabled` and empty options remove the wheel from the Tab sequence and prevent changes. `name` submits the selected value through a hidden input; native form reset restores an uncontrolled default. Tick sound is opt in. Like the beUI reference, it uses a locally synthesized 16ms mechanical click whenever the nearest row changes while dragging, spinning, or coasting; settling on the same row does not play it again. Keyboard and direct selection also tick once. Audio is prepared at the start of a user gesture, shares one context and buffer across columns, and cuts the previous tick tail during rapid movement. Initial rendering, form reset, and external value updates stay silent. Audio failures never block selection.
 
 <ComponentPreview name="wheel-picker-states" />
 
 ## Material [#material]
 
-The default is a solid working control using SUI semantic colors and 14px text. `glass` or `frosted` applies the shared material to its frame; individual rows stay ordinary. Keyboard focus remains visible. The viewport keeps native touch scrolling and contains overscroll at its boundaries.
+The default is a solid working control using SUI semantic colors and 14px text. `glass` or `frosted` applies the shared material to its frame; individual rows stay ordinary. Keyboard focus remains visible. The drum owns its gestures, so dragging or spinning it never scrolls the page behind it.
 
 ## API reference [#api-reference]
 
@@ -63,4 +63,4 @@ The default is a solid working control using SUI semantic colors and 14px text. 
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Ordinary by default. |
 | Other props | Native div props | Includes labels, `ref`, `className`, `style`, and event handlers. |
 
-Exports `WheelPicker`, `WheelPickerProps`, and `WheelPickerOption`. The interaction references [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker); this SUI implementation uses native scrolling and its existing motion preference hook without adding a motion dependency.
+Exports `WheelPicker`, `WheelPickerProps`, and `WheelPickerOption`. The interaction references [beUI Wheel Picker](https://beui.dev/components/motion/wheel-picker); this SUI implementation drives the drum with Motion.

@@ -125,10 +125,15 @@ assert.equal(grabber()?.getAttribute("aria-label"), "Expand sheet");
 scenario("the grabber expands the sheet and its body scrolls once settled");
 await act(async () => grabber()?.click());
 assert.equal(popup()?.dataset.size, "lg");
+assert.ok(
+  popup()?.hasAttribute("data-gliding"),
+  "Motion glides the sheet to its new size",
+);
+assert.equal(grabber()?.getAttribute("aria-label"), "Collapse sheet");
+await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
 assert.equal(popup()?.style.getPropertyValue("--bottom-sheet-height"), "800px");
 assert.equal(popup()?.style.getPropertyValue("--bottom-sheet-progress"), "1");
-assert.equal(grabber()?.getAttribute("aria-label"), "Collapse sheet");
-await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+assert.ok(!popup()?.hasAttribute("data-gliding"), "the glide finishes");
 assert.equal(
   container()?.dataset.scroll,
   "body",

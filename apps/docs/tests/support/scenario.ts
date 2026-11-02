@@ -71,7 +71,11 @@ export function captureConsoleOutput() {
   for (const method of ["error", "warn"] as const) {
     const write = console[method];
     console[method] = (...data: unknown[]) => {
-      if (running) running.consoleOutput.push(format(...data));
+      const message = format(...data);
+      // Motion notes once, in development, that the reduced-motion scenarios
+      // turned the preference on.
+      if (message.includes("reduced-motion-disabled")) return;
+      if (running) running.consoleOutput.push(message);
       else write(...data);
     };
   }

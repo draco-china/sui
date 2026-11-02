@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { DesignComparison } from "../design-guidelines-comparison";
 import type { ExampleProps } from "../types";

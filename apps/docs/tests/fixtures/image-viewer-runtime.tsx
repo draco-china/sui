@@ -41,6 +41,11 @@ Object.assign(globalThis, {
   IntersectionObserver: Observer,
 });
 const mediaListeners = new Set<EventListenerOrEventListenerObject>();
+// Motion keeps one page-wide reduced-motion listener for its own lifetime.
+const ownListeners = (listeners: Iterable<unknown>) =>
+  [...listeners].filter(
+    (listener) => !String(listener).includes("prefersReducedMotion"),
+  ).length;
 window.matchMedia = () =>
   ({
     matches: false,
@@ -555,7 +560,7 @@ assert.equal(
 );
 await interaction(() => otherRoot.unmount());
 assert.equal(
-  mediaListeners.size,
+  ownListeners(mediaListeners),
   0,
   "all reduced-motion subscriptions release after the final viewer",
 );
@@ -642,5 +647,5 @@ for (const enabled of [true, false]) {
 await interaction(() => controlsRoot.unmount());
 controlsHost.remove();
 assert.equal(wheelTargets.size, 0);
-assert.equal(mediaListeners.size, 0);
+assert.equal(ownListeners(mediaListeners), 0);
 await window.happyDOM.close();

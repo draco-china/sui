@@ -80,6 +80,10 @@ Tabs
 
 <ComponentPreview name="tabs-icons" />
 
+通过 `icon` 传入图标，并在 `Tabs` 上设置 `icons="selected"`，图标就只在选中的标签上显示：指示器滑过时它在文字旁弹性展开，离开的标签上则收起。
+
+<ComponentPreview name="tabs-icons-selected" />
+
 ## 从右到左 [#rtl]
 
 关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
@@ -88,7 +92,7 @@ Tabs
 
 ## 动画 [#animation]
 
-选中指示器与内容面板采用相同的 250ms 时长和缓动。内容从新选中标签所在的方向淡入，位移仅 8px：横向选项卡从左侧或右侧进入，纵向选项卡从上方或下方进入。Base UI 根据标签的实际位置判断方向，自动适配 RTL。初始面板直接显示；未选中的面板立即退出布局，不参与焦点导航。启用减少动态效果后，过渡和位移完全关闭。选中态使用主题的 `primary` 和 `primary-foreground` 配色；线条样式的指示器和选中文字使用 `primary`。
+选中指示器以弹簧动画在标签之间滑动，不会冲出列表边缘；首次定位直接落位。默认样式和分段样式中，每个标签都有一份 `primary-foreground` 颜色的副本，按指示器的覆盖范围裁剪，因此滑动过程中文字颜色恰好在指示器边缘切换。内容面板采用 250ms 缓动。内容从新选中标签所在的方向淡入，位移仅 8px：横向选项卡从左侧或右侧进入，纵向选项卡从上方或下方进入。Base UI 根据标签的实际位置判断方向，自动适配 RTL。初始面板直接显示；未选中的面板立即退出布局，不参与焦点导航。启用减少动态效果后，指示器直接跳到新标签，图标原地显示或隐藏，面板的过渡和位移完全关闭。选中态使用主题的 `primary` 和 `primary-foreground` 配色；线条样式的指示器和选中文字使用 `primary`。
 
 在 `TabsList` 上使用 `indicatorClassName` 自定义指示器，使用 `wrapperClassName` 设置外层容器的布局。`className`、`ref` 和 `render` 仍作用于 Base UI 列表。`TabsContent` 保留 Base UI 的 `keepMounted` 行为。
 

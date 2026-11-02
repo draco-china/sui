@@ -3,9 +3,9 @@
 import { Button } from "@workspace/ui/components/button";
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
+import { useReducedMotion } from "motion/react";
 import type { ComponentProps, ReactNode } from "react";
 import { flushSync } from "react-dom";
-import { useReducedMotion } from "../hooks/use-reduced-motion";
 import { type IconNode, MorphIcon, type MorphIconProps } from "./morph-icon";
 import {
   Tooltip,
@@ -86,7 +86,7 @@ type ThemeTransitionOptions = {
   button: HTMLElement;
   variant?: ThemeVariant;
   start?: ThemeRevealStart;
-  reducedMotion?: boolean;
+  reducedMotion?: boolean | null;
 };
 
 const themeToggleVariants = cva("relative text-foreground", {

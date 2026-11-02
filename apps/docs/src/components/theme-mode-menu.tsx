@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
-import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
+import { useReducedMotion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import type { Locale } from "../lib/i18n";

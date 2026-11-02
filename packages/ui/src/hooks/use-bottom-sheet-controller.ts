@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  type AnimationPlaybackControls,
+  animate,
+  useMotionValue,
+  useReducedMotion,
+} from "motion/react";
 import * as React from "react";
 import {
   type BottomSheetDetents,
@@ -48,7 +54,21 @@ const textField =
 const ownGesture = `${textField},input[type="range"],[role="slider"],[data-slot="bottom-sheet-footer"],[data-bottom-sheet-no-drag]`;
 const handle =
   '[data-slot="bottom-sheet-header"],[data-slot="bottom-sheet-grabber"]';
-const settleDelay = 450;
+const settleDelay = 500;
+// A long, fully damped glide between sizes: one clean deceleration, the same
+// curve the sheet enters with.
+const drawerGlide = {
+  duration: settleDelay / 1000,
+  ease: [0.32, 0.72, 0, 1],
+} as const;
+// A release keeps the finger's speed, then settles without bouncing past the
+// size it lands on.
+const releaseSpring = {
+  type: "spring",
+  stiffness: 420,
+  damping: 40,
+  mass: 0.5,
+} as const;
 
 let progressRegistered = false;
 
@@ -168,6 +188,16 @@ export function useBottomSheetController(
   });
   const chromeRef = React.useRef<Chrome>({ header: 0, footer: 0, natural: 0 });
   const dragRef = React.useRef<Drag | null>(null);
+  const reducedMotion = useReducedMotion();
+  // The visible height; every frame of a drag or glide is painted from it.
+  const extent = useMotionValue(0);
+  const glideRef = React.useRef<{
+    controls: AnimationPlaybackControls;
+    to: number;
+  } | null>(null);
+  // An opening sheet lands at its first size and enters with Base UI.
+  const placedRef = React.useRef(false);
+  if (!open) placedRef.current = false;
 
   const extentOf = React.useCallback(
     (target: BottomSheetSize) => layoutRef.current.heights[target],
@@ -190,6 +220,47 @@ export function useBottomSheetController(
     [popup],
   );
 
+  React.useEffect(() => extent.on("change", paint), [extent, paint]);
+
+  const stopGlide = React.useCallback(() => {
+    glideRef.current?.controls.stop();
+    glideRef.current = null;
+    popup?.removeAttribute("data-gliding");
+    overlayRef.current?.removeAttribute("data-gliding");
+  }, [popup]);
+
+  /** Moves to a height: in place, along a glide, or carrying a release. */
+  const moveTo = React.useCallback(
+    (to: number, velocity?: number) => {
+      if (glideRef.current?.to === to) return;
+      stopGlide();
+      if (!placedRef.current || reducedMotion || extent.get() === to) {
+        // A sheet measured before it has a size is not placed yet.
+        placedRef.current = to > 0;
+        extent.jump(to);
+        paint(to);
+        return;
+      }
+      // CSS transitions stand aside while Motion paints every frame.
+      popup?.setAttribute("data-gliding", "");
+      overlayRef.current?.setAttribute("data-gliding", "");
+      const controls = animate(
+        extent,
+        to,
+        velocity === undefined
+          ? drawerGlide
+          : { ...releaseSpring, velocity: velocity * 1000 },
+      );
+      glideRef.current = { controls, to };
+      controls.then(() => {
+        if (glideRef.current?.controls === controls) stopGlide();
+      });
+    },
+    [extent, paint, popup, reducedMotion, stopGlide],
+  );
+
+  React.useEffect(() => stopGlide, [stopGlide]);
+
   // Chooses what scrolls: nothing until the sheet may scroll, then the body,
   // or the whole container when an adaptive footer leaves too little room.
   const scrollableRef = React.useRef(false);
@@ -206,9 +277,9 @@ export function useBottomSheetController(
 
   // Rests at a size: paints it, then lets the footer flow if it must.
   const rest = React.useCallback(
-    (target: BottomSheetSize) => {
+    (target: BottomSheetSize, velocity?: number) => {
       const height = extentOf(target);
-      paint(height);
+      moveTo(height, velocity);
       const { header, footer } = chromeRef.current;
       flowsRef.current =
         optionsRef.current.footerMode === "adaptive" &&
@@ -216,7 +287,7 @@ export function useBottomSheetController(
         height - header - footer < bottomSheetDefaults.minimumBody;
       applyScroll();
     },
-    [paint, extentOf, applyScroll],
+    [moveTo, extentOf, applyScroll],
   );
 
   const measure = React.useCallback(() => {
@@ -355,14 +426,15 @@ export function useBottomSheetController(
       pointerId: number | null,
     ) {
       const from = optionsRef.current.size;
-      const extent = extentOf(from);
+      // A press during a glide catches the sheet where it is.
+      const current = glideRef.current ? extent.get() : extentOf(from);
       dragRef.current = {
         source,
         pointerId,
         startX: x,
         startY: y,
-        startExtent: extent,
-        extent,
+        startExtent: current,
+        extent: current,
         from,
         mode: "pending",
       };
@@ -393,7 +465,8 @@ export function useBottomSheetController(
         drag.startExtent - dy,
         layoutRef.current.heights.lg,
       );
-      paint(drag.extent);
+      stopGlide();
+      extent.jump(drag.extent);
       return true;
     }
     function target(drag: Drag, velocity: number) {
@@ -420,9 +493,10 @@ export function useBottomSheetController(
       popup?.removeAttribute("data-dragging");
       overlayRef.current?.removeAttribute("data-dragging");
       suppressClickUntil = performance.now() + 80;
-      const next = target(drag, cancelled ? 0 : tracker.velocity(time));
+      const velocity = cancelled ? 0 : tracker.velocity(time);
+      const next = target(drag, velocity);
       if (next !== "closed") {
-        rest(next);
+        rest(next, velocity);
         if (next !== optionsRef.current.size) setSize(next);
         return;
       }
@@ -513,7 +587,7 @@ export function useBottomSheetController(
     container.addEventListener("touchend", touchEnd, { signal });
     container.addEventListener("touchcancel", touchEnd, { signal });
     return () => events.abort();
-  }, [popup, paint, rest, extentOf, setSize]);
+  }, [popup, rest, extentOf, setSize, extent, stopGlide]);
 
   // Wheel, focus and header state while the body scrolls.
   React.useEffect(() => {

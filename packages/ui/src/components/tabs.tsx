@@ -2,7 +2,6 @@
 
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { Button } from "@workspace/ui/components/button";
-import { useReducedMotion } from "@workspace/ui/hooks/use-reduced-motion";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import {
@@ -11,19 +10,54 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
 } from "lucide-react";
+import {
+  cancelFrame,
+  frame,
+  motion,
+  useReducedMotion,
+  useSpring,
+} from "motion/react";
 import * as React from "react";
 import { withGlass } from "../lib/glass/with-glass";
 
-const TabsContext =
-  React.createContext<TabsPrimitive.Root.Orientation>("horizontal");
+/** Whether trigger icons show on every tab or only on the selected one. */
+type TabsIconDisplay = "always" | "selected";
+
+const TabsContext = React.createContext<{
+  orientation: TabsPrimitive.Root.Orientation;
+  icons: TabsIconDisplay;
+}>({ orientation: "horizontal", icons: "always" });
+
+// Critically damped, so a scrollable list never gains a transient scroll
+// range while the indicator glides to an edge tab.
+const indicatorSpring = { stiffness: 500, damping: 45, mass: 1 };
+// Icons trading places beside a label as the selection moves.
+const iconSpring = {
+  type: "spring",
+  stiffness: 460,
+  damping: 30,
+  mass: 0.55,
+} as const;
+const closedClip = "inset(0 100% 0 0)";
 
 function Tabs({
   className,
   orientation = "horizontal",
+  icons = "always",
   ...props
-}: TabsPrimitive.Root.Props) {
+}: TabsPrimitive.Root.Props & {
+  /**
+   * With "selected", a trigger's `icon` springs open only on the selected tab
+   * and folds away when another is chosen.
+   */
+  icons?: TabsIconDisplay;
+}) {
+  const context = React.useMemo(
+    () => ({ orientation, icons }),
+    [orientation, icons],
+  );
   return (
-    <TabsContext.Provider value={orientation}>
+    <TabsContext.Provider value={context}>
       <TabsPrimitive.Root
         data-slot="tabs"
         orientation={orientation}
@@ -53,6 +87,29 @@ const tabsListVariants = cva(
   },
 );
 
+/** Cancels the trigger's flex gap while a selected-only icon is folded. */
+const iconCollapse = "-0.5rem";
+
+function clamp(value: number, max: number) {
+  return Math.max(0, Math.min(max, value));
+}
+
+type IndicatorTrack = Record<
+  "x" | "y" | "width" | "height",
+  ReturnType<typeof useSpring>
+>;
+
+/** The line indicator keeps its CSS thickness and follows one axis. */
+function indicatorStyle(
+  variant: VariantProps<typeof tabsListVariants>["variant"],
+  vertical: boolean,
+  { x, y, width, height }: IndicatorTrack,
+) {
+  if (variant !== "line") return { x, y, width, height };
+  if (vertical) return { y, height };
+  return { x, width };
+}
+
 function TabsListImplementation({
   className,
   wrapperClassName,
@@ -66,9 +123,14 @@ function TabsListImplementation({
     wrapperClassName?: string;
     indicatorClassName?: string;
   }) {
-  const orientation = React.useContext(TabsContext);
+  const { orientation } = React.useContext(TabsContext);
   const vertical = orientation === "vertical";
   const reducedMotion = useReducedMotion();
+  const x = useSpring(0, indicatorSpring);
+  const y = useSpring(0, indicatorSpring);
+  const width = useSpring(0, indicatorSpring);
+  const height = useSpring(0, indicatorSpring);
+  const [placed, setPlaced] = React.useState(false);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const viewportRef = React.useRef<HTMLDivElement>(null);
   const [list, setList] = React.useState<HTMLDivElement | null>(null);
@@ -163,12 +225,111 @@ function TabsListImplementation({
     const wrapper = wrapperRef.current;
     const viewport = viewportRef.current;
     if (!wrapper || !viewport || !list) return;
-    let frame = 0;
+    let pending = 0;
     let revealSelection = false;
+    // Label overlays in list coordinates, cached so clip syncing never reads
+    // layout while the indicator glides.
+    type Box = Record<"left" | "top" | "width" | "height", number> & {
+      right: number;
+      bottom: number;
+    };
+    let labels: { element: HTMLElement; box: Box }[] = [];
+    const syncClips = () => {
+      const pill = {
+        left: x.get(),
+        top: y.get(),
+        right: x.get() + width.get(),
+        bottom: y.get() + height.get(),
+      };
+      for (const { element, box } of labels) {
+        const left = clamp(pill.left - box.left, box.width);
+        const right = clamp(box.right - pill.right, box.width);
+        const top = clamp(pill.top - box.top, box.height);
+        const bottom = clamp(box.bottom - pill.bottom, box.height);
+        const clip =
+          left + right >= box.width || top + bottom >= box.height
+            ? closedClip
+            : `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+        if (element.style.clipPath !== clip) element.style.clipPath = clip;
+      }
+    };
+    const scheduleClips = () => frame.render(syncClips);
+    const place = () => {
+      const selected = list.querySelector<HTMLElement>(
+        '[role="tab"][data-active]',
+      );
+      if (!selected) {
+        setPlaced(false);
+        return;
+      }
+      const origin = list.getBoundingClientRect();
+      const relative = (element: Element): Box => {
+        const rect = element.getBoundingClientRect();
+        const left = rect.left - origin.left - list.clientLeft;
+        const top = rect.top - origin.top - list.clientTop;
+        return {
+          left,
+          top,
+          width: rect.width,
+          height: rect.height,
+          right: left + rect.width,
+          bottom: top + rect.height,
+        };
+      };
+      // A selected-only icon grows its tab as it opens. Measure where the tabs
+      // settle, every icon open or folded, so the indicator springs straight
+      // there instead of squeezing along with the icon.
+      const icons = Array.from(
+        list.querySelectorAll<HTMLElement>(
+          '[data-slot="tabs-trigger-icon"][data-display="selected"]',
+        ),
+      );
+      const saved = icons.map((icon) => [
+        icon.style.width,
+        icon.style.marginInlineEnd,
+      ]);
+      for (const icon of icons) {
+        const open = icon.closest('[role="tab"]') === selected;
+        icon.style.width = open ? "auto" : "0px";
+        icon.style.marginInlineEnd = open ? "0px" : iconCollapse;
+      }
+      const box = relative(selected);
+      labels = Array.from(
+        list.querySelectorAll<HTMLElement>('[data-slot="tabs-trigger-label"]'),
+        (element) => ({ element, box: relative(element) }),
+      );
+      icons.forEach((icon, index) => {
+        [icon.style.width, icon.style.marginInlineEnd] = saved[index];
+      });
+      // A hidden list has nothing to measure; it is placed once it has a size.
+      if (box.width === 0 && box.height === 0) return;
+      // The first placement, or one after the list was hidden, lands in place.
+      const instant = Boolean(reducedMotion) || width.get() === 0;
+      const target = {
+        x: box.left,
+        y: box.top,
+        width: box.width,
+        height: box.height,
+      };
+      for (const [value, next] of [
+        [x, target.x],
+        [y, target.y],
+        [width, target.width],
+        [height, target.height],
+      ] as const) {
+        if (instant) value.jump(next);
+        else value.set(next);
+      }
+      setPlaced(true);
+      scheduleClips();
+    };
+    const unsubscribe = [x, y, width, height].map((value) =>
+      value.on("change", scheduleClips),
+    );
     const update = (selectionChanged = false) => {
       revealSelection ||= selectionChanged;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
+      cancelAnimationFrame(pending);
+      pending = requestAnimationFrame(() => {
         measure();
         const selected = list.querySelector<HTMLElement>(
           '[role="tab"][data-active]',
@@ -184,7 +345,10 @@ function TabsListImplementation({
         revealSelection = false;
       });
     };
-    const resize = new ResizeObserver(() => update());
+    const resize = new ResizeObserver(() => {
+      place();
+      update();
+    });
     const observeSizes = () => {
       resize.disconnect();
       resize.observe(wrapper);
@@ -195,9 +359,12 @@ function TabsListImplementation({
     };
     const mutation = new MutationObserver((records) => {
       if (records.some((record) => record.type === "childList")) observeSizes();
+      // Observers run before paint, so the glide starts in the same frame.
+      place();
       update(records.some((record) => record.attributeName === "data-active"));
     });
     observeSizes();
+    place();
     mutation.observe(list, {
       subtree: true,
       childList: true,
@@ -207,12 +374,14 @@ function TabsListImplementation({
     viewport.addEventListener("scroll", measure, { passive: true });
     update();
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(pending);
+      cancelFrame(syncClips);
+      for (const stop of unsubscribe) stop();
       resize.disconnect();
       mutation.disconnect();
       viewport.removeEventListener("scroll", measure);
     };
-  }, [list, measure, reveal]);
+  }, [list, measure, reveal, reducedMotion, x, y, width, height]);
 
   function scroll(direction: number) {
     const state = getScrollState();
@@ -276,10 +445,16 @@ function TabsListImplementation({
           {...props}
         >
           {children}
-          <TabsPrimitive.Indicator
+          <motion.span
+            aria-hidden="true"
             data-slot="tabs-indicator"
+            data-orientation={orientation}
+            data-horizontal={vertical ? undefined : ""}
+            data-vertical={vertical ? "" : undefined}
+            data-placed={placed || undefined}
+            style={indicatorStyle(variant, vertical, { x, y, width, height })}
             className={cn(
-              "pointer-events-none absolute top-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) translate-y-(--active-tab-top) rounded-full border border-transparent bg-primary transition-[translate,width,height] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+              "pointer-events-none absolute top-0 left-0 rounded-full border border-transparent bg-primary not-data-placed:opacity-0",
               "group-data-[variant=segment]/tabs-list:rounded-md group-data-vertical/tabs:rounded-2xl",
               "group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:border-0 group-data-[variant=line]/tabs-list:bg-ring",
               "group-data-[variant=line]/tabs-list:data-horizontal:top-auto group-data-[variant=line]/tabs-list:data-horizontal:bottom-0 group-data-[variant=line]/tabs-list:data-horizontal:h-0.5 group-data-[variant=line]/tabs-list:data-horizontal:translate-y-0",
@@ -331,17 +506,96 @@ function TabsListImplementation({
   );
 }
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+/**
+ * A trigger's icon before its label. With `icons="selected"` it springs open
+ * on the selected tab only.
+ */
+function TabsTriggerIcon({
+  icon,
+  active,
+}: {
+  icon: React.ReactNode;
+  active: boolean;
+}) {
+  const { icons } = React.useContext(TabsContext);
+  const reducedMotion = useReducedMotion();
+  if (icons === "always")
+    return (
+      <span
+        aria-hidden="true"
+        data-slot="tabs-trigger-icon"
+        data-display="always"
+        className="inline-flex shrink-0 items-center"
+      >
+        {icon}
+      </span>
+    );
+  return (
+    <motion.span
+      aria-hidden="true"
+      data-slot="tabs-trigger-icon"
+      data-display="selected"
+      initial={false}
+      animate={{
+        width: active ? "auto" : 0,
+        marginInlineEnd: active ? 0 : iconCollapse,
+        opacity: active ? 1 : 0,
+        scale: active ? 1 : 0.6,
+      }}
+      transition={reducedMotion ? { duration: 0 } : iconSpring}
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden"
+    >
+      {icon}
+    </motion.span>
+  );
+}
+
+/** The label again in the indicator's colour, clipped to where they overlap. */
+function TabsTriggerLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      aria-hidden="true"
+      inert
+      data-slot="tabs-trigger-label"
+      className="pointer-events-none absolute inset-0 inline-flex text-primary-foreground [align-items:inherit] [clip-path:inset(0_100%_0_0)] [gap:inherit] [justify-content:inherit] [padding:inherit] group-data-[variant=line]/tabs-list:hidden"
+    >
+      {children}
+    </span>
+  );
+}
+
+function TabsTrigger({
+  className,
+  icon,
+  children,
+  ...props
+}: Omit<TabsPrimitive.Tab.Props, "children"> & {
+  /** An icon before the label. Required for `icons="selected"` on `Tabs`. */
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  const content = (active: boolean) => (
+    <>
+      {icon !== undefined && <TabsTriggerIcon icon={icon} active={active} />}
+      {children}
+    </>
+  );
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={(state) =>
         cn(
           "relative z-10 inline-flex h-full flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-1 font-medium text-foreground text-sm transition-colors focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-start]:ps-2 has-data-[icon=inline-end]:pe-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:h-auto group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:rounded-2xl group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-1.5 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-          "data-active:text-primary-foreground group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=segment]/tabs-list:rounded-md group-data-[variant=line]/tabs-list:data-active:text-accent-foreground motion-reduce:transition-none",
+          "group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=segment]/tabs-list:rounded-md group-data-[variant=line]/tabs-list:data-active:text-accent-foreground motion-reduce:transition-none",
           typeof className === "function" ? className(state) : className,
         )
       }
+      render={(tabProps, state) => (
+        <button {...tabProps} type="button">
+          {content(state.active)}
+          <TabsTriggerLabel>{content(state.active)}</TabsTriggerLabel>
+        </button>
+      )}
       {...props}
     />
   );

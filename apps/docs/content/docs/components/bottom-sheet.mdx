@@ -90,7 +90,7 @@ When the `default` size cannot hold the header, the footer and at least 80px of 
 | Scroll the wheel down on the body at `default` | Expands and absorbs the rest of that wheel gesture. |
 | Pull down from the top of the body at `lg` | Returns to `default`, as with the header. |
 
-A press becomes a drag after 6px of mostly vertical movement. Release chooses the size from the position, the final direction and the velocity: a flick moves one size in its direction, a pause drops the momentum, and reversing direction counts the last direction. A drag never presses the control it started on. Fields, sliders, the footer and elements marked `data-bottom-sheet-no-drag` keep their own gestures.
+A press becomes a drag after 6px of mostly vertical movement. Release chooses the size from the position, the final direction and the velocity: a flick moves one size in its direction, a pause drops the momentum, and reversing direction counts the last direction. The sheet then springs to that size carrying the release velocity; pressing it mid-glide catches it where it is. Size changes from the grabber, keyboard or content glide over 500ms on the same curve the sheet enters with, and reduced motion moves in place. A drag never presses the control it started on. Fields, sliders, the footer and elements marked `data-bottom-sheet-no-drag` keep their own gestures.
 
 At `default` the body of an expandable sheet does not scroll. Scrolling starts once the sheet reaches `lg` and its animation has finished, and returning to `default` resets the scroll position.
 

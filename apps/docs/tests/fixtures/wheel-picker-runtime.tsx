@@ -26,11 +26,6 @@ let reduce = false;
 const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 Object.defineProperty(mediaQuery, "matches", { get: () => reduce });
 window.matchMedia = () => mediaQuery;
-window.HTMLElement.prototype.scrollTo = function (
-  options: ScrollToOptions | number,
-) {
-  this.scrollTop = typeof options === "number" ? options : (options.top ?? 0);
-};
 const { act, createRef, useState } = await import("react");
 const { render, cleanup, fireEvent } = await import("@testing-library/react");
 const { WheelPicker } = await import("@workspace/ui/components/wheel-picker");
@@ -97,11 +92,15 @@ assert.equal(
   controlled.getByRole("option", { selected: true }).getAttribute("aria-label"),
   "30",
 );
+// Out to the requested row, then back to the kept one.
+await act(async () => {
+  await Bun.sleep(800);
+});
 assert.equal(
-  controlled.container.querySelector<HTMLElement>(
-    '[data-slot="wheel-picker-viewport"]',
-  )?.scrollTop,
-  36,
+  controlled.container.querySelector<HTMLElement>('[data-wheel-item="1"]')
+    ?.style.transform,
+  "translate3d(0,0px,0px) rotateX(0deg)",
+  "the drum returns to the kept selection",
 );
 cleanup();
 
@@ -206,13 +205,241 @@ assert.equal(
   preference.getByRole("option", { selected: true }).getAttribute("aria-label"),
   "15",
 );
-await act(async () => {
-  reduce = true;
-  mediaQuery.dispatchEvent(new window.Event("change"));
-});
-for (const item of preference.container.querySelectorAll<HTMLElement>(
+cleanup();
+// Motion reads the preference when a wheel mounts.
+reduce = true;
+mediaQuery.dispatchEvent(new window.Event("change"));
+const reduced = render(<WheelPicker options={options} />);
+for (const item of reduced.container.querySelectorAll<HTMLElement>(
   "[data-wheel-item]",
 ))
   assert.equal(item.style.transform, "none");
 cleanup();
+
+// Record Web Audio calls without relying on a physical sound device. The real
+// waveform is still built, so these checks cover the buffer and shared lifetime.
+const contexts: MockAudioContext[] = [];
+const sources: MockSource[] = [];
+const buffers: Float32Array[] = [];
+class MockSource {
+  buffer: unknown;
+  onended?: () => void;
+  stopped = false;
+  started = false;
+  connect() {}
+  disconnect() {}
+  start() {
+    this.started = true;
+  }
+  stop() {
+    this.stopped = true;
+    this.onended?.();
+  }
+}
+class MockAudioContext {
+  state = "suspended";
+  sampleRate = 48_000;
+  destination = {};
+  resumes = 0;
+  closed = false;
+  gain = { value: 0 };
+  constructor() {
+    contexts.push(this);
+  }
+  createGain() {
+    return { gain: this.gain, connect() {}, disconnect() {} };
+  }
+  createBuffer(channels: number, length: number, rate: number) {
+    assert.equal(channels, 1);
+    assert.equal(rate, this.sampleRate);
+    const data = new Float32Array(length);
+    buffers.push(data);
+    return { getChannelData: () => data };
+  }
+  createBufferSource() {
+    const source = new MockSource();
+    sources.push(source);
+    return source;
+  }
+  resume() {
+    this.resumes++;
+    this.state = "running";
+    return Promise.resolve();
+  }
+  close() {
+    this.closed = true;
+    return Promise.resolve();
+  }
+}
+Object.defineProperty(window, "AudioContext", {
+  value: MockAudioContext,
+  configurable: true,
+});
+
+scenario(
+  "sound follows nearest row crossings before settle without a duplicate final tick",
+);
+reduce = false;
+const soundChanges: string[] = [];
+const sounding = render(
+  <WheelPicker
+    sound
+    options={options}
+    defaultValue="30"
+    onValueChange={(v) => soundChanges.push(v)}
+  />,
+);
+const soundWheel = sounding.getByRole("listbox");
+assert.equal(contexts.length, 0, "initial render must not create audio");
+// A mouse drag moves the drum one row per 36px, starting from "30".
+const pointer = { pointerId: 1, pointerType: "mouse", button: 0 };
+await act(async () => {
+  fireEvent.pointerDown(soundWheel, { ...pointer, clientY: 200 });
+});
+assert.equal(contexts.length, 1);
+assert.equal(
+  contexts[0]?.resumes,
+  1,
+  "prepare in the gesture, before the drum moves",
+);
+assert.equal(sources.length, 0, "preparation is silent");
+for (const [position, ticks] of [
+  [1.4, 0],
+  [1.51, 1],
+  [2.4, 1],
+  [2.51, 2],
+  [3, 2],
+] as const) {
+  await act(async () => {
+    fireEvent.pointerMove(soundWheel, {
+      ...pointer,
+      clientY: 200 - (position - 1) * 36,
+    });
+  });
+  assert.equal(sources.length, ticks);
+}
+assert.equal(
+  sounding.getByRole("option", { selected: true }).getAttribute("aria-label"),
+  "30",
+);
+assert.deepEqual(
+  soundChanges,
+  [],
+  "ticks must not depend on a committed selection",
+);
+assert.equal(sources[0]?.stopped, true, "a new tick cuts the previous tail");
+assert.equal(buffers.length, 1);
+assert.equal(buffers[0]?.length, 768, "16ms at 48kHz");
+const clickBuffer = buffers[0];
+assert(clickBuffer);
+assert(Math.max(...clickBuffer) <= 0.900001);
+assert(Math.min(...clickBuffer) < -0.1);
+assert.equal(contexts[0]?.gain.value, 0.055);
+await act(async () => {
+  fireEvent.pointerUp(soundWheel, { ...pointer, clientY: 128 });
+  await Bun.sleep(180);
+});
+assert.deepEqual(soundChanges, ["60"]);
+assert.equal(sources.length, 2, "settling on the nearest row must stay silent");
+sounding.rerender(<WheelPicker sound options={options} value="15" />);
+await act(async () => {
+  await Bun.sleep(400);
+});
+assert.equal(sources.length, 2, "external updates must stay silent");
+cleanup();
+assert.equal(contexts[0]?.closed, true);
+
+scenario(
+  "keyboard and direct selection tick once, including with reduced motion",
+);
+reduce = true;
+const direct = render(
+  <WheelPicker sound options={options} defaultValue="15" />,
+);
+const startTicks = sources.length;
+await act(async () => {
+  fireEvent.keyDown(direct.getByRole("listbox"), { key: "ArrowDown" });
+  await Bun.sleep(215);
+});
+assert.equal(sources.length, startTicks + 1);
+await act(async () => {
+  fireEvent.click(direct.getByRole("option", { name: "45" }));
+  await Bun.sleep(35);
+  fireEvent.click(direct.getByRole("option", { name: "45" }));
+});
+assert.equal(sources.length, startTicks + 2);
+cleanup();
+
+scenario(
+  "multiple columns share audio and release it only after the final consumer",
+);
+const beforeShared = contexts.length;
+const columns = render(
+  <>
+    <WheelPicker sound options={options} aria-label="A" />
+    <WheelPicker sound options={options} aria-label="B" />
+  </>,
+);
+await act(async () => {
+  fireEvent.keyDown(columns.getByRole("listbox", { name: "A" }), {
+    key: "ArrowDown",
+  });
+  fireEvent.keyDown(columns.getByRole("listbox", { name: "B" }), {
+    key: "ArrowDown",
+  });
+});
+assert.equal(contexts.length, beforeShared + 1);
+const shared = contexts.at(-1);
+assert(shared);
+columns.rerender(
+  <>
+    <WheelPicker options={options} aria-label="A" />
+    <WheelPicker sound options={options} aria-label="B" />
+  </>,
+);
+assert.equal(shared.closed, false);
+cleanup();
+assert.equal(shared.closed, true);
+
+scenario("disabled, empty and sound-off wheels never initialize audio");
+const beforeSilent = contexts.length;
+const silent = render(
+  <>
+    <WheelPicker sound disabled options={options} />
+    <WheelPicker sound options={[]} />
+    <WheelPicker options={options} />
+  </>,
+);
+await act(async () => {
+  for (const wheel of silent.getAllByRole("listbox")) {
+    fireEvent.wheel(wheel, { deltaY: 36 });
+    fireEvent.keyDown(wheel, { key: "End" });
+  }
+});
+assert.equal(contexts.length, beforeSilent);
+cleanup();
+
+scenario("unsupported and rejected Web Audio never interrupt selection");
+for (const ctor of [
+  undefined,
+  class {
+    constructor() {
+      throw new Error("Audio denied");
+    }
+  },
+]) {
+  Object.defineProperty(window, "AudioContext", {
+    value: ctor,
+    configurable: true,
+  });
+  const noAudio = render(<WheelPicker sound options={options} />);
+  await act(async () => {
+    fireEvent.keyDown(noAudio.getByRole("listbox"), { key: "End" });
+  });
+  assert.equal(
+    noAudio.getByRole("option", { selected: true }).getAttribute("aria-label"),
+    "60",
+  );
+  cleanup();
+}
 await window.happyDOM.close();

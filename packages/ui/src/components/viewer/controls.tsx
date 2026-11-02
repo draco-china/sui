@@ -77,7 +77,7 @@ function ViewerStatus({
   streaming: boolean;
   loading: boolean;
   failed: boolean;
-  reducedMotion: boolean;
+  reducedMotion: boolean | null;
   labels: { writing: string; loading: string; ready: string; error: string };
 }) {
   let state: keyof typeof labels = "ready";

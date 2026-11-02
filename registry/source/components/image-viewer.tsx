@@ -12,6 +12,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 import {
   type ComponentProps,
   type PointerEvent,
@@ -20,7 +21,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { GlassProps } from "@/lib/glass/with-glass";
 import {
   clampImageScale,

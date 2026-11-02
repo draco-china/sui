@@ -206,7 +206,7 @@ function BottomSheetOverlay({
     <DrawerPrimitive.Backdrop
       data-slot="bottom-sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 min-h-dvh select-none bg-black/30 opacity-[calc((0.6+0.4*var(--bottom-sheet-progress,0))*(1-var(--bottom-sheet-dismiss,0)))] transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-dragging:duration-0 data-ending-style:duration-300 supports-[-webkit-touch-callout:none]:absolute supports-backdrop-filter:backdrop-blur-xs motion-reduce:duration-0",
+        "fixed inset-0 z-50 min-h-dvh select-none bg-black/30 opacity-[calc((0.6+0.4*var(--bottom-sheet-progress,0))*(1-var(--bottom-sheet-dismiss,0)))] transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-dragging:duration-0 data-ending-style:duration-300 data-gliding:duration-0 supports-[-webkit-touch-callout:none]:absolute supports-backdrop-filter:backdrop-blur-xs motion-reduce:duration-0",
         className,
       )}
       {...props}
@@ -258,7 +258,7 @@ function BottomSheetContentImplementation({
               // out while expanding, so the expanded sheet meets the edges.
               "[--bottom-sheet-gap:--spacing(2)] [--bottom-sheet-margin:calc(var(--bottom-sheet-gap)*(1-var(--bottom-sheet-progress)))] [--bottom-sheet-max-width:none] [--bottom-sheet-radius:var(--radius-5xl)] [--bottom-sheet-safe-bottom:max(0px,env(safe-area-inset-bottom,0px)-var(--bottom-sheet-margin))]",
               "right-[calc(var(--bottom-sheet-margin)+env(safe-area-inset-right,0px))] bottom-[calc(var(--bottom-sheet-keyboard,0px)+var(--bottom-sheet-margin))] left-[calc(var(--bottom-sheet-margin)+env(safe-area-inset-left,0px))] h-(--bottom-sheet-height,auto)",
-              "transform-[translate3d(0,var(--bottom-sheet-offset,0px),0)] transition-[height,--bottom-sheet-progress,transform,bottom] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-dragging:duration-0 motion-reduce:duration-0",
+              "transform-[translate3d(0,var(--bottom-sheet-offset,0px),0)] transition-[transform,bottom] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] data-gliding:transition-[bottom] data-dragging:duration-0 motion-reduce:duration-0",
               "data-ending-style:transform-[translate3d(0,calc(100%+var(--bottom-sheet-margin)+2px),0)] data-starting-style:transform-[translate3d(0,calc(100%+var(--bottom-sheet-margin)+2px),0)] data-ending-style:duration-300",
               // Glass turns opaque while expanding, so a full sheet reads as
               // a solid page.

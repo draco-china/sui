@@ -64,6 +64,11 @@ Object.defineProperty(globalThis, "navigator", {
   configurable: true,
 });
 const mediaListeners = new Set<() => void>();
+// Motion keeps one page-wide reduced-motion listener for its own lifetime.
+const ownListeners = (listeners: Iterable<unknown>) =>
+  [...listeners].filter(
+    (listener) => !String(listener).includes("prefersReducedMotion"),
+  ).length;
 type Query = {
   matches: boolean;
   listeners: Set<() => void>;
@@ -92,7 +97,11 @@ function mediaQuery(query: string) {
   return entry;
 }
 const motionQuery = mediaQuery("(prefers-reduced-motion: reduce)");
-window.matchMedia = (query) => mediaQuery(query) as unknown as MediaQueryList;
+// Motion asks for "(prefers-reduced-motion)"; both spellings share one query.
+window.matchMedia = (query) =>
+  (query.startsWith("(prefers-reduced-motion")
+    ? motionQuery
+    : mediaQuery(query)) as unknown as MediaQueryList;
 Object.assign(globalThis, { matchMedia: window.matchMedia });
 let nextFrame = 0;
 const frames = new Map<number, FrameRequestCallback>();
@@ -864,6 +873,8 @@ assert.equal(
 );
 
 scenario("reduced motion skips the timed reveal");
+// Motion reads the preference when a code mounts.
+await render(null);
 await act(async () => {
   motionQuery.matches = true;
   for (const listener of [...motionQuery.listeners]) listener();
@@ -958,9 +969,9 @@ assert.equal(
   0,
   "unmount disconnects theme observers",
 );
-assert.equal(mediaListeners.size, 0);
+assert.equal(ownListeners(mediaListeners), 0);
 assert.ok(
-  [...queries.values()].every((query) => query.listeners.size === 0),
+  [...queries.values()].every((query) => ownListeners(query.listeners) === 0),
   "every motion, color-scheme and DPR subscription is released",
 );
 assert.equal(visibilityListeners.size, 0);

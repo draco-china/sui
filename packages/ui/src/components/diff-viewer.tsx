@@ -3,8 +3,8 @@
 import { cn } from "cn";
 import { diffLines } from "diff";
 import { FileCode2 } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 import { type ReactNode, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "../hooks/use-reduced-motion";
 import {
   useHighlightedLines,
   useStreamingScroll,
@@ -85,7 +85,7 @@ export function DiffViewer({
   const text = { ...DEFAULT_DIFF_VIEWER_LABELS, ...labels };
   const { resolvedTheme: appTheme } = useViewerTheme(rootRef);
   const resolvedTheme = theme ?? appTheme;
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = useReducedMotion();
   const viewportRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<"split" | "unified">("split");
   const streaming = status === "streaming";
