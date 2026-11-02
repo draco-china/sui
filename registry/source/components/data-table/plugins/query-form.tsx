@@ -22,6 +22,7 @@ import { ChevronDown, ChevronsUpDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
 import { useDataTableContext } from "@/components/ui/data-table/context";
+import { DataTableDateField, DataTableDateRangeField } from "@/components/ui/data-table/date-field";
 import { menuPanel } from "@/components/ui/data-table/menu";
 import { DataTableOptionList } from "@/components/ui/data-table/toolbar";
 import type {
@@ -66,10 +67,11 @@ function asPair(value: unknown): [string, string] {
   ];
 }
 
+// Date fields are groups of segments, which a label's `for` cannot name.
+const labelId = (id: string) => `${id}-label`;
+
 function textInputType(type: DataTableSearchType) {
   if (type === "number" || type === "numberRange") return "number";
-  if (type === "date" || type === "dateRange") return "date";
-  if (type === "datetimeRange") return "datetime-local";
   return "text";
 }
 
@@ -197,8 +199,34 @@ const fieldRenderers: Partial<
   Record<DataTableSearchType, (props: FieldProps) => ReactNode>
 > = {
   numberRange: (props) => <RangeField {...props} />,
-  dateRange: (props) => <RangeField {...props} />,
-  datetimeRange: (props) => <RangeField {...props} />,
+  date: ({ id, column, value, onChange }) => (
+    <DataTableDateField
+      id={id}
+      labelledBy={labelId(id)}
+      label={column.titleText}
+      value={value}
+      onChange={onChange}
+    />
+  ),
+  dateRange: ({ id, column, value, onChange }) => (
+    <DataTableDateRangeField
+      id={id}
+      labelledBy={labelId(id)}
+      label={column.titleText}
+      value={value}
+      onChange={onChange}
+    />
+  ),
+  datetimeRange: ({ id, column, value, onChange }) => (
+    <DataTableDateRangeField
+      time
+      id={id}
+      labelledBy={labelId(id)}
+      label={column.titleText}
+      value={value}
+      onChange={onChange}
+    />
+  ),
   multiSelect: (props) => <MultiSelectField {...props} />,
   select: (props) => <SelectFieldFor {...props} />,
   boolean: (props) => <BooleanField {...props} />,
@@ -344,7 +372,11 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
                     : undefined,
                 }}
               >
-                <Label htmlFor={id} className="text-muted-foreground text-xs">
+                <Label
+                  htmlFor={id}
+                  id={labelId(id)}
+                  className="text-muted-foreground text-xs"
+                >
                   {column.search?.label ?? column.title}
                 </Label>
                 <QueryField

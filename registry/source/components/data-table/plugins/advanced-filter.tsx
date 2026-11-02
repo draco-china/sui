@@ -21,6 +21,7 @@ import { Filter, Plus, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { useDataTableContext } from "@/components/ui/data-table/context";
+import { DataTableDateField, DataTableDateRangeField } from "@/components/ui/data-table/date-field";
 import { menuLabel } from "@/components/ui/data-table/menu";
 import type {
   DataTableInstance,
@@ -52,8 +53,6 @@ const inputTypes: Partial<Record<DataTableValueType, string>> = {
   number: "number",
   money: "number",
   percent: "number",
-  date: "date",
-  datetime: "datetime-local",
 };
 
 type SavedView = { readonly name: string; readonly group: FilterGroup };
@@ -138,6 +137,21 @@ function RuleValue({
         onChange={onChange}
       />
     );
+  if (column.valueType === "date" || column.valueType === "datetime") {
+    const Field =
+      rule.operator === "between"
+        ? DataTableDateRangeField
+        : DataTableDateField;
+    return (
+      <Field
+        time={column.valueType === "datetime"}
+        className="h-8 flex-1"
+        label={column.titleText}
+        value={rule.value}
+        onChange={onChange}
+      />
+    );
+  }
   if (rule.operator === "between") {
     const [start, end] = Array.isArray(rule.value) ? rule.value : [];
     return (

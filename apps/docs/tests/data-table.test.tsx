@@ -6,6 +6,7 @@ import {
   dataTableLabelsZhCN,
   filterRows,
   matchesRule,
+  queryForm,
   readUrlState,
   requestSearch,
   sortRows,
@@ -274,6 +275,27 @@ describe("server rendering", () => {
     );
     expect(tag(auto, content)).not.toContain("flex-initial");
     expect(tag(auto, pagination)).not.toContain("mt-auto");
+  });
+  test("query-form date fields are named by their labels", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={[
+          {
+            key: "createdAt",
+            title: "Created",
+            valueType: "date",
+            search: { type: "dateRange" },
+          },
+        ]}
+        data={rows}
+        plugins={[queryForm<Row>()]}
+      />,
+    );
+    const label = html.match(/<label[^>]*id="([^"]+-label)"/)?.[1];
+    expect(label).toBeTruthy();
+    expect(html).toContain(`aria-labelledby="${label}"`);
+    expect(html).not.toContain('type="date"');
   });
   test("remote tables render skeleton rows before the first response", () => {
     const html = renderToString(
