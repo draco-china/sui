@@ -55,3 +55,57 @@ test("Tab Bar items show no hover fill, only the selection pill", async () => {
     expect(item).toContain("data-[active=true]:text-accent-foreground");
   }
 });
+
+async function renderSearch(search?: Record<string, unknown>) {
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const { createElement } = await import("react");
+  const { TabBar } = await import("@workspace/ui/components/tab-bar");
+  return renderToStaticMarkup(
+    createElement(TabBar, {
+      "aria-label": "Destinations",
+      value: "home",
+      onValueChange: () => {},
+      items: [
+        { value: "home", label: "Home" },
+        { value: "me", label: "Me" },
+      ],
+      search,
+    }),
+  );
+}
+
+test("Tab Bar renders no search bar unless asked", async () => {
+  expect(await renderSearch()).not.toContain("tab-bar-search");
+});
+
+test("Tab Bar search starts as a separate round button", async () => {
+  const html = await renderSearch({ label: "Find" });
+  expect(html).toMatch(/data-slot="tab-bar-search"[^>]*data-open="false"/);
+  expect(html).toMatch(
+    /<button[^>]*aria-label="Find"[^>]*aria-expanded="false"/,
+  );
+  expect(html).not.toContain("<input");
+});
+
+test("Tab Bar search in button mode only offers the button", async () => {
+  const html = await renderSearch({ mode: "button" });
+  expect(html).toMatch(/<button[^>]*aria-label="Search"/);
+  expect(html).not.toContain("aria-expanded=");
+});
+
+test("Tab Bar search expands into a field and hides the bar", async () => {
+  const html = await renderSearch({ open: true, value: "milk" });
+  expect(html).toMatch(/data-slot="tab-bar-search"[^>]*data-open="true"/);
+  expect(html).toMatch(/<input[^>]*type="search"[^>]*value="milk"/);
+  expect(html).not.toContain("tab-bar-collapsed");
+  expect(html).toMatch(/<div[^>]*hidden=""[^>]*data-slot="tab-bar-list"/);
+});
+
+test("Tab Bar search accepts custom expanded content", async () => {
+  const html = await renderSearch({
+    defaultOpen: true,
+    render: () => "custom field",
+  });
+  expect(html).toContain("custom field");
+  expect(html).not.toContain("<input");
+});

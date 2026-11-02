@@ -1,9 +1,9 @@
 ---
 title: Tab Bar
-description: 支持受控应用导航、长按滑动选择和可选玻璃材质的 TabBar
+description: 受控的应用导航，支持长按滑动选择、iOS 风格搜索按钮与可选玻璃材质。
 ---
 
-TabBar 用文字和可选图标展示应用的主要目的地。选中指示器沿用现有 UI 外观，传入 `glass` 后为外层增加玻璃材质，选中背景仅使用 CSS 高斯模糊，内容与路由由应用控制。
+TabBar 以 iOS 的方式呈现应用的主要目的地。它只管理选中状态，路由与内容由应用自行处理。
 
 <ComponentPreview name="tab-bar-demo" />
 
@@ -13,12 +13,13 @@ TabBar 用文字和可选图标展示应用的主要目的地。选中指示器�
 bunx --bun shadcn@latest add @sui/tab-bar
 ```
 
-通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+可通过 shadcn CLI 安装，也可直接使用共享的 `@workspace/ui` 包。请参阅[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
 
 ## 使用 [#usage]
 
 ```tsx
 import { TabBar } from "@workspace/ui/components/tab-bar";
+import { HomeIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 
 export function ApplicationNavigation() {
@@ -29,52 +30,103 @@ export function ApplicationNavigation() {
       value={value}
       onValueChange={setValue}
       items={[
-        { value: "home", label: "首页" },
-        { value: "search", label: "搜索" },
-        { value: "activity", label: "动态" },
+        { value: "home", label: "首页", icon: <HomeIcon /> },
+        { value: "settings", label: "设置", icon: <SettingsIcon /> },
       ]}
+      search={{ onSubmit: (query) => console.log(query) }}
     />
   );
 }
 ```
 
-## 导航与选中状态 [#navigation]
+`value` 表示当前目的地，`onValueChange` 通知应用切换到另一目的地，应用可据此更新路由或展示自己的视图。各项的值必须唯一。TabBar 渲染由按钮组成的导航 landmark，并以 `aria-current` 标识当前项；它不渲染内容面板，页面内切换面板请使用 [Tabs](/zh-CN/docs/components/tabs)。
 
-`value` 标识当前目的地，`onValueChange` 通知应用选择另一目的地。应用可以据此更新路由、保留查询参数或锚点，或者展示自己的视图。各项的值必须唯一，禁用项不可选中。
+## 应用中使用 [#app]
 
-标签栏渲染导航 landmark，以按钮呈现目的地，并通过 `aria-current` 标识当前项。请为导航提供 `aria-label`，并为各项提供明确的文字标签；装饰性图标可选。标签栏不渲染内容面板，在页面内切换面板时使用 [Tabs](/zh-CN/docs/components/tabs)。
+手机尺寸的界面：标签栏切换页面内容，搜索框随输入实时筛选所有条目。这里搜索为受控模式，展开期间页面显示搜索结果。
 
-## 键盘与布局 [#keyboard]
-
-左右方向键在可用目的地之间移动，Home 和 End 聚焦第一个、最后一个可用项。移动焦点不会改变当前目的地，Enter 或空格激活聚焦按钮。当前项参与 Tab 焦点顺序，键盘激活与指针操作使用同一变更回调。横向布局跟随文档文字方向，支持 RTL。
-
-目的地超出可用宽度时，标签栏可以滚动。GSAP 根据按钮的实际边界驱动选中背景和长按镜片的移动与尺寸变化，并响应布局、尺寸和滚动更新。用户开启减少动态效果时，选中背景停止动画移动，选中状态仍保持可见。
+<ComponentPreview name="tab-bar-app" />
 
 ## 材质 [#material]
 
-TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass`（可带设置 `glass={{ … }}`）或 `frosted` 后，仅外层使用 [Glass](/zh-CN/docs/components/glass) 材质。各项宽度相等，与 iOS 标签栏一致。两种模式的选中背景均使用中性胶囊（与 iOS 一致），玻璃模式额外使用约 `7px` 的 CSS 高斯模糊，选中图标和文字使用经过对比度调整的主题前景色（`accent-foreground`）。玻璃背景保持连续，不在文字后叠加独立遮罩。长按时才出现悬浮玻璃镜片，使用完全透明的背景与共享 SVG 边缘高光与外侧阴影，不模糊也不折射。
+默认标签栏使用主题的 muted 表面。传入 `glass`（可带设置 `glass={{ … }}`）或 `frosted` 后，标签栏及其搜索按钮使用 [Glass](/zh-CN/docs/components/glass) 材质。两者都保持与 iOS 一致的中性选中胶囊，图标和文字使用经过对比度调整的主题前景色。外层容器请保持普通表面，避免玻璃嵌套。
 
-保持外层容器为普通表面，避免玻璃嵌套。示例使用同一受控目的地列表与背景对比默认、玻璃两种模式。
+<ComponentPreview name="tab-bar-material" />
+
+## 搜索 [#search]
+
+`search` 会在尾侧增加一个独立的圆形按钮，与 iOS 26 及更新版本一致。点按后标签栏隐藏，搜索框从按钮向前侧展开，宽度与原标签栏加按钮相同。点按关闭按钮或按 Escape 时，搜索框先收回按钮，标签栏再淡入；按 Enter 调用 `onSubmit`。
+
+<ComponentPreview name="tab-bar-search" />
+
+搜索框默认非受控（`defaultOpen`、`defaultValue`）；传入 `open`/`onOpenChange` 或 `value`/`onValueChange` 可受控。`placeholder`、`label` 和 `icon` 用于自定义。
+
+### 仅按钮 [#search-button]
+
+设置 `mode: "button"` 后按钮不会展开，由 `onActivate` 自行处理，例如打开搜索面板、跳转路由，或像示例一样作为其他尾侧操作。
+
+<ComponentPreview name="tab-bar-search-button" />
+
+### 自定义内容 [#search-custom]
+
+`render` 用自定义内容替换搜索框，并接收会播放收起动画的 `close`。
+
+<ComponentPreview name="tab-bar-search-custom" />
+
+## 尺寸 [#sizes]
+
+`size` 可为 `"sm"`、`"default"` 或 `"lg"`，搜索按钮随之变化。
+
+<ComponentPreview name="tab-bar-sizes" />
+
+## 纯文字与禁用 [#labels]
+
+图标可选。禁用项不可选中、长按，方向键也会跳过它。
+
+<ComponentPreview name="tab-bar-labels" />
+
+## RTL [#rtl]
+
+横向标签栏跟随文档文字方向，方向键、长按镜片与搜索展开都会镜像。
+
+<ComponentPreview name="tab-bar-rtl" direction="rtl" />
+
+## 键盘 [#keyboard]
+
+左右方向键在可用目的地间移动，Home 和 End 聚焦第一个与最后一个。移动焦点不会改变目的地，Enter 或空格激活聚焦项。只有当前目的地参与 Tab 焦点顺序。目的地超出可用空间时标签栏可滚动。
 
 ## 长按与滑动 [#long-press]
 
-按住可用项 250ms 或拖动超过 6px 后，选中背景向外扩展为悬浮镜片，图标与文字轻微放大。玻璃模式下镜片背景完全透明，不使用底色遮罩、背景图片、实时模糊或折射，保留共享 SVG 边缘高光与外侧悬浮阴影；其他模式保持中性选中胶囊。拖动期间底层玻璃背景保持稳定。保持按住并滑动，镜片连续跟随指针，原选中背景暂时隐藏，滑到的项目即时使用经过对比度调整的主题前景色文字和图标，原选中项恢复普通颜色。`aria-current` 仍标识实际目的地；松手时才确认新项并触发选择回调。拖过两端时，镜片带阻尼继续跟随，超出标签栏的部分最多为镜片自身宽度的一半，并保持选中末端项，此时松手即选中该项。在标签栏上方或下方较远处松手、取消指针操作或窗口失去焦点时恢复原选择及颜色。短按与键盘操作仍按正常方式激活，禁用项不可选中。减少动态效果设置关闭背景的放大与移动动画。
+按住某项 250ms 或拖动超过 6px，选中背景会浮起为镜片，图标与文字轻微放大。滑动可把镜片移到其他项上，松手即选中镜片下的项。拖过两端时镜片带阻尼继续跟随并保持末端项。在远离标签栏处松手、取消指针或窗口失焦时恢复原选择。玻璃模式下镜片透明，只保留边缘高光与悬浮阴影，不模糊也不折射，底层玻璃保持静止。
+
+## 动画 [#motion]
+
+GSAP 依据按钮实际尺寸移动选中胶囊与镜片。搜索框一开始就取最终宽度，再以圆角裁剪逐步显露，玻璃材质因此只测量一次，而不必跟随尺寸变化；收起时裁剪反向播放，随后标签栏淡入。开启减少动态效果时这些动画全部关闭。
 
 ## API 参考 [#api-reference]
 
-| 属性 | 类型 | 默认值／说明 |
+| 属性 | 类型 | 默认值 / 行为 |
 | --- | --- | --- |
-| `items` | `readonly TabBarItem[]` | 目的地列表 |
-| Item `value` | `string` | 唯一目的地标识 |
-| Item `label` | `string` | 可见的目的地标签 |
-| Item `icon` | `ReactNode` | 可选装饰性图标 |
-| Item `disabled` | `boolean` | 禁止选中 |
-| `value` | `string` | 受控的当前目的地 |
-| `onValueChange` | `(value: string) => void` | 选择可用目的地时触发 |
-| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`；标签栏及其镜片的玻璃 |
-| `size` | `"sm" \| "default" \| "lg"` | `"default"` |
-| `onItemActivate` | `(value: string) => void` | 可选的激活通知 |
-| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；选中和长按时反馈。 |
-| 其他属性 | 原生 nav 属性 | 包含 `aria-label`、`className`、`style` 和 `ref` |
+| `items` | `readonly TabBarItem[]` | 目的地：`value`、`label`，可选 `icon` 与 `disabled`。 |
+| `value` | `string` | 受控的当前目的地。 |
+| `onValueChange` | `(value: string) => void` | 选中可用目的地时调用。 |
+| `onItemActivate` | `(value: string) => void` | 每次激活时调用，包括当前项。 |
+| `search` | `TabBarSearch` | 可选的尾侧搜索按钮，见下表。 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | `false`；标签栏与搜索按钮的材质。 |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"`。 |
+| `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；选中与长按时触发触感反馈。 |
+| 其他属性 | 原生 nav 属性 | 包括 `aria-label`、`dir`、`className`、`style` 与 `ref`。 |
 
-模块导出 `TabBar` 及其公共属性和条目类型，应用路由仍由应用管理。
+### TabBarSearch [#tab-bar-search]
+
+| 字段 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `mode` | `"expand" \| "button"` | `"expand"`。 |
+| `label` | `string` | `"Search"`；无障碍名称与占位符后备。 |
+| `icon` | `ReactNode` | 搜索图标。 |
+| `onActivate` | `() => void` | 点按按钮或展开搜索框时调用。 |
+| `open`、`defaultOpen`、`onOpenChange` | `boolean`、`boolean`、`(open: boolean) => void` | 是否显示搜索框。 |
+| `value`、`defaultValue`、`onValueChange` | `string`、`string`、`(value: string) => void` | 搜索内容。 |
+| `onSubmit` | `(value: string) => void` | 按 Enter 时调用。 |
+| `placeholder` | `string` | 默认使用 `label`。 |
+| `render` | `({ open, close }) => ReactNode` | 替换搜索框。 |

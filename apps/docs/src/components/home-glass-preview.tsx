@@ -263,6 +263,7 @@ export function HomeGlassPreview({ locale }: { locale: Locale }) {
           items={items}
           value={value}
           onValueChange={setValue}
+          search={{ label: zh ? "搜索" : "Search" }}
           className="mx-auto w-fit max-w-full"
         />
         <p

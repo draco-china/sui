@@ -1,9 +1,9 @@
 ---
 title: Tab Bar
-description: Controlled application navigation with press-and-slide selection and optional glass material.
+description: Controlled application navigation with press-and-slide selection, an iOS-style search button and optional glass material.
 ---
 
-TabBar presents the primary destinations of an application with labels and optional icons. Its selected indicator follows the current UI style and uses CSS Gaussian blur in `glass` mode, while only the outer bar receives glass material; content and routing remain under application control.
+TabBar presents the primary destinations of an application, as on iOS. It controls nothing but the selection: routing and content stay with the application.
 
 <ComponentPreview name="tab-bar-demo" />
 
@@ -19,6 +19,7 @@ Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow th
 
 ```tsx
 import { TabBar } from "@workspace/ui/components/tab-bar";
+import { HomeIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 
 export function ApplicationNavigation() {
@@ -29,52 +30,103 @@ export function ApplicationNavigation() {
       value={value}
       onValueChange={setValue}
       items={[
-        { value: "home", label: "Home" },
-        { value: "search", label: "Search" },
-        { value: "activity", label: "Activity" },
+        { value: "home", label: "Home", icon: <HomeIcon /> },
+        { value: "settings", label: "Settings", icon: <SettingsIcon /> },
       ]}
+      search={{ onSubmit: (query) => console.log(query) }}
     />
   );
 }
 ```
 
-## Navigation and selection [#navigation]
+`value` names the current destination and `onValueChange` asks the application to select another, so it can update a router or show its own view. Item values must be unique. TabBar renders a navigation landmark of buttons and marks the current one with `aria-current`; it does not render panels. Use [Tabs](/docs/components/tabs) to switch panels within a page.
 
-`value` identifies the current destination. `onValueChange` asks the application to select another destination, so it can update a router, preserve a query or anchor, or display its own view. Items must have unique values. A disabled item cannot be selected.
+## In an app [#app]
 
-TabBar renders a navigation landmark with buttons and exposes the current destination through `aria-current`. Give the landmark an `aria-label` and each item a clear text label; decorative icons are optional. It does not render content panels. Use [Tabs](/docs/components/tabs) when selecting among panels within a page.
+A phone-sized screen: the bar switches the page content, and the search field filters every entry as you type. Search is controlled here, so the page shows results while it is open.
 
-## Keyboard and layout [#keyboard]
-
-Left and Right arrows move among enabled destinations. Home and End focus the first and last enabled destinations. Moving focus does not change the current destination; Enter or Space activates the focused button. The current destination participates in the Tab sequence; keyboard activation follows the same change callback as pointer activation. Horizontal layout follows the document direction, including RTL.
-
-The bar can scroll when destinations exceed its available space. GSAP moves and resizes the selection and held lens using the buttons' actual bounds after layout, resizing, or scrolling. Reduced-motion preferences disable animated movement while keeping selection visible.
+<ComponentPreview name="tab-bar-app" />
 
 ## Material [#material]
 
-TabBar defaults to the existing UI appearance with `glass={false}`. Pass `glass` (optionally with settings, `glass={{ … }}`) or `frosted` to apply [Glass](/docs/components/glass) to the outer bar. Items share equal widths, as in iOS tab bars. Both modes use a neutral selection pill, as on iOS; glass mode adds approximately `7px` of CSS Gaussian blur, with icons and labels in the contrast-adjusted theme foreground (`accent-foreground`). The glass material stays continuous without separate label backplates. A floating glass lens appears only while holding. Its background is fully transparent, with shared SVG highlights and outer shadows but no blur or refraction.
+The default bar uses the theme's muted surface. `glass` (optionally with settings, `glass={{ … }}`) or `frosted` applies [Glass](/docs/components/glass) to the bar and its search button. Both keep a neutral selection pill, as on iOS, with the icon and label in the contrast-adjusted theme foreground. Keep the surrounding container plain to avoid nesting glass.
 
-Keep the surrounding container ordinary to avoid nested glass. The example compares both modes using the same controlled destinations and background.
+<ComponentPreview name="tab-bar-material" />
+
+## Search [#search]
+
+`search` adds a separate round button on the trailing side, as in iOS 26 and later. Pressing it hides the bar and reveals a field, as wide as the bar and button were, growing from the button toward the leading side. The close button or Escape folds the field back into the button before the bar returns; Enter calls `onSubmit`.
+
+<ComponentPreview name="tab-bar-search" />
+
+The field is uncontrolled by default (`defaultOpen`, `defaultValue`); pass `open`/`onOpenChange` or `value`/`onValueChange` to control it. `placeholder`, `label` and `icon` customize it.
+
+### Button only [#search-button]
+
+With `mode: "button"` the button never expands: handle `onActivate` yourself, for example to open a search sheet, a route or, as here, any other trailing action.
+
+<ComponentPreview name="tab-bar-search-button" />
+
+### Custom content [#search-custom]
+
+`render` replaces the field with your own content. It receives `close`, which plays the closing animation.
+
+<ComponentPreview name="tab-bar-search-custom" />
+
+## Sizes [#sizes]
+
+`size` is `"sm"`, `"default"` or `"lg"`; the search button follows it.
+
+<ComponentPreview name="tab-bar-sizes" />
+
+## Labels only and disabled [#labels]
+
+Icons are optional. A disabled item cannot be selected, held or focused with the arrow keys.
+
+<ComponentPreview name="tab-bar-labels" />
+
+## RTL [#rtl]
+
+Horizontal bars follow the document direction: arrow keys, the press-and-slide lens and the search reveal all mirror.
+
+<ComponentPreview name="tab-bar-rtl" direction="rtl" />
+
+## Keyboard [#keyboard]
+
+Left and Right arrows move among enabled destinations; Home and End focus the first and last. Moving focus does not change the destination; Enter or Space activates the focused one. Only the current destination is in the Tab sequence. The bar scrolls when destinations exceed its space.
 
 ## Press and slide [#long-press]
 
-Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a floating lens and gently enlarge its icon and label. In glass mode the lens has a fully transparent background, with no tint, background image, backdrop blur or refraction. It keeps shared SVG edge highlights and floating outer shadows; otherwise it keeps the neutral selection pill. The underlying glass background stays stable during dragging. Slide while holding to continuously move the lens and position the lens over other enabled items. The resting selection background is hidden while holding. The held item's label and icon immediately use the contrast-adjusted theme foreground, while the previous selection returns to its normal color. `aria-current` still identifies the actual destination until releasing commits the new selection and restores its background. Dragging past either end lets the lens follow with growing resistance, at most half its own width beyond the bar, while the end item stays held; releasing there selects it. Releasing well above or below the bar, cancelling the pointer, or losing window focus restores the original selection and colors. Short clicks and keyboard activation keep their usual behavior, and disabled items remain unavailable. Reduced-motion preferences disable scaling and animated movement.
+Hold an item for 250ms, or drag beyond 6px, to lift the selection into a floating lens that enlarges the icon and label. Slide to move the lens over other items; releasing selects the item under it. Past either end the lens follows with growing resistance and keeps the end item. Releasing well away from the bar, cancelling the pointer or losing window focus restores the original selection. In glass mode the lens is clear, with edge highlights and a floating shadow but no blur or refraction, and the bar's glass stays still underneath.
+
+## Motion [#motion]
+
+GSAP moves the selection pill and lens using the buttons' measured bounds. The search field takes its final width at once and a rounded clip reveals it, so glass measures it a single time rather than following a resize; closing plays the clip in reverse, then fades the bar in. Reduced-motion preferences turn off all of these animations.
 
 ## API reference [#api-reference]
 
 | Prop | Type | Default / behavior |
 | --- | --- | --- |
-| `items` | `readonly TabBarItem[]` | Destination list. |
-| Item `value` | `string` | Unique destination identifier. |
-| Item `label` | `string` | Visible destination label. |
-| Item `icon` | `ReactNode` | Optional decorative icon. |
-| Item `disabled` | `boolean` | Prevents selection. |
+| `items` | `readonly TabBarItem[]` | Destinations: `value`, `label`, optional `icon` and `disabled`. |
 | `value` | `string` | Controlled current destination. |
 | `onValueChange` | `(value: string) => void` | Called when selecting an enabled destination. |
-| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; glass for the bar and its lens. |
+| `onItemActivate` | `(value: string) => void` | Called on every activation, including the current item. |
+| `search` | `TabBarSearch` | Optional trailing search button; see below. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; material for the bar and search button. |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"`. |
-| `onItemActivate` | `(value: string) => void` | Optional activation notification. |
 | `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; haptics on selection and long press. |
-| Other props | Native nav props | Includes `aria-label`, `className`, `style`, and `ref`. |
+| Other props | Native nav props | Includes `aria-label`, `dir`, `className`, `style` and `ref`. |
 
-The module exports `TabBar` and its public props and item types. Application routing remains outside the component.
+### TabBarSearch [#tab-bar-search]
+
+| Field | Type | Default / behavior |
+| --- | --- | --- |
+| `mode` | `"expand" \| "button"` | `"expand"`. |
+| `label` | `string` | `"Search"`; accessible name and placeholder fallback. |
+| `icon` | `ReactNode` | A search icon. |
+| `onActivate` | `() => void` | Called when the button is pressed or the field opens. |
+| `open`, `defaultOpen`, `onOpenChange` | `boolean`, `boolean`, `(open: boolean) => void` | Whether the field is shown. |
+| `value`, `defaultValue`, `onValueChange` | `string`, `string`, `(value: string) => void` | The query. |
+| `onSubmit` | `(value: string) => void` | Called on Enter. |
+| `placeholder` | `string` | Defaults to `label`. |
+| `render` | `({ open, close }) => ReactNode` | Replaces the field. |

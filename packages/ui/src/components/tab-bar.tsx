@@ -3,6 +3,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { gsap } from "gsap";
+import { SearchIcon, XIcon } from "lucide-react";
 import {
   type ComponentProps,
   type ReactNode,
@@ -24,10 +25,11 @@ export type TabBarItem = {
 };
 
 const tabBarVariants = cva(
-  // Equal tracks: every item takes the width of the largest one.
-  // The selection's spring overshoots the last item for a moment, so the bar
-  // scrolls without ever showing a scrollbar, as on iOS.
-  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-x-auto overflow-y-hidden rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 [scrollbar-width:none] data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10 [&::-webkit-scrollbar]:hidden",
+  // Equal tracks: every item takes the width of the largest one. The
+  // selection's spring overshoots the last item for a moment, so the bar
+  // scrolls without ever showing a scrollbar, as on iOS. Held, the lens may
+  // pass the end, so the bar rises above the search button.
+  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-x-auto overflow-y-hidden rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 [scrollbar-width:none] data-[pressed=true]:z-10 data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10 [&::-webkit-scrollbar]:hidden",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
@@ -49,6 +51,28 @@ const tabBarItemVariants = cva(
   },
 );
 
+export type TabBarSearch = {
+  /** Accessible name of the button and the field's placeholder fallback. */
+  label?: string;
+  icon?: ReactNode;
+  /**
+   * `"expand"` turns the button into a search field that takes the place
+   * of the hidden bar; `"button"` only calls `onActivate`.
+   */
+  mode?: "expand" | "button";
+  onActivate?: () => void;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  onSubmit?: (value: string) => void;
+  placeholder?: string;
+  /** Replaces the field shown while expanded. */
+  render?: (state: { open: boolean; close: () => void }) => ReactNode;
+};
+
 export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
   VariantProps<typeof tabBarVariants> & {
     items: readonly TabBarItem[];
@@ -56,6 +80,7 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
     onValueChange: (value: string) => void;
     onItemActivate?: (value: string) => void;
     feedback?: FeedbackOption;
+    search?: TabBarSearch;
   } & GlassProps;
 
 const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
@@ -63,6 +88,30 @@ const Track = withGlass((props: ComponentProps<"div">) => <div {...props} />);
 const Lens = withGlass((props: ComponentProps<"div">) => (
   <div data-glass-lens="" {...props} />
 ));
+// A separate round bar on the trailing side, the height of the tab bar.
+const searchVariants = cva(
+  "relative isolate flex shrink-0 items-center overflow-hidden rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 glass:dark:ring-foreground/10",
+  {
+    variants: {
+      size: { sm: "h-14 text-xs", default: "h-16 text-sm", lg: "h-18 text-sm" },
+    },
+    defaultVariants: { size: "default" },
+  },
+);
+const searchButtonVariants = cva(
+  "shrink-0 rounded-full hover:bg-transparent dark:hover:bg-transparent",
+  {
+    variants: {
+      size: {
+        sm: "size-12 [&_svg:not([class*='size-'])]:size-5",
+        default: "size-14 [&_svg:not([class*='size-'])]:size-6",
+        lg: "size-16 [&_svg:not([class*='size-'])]:size-7",
+      },
+    },
+    defaultVariants: { size: "default" },
+  },
+);
+
 const indicatorVariants = cva(
   "pointer-events-none absolute top-0 left-0 z-0 rounded-full data-[pressed=true]:shadow-lg",
   {
@@ -88,10 +137,55 @@ export function TabBar({
   frosted = false,
   feedback,
   className,
+  search,
   ref,
   ...props
 }: TabBarProps) {
   const trigger = useFeedback(feedback);
+  const expandable = search !== undefined && search.mode !== "button";
+  const [openState, setOpenState] = useState(search?.defaultOpen ?? false);
+  const searchOpen = expandable && (search?.open ?? openState);
+  const [queryState, setQueryState] = useState(search?.defaultValue ?? "");
+  const query = search?.value ?? queryState;
+  const searchBar = useRef<HTMLDivElement>(null);
+  // The field opens to the width the bar and its button took together.
+  const openWidth = useRef<number | null>(null);
+  const setSearchOpen = (open: boolean) => {
+    if (open) {
+      search?.onActivate?.();
+      const bar = track.current?.offsetWidth ?? 0;
+      const button = searchBar.current?.offsetWidth ?? 0;
+      openWidth.current = bar && button ? bar + button + 8 : null;
+    }
+    const commit = () => {
+      setOpenState(open);
+      search?.onOpenChange?.(open);
+    };
+    const field = searchBar.current;
+    if (open || !searchOpen || !field || reducedMotion.current) {
+      commit();
+      return;
+    }
+    // Closing reverses the reveal: the field folds back into the button
+    // before the bar returns.
+    const { inset, hidden } = buttonClip(field);
+    gsap.to(field.firstElementChild, { opacity: 0, duration: 0.12 });
+    gsap.fromTo(
+      field,
+      { clipPath: inset(0) },
+      {
+        clipPath: inset(hidden),
+        duration: 0.28,
+        ease: "power3.inOut",
+        overwrite: true,
+        onComplete: commit,
+      },
+    );
+  };
+  const setQuery = (next: string) => {
+    setQueryState(next);
+    search?.onValueChange?.(next);
+  };
   const track = useRef<HTMLDivElement>(null);
   const glass = settings !== false || frosted;
   const [heldValue, setHeldValue] = useState<string | null>(null);
@@ -387,15 +481,67 @@ export function TabBar({
     }
   }, [heldValue]);
 
+  const searchShown = useRef(searchOpen);
+  useLayoutEffect(() => {
+    if (searchShown.current === searchOpen) return;
+    searchShown.current = searchOpen;
+    const field = searchBar.current;
+    const bar = track.current;
+    const duration = reducedMotion.current ? 0 : 0.32;
+    if (searchOpen && field) {
+      // Glass rebuilds its rim only once a resize settles, so the field takes
+      // its final width at once and a rounded clip reveals it from the button.
+      gsap.set(field, { width: openWidth.current ?? "100%" });
+      const { inset, hidden } = buttonClip(field);
+      gsap.fromTo(
+        field,
+        { clipPath: inset(hidden) },
+        {
+          clipPath: inset(0),
+          duration,
+          ease: "power3.out",
+          overwrite: true,
+          clearProps: "clipPath",
+        },
+      );
+      gsap.fromTo(
+        field.firstElementChild,
+        { opacity: 0 },
+        { opacity: 1, duration: duration / 2, delay: duration / 4 },
+      );
+    } else if (bar && field) {
+      gsap.killTweensOf(field);
+      gsap.set(field, { clearProps: "width,clipPath" });
+      // The field is the button again; the bar fades back in, since fading
+      // alone keeps its glass refraction undistorted.
+      gsap.fromTo(
+        bar,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration,
+          ease: "power3.out",
+          overwrite: true,
+          clearProps: "opacity",
+        },
+      );
+    }
+  }, [searchOpen]);
+
   if (!items.length) return null;
   return (
     <nav
       ref={ref}
       data-slot="tab-bar"
       {...props}
-      className={cn("w-fit max-w-full", className)}
+      className={cn(
+        "w-fit max-w-full",
+        search && "flex items-center gap-2",
+        className,
+      )}
     >
       <Track
+        hidden={searchOpen}
         ref={track}
         data-slot="tab-bar-list"
         data-lens={Boolean(bounds)}
@@ -598,6 +744,107 @@ export function TabBar({
           }}
         />
       </Track>
+      {search ? (
+        <Track
+          ref={searchBar}
+          data-slot="tab-bar-search"
+          data-open={searchOpen}
+          glass={settings}
+          frosted={frosted}
+          className={searchVariants({ size })}
+        >
+          {searchOpen ? (
+            <SearchField
+              search={search}
+              query={query}
+              setQuery={setQuery}
+              close={() => setSearchOpen(false)}
+            />
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              aria-label={search.label ?? "Search"}
+              aria-expanded={expandable ? false : undefined}
+              className={searchButtonVariants({ size })}
+              onClick={() => {
+                trigger("selection");
+                if (expandable) setSearchOpen(true);
+                else search.onActivate?.();
+              }}
+            >
+              {search.icon ?? <SearchIcon />}
+            </Button>
+          )}
+        </Track>
+      ) : null}
     </nav>
+  );
+}
+
+/** A rounded clip that shows only the button's place in the search field. */
+function buttonClip(field: HTMLElement) {
+  const rtl = getComputedStyle(field).direction === "rtl";
+  return {
+    hidden: Math.max(field.offsetWidth - field.offsetHeight, 0),
+    inset: (amount: number) =>
+      rtl
+        ? `inset(0px ${amount}px 0px 0px round 9999px)`
+        : `inset(0px 0px 0px ${amount}px round 9999px)`,
+  };
+}
+
+function SearchField({
+  search,
+  query,
+  setQuery,
+  close,
+}: {
+  search: TabBarSearch;
+  query: string;
+  setQuery: (value: string) => void;
+  close: () => void;
+}) {
+  if (search.render) return search.render({ open: true, close });
+  return (
+    <form
+      className="flex min-w-0 flex-1 items-center gap-2 ps-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        search.onSubmit?.(query);
+      }}
+    >
+      <span
+        aria-hidden="true"
+        className="inline-flex text-muted-foreground [&_svg]:size-5"
+      >
+        {search.icon ?? <SearchIcon />}
+      </span>
+      <input
+        // biome-ignore lint/a11y/noAutofocus: the field opens on request.
+        autoFocus
+        type="search"
+        aria-label={search.label ?? "Search"}
+        placeholder={search.placeholder ?? search.label ?? "Search"}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          close();
+        }}
+        className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Close search"
+        className="shrink-0 rounded-full"
+        onClick={close}
+      >
+        <XIcon />
+      </Button>
+    </form>
   );
 }
