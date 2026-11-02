@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  columnSettings,
   DataTable,
   type DataTableColumn,
   dataTableLabels,
@@ -334,6 +335,27 @@ describe("server rendering", () => {
     expect(chips).toContain("whitespace-nowrap");
     // The chip row carries the clear-all button, so the toolbar does not.
     expect(html).not.toContain('data-slot="data-table-clear-filters"');
+  });
+  test("resize handles sit on their own columns, inside the table", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={columns}
+        data={rows}
+        plugins={[columnSettings<Row>()]}
+      />,
+    );
+    const headers = [...html.matchAll(/<th[^>]*class="([^"]*)"/g)].map(
+      (match) => match[1],
+    );
+    expect(headers.length).toBeGreaterThan(0);
+    // A static header would leave every handle on the sticky header's edge.
+    for (const header of headers)
+      expect(header).toMatch(/\b(relative|sticky)\b/);
+    const handle = html.match(/class="([^"]*cursor-col-resize[^"]*)"/)?.[1];
+    // The last column's handle stays inside, so a fitting table never
+    // overflows by a pixel and shows a horizontal scrollbar.
+    expect(handle).toContain("[th:last-child&gt;&amp;]:end-0");
   });
   test("remote tables render skeleton rows before the first response", () => {
     const html = renderToString(

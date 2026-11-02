@@ -184,7 +184,10 @@ function ResizeHandle({
       aria-hidden
       title={table.labels.resizeColumn}
       onPointerDown={start}
-      className="absolute inset-y-2 -end-px w-1 cursor-col-resize touch-none rounded-full bg-border opacity-0 transition-opacity hover:opacity-100 group-hover/head:opacity-60"
+      // Centred on the border with the next column; the last column has
+      // none, so its handle stays inside the table rather than widening it
+      // by a pixel and showing a horizontal scrollbar.
+      className="absolute inset-y-2 -end-px w-1 cursor-col-resize touch-none rounded-full bg-border opacity-0 transition-opacity hover:opacity-100 group-hover/head:opacity-60 [th:last-child>&]:end-0"
     />
   );
 }
@@ -465,7 +468,9 @@ function TableView({ className }: { className?: string }) {
                     aria-sort={ariaSort}
                     style={layout.style}
                     className={cn(
-                      "group/head h-11 whitespace-nowrap border-b bg-background px-3 text-start align-middle font-medium text-muted-foreground has-[[role=checkbox]]:pe-0",
+                      // Positioned, so each resize handle sits on its own
+                      // column's edge; pinned columns become sticky instead.
+                      "group/head relative h-11 whitespace-nowrap border-b bg-background px-3 text-start align-middle font-medium text-muted-foreground has-[[role=checkbox]]:pe-0",
                       layout.className,
                       column.config.align && alignClass[column.config.align],
                     )}
