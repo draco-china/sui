@@ -1,3 +1,18 @@
+## [5.1.0](https://github.com/draco-china/sui/compare/v5.0.1...v5.1.0) (2026-11-02)
+
+### Features
+
+* **data-table:** pick dates with DatePicker ([a5cbd22](https://github.com/draco-china/sui/commit/a5cbd227ec283aa056ce16ba0c9aa32f07a5e79f))
+* **date-picker:** add DatePicker and TimePicker ([004efcf](https://github.com/draco-china/sui/commit/004efcf1909526ddd4f8d60aa2ce309d05a71b01))
+* **qr-code:** show a code without a background ([68562c0](https://github.com/draco-china/sui/commit/68562c0309adcee99c933fd79e9ea1044e94a4a6))
+* **wheel-picker:** show seven rows on a drum-sized box ([4d4e577](https://github.com/draco-china/sui/commit/4d4e57764e1932c76034b8c769245cc6055020f3))
+
+### Bug Fixes
+
+* **bottom-sheet:** size to the content's exact height ([fc9f7fe](https://github.com/draco-china/sui/commit/fc9f7feb81f6814ac6cbb934b59481e86ced799c))
+* **calendar:** keep today's cell clear behind a selected day ([05ef179](https://github.com/draco-china/sui/commit/05ef179b38ed2f81a4e26ce75e4f7f273120ba2c))
+* **tab-bar:** size, follow and hand back the search field ([05e394e](https://github.com/draco-china/sui/commit/05e394e7996f351d3c0c3932514f3f2d4ff2d1e8))
+
 ## [5.0.1](https://github.com/draco-china/sui/compare/v5.0.0...v5.0.1) (2026-11-02)
 
 ### Bug Fixes
