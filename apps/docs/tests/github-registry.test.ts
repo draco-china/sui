@@ -55,7 +55,7 @@ test("GitHub source catalog and files preserve every item, style, dependency and
   }
 }, 30_000);
 
-test("GitHub source installs rewrite aliases for components, blocks and editor helpers", async () => {
+test("GitHub source installs rewrite aliases for components, blocks and code editor helpers", async () => {
   const { transform } = await import(
     Bun.resolveSync(
       "@shadcn/registry/internal/utils/transformers/index",
@@ -72,7 +72,7 @@ test("GitHub source installs rewrite aliases for components, blocks and editor h
     hooks: "#kit/hooks",
     utils: "#kit/lib/utils",
   };
-  for (const name of ["button", "data-table", "editor"]) {
+  for (const name of ["button", "data-table", "code-editor"]) {
     const item = await loadRegistryItemFromSource(name, reader);
     let checked = 0;
     for (const file of item.files ?? []) {

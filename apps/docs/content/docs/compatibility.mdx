@@ -7,15 +7,15 @@ SUI targets React 19 and Tailwind CSS 4 with Base UI primitives. Source installa
 
 ## SSR and application state [#ssr-and-application-state]
 
-The documentation site uses TanStack Start and SSR. Browser-dependent viewers and the editor initialize after mounting, with base content or skeletons while loading. In an application with server and client component boundaries, keep interactive components on the client side and preserve installed `use client` directives.
+The documentation site uses TanStack Start and SSR. Browser-dependent viewers and the code editor initialize after mounting, with base content or skeletons while loading. In an application with server and client component boundaries, keep interactive components on the client side and preserve installed `use client` directives.
 
 Theme persistence, language routing, validation, and business requests belong to the application. ThemeToggle and LocaleToggle receive controlled values and callbacks. Blocks provide English defaults and accept `labels`; pass translations from your application's locale system. Use [Field](/docs/components/field) to compose labels, descriptions, and validation messages.
 
-## Editor workers [#editor-workers]
+## Code Editor workers [#editor-workers]
 
-[Editor](/docs/components/editor) loads Monaco and its workers locally. Its installed source uses Vite-compatible `?worker` imports. A different bundler requires an equivalent worker integration; installing source does not configure that bundler automatically. Include the installed `worker.d.ts` in TypeScript's source paths.
+[Code Editor](/docs/components/code-editor) loads Monaco and its workers locally. Its installed source uses Vite-compatible `?worker` imports. A different bundler requires an equivalent worker integration; installing source does not configure that bundler automatically. Include the installed `worker.d.ts` in TypeScript's source paths.
 
-CodeViewer and DiffViewer can still show and copy raw content if syntax highlighting fails. The editor and viewers share the Shiki-based highlighting infrastructure.
+CodeViewer and DiffViewer can still show and copy raw content if syntax highlighting fails. The code editor and viewers share the Shiki-based highlighting infrastructure.
 
 ## Browser features [#browser-features]
 
@@ -25,7 +25,7 @@ CodeViewer and DiffViewer can still show and copy raw content if syntax highligh
 | Fullscreen | Browser fullscreen is optional; permission or platform restrictions can prevent entry. |
 | Glass | SVG refraction by default, with a CSS material where SVG backdrops are unsupported (Safari), under reduced transparency or forced colors, or when rendering fails. |
 | Theme transitions | The toggle respects reduced motion and can apply the theme without a view transition. |
-| HTML preview | HtmlViewer defaults to a sandbox with scripts allowed and without same-origin permission. Editor's built-in HTML preview disables scripts. |
+| HTML preview | HtmlViewer defaults to a sandbox with scripts allowed and without same-origin permission. Pass `sandbox="allow-same-origin"` in a Code Editor preview to disable scripts while keeping scroll sync. |
 
 Glass refracts the live backdrop with SVG and captures nothing, so cross-origin images, frames, video and Canvas behind it need no special handling; see [Glass rendering](/docs/components/glass#rendering). A transparent surface needs to remain readable over its actual background; use the Regular material or an ordinary surface when needed.
 

@@ -1,0 +1,140 @@
+---
+title: Code Editor
+description: A client-loaded Monaco code editor whose toolbar features are plugins.
+---
+
+<ComponentPreview name="code-editor-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/code-editor
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { CodeEditor } from "@workspace/ui/components/code-editor";
+import { useState } from "react";
+
+export function ConfigEditor() {
+  const [value, setValue] = useState('{ "name": "sui" }');
+  return <CodeEditor value={value} onChange={setValue} language="json" height={320} />;
+}
+```
+
+`CodeEditor` keeps a fixed set of props. Everything beyond editing (copy, fullscreen, language selection, preview and formatting) is a plugin passed through `plugins`, which defaults to `defaultPlugins()` (copy and fullscreen). Toolbar items appear in plugin order. Memoize the plugin list, or define it outside the component, so Monaco options are not rebuilt on every render.
+
+```tsx
+<CodeEditor
+  value={value}
+  onChange={setValue}
+  language={language}
+  plugins={[languageSelect({ onChange: setLanguage }), format(), ...defaultPlugins()]}
+/>
+```
+
+## Editing and value state [#value]
+
+Use `value` and `onChange` for controlled editing. For internal state, omit `value` and supply `defaultValue`; `onChange` still reports edits. `disabled` makes the editor read-only. The editor loads on the client, with a loading placeholder during SSR and hydration. Changing `language` recreates the editor bridge and releases its previous model while keeping the document. Language services and workers load as needed, are shared between mounted editors, and stop after the last editor and its models are released. Editing never runs the code. `options` passes Monaco settings, merged over the defaults.
+
+## Plugins [#plugins]
+
+| Plugin | Adds |
+| --- | --- |
+| `copy()` | A copy button with copied and failed feedback. |
+| `fullscreen({ mode, value, defaultValue, onChange })` | A fullscreen toggle. `mode` is `"fixed"` (viewport overlay, default) or `"screen"` (browser Fullscreen API). |
+| `languageSelect({ onChange, languages })` | A language picker. The caller owns `language` and updates it in `onChange`. |
+| `preview({ render, mode, defaultMode, onModeChange, toggles })` | A preview pane with preview and split toggles. |
+| `format()` | A button that runs Monaco's formatter for the current language. |
+| `defaultPlugins()` | `copy()` and `fullscreen()`. |
+
+A custom plugin is an object with a `name` and any of `toolbar(editor)`, `setup(editor)` (runs as a hook), `options` (Monaco options), `preview` or `fullscreen`.
+
+### Language selection [#language]
+
+`languageSelect` lists common languages by default; pass `languages` to change them. The current language stays visible even when it is missing from the list, and `disabled` disables the picker. Language IDs are trimmed and lowercased; `ts`, `js`, `md` and `text` normalize to `typescript`, `javascript`, `markdown` and `plaintext`. The first example switches between Markdown, HTML, TypeScript, TSX and JSON, and only adds a preview for Markdown and HTML.
+
+## Preview [#preview]
+
+CodeEditor has no built-in renderers and does not depend on any viewer. `preview({ render })` receives the current value and renders anything, such as [Markdown Viewer](/docs/components/markdown-viewer) or [Html Viewer](/docs/components/html-viewer):
+
+```tsx
+preview({ render: (value) => <MarkdownViewer className="p-4" content={value} /> })
+```
+
+The toolbar switches between `edit`, `preview` and `split`. The default mode is `split`; use `defaultMode`, or `mode` with `onModeChange` for controlled selection.
+
+### Scroll synchronization [#scroll-sync]
+
+In split mode, scrolling either pane moves the other to the same relative position. When the preview pane itself scrolls, this needs no wiring. A renderer that scrolls elsewhere, such as an iframe document, passes that element to the context `render` receives:
+
+```tsx
+function HtmlPreview({ content, context }: { content: string; context: CodeEditorPreviewContext }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [doc, setDoc] = useState<Document | null>(null);
+  useEffect(() => {
+    const element = doc?.scrollingElement as HTMLElement | null | undefined;
+    if (!doc || !element) return;
+    context.setScrollElement(element);
+    const scroll = () => context.syncFromPreview(element);
+    doc.addEventListener("scroll", scroll, { passive: true, capture: true });
+    return () => {
+      context.setScrollElement(null);
+      doc.removeEventListener("scroll", scroll, true);
+    };
+  }, [context, doc]);
+  return (
+    <HtmlViewer
+      ref={frame}
+      content={content}
+      sandbox="allow-same-origin"
+      onLoad={() => setDoc(frame.current?.contentDocument ?? null)}
+    />
+  );
+}
+
+preview({ render: (value, context) => <HtmlPreview content={value} context={context} /> })
+```
+
+`allow-same-origin` lets the editor read the iframe document while scripts stay disabled.
+
+The example uses a long document, controlled preview mode and browser fullscreen.
+
+<ComponentPreview name="code-editor-preview" />
+
+## Toolbar and read-only editing [#toolbar]
+
+`title` replaces the toolbar heading, which defaults to the language name. `toolbar` adds actions before the plugins' items, and `toolbar={false}` hides the toolbar. The example adds a format plugin and a reset button, and switches between editable and read-only.
+
+<ComponentPreview name="code-editor-toolbar" />
+
+## Composition [#composition]
+
+For a custom layout, call `useCodeEditor` with the same options and assemble the parts. `CodeEditorRoot` provides the editor to `CodeEditorToolbar`, `CodeEditorTitle`, `CodeEditorActions`, `CodeEditorToolbarButton` and `CodeEditorContent`, and `useCodeEditorContext()` reads it inside your own parts. The instance exposes `value`, `mode`, `fullscreen`, the Monaco `editor`, and `setValue`, `setMode`, `setFullscreen` and `format`.
+
+<ComponentPreview name="code-editor-compose" />
+
+## Fullscreen and localization [#fullscreen]
+
+The fixed overlay supports Escape, keeps keyboard focus inside and restores focus on exit. Browser fullscreen needs API support and permission; a failed request stays out of fullscreen. Pass `codeEditorLabelsZhCN`, or your own `labels`, to translate actions, loading and failure messages. Monaco themes are shared within a page, so keep editors on one page in a consistent theme.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `value` / `defaultValue` | `string` | Controlled / initial internal content. |
+| `onChange` | `(value: string) => void` | Reports content changes. |
+| `language` | `string` | `"plaintext"`. |
+| `disabled` | `boolean` | `false`; read-only editing. |
+| `height` | `string \| number` | Editing area height; numbers are pixels. Without it the editor fills its parent. |
+| `plugins` | `readonly CodeEditorPlugin[]` | `defaultPlugins()`. |
+| `options` | Monaco options | Merged over the defaults and plugin options. |
+| `title` | `ReactNode` | The language name. |
+| `toolbar` | `false \| ReactNode` | Extra actions, or `false` to hide the toolbar. |
+| `size` | Button size | `"icon-sm"` for toolbar actions. |
+| `labels` | `Partial<CodeEditorLabels>` | English action names and messages. |
+
+The module exports `CodeEditorProps`, `CodeEditorPlugin`, `CodeEditorInstance`, `CodeEditorPreviewContext`, `CodeEditorViewMode` and `CodeEditorLabels`. The editor uses Monaco; see the [Monaco API](https://microsoft.github.io/monaco-editor/docs.html).

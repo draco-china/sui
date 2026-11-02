@@ -1,5 +1,10 @@
 "use client";
 import { Button } from "@workspace/ui/components/button";
+import {
+  CodeEditor,
+  type CodeEditorPlugin,
+  codeEditorLabelsZhCN,
+} from "@workspace/ui/components/code-editor";
 import { CodeViewer } from "@workspace/ui/components/code-viewer";
 import {
   Dialog,
@@ -9,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
-import { Editor } from "@workspace/ui/components/editor";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import {
@@ -19,6 +23,9 @@ import {
 } from "@workspace/ui/components/popover";
 import { useId, useState } from "react";
 import type { ExampleProps } from "../types";
+
+const noPlugins: CodeEditorPlugin[] = [];
+
 export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
   const id = useId();
@@ -81,31 +88,13 @@ export default function Example({ locale }: ExampleProps) {
           </Dialog>
         </div>
       </div>
-      <Editor
+      <CodeEditor
         value={code}
         onChange={setCode}
         language="typescript"
         height={180}
-        labels={
-          chinese
-            ? {
-                copied: "已复制",
-                copyFailed: "复制失败",
-                loading: "正在加载编辑器",
-                loadingPreview: "正在加载预览",
-                error: "无法加载编辑器",
-                preview: "预览",
-                hidePreview: "隐藏预览",
-                split: "并排",
-                copy: "复制",
-                fullscreen: "全屏",
-                exitFullscreen: "退出全屏",
-              }
-            : undefined
-        }
-        toolbarCopy={false}
-        toolbarMode={false}
-        fullscreen={false}
+        labels={chinese ? codeEditorLabelsZhCN : undefined}
+        plugins={noPlugins}
       />
       <CodeViewer
         code={code}

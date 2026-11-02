@@ -436,8 +436,9 @@ function registryItem(
       .map((path) => fileDefinition(path, installedContent(context, path))),
     ...context.styles,
     docs:
-      entries.some((path) => path.endsWith("/editor.tsx")) || name === "sui"
-        ? "The Editor uses locally bundled Monaco Workers and requires a Vite-compatible ?worker loader. Keep the installed worker.d.ts in your TypeScript include paths."
+      entries.some((path) => path.endsWith("/code-editor.tsx")) ||
+      name === "sui"
+        ? "CodeEditor uses locally bundled Monaco Workers and requires a Vite-compatible ?worker loader. Keep the installed worker.d.ts in your TypeScript include paths."
         : undefined,
     meta: {
       source: homepage,

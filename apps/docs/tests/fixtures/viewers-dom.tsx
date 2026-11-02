@@ -109,10 +109,51 @@ mock.module("../../../../packages/ui/src/lib/editor/monaco-client.tsx", () => ({
     );
   },
 }));
-const { Editor } = await import("@workspace/ui/components/editor");
+const { CodeEditor, languageSelect, preview } = await import(
+  "@workspace/ui/components/code-editor"
+);
+const { HtmlViewer } = await import("@workspace/ui/components/html-viewer");
 const { MarkdownViewer } = await import(
   "@workspace/ui/components/markdown-viewer"
 );
+type PreviewContext =
+  import("@workspace/ui/components/code-editor").CodeEditorPreviewContext;
+// CodeEditor ships no renderers; this mirrors the documented HTML preview,
+// which hands its iframe document to the editor's scroll sync.
+function HtmlPreview({
+  content,
+  context,
+}: {
+  content: string;
+  context: PreviewContext;
+}) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const [doc, setDoc] = useState<Document | null>(null);
+  useEffect(() => {
+    const element = doc?.scrollingElement ?? doc?.documentElement;
+    if (!doc || !element) return;
+    const scrollElement = element as HTMLElement;
+    context.setScrollElement(scrollElement);
+    const scroll = () => context.syncFromPreview(scrollElement);
+    doc.addEventListener("scroll", scroll, { passive: true, capture: true });
+    return () => {
+      context.setScrollElement(null);
+      doc.removeEventListener("scroll", scroll, true);
+    };
+  }, [context, doc]);
+  return (
+    <HtmlViewer
+      ref={frameRef}
+      content={content}
+      sandbox="allow-same-origin"
+      onLoad={() => setDoc(frameRef.current?.contentDocument ?? null)}
+    />
+  );
+}
+const htmlPreview = preview({
+  render: (value, context) => <HtmlPreview content={value} context={context} />,
+  defaultMode: "edit",
+});
 const { CodeViewer } = await import("@workspace/ui/components/code-viewer");
 const { DiffViewer } = await import("@workspace/ui/components/diff-viewer");
 const { useStreamingScroll } = await import(
@@ -186,11 +227,11 @@ assert(
 scenario("an uncontrolled editor reports edits and previews them sandboxed");
 const changes: string[] = [];
 await render(
-  <Editor
+  <CodeEditor
     defaultValue="draft"
     language="html"
     height={280}
-    fullscreen={false}
+    plugins={[htmlPreview]}
     onChange={(value) => changes.push(value)}
   />,
 );
@@ -208,11 +249,11 @@ assert(host.querySelector("[data-editor-value]"));
 
 scenario("a controlled editor reports edits without changing its value");
 await render(
-  <Editor
+  <CodeEditor
     value="controlled"
     language="html"
     height={280}
-    fullscreen={false}
+    plugins={[htmlPreview]}
     onChange={(value) => changes.push(value)}
   />,
 );
@@ -226,12 +267,12 @@ assert.equal(changes.at(-1), "edited");
 scenario("a disabled editor reports no edits");
 const beforeDisabled = changes.length;
 await render(
-  <Editor
+  <CodeEditor
     value="controlled"
     disabled
     language="html"
     height={280}
-    fullscreen={false}
+    plugins={[htmlPreview]}
     onChange={(value) => changes.push(value)}
   />,
 );
@@ -243,23 +284,27 @@ const languageChanges: string[] = [];
 function LanguageEditor({ disabled = false }: { disabled?: boolean }) {
   const [language, setLanguage] = useState("markdown");
   return (
-    <Editor
+    <CodeEditor
       value="document stays intact"
       language={language}
-      onLanguageChange={(next) => {
-        languageChanges.push(next);
-        setLanguage(next);
-      }}
       disabled={disabled}
-      languages={[
-        { value: "md", label: "Markdown" },
-        { value: "html", label: "HTML" },
-        { value: "ts", label: "TypeScript" },
-        { value: "typescript", label: "Duplicate TypeScript" },
-        { value: "tsx", label: "TSX" },
-        { value: "json", label: "JSON" },
+      plugins={[
+        languageSelect({
+          onChange: (next) => {
+            languageChanges.push(next);
+            setLanguage(next);
+          },
+          languages: [
+            { value: "md", label: "Markdown" },
+            { value: "html", label: "HTML" },
+            { value: "ts", label: "TypeScript" },
+            { value: "typescript", label: "Duplicate TypeScript" },
+            { value: "tsx", label: "TSX" },
+            { value: "json", label: "JSON" },
+          ],
+        }),
+        ...(language === "html" ? [htmlPreview] : []),
       ]}
-      fullscreen={false}
     />
   );
 }
@@ -301,13 +346,13 @@ assert.equal(
   "document stays intact",
 );
 
-scenario("a language without a built-in preview returns to editing");
+scenario("dropping the preview plugin returns to editing");
 await selectLanguage("TypeScript");
 assert.equal(languageChanges.at(-1), "typescript");
 assert.equal(
   host.querySelector("iframe"),
   null,
-  "a language without built-in preview returns to editing",
+  "without a preview plugin the editor shows only the editing pane",
 );
 assert.equal(
   host.querySelector("[data-editor-value]")?.textContent,
@@ -331,34 +376,20 @@ scenario("a disabled editor disables the language picker");
 await render(<LanguageEditor disabled />);
 assert.equal(button("Language")?.getAttribute("disabled"), "");
 
-scenario("the picker hides without a callback or with toolbarLanguage off");
-await render(<Editor language="typescript" fullscreen={false} />);
+scenario("the picker only appears with the languageSelect plugin");
+await render(<CodeEditor language="typescript" plugins={[]} />);
 assert.equal(
   button("Language"),
   undefined,
-  "without a callback the language picker is hidden",
-);
-await render(
-  <Editor
-    language="typescript"
-    onLanguageChange={() => {}}
-    toolbarLanguage={false}
-    fullscreen={false}
-  />,
-);
-assert.equal(
-  button("Language"),
-  undefined,
-  "toolbarLanguage explicitly hides selection",
+  "without the plugin the language picker is hidden",
 );
 
 scenario("a controlled language waits for the caller to accept a change");
 const requests: string[] = [];
 await render(
-  <Editor
+  <CodeEditor
     language="  TS  "
-    onLanguageChange={(next) => requests.push(next)}
-    fullscreen={false}
+    plugins={[languageSelect({ onChange: (next) => requests.push(next) })]}
   />,
 );
 await selectLanguage("HTML");
@@ -371,22 +402,22 @@ assert.equal(
 
 scenario("switching TypeScript to TSX disposes the old model");
 await render(
-  <Editor
+  <CodeEditor
     value="const node = <div />;"
     language="typescript"
     height={280}
-    fullscreen={false}
+    plugins={[]}
   />,
 );
 assert.equal(liveModels.size, 1);
 const typeScriptModel = [...liveModels][0];
 assert(typeScriptModel.endsWith(".ts"));
 await render(
-  <Editor
+  <CodeEditor
     value="const node = <div />;"
     language="tsx"
     height={280}
-    fullscreen={false}
+    plugins={[]}
   />,
 );
 assert(
@@ -406,11 +437,11 @@ assert.equal(
 
 scenario("the editor and its HTML preview scroll each other proportionally");
 await render(
-  <Editor
+  <CodeEditor
     value="<p>First document</p>"
     language="html"
     height={280}
-    fullscreen={false}
+    plugins={[htmlPreview]}
   />,
 );
 await click(button("Split"));
@@ -465,11 +496,11 @@ assert.equal(
 
 scenario("a replaced preview document takes over the scroll sync");
 await render(
-  <Editor
+  <CodeEditor
     value="<p>Replacement document</p>"
     language="html"
     height={280}
-    fullscreen={false}
+    plugins={[htmlPreview]}
   />,
 );
 const secondDoc = previewDoc(1800);

@@ -6,12 +6,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
+import { CodeEditor, preview } from "@workspace/ui/components/code-editor";
 import {
   CodeViewer,
   ShikiProvider,
 } from "@workspace/ui/components/code-viewer";
 import { DiffViewer } from "@workspace/ui/components/diff-viewer";
-import { Editor } from "@workspace/ui/components/editor";
 import { GlassSurface } from "@workspace/ui/components/glass";
 import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 import { ImageViewer } from "@workspace/ui/components/image-viewer";
@@ -137,10 +137,10 @@ describe("viewer SSR and untrusted content", () => {
     expect(html).toContain("new-b");
     expect((html.match(/>shared</g) ?? []).length).toBe(2);
   });
-  test("editor SSR has a bounded labeled skeleton and no Monaco DOM or change callbacks", () => {
+  test("code editor SSR has a bounded labeled skeleton and no Monaco DOM or change callbacks", () => {
     let changed = false;
     const html = renderToStaticMarkup(
-      <Editor
+      <CodeEditor
         defaultValue="draft"
         language="typescript"
         height={280}
@@ -258,7 +258,7 @@ describeFixture(
   "editor-workers.ts",
 );
 
-test("markdown content and editor actions stay plain inside glass", () => {
+test("markdown content and code editor actions stay plain inside glass", () => {
   const markdown = "```typescript\nconst answer = 42;\n```";
   const html = renderToStaticMarkup(
     <>
@@ -270,14 +270,16 @@ test("markdown content and editor actions stay plain inside glass", () => {
   expect(html).not.toMatch(
     /data-slot="(?:markdown-viewer|html-viewer|code-viewer)"[^>]*data-glass="true"/,
   );
-  const Preview = ({ content }: { content: string }) => (
-    <MarkdownViewer content={content} />
-  );
   const editor = renderToStaticMarkup(
-    <Editor
+    <CodeEditor
       value={markdown}
       height={240}
-      preview={{ component: Preview, defaultMode: "preview" }}
+      plugins={[
+        preview({
+          render: (value) => <MarkdownViewer content={value} />,
+          defaultMode: "preview",
+        }),
+      ]}
     />,
   );
   // Editors are content: neither the surface nor its toolbar actions use glass.
@@ -319,7 +321,7 @@ test("code tools stay ordinary, including their actions, inside glass", () => {
       <CodeViewer code={code} />
       <CodeViewer code={code} variant="plain" />
       <DiffViewer oldCode="const answer = 1;" newCode="const answer = 42;" />
-      <Editor value={code} language="typescript" height={240} />
+      <CodeEditor value={code} language="typescript" height={240} />
     </GlassSurface>,
   );
   expect(html.match(/data-glass="true"/g)).toHaveLength(1);

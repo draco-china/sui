@@ -1,0 +1,140 @@
+---
+title: Code Editor
+description: 按需加载的 Monaco 代码编辑器，工具栏功能以插件提供
+---
+
+<ComponentPreview name="code-editor-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/code-editor
+```
+
+通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 使用 [#usage]
+
+```tsx
+import { CodeEditor } from "@workspace/ui/components/code-editor";
+import { useState } from "react";
+
+export function ConfigEditor() {
+  const [value, setValue] = useState('{ "name": "sui" }');
+  return <CodeEditor value={value} onChange={setValue} language="json" height={320} />;
+}
+```
+
+`CodeEditor` 的 props 是固定的。编辑之外的能力（复制、全屏、语言选择、预览、格式化）都是插件，通过 `plugins` 传入，默认为 `defaultPlugins()`（复制与全屏）。工具栏按插件顺序排列。请用 `useMemo` 或在组件外定义插件列表，避免每次渲染都重建 Monaco 配置。
+
+```tsx
+<CodeEditor
+  value={value}
+  onChange={setValue}
+  language={language}
+  plugins={[languageSelect({ onChange: setLanguage }), format(), ...defaultPlugins()]}
+/>
+```
+
+## 编辑与值状态 [#value]
+
+受控编辑使用 `value` 和 `onChange`。需要内部状态时省略 `value` 并提供 `defaultValue`，`onChange` 仍会报告修改。`disabled` 使编辑器只读。编辑器在客户端加载，SSR 与水合期间显示占位。切换 `language` 会重建编辑器桥接并释放旧模型，文档内容保留。语言服务和 Worker 按需加载，在多个编辑器之间共享，最后一个编辑器及其模型释放后停止。编辑不会执行代码。`options` 传入 Monaco 配置，覆盖默认值。
+
+## 插件 [#plugins]
+
+| 插件 | 作用 |
+| --- | --- |
+| `copy()` | 复制按钮，带成功与失败反馈。 |
+| `fullscreen({ mode, value, defaultValue, onChange })` | 全屏切换。`mode` 为 `"fixed"`（视口覆盖层，默认）或 `"screen"`（浏览器 Fullscreen API）。 |
+| `languageSelect({ onChange, languages })` | 语言选择器。`language` 由调用方持有，并在 `onChange` 中更新。 |
+| `preview({ render, mode, defaultMode, onModeChange, toggles })` | 预览面板，以及预览与并排切换按钮。 |
+| `format()` | 按当前语言调用 Monaco 格式化的按钮。 |
+| `defaultPlugins()` | `copy()` 与 `fullscreen()`。 |
+
+自定义插件是一个带 `name` 的对象，可包含 `toolbar(editor)`、`setup(editor)`（作为 hook 运行）、`options`（Monaco 配置）、`preview` 或 `fullscreen`。
+
+### 语言选择 [#language]
+
+`languageSelect` 默认列出常用语言，可通过 `languages` 修改。当前语言即使不在列表中也会显示，`disabled` 时选择器禁用。语言 ID 会去除空白并转为小写；`ts`、`js`、`md`、`text` 分别规范为 `typescript`、`javascript`、`markdown`、`plaintext`。第一个示例在 Markdown、HTML、TypeScript、TSX、JSON 之间切换，只为 Markdown 和 HTML 添加预览。
+
+## 预览 [#preview]
+
+CodeEditor 不内置任何渲染器，也不依赖任何 viewer。`preview({ render })` 接收当前内容，可以渲染任意组件，例如 [Markdown Viewer](/zh-CN/docs/components/markdown-viewer) 或 [Html Viewer](/zh-CN/docs/components/html-viewer)：
+
+```tsx
+preview({ render: (value) => <MarkdownViewer className="p-4" content={value} /> })
+```
+
+工具栏在 `edit`、`preview`、`split` 之间切换。默认模式为 `split`；用 `defaultMode` 指定初始模式，或用 `mode` 与 `onModeChange` 受控。
+
+### 滚动同步 [#scroll-sync]
+
+并排模式下，滚动任一侧，另一侧会跟随到相同的相对位置。预览面板本身滚动时无需额外处理。如果渲染器在别处滚动（例如 iframe 文档），把该元素交给 `render` 收到的 context：
+
+```tsx
+function HtmlPreview({ content, context }: { content: string; context: CodeEditorPreviewContext }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [doc, setDoc] = useState<Document | null>(null);
+  useEffect(() => {
+    const element = doc?.scrollingElement as HTMLElement | null | undefined;
+    if (!doc || !element) return;
+    context.setScrollElement(element);
+    const scroll = () => context.syncFromPreview(element);
+    doc.addEventListener("scroll", scroll, { passive: true, capture: true });
+    return () => {
+      context.setScrollElement(null);
+      doc.removeEventListener("scroll", scroll, true);
+    };
+  }, [context, doc]);
+  return (
+    <HtmlViewer
+      ref={frame}
+      content={content}
+      sandbox="allow-same-origin"
+      onLoad={() => setDoc(frame.current?.contentDocument ?? null)}
+    />
+  );
+}
+
+preview({ render: (value, context) => <HtmlPreview content={value} context={context} /> })
+```
+
+`allow-same-origin` 允许编辑器读取 iframe 文档，同时脚本保持禁用。
+
+示例包含长文档、受控预览模式和浏览器全屏。
+
+<ComponentPreview name="code-editor-preview" />
+
+## 工具栏与只读 [#toolbar]
+
+`title` 替换工具栏标题，默认为语言名。`toolbar` 在插件按钮之前添加操作，`toolbar={false}` 隐藏工具栏。示例添加了格式化插件和恢复按钮，并可在可编辑与只读之间切换。
+
+<ComponentPreview name="code-editor-toolbar" />
+
+## 组合 [#composition]
+
+需要自定义布局时，用相同的选项调用 `useCodeEditor` 并自行拼装。`CodeEditorRoot` 把编辑器提供给 `CodeEditorToolbar`、`CodeEditorTitle`、`CodeEditorActions`、`CodeEditorToolbarButton` 和 `CodeEditorContent`，自己的组件可通过 `useCodeEditorContext()` 读取。实例提供 `value`、`mode`、`fullscreen`、Monaco `editor`，以及 `setValue`、`setMode`、`setFullscreen`、`format`。
+
+<ComponentPreview name="code-editor-compose" />
+
+## 全屏与本地化 [#fullscreen]
+
+固定覆盖层支持 Escape，键盘焦点保持在内部，退出后恢复焦点。浏览器全屏需要 API 支持和权限，请求失败时保持非全屏。传入 `codeEditorLabelsZhCN` 或自定义 `labels` 翻译操作、加载与错误提示。Monaco 主题在页面内共享，同一页面的编辑器请保持一致的主题。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `value` / `defaultValue` | `string` | 受控内容 / 内部初始内容。 |
+| `onChange` | `(value: string) => void` | 报告内容修改。 |
+| `language` | `string` | `"plaintext"`。 |
+| `disabled` | `boolean` | `false`；只读编辑。 |
+| `height` | `string \| number` | 编辑区高度，数字为像素。不传时填满父容器。 |
+| `plugins` | `readonly CodeEditorPlugin[]` | `defaultPlugins()`。 |
+| `options` | Monaco 配置 | 覆盖默认值和插件配置。 |
+| `title` | `ReactNode` | 语言名。 |
+| `toolbar` | `false \| ReactNode` | 额外操作，`false` 隐藏工具栏。 |
+| `size` | 按钮尺寸 | 工具栏按钮为 `"icon-sm"`。 |
+| `labels` | `Partial<CodeEditorLabels>` | 英文操作名与提示。 |
+
+模块导出 `CodeEditorProps`、`CodeEditorPlugin`、`CodeEditorInstance`、`CodeEditorPreviewContext`、`CodeEditorViewMode` 和 `CodeEditorLabels`。编辑器基于 Monaco，参见 [Monaco API](https://microsoft.github.io/monaco-editor/docs.html)。

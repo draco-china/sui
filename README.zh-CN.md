@@ -67,7 +67,7 @@ bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
 ```
 
 ```sh
-bunx --bun shadcn@latest add @sui/button @sui/editor
+bunx --bun shadcn@latest add @sui/button @sui/code-editor
 bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
 ```
 

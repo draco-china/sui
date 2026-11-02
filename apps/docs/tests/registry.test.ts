@@ -99,13 +99,13 @@ test("each component, block and layout has a complete standalone registry manife
   }
 });
 
-test("Editor includes local Monaco Workers and their TypeScript declarations", () => {
-  const editor = registry.items.find((item) => item.name === "editor");
+test("CodeEditor includes local Monaco Workers and their TypeScript declarations", () => {
+  const editor = registry.items.find((item) => item.name === "code-editor");
   const client = editor?.files?.find((file) =>
     file.path.endsWith("/monaco-client.tsx"),
   );
   const workers = moduleReferences(
-    client?.path ?? "editor.tsx",
+    client?.path ?? "code-editor.tsx",
     client?.content ?? "",
   ).references.filter((reference) => reference.name.endsWith("?worker"));
   expect(workers).toHaveLength(5);
@@ -118,6 +118,18 @@ test("Editor includes local Monaco Workers and their TypeScript declarations", (
   expect(
     editor?.devDependencies?.some((name) => name.startsWith("@webgpu/")),
   ).toBeFalsy();
+});
+
+test("CodeEditor installs without the viewers it can preview", () => {
+  const editor = registry.items.find((item) => item.name === "code-editor");
+  const paths = editor?.files?.map((file) => file.path) ?? [];
+  expect(paths.some((path) => path.endsWith("/markdown-viewer.tsx"))).toBe(
+    false,
+  );
+  expect(paths.some((path) => path.endsWith("/html-viewer.tsx"))).toBe(false);
+  expect(
+    editor?.dependencies?.some((name) => name.startsWith("react-markdown")),
+  ).toBe(false);
 });
 
 test("CSS serialization retains !important, nested rules and required global imports", () => {

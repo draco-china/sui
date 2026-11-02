@@ -1,0 +1,73 @@
+"use client";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCodeEditorContext } from "@/components/ui/code-editor/context";
+import {
+  type CodeEditorLanguageOption,
+  codeEditorLanguages,
+  languageLabel,
+  normalizeLanguage,
+} from "@/components/ui/code-editor/languages";
+import type { CodeEditorPlugin } from "@/components/ui/code-editor/types";
+
+export interface LanguageSelectOptions {
+  readonly onChange: (language: string) => void;
+  readonly languages?: readonly CodeEditorLanguageOption[];
+}
+
+function LanguageSelect({
+  onChange,
+  languages,
+}: Readonly<Required<LanguageSelectOptions>>) {
+  const editor = useCodeEditorContext();
+  const options = new Map<string, string>();
+  for (const option of languages) {
+    const value = normalizeLanguage(option.value);
+    if (!options.has(value)) options.set(value, option.label);
+  }
+  if (!options.has(editor.language))
+    options.set(editor.language, languageLabel(editor.language));
+  return (
+    <Select
+      value={editor.language}
+      disabled={editor.disabled || options.size < 2}
+      items={Object.fromEntries(options)}
+      onValueChange={(next) => {
+        if (next !== null && next !== editor.language) onChange(next);
+      }}
+    >
+      <SelectTrigger
+        type="button"
+        size="sm"
+        aria-label={editor.labels.language}
+        className="max-w-36 bg-transparent text-muted-foreground"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {[...options].map(([value, label]) => (
+          <SelectItem key={value} value={value}>
+            {label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+/** A language picker. The parent owns `language` and updates it in `onChange`. */
+export function languageSelect({
+  onChange,
+  languages = codeEditorLanguages,
+}: LanguageSelectOptions): CodeEditorPlugin {
+  return {
+    name: "languageSelect",
+    toolbar: () => <LanguageSelect onChange={onChange} languages={languages} />,
+  };
+}
