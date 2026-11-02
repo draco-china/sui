@@ -1,5 +1,5 @@
 {
   "title": "Blocks",
   "defaultOpen": true,
-  "pages": ["data-table", "tanstack-form", "delete-resource"]
+  "pages": ["tanstack-form", "delete-resource"]
 }

@@ -191,63 +191,6 @@ await act(async () => view.getByText("Vertical").dispatchEvent(down));
 assert.equal(down.defaultPrevented, true);
 cleanup();
 
-scenario("data table pinning follows column meta and can be turned off");
-const { DataTable } = await import("@workspace/ui/blocks/data-table");
-type RecordRow = { id: number; user: { name: string }; name: string };
-let table:
-  | import("@workspace/ui/blocks/data-table/types").Table<RecordRow>
-  | undefined;
-const data: RecordRow[] = [{ id: 1, user: { name: "A" }, name: "A" }];
-const columns: import("@workspace/ui/blocks/data-table").DataTableColumnDef<
-  RecordRow,
-  unknown
->[] = [
-  { accessorKey: "user.name", header: "Name", meta: { pinned: "start" } },
-  {
-    id: "label",
-    accessorFn: (r) => r.name,
-    header: "Label",
-    meta: { pinned: "end" },
-  },
-];
-const props = {
-  columns,
-  data,
-  rowKey: "id" as const,
-  children: (
-    ctx: import("@workspace/ui/blocks/data-table").DataTableRenderContext<RecordRow> & {
-      content: import("react").ReactNode;
-    },
-  ) => {
-    table = ctx.table;
-    return ctx.content;
-  },
-};
-view = render(<DataTable {...props} />);
-assert.equal(table?.getColumn("user_name")?.getIsPinned(), "start");
-assert.equal(table?.getColumn("label")?.getIsPinned(), "end");
-view.rerender(<DataTable {...props} table={{ pinning: false }} />);
-assert.equal(table?.getColumn("user_name")?.getIsPinned(), false);
-assert.equal(table?.getColumn("label")?.getIsPinned(), false);
-assert.equal(view.container.querySelector("td")?.style.position, "");
-view.rerender(<DataTable {...props} />);
-assert.equal(table?.getColumn("user_name")?.getIsPinned(), "start");
-cleanup();
-
-scenario("header-named columns pin and filter-only columns stay hidden");
-const headerColumns: typeof columns = [
-  {
-    accessorFn: (r) => r.name,
-    header: "Display name",
-    meta: { pinned: "start" },
-  },
-  { accessorKey: "user.name", header: "Hidden", meta: { filterOnly: true } },
-];
-view = render(<DataTable {...props} columns={headerColumns} />);
-assert.equal(table?.getColumn("Display name")?.getIsPinned(), "start");
-assert.equal(table?.getColumn("user_name")?.getIsVisible(), false);
-cleanup();
-
 scenario("outer fullscreen leaves Tab and Escape to a nested dialog");
 const { useFullscreen } = await import(
   "../../../../packages/ui/src/hooks/use-fullscreen"

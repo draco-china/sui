@@ -1,0 +1,171 @@
+---
+title: DataTable
+description: A table driven by column configuration, with local or remote data, search, filters, selection and plugins.
+component: true
+---
+
+<ComponentPreview name="data-table-demo" align="start" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { DataTable, type DataTableColumn } from "@workspace/ui/components/data-table"
+```
+
+## Usage
+
+Describe each column once with plain fields. `valueType` formats cells, `valueEnum` renders badges and adds a quick filter, `search` adds a query form field, and `sortable` adds a header menu.
+
+```tsx
+const columns: DataTableColumn<User>[] = [
+  { key: "name", title: "Name", keyword: true, sortable: true },
+  { key: "status", title: "Status", valueEnum: statusOptions },
+  { key: "amount", title: "Spend", valueType: "money", align: "end", sortable: true },
+  { key: "createdAt", title: "Created", valueType: "date", search: true },
+  { key: "profile.city", title: "City", hidden: true },
+  { id: "actions", title: "Actions", fixed: "end", render: (user) => <RowMenu user={user} /> },
+]
+
+<DataTable rowKey="id" columns={columns} data={users} />
+```
+
+`key` accepts typed dot paths, and `render(value, row)` receives the value type of that path. A column with `id` and no `key` is a display column such as row actions.
+
+Pass `data` to sort, filter and page in the browser, or `request` to let the server do it:
+
+```tsx
+<DataTable
+  rowKey="id"
+  columns={columns}
+  request={async ({ page, pageSize, sort, keyword, search, filters, advanced, signal }) => {
+    const response = await fetch(`/api/users?${toQuery({ page, pageSize, sort, keyword, search, filters })}`, { signal })
+    return response.json() // { data, total }
+  }}
+/>
+```
+
+Requests are cancelled when parameters change, so late responses never replace newer rows. Without `total`, pagination shows previous and next only.
+
+## Local data and toolbar plugins
+
+Columns with `keyword` share the toolbar search box. Enum columns get quick filters with option counts. Features beyond the core are plugins: `density()`, `columnSettings()` (visibility, drag ordering, pinning and header-edge width handles) and `exportCsv()` (current page, every match, or the selection).
+
+<ComponentPreview name="data-table-local" align="start" />
+
+## Value types
+
+| `valueType` | Cell | Default search field |
+| --- | --- | --- |
+| `text` | Plain text; `ellipsis` and `copyable` add LongText and InlineCopyText | `text` |
+| `number`, `money`, `percent` | `Intl.NumberFormat`; set `format`, such as `{ currency: "CNY" }` | `numberRange` |
+| `date`, `datetime` | `Intl.DateTimeFormat` with the `locale` of the labels | `dateRange`, `datetimeRange` |
+| `enum` | Badge from `valueEnum`, with `color` per option | `select` |
+| `boolean` | Yes or No from labels | `boolean` |
+
+<ComponentPreview name="data-table-value-types" align="start" />
+
+## Query form
+
+`queryForm()` builds a collapsible multi-field form from columns with `search`. Fields apply together when submitted. Field types are `text`, `number`, `numberRange`, `select`, `multiSelect`, `date`, `dateRange`, `datetimeRange`, `boolean` and `custom` (with `render`). Use `order` and `colSpan` for placement, `options` as a function and `dependencies` for linked fields such as province and city, `searchOnly` for fields without a table column, and `transform` to rename request parameters, for example a date range to `{ createdFrom, createdTo }`.
+
+<ComponentPreview name="data-table-query-form" align="start" />
+
+Every active condition appears as a removable chip under the toolbar.
+
+## Advanced filter
+
+`advancedFilter()` adds a builder for field, operator and value rules joined with AND or OR. Operators follow the value type of each column. Pass `storageKey` to save named views in local storage.
+
+<ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## Selection, bulk actions and expandable rows
+
+`rowSelection` adds a checkbox column; selections persist across pages. `bulkActions([{ label, icon, onClick, variant }])` shows a floating bar of icon buttons, with labels as tooltips, above the pagination while rows are selected; pass a render function instead for custom content. Escape clears the selection. `expandable(render)` adds a toggle that reveals details with height motion.
+
+<ComponentPreview name="data-table-expandable" align="start" />
+
+## Drag sorting
+
+`dragSort({ onDragEnd })` adds a handle column. Rows move by pointer or keyboard (Space, arrow keys, Space). Sorting and pagination are off while it is active.
+
+<ComponentPreview name="data-table-drag-sort" align="start" />
+
+## Large lists
+
+`virtual()` renders only the rows in view. Use it with `pagination={false}`; it turns off row layout animation.
+
+<ComponentPreview name="data-table-virtual" align="start" />
+
+## Layout
+
+The default `layout="fill"` takes the height of its parent like an admin page: the query form and toolbar stay at the top, rows scroll with a sticky header, and pagination stays at the bottom. Give the parent a height, for example `AppMain` with `flex-1 min-h-0`, or a fixed `h-[640px]` container. Use `layout="auto"` inside cards and dialogs to grow with the rows.
+
+On narrow screens rows become cards. Mark the heading column with `primary`, or set `responsive={false}` to keep the table.
+
+## Composition
+
+`useDataTable` returns the same table the component uses. Pass it to `DataTable` with children to arrange the parts yourself: `DataTableToolbar`, `DataTableSearch`, `DataTableFacetedFilter`, `DataTableFilterChips`, `DataTableSlotContent`, `DataTableContent` and `DataTablePagination`. The table also exposes state such as `total`, `selection` and `state`, and actions such as `reload()`.
+
+<ComponentPreview name="data-table-composition" align="start" />
+
+## URL sync and persistence
+
+`urlSync({ prefix })` keeps pagination, sorting, keyword, query form values, quick filters and advanced rules in the address bar with `history.replaceState`, without a router dependency. `persist({ key })` remembers column visibility, order, pinning, widths and density. `proPlugins()` combines the query form, advanced filter, reload, density, column settings, CSV export and URL sync.
+
+```tsx
+<DataTable
+  rowKey="id"
+  columns={columns}
+  request={fetchUsers}
+  rowSelection
+  plugins={[...proPlugins<User>(), persist({ key: "users-table" }), bulkActions([{ label: "Delete", icon: <Trash2 />, variant: "destructive", onClick: deleteUsers }])]}
+/>
+```
+
+Memoize the plugin list, for example with `useMemo`, so columns and features are not rebuilt on every render.
+
+## Plugins
+
+A plugin is an object with a `name` and any of these hooks into the core:
+
+| Field | Purpose |
+| --- | --- |
+| `slots` | Render into `header`, `toolbarStart`, `toolbarEnd` or `floating` |
+| `columns` | Add utility columns, such as checkboxes or handles |
+| `features` | Turn on `virtual`, `dragSort`, `expandable` or `resizable` |
+| `initialState`, `initialColumnState`, `initialDensity` | Restore state before the first request |
+| `setup` | Runs as a hook in its own component, for effects such as syncing |
+| `wrapBody`, `renderRow`, `renderAfterRow` | Wrap or extend rows |
+
+## Labels
+
+English is the default. Pass `labels={dataTableLabelsZhCN}` for Chinese, or override individual entries; the `locale` entry also formats numbers and dates.
+
+## API
+
+| Prop | Description |
+| --- | --- |
+| `columns` | Column configuration. |
+| `data` | Local rows. |
+| `request` | Remote rows: receives `{ page, pageSize, sort, keyword, search, filters, advanced, signal }` and returns `{ data, total? }`. |
+| `rowKey` | Row identity, a key or a function. Required for selection, expansion and drag sorting. |
+| `plugins` | Features beyond the core. |
+| `rowSelection` | `true`, or `{ onChange, isDisabled }`. |
+| `pagination` | `false`, or `{ pageSize, pageSizes }`. |
+| `initialState` | Initial `page`, `pageSize`, `sort` and `query`. |
+| `onStateChange` | Called with the state after each change. |
+| `title`, `toolbar` | Toolbar heading and actions. |
+| `layout` | `fill` (default) or `auto`. |
+| `responsive` | Cards on narrow screens; defaults to `true`. |
+| `loading` | Loading state for local data. |
+| `labels` | Text overrides. |
+| `actionRef` | Receives `{ reload, reset }`. |
+| `table` | A table from `useDataTable`, instead of the options above. |
+
+The design draws on [shadcn-admin](https://github.com/satnaing/shadcn-admin) tables for composable parts, Ant Design ProTable for column-driven search and requests, and motion tables for row transitions.

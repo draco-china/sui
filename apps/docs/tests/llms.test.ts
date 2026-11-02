@@ -143,7 +143,7 @@ describe("LLM Markdown conversion", () => {
       expect(section).toBeDefined();
       expect(section).toContain("[Delete Resource]");
       expect(section).not.toContain("删除资源");
-      for (const slug of ["data-table", "tanstack-form", "delete-resource"])
+      for (const slug of ["tanstack-form", "delete-resource"])
         expect(section).toContain(`slug=blocks%2F${slug}`);
       const response = await llmsResponse(
         content,

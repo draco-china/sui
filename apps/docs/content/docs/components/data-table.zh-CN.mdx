@@ -1,0 +1,171 @@
+---
+title: DataTable
+description: 由列配置驱动的数据表，支持本地或远程数据、搜索、筛选、选择和插件。
+component: true
+---
+
+<ComponentPreview name="data-table-demo" align="start" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/data-table
+```
+
+通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { DataTable, type DataTableColumn } from "@workspace/ui/components/data-table"
+```
+
+## 使用 [#usage]
+
+每列用普通字段描述一次即可。`valueType` 决定单元格格式，`valueEnum` 渲染徽标并自动生成快速筛选，`search` 加入查询表单，`sortable` 在表头提供排序菜单。
+
+```tsx
+const columns: DataTableColumn<User>[] = [
+  { key: "name", title: "姓名", keyword: true, sortable: true },
+  { key: "status", title: "状态", valueEnum: statusOptions },
+  { key: "amount", title: "消费", valueType: "money", align: "end", sortable: true },
+  { key: "createdAt", title: "创建时间", valueType: "date", search: true },
+  { key: "profile.city", title: "城市", hidden: true },
+  { id: "actions", title: "操作", fixed: "end", render: (user) => <RowMenu user={user} /> },
+]
+
+<DataTable rowKey="id" columns={columns} data={users} />
+```
+
+`key` 支持类型安全的点路径，`render(value, row)` 的 `value` 类型随路径推导。只有 `id`、没有 `key` 的列是展示列，例如行操作。
+
+传入 `data` 时在浏览器中排序、筛选和分页；传入 `request` 时交由服务端处理：
+
+```tsx
+<DataTable
+  rowKey="id"
+  columns={columns}
+  request={async ({ page, pageSize, sort, keyword, search, filters, advanced, signal }) => {
+    const response = await fetch(`/api/users?${toQuery({ page, pageSize, sort, keyword, search, filters })}`, { signal })
+    return response.json() // { data, total }
+  }}
+/>
+```
+
+参数变化时会取消上一次请求，迟到的响应不会覆盖新数据。未返回 `total` 时，分页只显示上一页和下一页。
+
+## 本地数据与工具栏插件 [#local-data-and-toolbar-plugins]
+
+带 `keyword` 的列共用工具栏搜索框；枚举列自动生成带计数的快速筛选。核心之外的功能都是插件：`density()` 切换密度，`columnSettings()` 提供列显隐、拖拽排序、固定列以及表头边缘的列宽拖拽，`exportCsv()` 导出当前页、全部匹配结果或选中行。
+
+<ComponentPreview name="data-table-local" align="start" />
+
+## 值类型 [#value-types]
+
+| `valueType` | 单元格 | 默认查询字段 |
+| --- | --- | --- |
+| `text` | 纯文本；`ellipsis` 与 `copyable` 分别使用 LongText 和 InlineCopyText | `text` |
+| `number`、`money`、`percent` | `Intl.NumberFormat`；可设置 `format`，如 `{ currency: "CNY" }` | `numberRange` |
+| `date`、`datetime` | 按文案中的 `locale` 使用 `Intl.DateTimeFormat` | `dateRange`、`datetimeRange` |
+| `enum` | 根据 `valueEnum` 渲染徽标，每个选项可设置 `color` | `select` |
+| `boolean` | 文案中的是或否 | `boolean` |
+
+<ComponentPreview name="data-table-value-types" align="start" />
+
+## 查询表单 [#query-form]
+
+`queryForm()` 根据带 `search` 的列生成可折叠的多字段表单，提交后所有条件一起生效。字段类型包括 `text`、`number`、`numberRange`、`select`、`multiSelect`、`date`、`dateRange`、`datetimeRange`、`boolean` 和 `custom`（配合 `render`）。用 `order` 与 `colSpan` 控制位置；`options` 可以是函数，配合 `dependencies` 实现省市联动；`searchOnly` 用于只参与查询、不显示在表格中的字段；`transform` 改写请求参数，例如把日期范围转为 `{ createdFrom, createdTo }`。
+
+<ComponentPreview name="data-table-query-form" align="start" />
+
+所有生效的条件都会以可单独移除的标签显示在工具栏下方。
+
+## 高级筛选 [#advanced-filter]
+
+`advancedFilter()` 提供“字段 + 运算符 + 值”的条件构建器，条件之间可选“全部满足”或“满足任一”。可用运算符随列的值类型变化。传入 `storageKey` 可将命名视图保存到本地存储。
+
+<ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## 选择、批量操作与展开行 [#selection-bulk-actions-and-expandable-rows]
+
+`rowSelection` 添加复选框列，跨页保留选择。`bulkActions([{ label, icon, onClick, variant }])` 在选中行时于分页上方显示纯图标按钮的浮动操作条，`label` 作为提示文字；也可传入渲染函数自定义内容。按 Escape 取消选择。`expandable(render)` 添加展开按钮，详情以高度动画展开。
+
+<ComponentPreview name="data-table-expandable" align="start" />
+
+## 拖拽排序 [#drag-sorting]
+
+`dragSort({ onDragEnd })` 添加拖拽手柄列，支持鼠标和键盘（空格拿起、方向键移动、空格放下）。启用时关闭排序和分页。
+
+<ComponentPreview name="data-table-drag-sort" align="start" />
+
+## 大数据量 [#large-lists]
+
+`virtual()` 只渲染可视区域内的行。请配合 `pagination={false}` 使用，启用后关闭行布局动画。
+
+<ComponentPreview name="data-table-virtual" align="start" />
+
+## 布局 [#layout]
+
+默认 `layout="fill"` 与后台页面一致：占满父容器高度，查询表单和工具栏固定在顶部，表格区域滚动且表头吸顶，分页始终贴底。父容器需要确定高度，例如 `flex-1 min-h-0` 的 `AppMain`，或固定 `h-[640px]` 的容器。在卡片和弹窗中使用 `layout="auto"`，随行数增高。
+
+窄屏下每行显示为卡片。用 `primary` 指定卡片标题列，或设置 `responsive={false}` 保持表格。
+
+## 组合 [#composition]
+
+`useDataTable` 返回组件内部使用的同一个表格实例。将它传给 `DataTable` 并提供子元素，即可自行排列各部分：`DataTableToolbar`、`DataTableSearch`、`DataTableFacetedFilter`、`DataTableFilterChips`、`DataTableSlotContent`、`DataTableContent` 和 `DataTablePagination`。实例还提供 `total`、`selection`、`state` 等状态及 `reload()` 等操作。
+
+<ComponentPreview name="data-table-composition" align="start" />
+
+## URL 同步与持久化 [#url-sync-and-persistence]
+
+`urlSync({ prefix })` 通过 `history.replaceState` 将分页、排序、关键字、查询表单、快速筛选和高级筛选同步到地址栏，不依赖路由库。`persist({ key })` 记住列显隐、顺序、固定、列宽和密度。`proPlugins()` 一次启用查询表单、高级筛选、刷新、密度、列设置、CSV 导出和 URL 同步。
+
+```tsx
+<DataTable
+  rowKey="id"
+  columns={columns}
+  request={fetchUsers}
+  rowSelection
+  plugins={[...proPlugins<User>(), persist({ key: "users-table" }), bulkActions([{ label: "删除", icon: <Trash2 />, variant: "destructive", onClick: deleteUsers }])]}
+/>
+```
+
+建议用 `useMemo` 缓存插件列表，避免每次渲染重建列和功能配置。
+
+## 插件 [#plugins]
+
+插件是带 `name` 的对象，可以提供以下任意扩展点：
+
+| 字段 | 用途 |
+| --- | --- |
+| `slots` | 渲染到 `header`、`toolbarStart`、`toolbarEnd` 或 `floating` |
+| `columns` | 添加工具列，如复选框或拖拽手柄 |
+| `features` | 开启 `virtual`、`dragSort`、`expandable` 或 `resizable` |
+| `initialState`、`initialColumnState`、`initialDensity` | 在首次请求前恢复状态 |
+| `setup` | 在独立组件中以 hook 方式运行，用于同步等副作用 |
+| `wrapBody`、`renderRow`、`renderAfterRow` | 包裹或扩展行 |
+
+## 文案 [#labels]
+
+默认使用英文。传入 `labels={dataTableLabelsZhCN}` 使用中文，或覆盖单个条目；其中 `locale` 也用于数字和日期格式化。
+
+## API
+
+| 属性 | 说明 |
+| --- | --- |
+| `columns` | 列配置。 |
+| `data` | 本地数据。 |
+| `request` | 远程数据：接收 `{ page, pageSize, sort, keyword, search, filters, advanced, signal }`，返回 `{ data, total? }`。 |
+| `rowKey` | 行标识，可为字段名或函数。选择、展开和拖拽排序需要它。 |
+| `plugins` | 核心之外的功能。 |
+| `rowSelection` | `true`，或 `{ onChange, isDisabled }`。 |
+| `pagination` | `false`，或 `{ pageSize, pageSizes }`。 |
+| `initialState` | 初始 `page`、`pageSize`、`sort` 和 `query`。 |
+| `onStateChange` | 每次状态变化后调用。 |
+| `title`、`toolbar` | 工具栏标题和操作按钮。 |
+| `layout` | `fill`（默认）或 `auto`。 |
+| `responsive` | 窄屏显示为卡片，默认 `true`。 |
+| `loading` | 本地数据的加载状态。 |
+| `labels` | 文案覆盖。 |
+| `actionRef` | 获得 `{ reload, reset }`。 |
+| `table` | 来自 `useDataTable` 的实例，用于替代上面的选项。 |
+
+设计参考了 [shadcn-admin](https://github.com/satnaing/shadcn-admin) 表格的可组合部件、Ant Design ProTable 的列配置驱动搜索与请求，以及 motion 表格的行过渡动画。

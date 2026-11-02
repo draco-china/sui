@@ -1,0 +1,272 @@
+import { describe, expect, test } from "bun:test";
+import {
+  DataTable,
+  type DataTableColumn,
+  dataTableLabels,
+  dataTableLabelsZhCN,
+  filterRows,
+  matchesRule,
+  readUrlState,
+  requestSearch,
+  sortRows,
+  toCsv,
+  writeUrlState,
+} from "@workspace/ui/components/data-table";
+import { normalizeColumns } from "@workspace/ui/components/data-table/columns";
+import { renderToString } from "react-dom/server";
+
+type Row = {
+  id: string;
+  name: string;
+  status: "on" | "off";
+  amount: number;
+  createdAt: string;
+  profile: { city: string };
+};
+
+const rows: Row[] = [
+  {
+    id: "1",
+    name: "Alpine",
+    status: "on",
+    amount: 30,
+    createdAt: "2026-01-05",
+    profile: { city: "Hangzhou" },
+  },
+  {
+    id: "2",
+    name: "Alpha",
+    status: "off",
+    amount: 10,
+    createdAt: "2026-02-10",
+    profile: { city: "Shenzhen" },
+  },
+  {
+    id: "3",
+    name: "Beta, Inc",
+    status: "on",
+    amount: 20,
+    createdAt: "2026-03-15",
+    profile: { city: "Hangzhou" },
+  },
+];
+
+const columns: DataTableColumn<Row>[] = [
+  { key: "name", title: "Name", keyword: true, sortable: true, search: true },
+  {
+    key: "status",
+    title: "Status",
+    valueEnum: [
+      { value: "on", label: "On" },
+      { value: "off", label: "Off" },
+    ],
+  },
+  {
+    key: "amount",
+    title: "Amount",
+    valueType: "money",
+    search: {
+      transform: (value) => {
+        const [min, max] = value as [string?, string?];
+        return { min, max };
+      },
+    },
+  },
+  { key: "createdAt", title: "Created", valueType: "date", search: true },
+  {
+    key: "profile.city",
+    id: "city",
+    title: "City",
+    search: { type: "select" },
+  },
+];
+const normalized = normalizeColumns(columns, dataTableLabels);
+const empty = { keyword: "", search: {}, filters: {} };
+const ids = (list: readonly Row[]) => list.map((row) => row.id);
+
+describe("column defaults", () => {
+  test("valueEnum implies an enum column with a quick filter and select search", () => {
+    const status = normalized.find((column) => column.id === "status");
+    expect(status?.valueType).toBe("enum");
+    expect(status?.filter).toBe(true);
+    const amount = normalized.find((column) => column.id === "amount");
+    expect(amount?.search?.type).toBe("numberRange");
+    const created = normalized.find((column) => column.id === "createdAt");
+    expect(created?.search?.type).toBe("dateRange");
+  });
+});
+
+describe("local filtering", () => {
+  test("keyword matches keyword columns case-insensitively", () => {
+    expect(
+      ids(filterRows(rows, normalized, { ...empty, keyword: "ALP" })),
+    ).toEqual(["1", "2"]);
+  });
+  test("query form fields combine with AND, ranges include both ends", () => {
+    const result = filterRows(rows, normalized, {
+      ...empty,
+      search: { amount: ["15", "30"], createdAt: [undefined, "2026-03-15"] },
+    });
+    expect(ids(result)).toEqual(["1", "3"]);
+    expect(
+      ids(
+        filterRows(rows, normalized, {
+          ...empty,
+          search: { city: "Shenzhen" },
+        }),
+      ),
+    ).toEqual(["2"]);
+  });
+  test("quick filters and advanced OR groups apply", () => {
+    expect(
+      ids(
+        filterRows(rows, normalized, {
+          ...empty,
+          filters: { status: ["off"] },
+        }),
+      ),
+    ).toEqual(["2"]);
+    const advanced = {
+      logic: "or" as const,
+      rules: [
+        { id: "a", field: "amount", operator: "gt" as const, value: "25" },
+        {
+          id: "b",
+          field: "name",
+          operator: "startsWith" as const,
+          value: "beta",
+        },
+      ],
+    };
+    expect(ids(filterRows(rows, normalized, { ...empty, advanced }))).toEqual([
+      "1",
+      "3",
+    ]);
+  });
+  test("rules without a value match everything except isEmpty", () => {
+    expect(matchesRule({ id: "x", field: "name", operator: "eq" }, "a")).toBe(
+      true,
+    );
+    expect(
+      matchesRule({ id: "x", field: "name", operator: "isEmpty" }, "a"),
+    ).toBe(false);
+    expect(
+      matchesRule(
+        { id: "x", field: "d", operator: "between", value: ["2026-01-01", ""] },
+        "2026-02-01",
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("sorting, requests and export", () => {
+  test("multi-column sort is stable and numeric", () => {
+    expect(
+      ids(sortRows(rows, normalized, [{ key: "amount", order: "desc" }])),
+    ).toEqual(["1", "3", "2"]);
+    expect(
+      ids(sortRows(rows, normalized, [{ key: "name", order: "asc" }])),
+    ).toEqual(["2", "1", "3"]);
+  });
+  test("transform renames request parameters and empty values are dropped", () => {
+    expect(
+      requestSearch(normalized, {
+        amount: ["1", "9"],
+        name: "",
+        createdAt: undefined,
+      }),
+    ).toEqual({ min: "1", max: "9" });
+  });
+  test("CSV escapes commas and writes enum labels", () => {
+    const csv = toCsv(rows.slice(2), normalized);
+    expect(csv.startsWith("﻿Name,Status,Amount,Created,City")).toBe(true);
+    expect(csv).toContain('"Beta, Inc",On,$20.00');
+  });
+  test("URL state round-trips and leaves unrelated parameters", () => {
+    const state = {
+      page: 3,
+      pageSize: 20,
+      sort: [{ key: "amount", order: "desc" as const }],
+      query: {
+        keyword: "al",
+        search: { amount: ["1", "2"] },
+        filters: { status: ["on"] },
+      },
+    };
+    const search = writeUrlState("?tab=users", state, "t_", 10);
+    expect(search).toContain("tab=users");
+    const parsed = readUrlState(search, "t_");
+    expect(parsed).toEqual(state);
+    expect(readUrlState("?tab=users", "t_")).toEqual({});
+  });
+  test("hand-edited URL values are dropped instead of crashing", () => {
+    expect(readUrlState("?search=%7B&filters=null&advanced=%7B%7D")).toEqual(
+      {},
+    );
+    const parsed = readUrlState(
+      `?filters=${encodeURIComponent('{"status":"on","amount":[1]}')}&advanced=${encodeURIComponent('{"rules":[{"field":"name","operator":"drop"},{"field":"name","operator":"contains","value":"a"}]}')}`,
+    );
+    expect(parsed.query?.filters).toEqual({ amount: ["1"] });
+    expect(parsed.query?.advanced).toEqual({
+      logic: "and",
+      rules: [{ id: "1", field: "name", operator: "contains", value: "a" }],
+    });
+  });
+  test("CSV neutralizes formulas but keeps negative numbers", () => {
+    const formula = normalizeColumns<Row>(
+      [{ key: "name", title: "Name" }],
+      dataTableLabels,
+    );
+    const csv = toCsv(
+      [
+        { ...rows[0], name: "=HYPERLINK(1)" },
+        { ...rows[0], name: "-2+3+cmd|calc" },
+        { ...rows[0], name: "-12.50" },
+      ] as Row[],
+      formula,
+    );
+    expect(csv).toContain("'=HYPERLINK(1)");
+    expect(csv).toContain("'-2+3+cmd|calc");
+    expect(csv).toContain("\r\n-12.50");
+  });
+  test("date-only values format as the same calendar day", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={[{ key: "createdAt", title: "Created", valueType: "date" }]}
+        data={rows.slice(0, 1)}
+      />,
+    );
+    expect(html).toContain("Jan 5, 2026");
+  });
+});
+
+describe("server rendering", () => {
+  test("renders headers, formatted cells, enum badges and the total", () => {
+    const html = renderToString(
+      <DataTable rowKey="id" columns={columns} data={rows} />,
+    );
+    expect(html).toContain("Amount");
+    expect(html).toContain("$30.00");
+    expect(html).toContain('data-slot="badge"');
+    expect(html).toContain("3 rows");
+    expect(html).toContain('aria-sort="none"');
+  });
+  test("Chinese labels reach the empty state and pagination", () => {
+    const html = renderToString(
+      <DataTable columns={columns} data={[]} labels={dataTableLabelsZhCN} />,
+    );
+    expect(html).toContain("暂无数据");
+    expect(html).toContain("共 0 条");
+  });
+  test("remote tables render skeleton rows before the first response", () => {
+    const html = renderToString(
+      <DataTable
+        columns={columns}
+        request={() => ({ data: rows, total: 3 })}
+      />,
+    );
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain('data-slot="skeleton"');
+  });
+});

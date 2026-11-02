@@ -113,7 +113,7 @@ describe("documentation coverage", () => {
       expect(tree).not.toContain("组合模块");
       expect(tree).not.toContain("删除资源");
       expect(tree).not.toContain(`"url":"${prefix}/docs/blocks"`);
-      for (const slug of ["data-table", "tanstack-form", "delete-resource"]) {
+      for (const slug of ["tanstack-form", "delete-resource"]) {
         expect(tree).toContain(`"url":"${prefix}/docs/blocks/${slug}"`);
       }
       for (const slug of [

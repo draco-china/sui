@@ -118,17 +118,6 @@ test("Editor includes local Monaco Workers and their TypeScript declarations", (
   expect(
     editor?.devDependencies?.some((name) => name.startsWith("@webgpu/")),
   ).toBeFalsy();
-  const table = registry.items.find((item) => item.name === "data-table");
-  expect(
-    table?.files?.some(
-      (file) => file.target === "@components/blocks/data-table/table.css",
-    ),
-  ).toBe(true);
-  expect(
-    table?.files?.some(
-      (file) => file.target === "@components/blocks/data-table/table.css.d.ts",
-    ),
-  ).toBe(true);
 });
 
 test("CSS serialization retains !important, nested rules and required global imports", () => {

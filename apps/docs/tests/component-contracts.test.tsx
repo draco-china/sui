@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { useDataTableUrlState } from "@workspace/ui/blocks/data-table";
 import { Button } from "@workspace/ui/components/button";
 import { Calendar } from "@workspace/ui/components/calendar";
 import {
@@ -94,60 +93,6 @@ test("chart content forwards native attributes without leaking Recharts configur
   expect(legend).toContain('aria-label="Series"');
   expect(legend).toContain("opacity:0.8");
   expect(legend).not.toContain("iconSize=");
-});
-
-function pagination(
-  search: Record<string, unknown>,
-  defaults?: { defaultPage?: number; defaultPageSize?: number },
-) {
-  let result: unknown;
-  function Probe() {
-    result = useDataTableUrlState({
-      search,
-      navigate: () => {},
-      pagination: defaults,
-    }).initialState.pagination;
-    return null;
-  }
-  renderToStaticMarkup(<Probe />);
-  return result;
-}
-
-describe("URL pagination normalization", () => {
-  test("fractions below one fall back to valid pages and sizes", () => {
-    expect(pagination({ page: 0.5, pageSize: "0.5" })).toEqual({
-      pageIndex: 0,
-      pageSize: 10,
-    });
-    expect(
-      pagination(
-        { page: 0.5, pageSize: 0.5 },
-        { defaultPage: 2, defaultPageSize: 20 },
-      ),
-    ).toEqual({ pageIndex: 1, pageSize: 20 });
-  });
-  test("normal values remain stable and positive fractions are floored", () => {
-    expect(pagination({ page: "3", pageSize: "25" })).toEqual({
-      pageIndex: 2,
-      pageSize: 25,
-    });
-    expect(pagination({ page: 3.5, pageSize: 25.7 })).toEqual({
-      pageIndex: 2,
-      pageSize: 25,
-    });
-  });
-  test("invalid defaults and non-finite search cannot create invalid state", () => {
-    expect(
-      pagination(
-        { page: Infinity, pageSize: -1 },
-        { defaultPage: NaN, defaultPageSize: Infinity },
-      ),
-    ).toEqual({ pageIndex: 0, pageSize: 10 });
-    expect(pagination({}, { defaultPage: 0.5, defaultPageSize: 0.5 })).toEqual({
-      pageIndex: 0,
-      pageSize: 10,
-    });
-  });
 });
 
 test("Calendar markup is independent of the host's default Intl locale", () => {

@@ -6,14 +6,16 @@ export const examples = {
   "long-text-table": () => import("./variants/long-text-table"),
   "navigation-progress-demo": () =>
     import("./variants/navigation-progress-demo"),
-  "block-table-header": () => import("./variants/block-table-header"),
-  "block-table-search": () => import("./variants/block-table-search"),
-  "block-table-layout": () => import("./variants/block-table-layout"),
-  "block-table-demo": () => import("./variants/block-table-demo"),
-  "block-table-selection": () => import("./variants/block-table-selection"),
-  "block-table-drag": () => import("./variants/block-table-drag"),
-  "block-table-request": () => import("./variants/block-table-request"),
-  "block-table-states": () => import("./variants/block-table-states"),
+  "data-table-demo": () => import("./variants/data-table-demo"),
+  "data-table-local": () => import("./variants/data-table-local"),
+  "data-table-value-types": () => import("./variants/data-table-value-types"),
+  "data-table-query-form": () => import("./variants/data-table-query-form"),
+  "data-table-advanced-filter": () =>
+    import("./variants/data-table-advanced-filter"),
+  "data-table-expandable": () => import("./variants/data-table-expandable"),
+  "data-table-drag-sort": () => import("./variants/data-table-drag-sort"),
+  "data-table-virtual": () => import("./variants/data-table-virtual"),
+  "data-table-composition": () => import("./variants/data-table-composition"),
   "block-form-report": () => import("./variants/block-form-report"),
   "block-form-profile": () => import("./variants/block-form-profile"),
   "block-delete-resource": () => import("./variants/block-delete-resource"),
@@ -626,15 +628,21 @@ export const sourceFiles = {
   "long-text-table": () => import("./variants/long-text-table.tsx?raw"),
   "navigation-progress-demo": () =>
     import("./variants/navigation-progress-demo.tsx?raw"),
-  "block-table-header": () => import("./variants/block-table-header.tsx?raw"),
-  "block-table-search": () => import("./variants/block-table-search.tsx?raw"),
-  "block-table-layout": () => import("./variants/block-table-layout.tsx?raw"),
-  "block-table-demo": () => import("./variants/block-table-demo.tsx?raw"),
-  "block-table-selection": () =>
-    import("./variants/block-table-selection.tsx?raw"),
-  "block-table-drag": () => import("./variants/block-table-drag.tsx?raw"),
-  "block-table-request": () => import("./variants/block-table-request.tsx?raw"),
-  "block-table-states": () => import("./variants/block-table-states.tsx?raw"),
+  "data-table-demo": () => import("./variants/data-table-demo.tsx?raw"),
+  "data-table-local": () => import("./variants/data-table-local.tsx?raw"),
+  "data-table-value-types": () =>
+    import("./variants/data-table-value-types.tsx?raw"),
+  "data-table-query-form": () =>
+    import("./variants/data-table-query-form.tsx?raw"),
+  "data-table-advanced-filter": () =>
+    import("./variants/data-table-advanced-filter.tsx?raw"),
+  "data-table-expandable": () =>
+    import("./variants/data-table-expandable.tsx?raw"),
+  "data-table-drag-sort": () =>
+    import("./variants/data-table-drag-sort.tsx?raw"),
+  "data-table-virtual": () => import("./variants/data-table-virtual.tsx?raw"),
+  "data-table-composition": () =>
+    import("./variants/data-table-composition.tsx?raw"),
   "block-form-report": () => import("./variants/block-form-report.tsx?raw"),
   "block-form-profile": () => import("./variants/block-form-profile.tsx?raw"),
   "block-delete-resource": () =>

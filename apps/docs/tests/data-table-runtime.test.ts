@@ -1,3 +1,6 @@
 import { describeFixture } from "./support/fixture";
 
-describeFixture("DataTable state and remote requests", "data-table-dom.tsx");
+describeFixture(
+  "DataTable interactions, plugins and remote requests",
+  "data-table-runtime.tsx",
+);
