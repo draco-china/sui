@@ -46,9 +46,9 @@ TabBar renders a navigation landmark with buttons and exposes the current destin
 
 ## Keyboard and layout [#keyboard]
 
-Arrow keys move among enabled destinations in the bar's orientation. Home and End focus the first and last enabled destinations. Moving focus does not change the current destination; Enter or Space activates the focused button. The current destination participates in the Tab sequence; keyboard activation follows the same change callback as pointer activation. Horizontal layout follows the document direction, including RTL.
+Left and Right arrows move among enabled destinations. Home and End focus the first and last enabled destinations. Moving focus does not change the current destination; Enter or Space activates the focused button. The current destination participates in the Tab sequence; keyboard activation follows the same change callback as pointer activation. Horizontal layout follows the document direction, including RTL.
 
-The bar can scroll when destinations exceed its available space. Set `orientation="vertical"` to arrange destinations vertically. GSAP moves and resizes the selection and held lens using the buttons' actual bounds after layout, resizing, or scrolling. Reduced-motion preferences disable animated movement while keeping selection visible.
+The bar can scroll when destinations exceed its available space. GSAP moves and resizes the selection and held lens using the buttons' actual bounds after layout, resizing, or scrolling. Reduced-motion preferences disable animated movement while keeping selection visible.
 
 ## Material [#material]
 
@@ -74,7 +74,6 @@ Hold an enabled item for 250ms or drag beyond 6px to expand the selection into a
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`; glass for the bar and its lens. |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"`. |
 | `onItemActivate` | `(value: string) => void` | Optional activation notification. |
-| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"`. |
 | `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; haptics on selection and long press. |
 | Other props | Native nav props | Includes `aria-label`, `className`, `style`, and `ref`. |
 

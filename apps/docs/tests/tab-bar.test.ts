@@ -6,7 +6,7 @@ describeFixture(
   "tab-bar-dom.tsx",
 );
 
-test("Tab Bar items share equal tracks in either orientation", async () => {
+test("Tab Bar items share equal tracks", async () => {
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { createElement } = await import("react");
   const { TabBar } = await import("@workspace/ui/components/tab-bar");
@@ -25,7 +25,7 @@ test("Tab Bar items share equal tracks in either orientation", async () => {
   expect(list).toContain("grid");
   expect(list).toContain("auto-cols-fr");
   expect(list).toContain("grid-flow-col");
-  expect(list).toContain("data-[orientation=vertical]:auto-rows-fr");
+  expect(list).not.toContain("orientation");
   expect(list).not.toMatch(/\sflex\s/);
 });
 

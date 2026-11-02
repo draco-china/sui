@@ -46,9 +46,9 @@ export function ApplicationNavigation() {
 
 ## 键盘与布局 [#keyboard]
 
-方向键按照标签栏方向在可用目的地之间移动，Home 和 End 聚焦第一个、最后一个可用项。移动焦点不会改变当前目的地，Enter 或空格激活聚焦按钮。当前项参与 Tab 焦点顺序，键盘激活与指针操作使用同一变更回调。横向布局跟随文档文字方向，支持 RTL。
+左右方向键在可用目的地之间移动，Home 和 End 聚焦第一个、最后一个可用项。移动焦点不会改变当前目的地，Enter 或空格激活聚焦按钮。当前项参与 Tab 焦点顺序，键盘激活与指针操作使用同一变更回调。横向布局跟随文档文字方向，支持 RTL。
 
-目的地超出可用宽度时，标签栏可以滚动。设置 `orientation="vertical"` 可改为纵向排列。GSAP 根据按钮的实际边界驱动选中背景和长按镜片的移动与尺寸变化，并响应布局、尺寸和滚动更新。用户开启减少动态效果时，选中背景停止动画移动，选中状态仍保持可见。
+目的地超出可用宽度时，标签栏可以滚动。GSAP 根据按钮的实际边界驱动选中背景和长按镜片的移动与尺寸变化，并响应布局、尺寸和滚动更新。用户开启减少动态效果时，选中背景停止动画移动，选中状态仍保持可见。
 
 ## 材质 [#material]
 
@@ -74,7 +74,6 @@ TabBar 默认 `glass={false}`，保持现有 UI 外观。传入 `glass`（可带
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | `false`；标签栏及其镜片的玻璃 |
 | `size` | `"sm" \| "default" \| "lg"` | `"default"` |
 | `onItemActivate` | `(value: string) => void` | 可选的激活通知 |
-| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
 | `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；选中和长按时反馈。 |
 | 其他属性 | 原生 nav 属性 | 包含 `aria-label`、`className`、`style` 和 `ref` |
 

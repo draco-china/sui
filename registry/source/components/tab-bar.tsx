@@ -24,10 +24,10 @@ export type TabBarItem = {
 };
 
 const tabBarVariants = cva(
-  // Equal tracks: every item takes the width (or height) of the largest one.
+  // Equal tracks: every item takes the width of the largest one.
   // The selection's spring overshoots the last item for a moment, so the bar
   // scrolls without ever showing a scrollbar, as on iOS.
-  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 [scrollbar-width:none] data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10 [&::-webkit-scrollbar]:hidden",
+  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-x-auto overflow-y-hidden rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 [scrollbar-width:none] data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10 [&::-webkit-scrollbar]:hidden",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
@@ -55,7 +55,6 @@ export type TabBarProps = Omit<ComponentProps<"nav">, "children" | "onChange"> &
     value: string;
     onValueChange: (value: string) => void;
     onItemActivate?: (value: string) => void;
-    orientation?: "horizontal" | "vertical";
     feedback?: FeedbackOption;
   } & GlassProps;
 
@@ -84,7 +83,6 @@ export function TabBar({
   value,
   onValueChange,
   onItemActivate,
-  orientation = "horizontal",
   size = "default",
   glass: settings = false,
   frosted = false,
@@ -146,20 +144,11 @@ export function TabBar({
     if (!element || (hit && element.contains(hit))) return hit ?? null;
     if (!held) return null;
     const rect = element.getBoundingClientRect();
-    const horizontal = orientation === "horizontal";
     const tolerance = 24;
-    const along = horizontal ? x : y;
-    const across = horizontal ? y : x;
-    const [start, end] = horizontal
-      ? [rect.left, rect.right]
-      : [rect.top, rect.bottom];
-    const [near, far] = horizontal
-      ? [rect.top, rect.bottom]
-      : [rect.left, rect.right];
     if (
-      (along >= start && along <= end) ||
-      across < near - tolerance ||
-      across > far + tolerance
+      (x >= rect.left && x <= rect.right) ||
+      y < rect.top - tolerance ||
+      y > rect.bottom + tolerance
     )
       return null;
     // Past either end, one of the end items is nearest; comparing positions
@@ -172,10 +161,7 @@ export function TabBar({
     if (!first || !last) return null;
     const distance = (button: HTMLButtonElement) => {
       const bounds = button.getBoundingClientRect();
-      const center = horizontal
-        ? bounds.left + bounds.width / 2
-        : bounds.top + bounds.height / 2;
-      return Math.abs(center - along);
+      return Math.abs(bounds.left + bounds.width / 2 - x);
     };
     return distance(first) <= distance(last) ? first : last;
   }
@@ -235,7 +221,6 @@ export function TabBar({
 
   useLayoutEffect(() => {
     void value;
-    void orientation;
     void size;
     void signature;
     measure();
@@ -250,7 +235,7 @@ export function TabBar({
       observer.disconnect();
       document.fonts?.removeEventListener("loadingdone", measure);
     };
-  }, [value, orientation, size, signature, measure]);
+  }, [value, size, signature, measure]);
 
   const pressed = heldValue !== null;
   const animateIndicator = useCallback(
@@ -349,27 +334,15 @@ export function TabBar({
       const last = items[items.length - 1];
       if (pending?.active && element) {
         const rect = element.getBoundingClientRect();
-        if (orientation === "horizontal") {
-          const position =
-            ((pending.x - rect.left) * element.offsetWidth) / rect.width +
-            element.scrollLeft;
-          target.x = rubberBand(
-            position - bounds.width / 2,
-            (last ? last.offsetLeft + last.offsetWidth : element.scrollWidth) -
-              bounds.width,
+        const position =
+          ((pending.x - rect.left) * element.offsetWidth) / rect.width +
+          element.scrollLeft;
+        target.x = rubberBand(
+          position - bounds.width / 2,
+          (last ? last.offsetLeft + last.offsetWidth : element.scrollWidth) -
             bounds.width,
-          );
-        } else {
-          const position =
-            ((pending.y - rect.top) * element.offsetHeight) / rect.height +
-            element.scrollTop;
-          target.y = rubberBand(
-            position - bounds.height / 2,
-            (last ? last.offsetTop + last.offsetHeight : element.scrollHeight) -
-              bounds.height,
-            bounds.height,
-          );
-        }
+          bounds.width,
+        );
         target.x -= 5;
         target.y -= 9;
         target.width += 10;
@@ -392,7 +365,7 @@ export function TabBar({
     );
     initialized.current = true;
     moveLens.current();
-  }, [bounds, orientation, animateIndicator]);
+  }, [bounds, animateIndicator]);
   useLayoutEffect(() => {
     moveLens.current(0.18);
     for (const button of track.current?.querySelectorAll<HTMLButtonElement>(
@@ -425,7 +398,6 @@ export function TabBar({
       <Track
         ref={track}
         data-slot="tab-bar-list"
-        data-orientation={orientation}
         data-lens={Boolean(bounds)}
         data-pressed={pressed}
         data-glass-frozen={pressed}
@@ -539,13 +511,9 @@ export function TabBar({
             .filter((index) => index >= 0);
           let next: number | undefined;
           const rtl = getComputedStyle(track.current).direction === "rtl";
-          const horizontalKeys = rtl
+          const [previousKey, nextKey] = rtl
             ? ["ArrowRight", "ArrowLeft"]
             : ["ArrowLeft", "ArrowRight"];
-          const [previousKey, nextKey] =
-            orientation === "vertical"
-              ? ["ArrowUp", "ArrowDown"]
-              : horizontalKeys;
           if (event.key === "Home") next = enabled[0];
           else if (event.key === "End") next = enabled.at(-1);
           else if (event.key === previousKey || event.key === nextKey) {
