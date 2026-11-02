@@ -7,25 +7,29 @@ SUI 是基于 Base UI 与 Tailwind CSS 4 构建的可组合 React 组件集合�
 
 ## 从这里开始 [#start-here]
 
-1. **接入应用。** 按照[安装指南](/zh-CN/docs/installation)添加工作区依赖、加载共享样式，并配置 Tailwind 扫描组件源码。
+1. **安装组件。** 按照[安装指南](/zh-CN/docs/installation)，用 shadcn CLI 把组件添加到应用中。源码会放进你的项目，可直接修改。
 2. **试用组件。** 浏览[组件目录](/zh-CN/docs/components)，每个页面都提供交互预览和完整示例源码。
 3. **调整风格。** 通过[主题指南](/zh-CN/docs/theming)设置颜色与 CSS 变量，参考[设计指南](/zh-CN/docs/design-guidelines)统一字体、间距、表面和动效。
 
-SUI 当前通过 Bun 工作区中的私有包 `@workspace/ui` 使用，尚未发布 SUI registry 或独立安装命令。复制示例前，请先完成安装指南中的配置。
+每个条目都通过 SUI 的 shadcn registry 以可编辑源码的形式安装，并带上所需的依赖和样式。
 
 ## 第一个组件 [#your-first-component]
 
-完成接入后，从组件各自的模块导入：
+安装组件后，通过应用自己的别名导入：
+
+```npm
+npx shadcn@latest add draco-china/sui/button
+```
 
 ```tsx
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 export function SaveButton() {
   return <Button>Save changes</Button>;
 }
 ```
 
-文档预览与应用使用同一个共享包。代码标签展示包含导入和组合方式的完整示例文件，中英文页面共用这些示例。
+代码标签展示每个示例的完整文件，包含导入和组合方式，中英文页面共用这些示例。示例从 `@workspace/ui/components/*` 导入；在你的应用中请使用自己的别名，详见[导入安装后的源码](/zh-CN/docs/installation#import-installed-source)。
 
 ## 找到需要的组件 [#find-the-right-pieces]
 

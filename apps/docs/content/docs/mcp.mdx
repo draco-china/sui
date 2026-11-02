@@ -7,7 +7,7 @@ Use the official [shadcn MCP server](https://ui.shadcn.com/docs/mcp) to browse t
 
 For API guidance and complete usage examples, provide the assistant with [LLMs documentation](/docs/llms-txt). MCP queries and inspects installable source. Its `get_add_command_for_items` tool returns a CLI command; the assistant then runs the command in your application to install the files.
 
-GitHub CLI installs also work without the namespace: `bunx --bun shadcn@latest add draco-china/sui/button`. The MCP examples below retain the optional `@sui` configuration for registry discovery.
+GitHub CLI installs also work without the namespace: `npx shadcn@latest add draco-china/sui/button`. The MCP examples below retain the optional `@sui` configuration for registry discovery.
 
 ## Configure the application [#configure-the-application]
 
@@ -27,13 +27,28 @@ Open the consuming application in your MCP client and start the server from the 
 
 ## Configure the client [#configure-the-client]
 
-These examples use Bun to launch the official server:
+Run this from the consuming application, then restart or enable the server. `--client` takes `claude`, `cursor`, `vscode`, `codex` or `opencode`. For Claude Code, Cursor, VS Code and OpenCode it writes the project's client configuration; for Codex it prints the block to add yourself. Either way it also adds `shadcn` to the application's dev dependencies:
 
-```bash
-bunx --bun shadcn@latest mcp
+```npm
+npx shadcn@latest mcp init --client claude
 ```
 
-The MCP client starts this process and communicates over stdin/stdout. Merge the relevant configuration into your project's existing client file, then restart or enable the server. Bun must be available in the client process's environment.
+The configuration launches the official server, which talks to the client over stdin/stdout:
+
+```npm
+npx shadcn@latest mcp
+```
+
+To write a configuration by hand, merge the client's entry below into the project's existing file. The examples launch the server with `npx`, as the shadcn CLI writes them; to use another package manager, swap the command and its arguments:
+
+| Package manager | `command` | `args` |
+| --- | --- | --- |
+| pnpm | `"pnpm"` | `["dlx", "shadcn@latest", "mcp"]` |
+| npm | `"npx"` | `["shadcn@latest", "mcp"]` |
+| yarn | `"yarn"` | `["dlx", "shadcn@latest", "mcp"]` |
+| bun | `"bunx"` | `["--bun", "shadcn@latest", "mcp"]` |
+
+The client process must find that command in its `PATH`.
 
 ### Claude Code [#claude-code]
 
@@ -43,8 +58,8 @@ Use the project's `.mcp.json`:
 {
   "mcpServers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -60,8 +75,8 @@ Use the project's `.cursor/mcp.json`:
 {
   "mcpServers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -77,8 +92,8 @@ For GitHub Copilot, use the project's `.vscode/mcp.json`. VS Code uses the `serv
 {
   "servers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -88,16 +103,34 @@ Open the file and start the server through VS Code's MCP controls. The client fi
 
 ### Codex [#codex]
 
-Merge this into the consuming application's `.codex/config.toml`. Replace the placeholder with the application's absolute directory:
+`mcp init --client codex` writes no file; add this block yourself, to the project's `.codex/config.toml` or to `~/.codex/config.toml` for every project. In a monorepo, add `cwd` with the application's absolute directory so the server reads its `components.json`:
 
 ```toml
 [mcp_servers.shadcn]
-command = "bunx"
-args = ["--bun", "shadcn@latest", "mcp"]
-cwd = "/absolute/path/to/app"
+command = "npx"
+args = ["shadcn@latest", "mcp"]
 ```
 
 Codex loads project configuration for trusted projects. Open or restart the project after editing and verify that the server's tools are available. See the official OpenAI documentation for [project configuration](https://learn.chatgpt.com/docs/config-file/config-basic) and [MCP settings](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+### OpenCode [#opencode]
+
+Use the project's `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "shadcn": {
+      "type": "local",
+      "command": ["npx", "shadcn@latest", "mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+Restart OpenCode and check that the server's tools are listed.
 
 ## Browse, inspect, and install [#browse-inspect-and-install]
 
@@ -115,10 +148,10 @@ The server exposes these tools for the workflow:
 | `view_items_in_registries` | Inspect an item's manifest and file contents. |
 | `get_add_command_for_items` | Return the CLI command for the selected items. |
 
-For example, search with `registries: ["@sui"]` and `query: "table"`, then inspect `items: ["@sui/data-table"]`. After obtaining the add command, the assistant runs it from the consuming application directory. With Bun, the equivalent command is:
+For example, search with `registries: ["@sui"]` and `query: "table"`, then inspect `items: ["@sui/data-table"]`. After obtaining the add command, the assistant runs it from the consuming application directory. The equivalent command is:
 
-```bash
-bunx --bun shadcn@latest add @sui/data-table
+```npm
+npx shadcn@latest add @sui/data-table
 ```
 
 Review the installed files, styles, and dependencies. See [CLI](/docs/cli) for previewing changes and [Compatibility](/docs/compatibility) for runtime requirements.
@@ -132,14 +165,14 @@ SUI's catalog contains installable components, blocks, layouts, viewers, chat, c
 | GitHub registry returns 404 | Check the configured URL, access to the repository, and whether the requested item exists. |
 | Unknown registry or missing `@sui` | Check the namespace in the consuming application's `components.json`, then call `get_project_registries`. |
 | Server reads a different project | Check its working directory. It must point to the consuming application containing `components.json`; restart after changing it. |
-| `bunx` is not found | Ensure the client process can find Bun in `PATH`, or use the absolute path to the `bunx` executable in its server configuration. |
+| The server command is not found | Ensure the client process can find `npx` (or the `pnpm`, `yarn` or `bunx` you configured) in `PATH`, or use the executable's absolute path in its server configuration. |
 | Tools appear but installation does not happen | `get_add_command_for_items` returns a command. The assistant still needs to execute it in the application. |
 
 To isolate registry problems, run these commands from the same application directory as MCP:
 
-```bash
-bunx --bun shadcn@latest search @sui -q button
-bunx --bun shadcn@latest view @sui/button
+```npm
+npx shadcn@latest search @sui -q button
+npx shadcn@latest view @sui/button
 ```
 
 See [Registry](/docs/registry) for configuration and item contents, and [CLI](/docs/cli) for installation and updates.

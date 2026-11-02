@@ -40,8 +40,10 @@
 在已初始化 shadcn 与 Base UI 的 React 19、Tailwind CSS 4 项目中，直接安装组件：
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/button
+npx shadcn@latest add draco-china/sui/button
 ```
+
+命令以 npm 为例；也可以把 `npx` 换成 `pnpm dlx`、`yarn dlx` 或 `bunx --bun`。
 
 ```tsx
 import { Button } from "@/components/ui/button"
@@ -54,7 +56,7 @@ export function SaveButton() {
 GitHub Registry 无需配置命名空间。也可以直接安装代码编辑器、数据表格和图表：
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
+npx shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
 ```
 
 现有 Raw 链接和 `@sui` 命名空间仍然受支持。使用命名空间时，将以下配置合并到应用的 `components.json`：
@@ -68,12 +70,12 @@ bunx --bun shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-ta
 ```
 
 ```sh
-bunx --bun shadcn@latest add @sui/button @sui/code-editor @sui/data-table
-bunx --bun shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
+npx shadcn@latest add @sui/button @sui/code-editor @sui/data-table
+npx shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
 ```
 
 每个条目将源码、依赖和样式安装到应用中，并使用应用的导入别名。
-通过 `bunx --bun shadcn@latest add draco-china/sui/sui` 安装完整集合，所有可用条目见
+通过 `npx shadcn@latest add draco-china/sui/sui` 安装完整集合，所有可用条目见
 [registry 目录](https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json)。
 
 官方 [shadcn MCP 服务](https://ui.shadcn.com/docs/mcp) 复用同一份 registry 配置，

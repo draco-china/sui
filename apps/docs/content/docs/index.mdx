@@ -7,25 +7,29 @@ SUI is a collection of composable React components built with Base UI and Tailwi
 
 ## Start here
 
-1. **Connect your application.** Follow [Installation](/docs/installation) to add the workspace dependency, load the shared styles, and configure Tailwind to scan the component source.
+1. **Install a component.** Follow [Installation](/docs/installation) to add components to your application with the shadcn CLI. The source lands in your project, ready to edit.
 2. **Try a component.** Browse the [component directory](/docs/components). Each page pairs an interactive preview with the complete example source.
 3. **Make it your own.** Use [Theming](/docs/theming) for colors and CSS tokens, and [Design guidelines](/docs/design-guidelines) for typography, spacing, surfaces, and motion.
 
-SUI currently uses the private `@workspace/ui` package inside this Bun workspace. There is no published SUI registry or standalone install command. Start with the installation guide before copying an example.
+Each item installs as editable source through SUI's shadcn registry, together with its dependencies and styles.
 
 ## Your first component
 
-Once your application is connected, import components from their individual modules:
+Install a component, then import it through your application's aliases:
+
+```npm
+npx shadcn@latest add draco-china/sui/button
+```
 
 ```tsx
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/components/ui/button";
 
 export function SaveButton() {
   return <Button>Save changes</Button>;
 }
 ```
 
-The previews and your application use the same shared package. The code tab shows the full example file, including imports and composition; English and Chinese pages share the same examples.
+The code tab shows each example's full file, including imports and composition; English and Chinese pages share the same examples. Examples import from `@workspace/ui/components/*`; in your application, use your own aliases, as [Import installed source](/docs/installation#import-installed-source) explains.
 
 ## Find the right pieces
 

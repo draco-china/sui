@@ -11,8 +11,8 @@ description: 通过 shadcn registry 安装 SUI 源码
 
 使用 React 19、Tailwind CSS 4，以及配置为 Base UI 的 shadcn 项目。如果现有应用尚未初始化 shadcn，运行：
 
-```bash
-bunx --bun shadcn@latest init --base base
+```npm
+npx shadcn@latest init --base base
 ```
 
 公开 GitHub Registry 可以直接使用 `draco-china/sui/<条目>` 地址，无需配置 `@sui` 命名空间。
@@ -21,31 +21,31 @@ bunx --bun shadcn@latest init --base base
 
 在消费应用目录运行：
 
-```bash
-bunx --bun shadcn@latest search draco-china/sui -q button
-bunx --bun shadcn@latest view draco-china/sui/button
-bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/code-editor
+```npm
+npx shadcn@latest search draco-china/sui -q button
+npx shadcn@latest view draco-china/sui/button
+npx shadcn@latest add draco-china/sui/button draco-china/sui/code-editor
 ```
 
 按 registry 名称安装业务区块：
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/delete-resource draco-china/sui/tanstack-form
+```npm
+npx shadcn@latest add draco-china/sui/delete-resource draco-china/sui/tanstack-form
 ```
 
 安装完整集合，包括所有组件、业务区块、布局、查看器、聊天和图表：
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/sui
+```npm
+npx shadcn@latest add draco-china/sui/sui
 ```
 
 每个条目包含所需的本地组件依赖、hooks、工具、类型、包依赖，以及 SUI CSS 和主题 token。CLI 将源码安装到别名配置的目录，并将样式合并到配置的 Tailwind CSS 文件。独立条目 `draco-china/sui/sui-style` 和 `draco-china/sui/sui-theme` 提供共享样式与主题工具。
 
 如果应用已有同名组件或自定义主题值，安装后检查生成的文件与 CSS。更新前可先预览：
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/button --dry-run
-bunx --bun shadcn@latest add draco-china/sui/button --diff
+```npm
+npx shadcn@latest add draco-china/sui/button --dry-run
+npx shadcn@latest add draco-china/sui/button --diff
 ```
 
 Code Editor 使用本地打包的 Monaco workers，需要兼容 Vite 的 `?worker` 加载器。将安装的 `worker.d.ts` 保留在 TypeScript 的 include 范围内。安装完整集合时同样需要满足此条件。
@@ -82,8 +82,8 @@ export function SaveButton() {
 
 目录索引地址为 `https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json`，单个条目也位于该目录。
 
-```bash
-bunx --bun shadcn@latest add @sui/button
+```npm
+npx shadcn@latest add @sui/button
 ```
 
 ## 连接 shadcn MCP 服务 [#connect-the-shadcn-mcp-server]

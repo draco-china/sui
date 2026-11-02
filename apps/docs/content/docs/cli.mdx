@@ -7,18 +7,18 @@ SUI uses the shadcn CLI's GitHub registry support. Prepare the consuming applica
 
 ## Search and inspect [#search-and-inspect]
 
-```bash
-bunx --bun shadcn@latest search draco-china/sui -q input
-bunx --bun shadcn@latest view draco-china/sui/copy-button
+```npm
+npx shadcn@latest search draco-china/sui -q input
+npx shadcn@latest view draco-china/sui/copy-button
 ```
 
 Search matches registry names and descriptions. View shows a manifest's files and dependencies before you install it. The [registry guide](/docs/registry) explains the catalog and item formats.
 
 ## Install source [#install-source]
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/copy-button
-bunx --bun shadcn@latest add draco-china/sui/data-table
+```npm
+npx shadcn@latest add draco-china/sui/button draco-china/sui/copy-button
+npx shadcn@latest add draco-china/sui/data-table
 ```
 
 The CLI copies required source files into your configured `ui`, `components` (blocks, layouts, viewers, chat and charts), `lib`, and `hooks` directories, installs package dependencies, and merges SUI styles into the CSS file in `components.json`. Files become part of your application and can be edited locally.
@@ -29,18 +29,18 @@ Code Editor and the complete collection require the local Monaco worker setup de
 
 ## Review an update [#review-an-update]
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/button --dry-run
-bunx --bun shadcn@latest add draco-china/sui/button --diff
+```npm
+npx shadcn@latest add draco-china/sui/button --dry-run
+npx shadcn@latest add draco-china/sui/button --diff
 ```
 
 An update can affect shared dependencies and CSS as well as the requested component. Compare changes with your local edits before accepting an overwrite. Installation is a source copy; installed files do not automatically follow future changes in the SUI repository.
 
 ## Validate and select a version [#validate-and-refs]
 
-```bash
-bunx --bun shadcn@latest registry validate draco-china/sui
-bunx --bun shadcn@latest add draco-china/sui/button#main
+```npm
+npx shadcn@latest registry validate draco-china/sui
+npx shadcn@latest add draco-china/sui/button#main
 ```
 
 `#ref` selects a branch, tag, or commit SHA; omitted refs use the repository default branch. Existing Raw URLs and `@sui` addresses remain supported; see [optional namespace configuration](/docs/installation#optional-namespace) for short addresses.

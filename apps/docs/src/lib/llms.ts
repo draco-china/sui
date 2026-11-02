@@ -32,6 +32,8 @@ const messages = {
     full: "Complete documentation",
     source: "Page",
     example: "Example",
+    packageManagers:
+      "With pnpm, Yarn or Bun, use `pnpm dlx`, `yarn dlx` or `bunx --bun` in place of `npx`, and `pnpm add`, `yarn add` or `bun add` in place of `npm install`.",
   },
   "zh-CN": {
     summary:
@@ -50,6 +52,8 @@ const messages = {
     full: "完整文档",
     source: "页面",
     example: "示例",
+    packageManagers:
+      "使用 pnpm、Yarn 或 Bun 时，把 `npx` 换成 `pnpm dlx`、`yarn dlx` 或 `bunx --bun`，把 `npm install` 换成 `pnpm add`、`yarn add` 或 `bun add`。",
   },
 } as const;
 
@@ -199,6 +203,13 @@ export async function toLLMMarkdown(
   };
   const frontmatter = raw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   let body = raw.slice(frontmatter?.[0].length ?? 0);
+  // Install commands are written once, as npm, for the site's package-manager
+  // tabs; plain Markdown shows the npm command and how to run it elsewhere.
+  body = body.replace(
+    /^```npm[^\n]*\n([\s\S]*?)^```[ \t]*$/gm,
+    (_, commands: string) =>
+      `\`\`\`bash\n${commands}\`\`\`\n\n${messages[context.locale].packageManagers}`,
+  );
   // Preserve code verbatim, including JSX and import statements inside examples.
   body = body.replace(
     /^([ \t]*)(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1\2[ \t]*$/gm,

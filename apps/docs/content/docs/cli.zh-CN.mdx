@@ -7,18 +7,18 @@ SUI 使用 shadcn CLI 的 GitHub Registry。先按照[安装指南](/zh-CN/docs/
 
 ## 搜索与查看 [#search-and-inspect]
 
-```bash
-bunx --bun shadcn@latest search draco-china/sui -q input
-bunx --bun shadcn@latest view draco-china/sui/copy-button
+```npm
+npx shadcn@latest search draco-china/sui -q input
+npx shadcn@latest view draco-china/sui/copy-button
 ```
 
 搜索匹配条目名称与描述。查看命令可在安装前检查文件和依赖。[Registry 指南](/zh-CN/docs/registry)介绍索引和条目的格式。
 
 ## 安装源码 [#install-source]
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/copy-button
-bunx --bun shadcn@latest add draco-china/sui/data-table
+```npm
+npx shadcn@latest add draco-china/sui/button draco-china/sui/copy-button
+npx shadcn@latest add draco-china/sui/data-table
 ```
 
 CLI 将所需源码复制到配置的 `ui`、`components`（业务区块、布局、查看器、聊天和图表）、`lib` 和 `hooks` 目录，安装包依赖，并将 SUI 样式合并到 `components.json` 指定的 CSS 文件。安装后的文件属于应用，可以直接修改。
@@ -29,18 +29,18 @@ Code Editor 和完整集合需要本地 Monaco worker 支持，详见[兼容性�
 
 ## 检查更新 [#review-an-update]
 
-```bash
-bunx --bun shadcn@latest add draco-china/sui/button --dry-run
-bunx --bun shadcn@latest add draco-china/sui/button --diff
+```npm
+npx shadcn@latest add draco-china/sui/button --dry-run
+npx shadcn@latest add draco-china/sui/button --diff
 ```
 
 更新可能同时影响共享依赖和 CSS。覆盖文件前先对比本地修改。安装属于源码复制，文件不会自动跟随 SUI 仓库的后续变更。
 
 ## 验证与版本 [#validate-and-refs]
 
-```bash
-bunx --bun shadcn@latest registry validate draco-china/sui
-bunx --bun shadcn@latest add draco-china/sui/button#main
+```npm
+npx shadcn@latest registry validate draco-china/sui
+npx shadcn@latest add draco-china/sui/button#main
 ```
 
 `#ref` 可指定分支、tag 或提交 SHA；省略时使用仓库默认分支。现有 Raw 链接与 `@sui` 地址继续受支持，使用短地址时见[可选命名空间配置](/zh-CN/docs/installation#optional-namespace)。

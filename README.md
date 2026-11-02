@@ -41,8 +41,10 @@ Use a React 19 and Tailwind CSS 4 project initialized with shadcn and Base UI.
 Install a component directly:
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/button
+npx shadcn@latest add draco-china/sui/button
 ```
+
+The commands use npm; `pnpm dlx`, `yarn dlx` or `bunx --bun` work in place of `npx`.
 
 ```tsx
 import { Button } from "@/components/ui/button"
@@ -55,7 +57,7 @@ export function SaveButton() {
 The GitHub registry needs no namespace configuration. Install the code editor, data table, and charts directly too:
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
+npx shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
 ```
 
 Existing Raw URLs and the `@sui` namespace remain supported. To use the namespace, merge this entry into your application's `components.json`:
@@ -69,12 +71,12 @@ Existing Raw URLs and the `@sui` namespace remain supported. To use the namespac
 ```
 
 ```sh
-bunx --bun shadcn@latest add @sui/button @sui/code-editor @sui/data-table
-bunx --bun shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
+npx shadcn@latest add @sui/button @sui/code-editor @sui/data-table
+npx shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
 ```
 
 Each item installs its source, dependencies, and styles using your application's
-aliases. Install the full collection with `bunx --bun shadcn@latest add draco-china/sui/sui`.
+aliases. Install the full collection with `npx shadcn@latest add draco-china/sui/sui`.
 Browse the [registry catalog](https://raw.githubusercontent.com/draco-china/sui/main/registry/r/registry.json)
 for available items.
 

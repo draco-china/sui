@@ -74,6 +74,24 @@ describe("LLM Markdown conversion", () => {
     );
   });
 
+  test("install commands render as npm, with the other package managers named", async () => {
+    const context = {
+      origin: "https://docs.test",
+      pages: [],
+      example: async () => "",
+    };
+    const raw =
+      "## Install\n\n```npm\nnpx shadcn@latest add draco-china/sui/button\n```\n";
+    const english = await toLLMMarkdown(raw, { ...context, locale: "en-US" });
+    expect(english).toContain(
+      "```bash\nnpx shadcn@latest add draco-china/sui/button\n```",
+    );
+    expect(english).not.toContain("```npm");
+    expect(english).toContain("`bunx --bun` in place of `npx`");
+    const chinese = await toLLMMarkdown(raw, { ...context, locale: "zh-CN" });
+    expect(chinese).toContain("把 `npx` 换成");
+  });
+
   test("missing preview source fails visibly rather than publishing a placeholder", async () => {
     await expect(
       toLLMMarkdown('<ComponentPreview name="missing" />', {

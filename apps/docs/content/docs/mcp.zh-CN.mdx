@@ -7,7 +7,7 @@ description: 将 AI 助手连接到 SUI registry
 
 需要 API 说明和完整使用示例时，向助手提供 [LLMs 文档](/zh-CN/docs/llms-txt)。MCP 用于查询和查看可安装源码。其 `get_add_command_for_items` 工具返回 CLI 命令，随后由助手在应用中执行命令安装文件。
 
-GitHub CLI 安装也无需配置命名空间：`bunx --bun shadcn@latest add draco-china/sui/button`。下方 MCP 示例继续使用可选的 `@sui` 配置来发现 registry。
+GitHub CLI 安装也无需配置命名空间：`npx shadcn@latest add draco-china/sui/button`。下方 MCP 示例继续使用可选的 `@sui` 配置来发现 registry。
 
 ## 配置应用 [#configure-the-application]
 
@@ -27,13 +27,28 @@ GitHub CLI 安装也无需配置命名空间：`bunx --bun shadcn@latest add dra
 
 ## 配置客户端 [#configure-the-client]
 
-以下示例使用 Bun 启动官方服务：
+在消费应用中运行以下命令，然后重启或启用服务。`--client` 可选 `claude`、`cursor`、`vscode`、`codex` 或 `opencode`。对 Claude Code、Cursor、VS Code 和 OpenCode，它会写入项目的客户端配置；对 Codex，它只打印需要手动添加的配置。无论哪种，它都会把 `shadcn` 加入应用的开发依赖：
 
-```bash
-bunx --bun shadcn@latest mcp
+```npm
+npx shadcn@latest mcp init --client claude
 ```
 
-MCP 客户端启动此进程，通过 stdin/stdout 通信。将对应配置合并到项目现有的客户端配置文件，然后重启或启用服务。客户端进程的环境中必须能找到 Bun。
+配置会启动官方服务，服务通过 stdin/stdout 与客户端通信：
+
+```npm
+npx shadcn@latest mcp
+```
+
+如需手动配置，将对应客户端的条目合并到项目现有的配置文件。示例与 shadcn CLI 写入的一致，用 `npx` 启动服务；使用其他包管理器时，替换命令及参数：
+
+| 包管理器 | `command` | `args` |
+| --- | --- | --- |
+| pnpm | `"pnpm"` | `["dlx", "shadcn@latest", "mcp"]` |
+| npm | `"npx"` | `["shadcn@latest", "mcp"]` |
+| yarn | `"yarn"` | `["dlx", "shadcn@latest", "mcp"]` |
+| bun | `"bunx"` | `["--bun", "shadcn@latest", "mcp"]` |
+
+客户端进程的 `PATH` 中必须能找到该命令。
 
 ### Claude Code [#claude-code]
 
@@ -43,8 +58,8 @@ MCP 客户端启动此进程，通过 stdin/stdout 通信。将对应配置合�
 {
   "mcpServers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -60,8 +75,8 @@ MCP 客户端启动此进程，通过 stdin/stdout 通信。将对应配置合�
 {
   "mcpServers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -71,14 +86,14 @@ MCP 客户端启动此进程，通过 stdin/stdout 通信。将对应配置合�
 
 ### VS Code [#vs-code]
 
-使用 GitHub Copilot 时，配置项目的 `.vscode/mcp.json`。VS Code 使用 `servers` 字段：
+GitHub Copilot 使用项目的 `.vscode/mcp.json`。VS Code 使用 `servers` 字段：
 
 ```json
 {
   "servers": {
     "shadcn": {
-      "command": "bunx",
-      "args": ["--bun", "shadcn@latest", "mcp"]
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
@@ -88,16 +103,34 @@ MCP 客户端启动此进程，通过 stdin/stdout 通信。将对应配置合�
 
 ### Codex [#codex]
 
-将以下配置合并到消费应用的 `.codex/config.toml`。将占位路径替换为应用的绝对目录：
+`mcp init --client codex` 不会写入文件，请手动添加以下配置：写入项目的 `.codex/config.toml`，或写入 `~/.codex/config.toml` 对所有项目生效。在 monorepo 中，加上 `cwd` 并填写应用的绝对目录，让服务读取其 `components.json`：
 
 ```toml
 [mcp_servers.shadcn]
-command = "bunx"
-args = ["--bun", "shadcn@latest", "mcp"]
-cwd = "/absolute/path/to/app"
+command = "npx"
+args = ["shadcn@latest", "mcp"]
 ```
 
 Codex 对受信任的项目加载项目配置。编辑后打开或重启该项目，并确认服务工具可用。参见 OpenAI 官方文档的[项目配置](https://learn.chatgpt.com/docs/config-file/config-basic)与 [MCP 设置](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)。
+
+### OpenCode [#opencode]
+
+使用项目的 `opencode.json`：
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "shadcn": {
+      "type": "local",
+      "command": ["npx", "shadcn@latest", "mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+重启 OpenCode，并确认服务工具已列出。
 
 ## 浏览、查看与安装 [#browse-inspect-and-install]
 
@@ -115,10 +148,10 @@ Codex 对受信任的项目加载项目配置。编辑后打开或重启该项�
 | `view_items_in_registries` | 查看条目的 manifest 和文件内容。 |
 | `get_add_command_for_items` | 返回所选条目的 CLI 安装命令。 |
 
-例如，以 `registries: ["@sui"]` 和 `query: "table"` 搜索，再以 `items: ["@sui/data-table"]` 查看源码。拿到安装命令后，助手在消费应用目录执行。使用 Bun 时，对应命令为：
+例如，以 `registries: ["@sui"]` 和 `query: "table"` 搜索，再以 `items: ["@sui/data-table"]` 查看源码。拿到安装命令后，助手在消费应用目录执行。对应命令为：
 
-```bash
-bunx --bun shadcn@latest add @sui/data-table
+```npm
+npx shadcn@latest add @sui/data-table
 ```
 
 检查安装后的文件、样式与依赖。变更预览方式见 [CLI](/zh-CN/docs/cli)，运行环境要求见[兼容性指南](/zh-CN/docs/compatibility)。
@@ -132,14 +165,14 @@ SUI 当前目录索引包含可安装的组件、业务区块、布局、查看�
 | GitHub registry 返回 404 | 检查配置的地址、仓库访问权限，以及所需条目是否存在。 |
 | Unknown registry 或缺少 `@sui` | 检查消费应用 `components.json` 中的命名空间，再调用 `get_project_registries`。 |
 | 服务读取了其他项目 | 检查工作目录，必须指向包含 `components.json` 的消费应用；修改后重启服务。 |
-| 找不到 `bunx` | 确保客户端进程的 `PATH` 能找到 Bun，或在服务配置中使用 `bunx` 可执行文件的绝对路径。 |
+| 找不到服务命令 | 确保客户端进程的 `PATH` 能找到 `npx`（或你配置的 `pnpm`、`yarn`、`bunx`），或在服务配置中使用可执行文件的绝对路径。 |
 | 工具可用，但没有安装文件 | `get_add_command_for_items` 只返回命令，助手仍需在应用中执行它。 |
 
 在与 MCP 相同的应用目录运行以下命令，可单独排查 registry 访问问题：
 
-```bash
-bunx --bun shadcn@latest search @sui -q button
-bunx --bun shadcn@latest view @sui/button
+```npm
+npx shadcn@latest search @sui -q button
+npx shadcn@latest view @sui/button
 ```
 
 配置与条目说明见 [Registry](/zh-CN/docs/registry)，安装与更新命令见 [CLI](/zh-CN/docs/cli)。
