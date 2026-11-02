@@ -1,3 +1,15 @@
+## [5.2.0](https://github.com/draco-china/sui/compare/v5.1.0...v5.2.0) (2026-11-02)
+
+### Features
+
+* **data-table:** hide the toolbar's filter chip row by default; chips restores it ([b23b871](https://github.com/draco-china/sui/commit/b23b8716f60cce4e3940f77b08cb66e980af52fe))
+* **data-table:** show the scrollbars only while the table is in use ([48d3126](https://github.com/draco-china/sui/commit/48d312603add2009592f51f00a2639a0398f217d))
+
+### Bug Fixes
+
+* **data-table:** keep the scrollbar off the sticky header ([a7c15f4](https://github.com/draco-china/sui/commit/a7c15f4fa87c40342138d3a00c7a70877cc5ec4a))
+* **data-table:** open and close the query form on one curve ([31fbec4](https://github.com/draco-china/sui/commit/31fbec4900d7cb20c771bde4b97955032dd285c0))
+
 ## [5.1.0](https://github.com/draco-china/sui/compare/v5.0.1...v5.1.0) (2026-11-02)
 
 ### Features
