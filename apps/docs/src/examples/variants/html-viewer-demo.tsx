@@ -1,5 +1,5 @@
 "use client";
-import { HtmlViewer } from "@workspace/ui/components/html-viewer";
+import { HtmlViewer } from "@workspace/ui/viewers/html-viewer";
 import type { ExampleProps } from "../types";
 export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";

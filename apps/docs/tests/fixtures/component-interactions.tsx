@@ -74,7 +74,7 @@ cleanup();
 
 scenario("markdown code blocks keep their viewer across prop changes");
 const { MarkdownViewer } = await import(
-  "@workspace/ui/components/markdown-viewer"
+  "@workspace/ui/viewers/markdown-viewer"
 );
 view = render(<MarkdownViewer content={"```js\nconst n=1\n```"} />);
 const code = view.container.querySelector('[data-slot="code-viewer"]');

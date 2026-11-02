@@ -1,7 +1,7 @@
 import type { Monaco } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import type { ComponentProps, ReactNode, RefObject } from "react";
-import type { ViewerThemes } from "../../lib/viewer/shiki";
+import type { HighlightThemes } from "../../lib/highlight/shiki";
 import type { Button } from "../button";
 import type { CodeEditorLabels } from "./labels";
 
@@ -93,7 +93,7 @@ export interface CodeEditorInternal {
   readonly onPreviewScroll: (element: HTMLElement) => void;
   readonly modelPath: string;
   readonly themeName: string;
-  readonly shikiThemes: ViewerThemes;
+  readonly shikiThemes: HighlightThemes;
   readonly options: MonacoEditorOptions;
   readonly onMount: (editor: MonacoEditorInstance, monaco: Monaco) => void;
   readonly onChange: (value: string) => void;

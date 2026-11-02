@@ -67,6 +67,7 @@ function workspaceFile(specifier: string) {
   const extension =
     relative.startsWith("components/") ||
     relative.startsWith("blocks/") ||
+    relative.startsWith("viewers/") ||
     (relative.startsWith("layouts/") && relative !== "layouts/types")
       ? ".tsx"
       : ".ts";
@@ -172,6 +173,23 @@ describe("documentation coverage", () => {
       }
     }
     expect(failures).toEqual([]);
+  });
+  test("viewer navigation lists every viewer with pages in both locales", () => {
+    const viewerSlugs = readdirSync(join(uiRoot, "viewers"))
+      .filter((file) => file.endsWith(".tsx"))
+      .map((file) => file.slice(0, -4))
+      .sort();
+    for (const file of ["meta.json", "meta.zh-CN.json"]) {
+      const pages = JSON.parse(
+        readFileSync(join(contentRoot, "viewers", file), "utf8"),
+      ).pages as string[];
+      expect([...pages].sort()).toEqual(viewerSlugs);
+    }
+    for (const slug of viewerSlugs)
+      for (const suffix of ["", ".zh-CN"])
+        expect(
+          existsSync(join(contentRoot, `viewers/${slug}${suffix}.mdx`)),
+        ).toBe(true);
   });
   test("navigation, live examples and displayed sources cover every UI component", () => {
     expect(componentSlugs.length).toBeGreaterThan(0);

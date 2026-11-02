@@ -7,25 +7,23 @@ import {
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
 import { CodeEditor, preview } from "@workspace/ui/components/code-editor";
-import {
-  CodeViewer,
-  ShikiProvider,
-} from "@workspace/ui/components/code-viewer";
-import { DiffViewer } from "@workspace/ui/components/diff-viewer";
 import { GlassSurface } from "@workspace/ui/components/glass";
-import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 import { ImagePreview } from "@workspace/ui/components/image";
-import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+import { CodeViewer, ShikiProvider } from "@workspace/ui/viewers/code-viewer";
+import { DiffViewer } from "@workspace/ui/viewers/diff-viewer";
+import { HtmlViewer } from "@workspace/ui/viewers/html-viewer";
+import { MarkdownViewer } from "@workspace/ui/viewers/markdown-viewer";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   clampImageScale,
   normalizeImageIndex,
   wrapImageIndex,
-} from "../../../packages/ui/src/lib/viewer/image-transform";
+} from "../../../packages/ui/src/components/image/transform";
 import {
-  codeToViewerTokens,
-  getViewerHighlighter,
-} from "../../../packages/ui/src/lib/viewer/shiki";
+  codeToTokens,
+  getHighlighter,
+} from "../../../packages/ui/src/lib/highlight/shiki";
+import { ViewerStatus } from "../../../packages/ui/src/viewers/shared/status";
 import { describeFixture } from "./support/fixture";
 
 describe("viewer SSR and untrusted content", () => {
@@ -171,18 +169,14 @@ describe("viewer SSR and untrusted content", () => {
 describe("shared lazy syntax highlighting", () => {
   test("shares the core across languages and treats unrecognized/prototype names as plain text", async () => {
     const [{ instance: one }, { instance: two }] = await Promise.all([
-      getViewerHighlighter("typescript", "light"),
-      getViewerHighlighter("python", "dark"),
+      getHighlighter("typescript", "light"),
+      getHighlighter("python", "dark"),
     ]);
     expect(one).toBe(two);
     for (const lang of ["not-a-language", "constructor", "__proto__"]) {
-      const result = await getViewerHighlighter(lang, "light");
+      const result = await getHighlighter(lang, "light");
       expect(result.lang).toBe("text");
-      const tokens = await codeToViewerTokens(
-        "const value = 42",
-        lang,
-        "light",
-      );
+      const tokens = await codeToTokens("const value = 42", lang, "light");
       expect(
         tokens
           .flat()
@@ -193,7 +187,7 @@ describe("shared lazy syntax highlighting", () => {
   });
   test("supports language aliases, previously absent grammars and configured dual themes", async () => {
     for (const lang of ["rb", "rust", "vue", "swift", "sql"]) {
-      const tokens = await codeToViewerTokens("let answer = 42", lang, "dark");
+      const tokens = await codeToTokens("let answer = 42", lang, "dark");
       expect(
         tokens
           .flat()
@@ -202,25 +196,20 @@ describe("shared lazy syntax highlighting", () => {
       ).toBe("let answer = 42");
     }
     const themes = { light: "github-light", dark: "github-dark" } as const;
-    const light = await codeToViewerTokens(
+    const light = await codeToTokens(
       "const answer = 42",
       "ts",
       "light",
       themes,
     );
-    const dark = await codeToViewerTokens(
-      "const answer = 42",
-      "ts",
-      "dark",
-      themes,
-    );
+    const dark = await codeToTokens("const answer = 42", "ts", "dark", themes);
     expect(light[0].some((token) => token.color)).toBe(true);
     expect(light[0].map((token) => token.color)).not.toEqual(
       dark[0].map((token) => token.color),
     );
     const html = renderToStaticMarkup(
       <ShikiProvider languages={["python"]} themes={themes}>
-        <CodeViewer code="print(42)" lang="python" variant="plain" />
+        <CodeViewer code="print(42)" language="python" variant="plain" />
       </ShikiProvider>,
     );
     expect(html).toContain("print(42)");
@@ -326,4 +315,29 @@ test("code tools stay ordinary, including their actions, inside glass", () => {
   );
   expect(html.match(/data-glass="true"/g)).toHaveLength(1);
   expect(html).toMatch(/<button\b/);
+});
+
+test("viewer status disappears once ready but is still announced", () => {
+  const labels = {
+    writing: "Writing",
+    loading: "Loading",
+    ready: "Ready",
+    error: "Failed",
+  };
+  const status = (
+    state: Partial<Record<"streaming" | "loading" | "failed", boolean>>,
+  ) =>
+    renderToStaticMarkup(
+      <ViewerStatus
+        streaming={state.streaming ?? false}
+        loading={state.loading ?? false}
+        failed={state.failed ?? false}
+        reducedMotion={false}
+        labels={labels}
+      />,
+    );
+  expect(status({})).toBe('<span role="status" class="sr-only">Ready</span>');
+  expect(status({ streaming: true })).toContain("Writing");
+  expect(status({ streaming: true })).toContain("<svg");
+  expect(status({ failed: true })).toContain("text-destructive");
 });

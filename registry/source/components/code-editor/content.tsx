@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useCodeEditorContext } from "@/components/ui/code-editor/context";
 
-const MonacoEditor = lazy(() => import("@/lib/editor/monaco-client"));
+const MonacoEditor = lazy(() => import("@/components/ui/code-editor/monaco/monaco-client"));
 
 function Skeleton({ label }: Readonly<{ label?: string }>) {
   return (

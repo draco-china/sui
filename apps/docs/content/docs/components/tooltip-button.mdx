@@ -1,0 +1,38 @@
+---
+title: Tooltip Button
+description: A button, usually icon-only, whose tooltip also gives it an accessible name.
+component: true
+---
+
+<ComponentPreview name="tooltip-button-demo" />
+
+## Installation
+
+```bash
+bunx --bun shadcn@latest add @sui/tooltip-button
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { TooltipButton } from "@workspace/ui/components/tooltip-button";
+```
+
+## Usage
+
+```tsx
+<TooltipButton variant="ghost" size="icon-sm" tooltip="Bold">
+  <Bold />
+</TooltipButton>
+```
+
+`tooltip` is shown on hover and focus through [Tooltip](/docs/components/tooltip) and is also the button's `aria-label`, so icon-only buttons are named once. All other [Button](/docs/components/button) props pass through, including `glass`. Toolbars in [Code Editor](/docs/components/code-editor) and the [Image](/docs/components/image) preview are built from it.
+
+## API reference
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `tooltip` | `string` | Required; tooltip text and accessible name. |
+| Button props | | Passed to the Button. |
+
+The module exports `TooltipButtonProps`.

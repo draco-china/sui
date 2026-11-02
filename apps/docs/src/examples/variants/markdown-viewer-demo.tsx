@@ -1,5 +1,8 @@
 "use client";
-import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+import {
+  MarkdownViewer,
+  markdownViewerLabelsZhCN,
+} from "@workspace/ui/viewers/markdown-viewer";
 import type { ExampleProps } from "../types";
 export default function Example({ locale }: ExampleProps) {
   const chinese = locale === "zh-CN";
@@ -10,30 +13,7 @@ export default function Example({ locale }: ExampleProps) {
     <MarkdownViewer
       content={content}
       className="w-full"
-      labels={
-        chinese
-          ? {
-              empty: "没有 Markdown 内容",
-              note: "备注",
-              tip: "提示",
-              important: "重要",
-              warning: "警告",
-              caution: "注意",
-              code: {
-                copy: "复制代码",
-                copied: "已复制",
-                copyFailed: "复制失败",
-                loading: "正在加载",
-                error: "无法高亮代码",
-                empty: "没有代码",
-                expand: "展开",
-                collapse: "收起",
-                writing: "正在生成",
-                ready: "就绪",
-              },
-            }
-          : undefined
-      }
+      labels={chinese ? markdownViewerLabelsZhCN : undefined}
     />
   );
 }

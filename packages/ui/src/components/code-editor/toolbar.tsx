@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { FileCode2 } from "lucide-react";
 import { type ComponentProps, Fragment, type ReactNode } from "react";
-import { ViewerButton } from "../viewer/controls";
+import { TooltipButton } from "../tooltip-button";
 import { useCodeEditorContext } from "./context";
 import { languageLabel } from "./languages";
 
@@ -12,10 +12,10 @@ export function CodeEditorToolbarButton({
   variant = "ghost",
   className,
   ...props
-}: Readonly<ComponentProps<typeof ViewerButton>>) {
+}: Readonly<ComponentProps<typeof TooltipButton>>) {
   const editor = useCodeEditorContext();
   return (
-    <ViewerButton
+    <TooltipButton
       size={size ?? editor.size}
       variant={variant}
       className={cn(

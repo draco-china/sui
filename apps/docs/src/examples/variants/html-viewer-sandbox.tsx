@@ -1,7 +1,7 @@
 "use client";
-import { HtmlViewer } from "@workspace/ui/components/html-viewer";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { HtmlViewer } from "@workspace/ui/viewers/html-viewer";
 import { useId, useState } from "react";
 import type { ExampleProps } from "../types";
 export default function Example({ locale }: ExampleProps) {

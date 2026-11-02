@@ -1,0 +1,5 @@
+{
+  "title": "Viewers",
+  "defaultOpen": true,
+  "pages": ["code-viewer", "diff-viewer", "markdown-viewer", "html-viewer"]
+}

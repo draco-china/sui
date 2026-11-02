@@ -5,7 +5,6 @@ import {
   type CodeEditorPlugin,
   codeEditorLabelsZhCN,
 } from "@workspace/ui/components/code-editor";
-import { CodeViewer } from "@workspace/ui/components/code-viewer";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
+import {
+  CodeViewer,
+  codeViewerLabelsZhCN,
+} from "@workspace/ui/viewers/code-viewer";
 import { useId, useState } from "react";
 import type { ExampleProps } from "../types";
 
@@ -98,25 +101,10 @@ export default function Example({ locale }: ExampleProps) {
       />
       <CodeViewer
         code={code}
-        lang="typescript"
+        language="typescript"
         title={chinese ? "当前代码" : "Current code"}
         maxHeight={160}
-        labels={
-          chinese
-            ? {
-                copy: "复制代码",
-                copied: "已复制",
-                copyFailed: "复制失败",
-                loading: "正在高亮",
-                error: "无法高亮代码",
-                empty: "没有代码",
-                expand: "展开",
-                collapse: "折叠",
-                writing: "正在编写",
-                ready: "就绪",
-              }
-            : undefined
-        }
+        labels={chinese ? codeViewerLabelsZhCN : undefined}
       />
     </div>
   );

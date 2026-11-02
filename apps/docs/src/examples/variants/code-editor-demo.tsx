@@ -6,8 +6,8 @@ import {
   languageSelect,
   preview,
 } from "@workspace/ui/components/code-editor";
-import { HtmlViewer } from "@workspace/ui/components/html-viewer";
-import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+import { HtmlViewer } from "@workspace/ui/viewers/html-viewer";
+import { MarkdownViewer } from "@workspace/ui/viewers/markdown-viewer";
 import { useMemo, useState } from "react";
 import type { ExampleProps } from "../types";
 

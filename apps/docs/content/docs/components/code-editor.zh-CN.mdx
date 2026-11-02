@@ -59,7 +59,7 @@ export function ConfigEditor() {
 
 ## 预览 [#preview]
 
-CodeEditor 不内置任何渲染器，也不依赖任何 viewer。`preview({ render })` 接收当前内容，可以渲染任意组件，例如 [Markdown Viewer](/zh-CN/docs/components/markdown-viewer) 或 [Html Viewer](/zh-CN/docs/components/html-viewer)：
+CodeEditor 不内置任何渲染器，也不依赖任何 viewer。`preview({ render })` 接收当前内容，可以渲染任意组件，例如 [Markdown Viewer](/zh-CN/docs/viewers/markdown-viewer) 或 [Html Viewer](/zh-CN/docs/viewers/html-viewer)：
 
 ```tsx
 preview({ render: (value) => <MarkdownViewer className="p-4" content={value} /> })

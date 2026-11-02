@@ -1,6 +1,9 @@
 "use client";
 import { Button } from "@workspace/ui/components/button";
-import { CodeViewer } from "@workspace/ui/components/code-viewer";
+import {
+  CodeViewer,
+  codeViewerLabelsZhCN,
+} from "@workspace/ui/viewers/code-viewer";
 import { useEffect, useState } from "react";
 import type { ExampleProps } from "../types";
 
@@ -53,27 +56,12 @@ export default function Example({ locale }: ExampleProps) {
       <CodeViewer
         code={lines.slice(0, count).join("\n")}
         status={streaming ? "streaming" : "complete"}
-        lang="typescript"
+        language="typescript"
         title="theme.ts"
         wrap
         showLineNumbers={false}
         maxHeight={180}
-        labels={
-          chinese
-            ? {
-                copy: "复制代码",
-                loading: "正在高亮",
-                error: "无法高亮代码",
-                empty: "没有代码",
-                expand: "展开",
-                collapse: "折叠",
-                writing: "正在编写",
-                ready: "就绪",
-                copied: "已复制",
-                copyFailed: "复制失败",
-              }
-            : undefined
-        }
+        labels={chinese ? codeViewerLabelsZhCN : undefined}
       />
     </div>
   );

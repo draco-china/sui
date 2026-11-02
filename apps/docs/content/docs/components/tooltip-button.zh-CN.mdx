@@ -1,0 +1,38 @@
+---
+title: Tooltip Button
+description: 带提示的按钮（通常只有图标），提示文字同时作为可访问名称
+component: true
+---
+
+<ComponentPreview name="tooltip-button-demo" />
+
+## 安装
+
+```bash
+bunx --bun shadcn@latest add @sui/tooltip-button
+```
+
+通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { TooltipButton } from "@workspace/ui/components/tooltip-button";
+```
+
+## 使用
+
+```tsx
+<TooltipButton variant="ghost" size="icon-sm" tooltip="加粗">
+  <Bold />
+</TooltipButton>
+```
+
+`tooltip` 在悬停和聚焦时通过 [Tooltip](/zh-CN/docs/components/tooltip) 显示，同时作为按钮的 `aria-label`，纯图标按钮只需命名一次。其余 [Button](/zh-CN/docs/components/button) 属性（包括 `glass`）均透传。[Code Editor](/zh-CN/docs/components/code-editor) 工具栏和 [Image](/zh-CN/docs/components/image) 预览控件都基于它。
+
+## API 参考
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `tooltip` | `string` | 必填，提示文字与可访问名称。 |
+| Button 属性 | | 透传给 Button。 |
+
+模块导出 `TooltipButtonProps`。

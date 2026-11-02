@@ -22,16 +22,16 @@ import {
   useState,
 } from "react";
 import type { GlassProps } from "../../lib/glass/with-glass";
+import { Button } from "../button";
+import { Dialog, DialogOverlay, DialogTitle } from "../dialog";
+import { TooltipButton } from "../tooltip-button";
+import { type ImageLabelOverrides, imageLabels } from "./labels";
 import {
   clampImageScale,
   defaultImageTransform,
   normalizeImageIndex,
   wrapImageIndex,
-} from "../../lib/viewer/image-transform";
-import { Button } from "../button";
-import { Dialog, DialogOverlay, DialogTitle } from "../dialog";
-import { ViewerButton } from "../viewer/controls";
-import { type ImageLabelOverrides, imageLabels } from "./labels";
+} from "./transform";
 
 export type ImagePreviewItem = string | { src: string; alt?: string };
 
@@ -262,7 +262,7 @@ function ImagePreview({
         >
           <DialogTitle className="sr-only">{text.viewer}</DialogTitle>
           <div className="flex shrink-0 flex-wrap items-center gap-1 px-3 py-2">
-            <ViewerButton
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -270,11 +270,11 @@ function ImagePreview({
               onClick={() => zoomBy(-0.25)}
             >
               <ZoomOut aria-hidden="true" />
-            </ViewerButton>
+            </TooltipButton>
             <span className="min-w-12 text-center tabular-nums">
               {Math.round(transform.scale * 100)}%
             </span>
-            <ViewerButton
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -282,8 +282,8 @@ function ImagePreview({
               onClick={() => zoomBy(0.25)}
             >
               <ZoomIn aria-hidden="true" />
-            </ViewerButton>
-            <ViewerButton
+            </TooltipButton>
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -291,8 +291,8 @@ function ImagePreview({
               onClick={() => rotateBy(-90)}
             >
               <RotateCcw aria-hidden="true" />
-            </ViewerButton>
-            <ViewerButton
+            </TooltipButton>
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -300,8 +300,8 @@ function ImagePreview({
               onClick={() => rotateBy(90)}
             >
               <RotateCw aria-hidden="true" />
-            </ViewerButton>
-            <ViewerButton
+            </TooltipButton>
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -315,11 +315,11 @@ function ImagePreview({
               onClick={reset}
             >
               <RotateCcwSquare aria-hidden="true" />
-            </ViewerButton>
+            </TooltipButton>
             <span className="ms-auto text-muted-foreground tabular-nums">
               {index + 1} / {list.length}
             </span>
-            <ViewerButton
+            <TooltipButton
               {...material}
               size="icon-sm"
               variant="ghost"
@@ -327,7 +327,7 @@ function ImagePreview({
               onClick={close}
             >
               <X aria-hidden="true" />
-            </ViewerButton>
+            </TooltipButton>
           </div>
           <span role="status" className="sr-only">
             {text.position(index + 1, list.length)}

@@ -8,7 +8,7 @@ import {
   fullscreen,
   preview,
 } from "@workspace/ui/components/code-editor";
-import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+import { MarkdownViewer } from "@workspace/ui/viewers/markdown-viewer";
 import { useMemo, useState } from "react";
 import type { ExampleProps } from "../types";
 

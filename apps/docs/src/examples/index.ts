@@ -201,6 +201,7 @@ export const examples = {
   "context-menu-shortcuts": () => import("./variants/context-menu-shortcuts"),
   "context-menu-sides": () => import("./variants/context-menu-sides"),
   "context-menu-submenu": () => import("./variants/context-menu-submenu"),
+  "copy-button-demo": () => import("./variants/copy-button-demo"),
   "design-guidelines-collapse-content-size": () =>
     import("./variants/design-guidelines-collapse-content-size"),
   "design-guidelines-concentric-border-radius": () =>
@@ -567,6 +568,7 @@ export const examples = {
   "tooltip-keyboard": () => import("./variants/tooltip-keyboard"),
   "tooltip-rtl": () => import("./variants/tooltip-rtl"),
   "tooltip-sides": () => import("./variants/tooltip-sides"),
+  "tooltip-button-demo": () => import("./variants/tooltip-button-demo"),
   "code-viewer-demo": () => import("./variants/code-viewer-demo"),
   "code-viewer-plain": () => import("./variants/code-viewer-plain"),
   "code-viewer-streaming": () => import("./variants/code-viewer-streaming"),
@@ -834,6 +836,7 @@ export const sourceFiles = {
   "context-menu-sides": () => import("./variants/context-menu-sides.tsx?raw"),
   "context-menu-submenu": () =>
     import("./variants/context-menu-submenu.tsx?raw"),
+  "copy-button-demo": () => import("./variants/copy-button-demo.tsx?raw"),
   "design-guidelines-collapse-content-size": () =>
     import("./variants/design-guidelines-collapse-content-size.tsx?raw"),
   "design-guidelines-concentric-border-radius": () =>
@@ -1245,6 +1248,7 @@ export const sourceFiles = {
   "tooltip-keyboard": () => import("./variants/tooltip-keyboard.tsx?raw"),
   "tooltip-rtl": () => import("./variants/tooltip-rtl.tsx?raw"),
   "tooltip-sides": () => import("./variants/tooltip-sides.tsx?raw"),
+  "tooltip-button-demo": () => import("./variants/tooltip-button-demo.tsx?raw"),
   "code-viewer-demo": () => import("./variants/code-viewer-demo.tsx?raw"),
   "code-viewer-plain": () => import("./variants/code-viewer-plain.tsx?raw"),
   "code-viewer-streaming": () =>

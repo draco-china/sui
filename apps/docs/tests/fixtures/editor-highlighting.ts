@@ -1,9 +1,9 @@
 import { strict as assert } from "node:assert";
-import { registerEditorHighlighter } from "../../../../packages/ui/src/lib/editor/monaco-theme";
+import { registerEditorHighlighter } from "../../../../packages/ui/src/components/code-editor/monaco/monaco-theme";
 import {
-  codeToViewerTokens,
-  getViewerHighlighter,
-} from "../../../../packages/ui/src/lib/viewer/shiki";
+  codeToTokens,
+  getHighlighter,
+} from "../../../../packages/ui/src/lib/highlight/shiki";
 import { scenario } from "../support/scenario";
 
 const { shikiToMonaco } = await import(
@@ -78,7 +78,7 @@ function compare(
 }
 
 scenario("cold JSX gets a native JavaScript tokenizer with the JSX grammar");
-const { instance } = await getViewerHighlighter("jsx", "light");
+const { instance } = await getHighlighter("jsx", "light");
 assert.deepEqual(instance.getLoadedLanguages(), ["jsx"]);
 const jsxGrammar = instance.getLanguage("jsx");
 const cold = registry(["javascript"]);
@@ -96,7 +96,7 @@ const jsx = [
   "</Panel>;",
   "const next = 42;",
 ];
-await codeToViewerTokens(jsx.join("\n"), "jsx", "light");
+await codeToTokens(jsx.join("\n"), "jsx", "light");
 compare(
   cold.providers.get("javascript"),
   jsxReference.providers.get("jsx"),
@@ -109,7 +109,7 @@ assert.equal(
 );
 
 scenario("loading base JavaScript later keeps its JSX superset");
-await getViewerHighlighter("javascript", "light");
+await getHighlighter("javascript", "light");
 const afterJavaScript = registry(["javascript"]);
 registerEditorHighlighter(instance, afterJavaScript.monaco);
 assert.deepEqual(
@@ -124,7 +124,7 @@ compare(
 );
 
 scenario("TypeScript maps onto the native TypeScript tokenizer");
-await getViewerHighlighter("typescript", "light");
+await getHighlighter("typescript", "light");
 const typeScript = registry(["typescript"]);
 registerEditorHighlighter(instance, typeScript.monaco);
 const tsReference = registry(["typescript"]);
@@ -137,7 +137,7 @@ compare(
 );
 
 scenario("TSX and JSX each give one superset to their native language");
-await getViewerHighlighter("tsx", "light");
+await getHighlighter("tsx", "light");
 const tsxGrammar = instance.getLanguage("tsx");
 const mixed = registry(["typescript", "javascript"]);
 registerEditorHighlighter(instance, mixed.monaco);
@@ -148,7 +148,7 @@ assert.deepEqual(
 );
 const tsxReference = registry(["tsx"]);
 shikiToMonaco(instance, tsxReference.monaco);
-await codeToViewerTokens(
+await codeToTokens(
   "const view: React.ReactNode = <Panel enabled>\n  {flag ? <span>Text</span> : null}\n</Panel>;",
   "tsx",
   "light",
@@ -167,7 +167,7 @@ compare(
 assert.equal(instance.getLanguage("tsx"), tsxGrammar);
 
 scenario("unrelated native languages keep their own tokenizer");
-await getViewerHighlighter("json", "light");
+await getHighlighter("json", "light");
 const unrelated = registry(["json"]);
 registerEditorHighlighter(instance, unrelated.monaco);
 assert.deepEqual(

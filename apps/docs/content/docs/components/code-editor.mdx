@@ -59,7 +59,7 @@ A custom plugin is an object with a `name` and any of `toolbar(editor)`, `setup(
 
 ## Preview [#preview]
 
-CodeEditor has no built-in renderers and does not depend on any viewer. `preview({ render })` receives the current value and renders anything, such as [Markdown Viewer](/docs/components/markdown-viewer) or [Html Viewer](/docs/components/html-viewer):
+CodeEditor has no built-in renderers and does not depend on any viewer. `preview({ render })` receives the current value and renders anything, such as [Markdown Viewer](/docs/viewers/markdown-viewer) or [Html Viewer](/docs/viewers/html-viewer):
 
 ```tsx
 preview({ render: (value) => <MarkdownViewer className="p-4" content={value} /> })

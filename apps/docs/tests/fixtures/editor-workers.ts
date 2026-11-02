@@ -1,7 +1,7 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { pathToFileURL } from "node:url";
-import { createEditorWorkerLifecycle } from "../../../../packages/ui/src/lib/editor/monaco-workers";
+import { createEditorWorkerLifecycle } from "../../../../packages/ui/src/components/code-editor/monaco/monaco-workers";
 import { scenario } from "../support/scenario";
 
 const base = new URL(

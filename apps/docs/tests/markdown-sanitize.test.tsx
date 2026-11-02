@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { MarkdownViewer } from "@workspace/ui/components/markdown-viewer";
+import { MarkdownViewer } from "@workspace/ui/viewers/markdown-viewer";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const render = (content: string) =>
@@ -53,8 +53,8 @@ test("raw HTML cannot restyle the page or ask for passwords", () => {
   expect(html).toContain("overlay");
 });
 
-test("fenced code names its language once and keeps the source", () => {
+test("fenced code leaves the language out of the header and keeps the source", () => {
   const html = render("```typescript\nconst answer = 42;\n```");
-  expect(html.match(/>typescript</g)).toHaveLength(1);
+  expect(html).not.toContain(">typescript<");
   expect(html).toContain("const answer = 42;");
 });

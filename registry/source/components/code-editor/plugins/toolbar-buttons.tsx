@@ -1,39 +1,27 @@
 "use client";
 
-import { cn } from "cn";
 import { Maximize2, Minimize2, WandSparkles } from "lucide-react";
-import { useClipboard } from "@/hooks/use-clipboard";
-import { CopyIcon } from "@/components/ui/copy-icon";
+import { CopyButton } from "@/components/ui/copy-button";
 import { useCodeEditorContext } from "@/components/ui/code-editor/context";
 import { CodeEditorToolbarButton } from "@/components/ui/code-editor/toolbar";
 import type { CodeEditorFullscreenConfig, CodeEditorPlugin } from "@/components/ui/code-editor/types";
 
-function CopyButton() {
+function EditorCopyButton() {
   const editor = useCodeEditorContext();
-  const { status, copy } = useClipboard(editor.value);
-  let tooltip = editor.labels.copy;
-  if (status === "copied") tooltip = editor.labels.copied;
-  else if (status === "error") tooltip = editor.labels.copyFailed;
   return (
-    <CodeEditorToolbarButton
-      tooltip={tooltip}
-      disabled={editor.disabled || status === "pending"}
-      onClick={() => void copy(editor.value)}
-    >
-      <CopyIcon
-        status={status}
-        className={cn(
-          status === "copied" && "text-primary",
-          status === "error" && "text-destructive",
-        )}
-      />
-    </CodeEditorToolbarButton>
+    <CopyButton
+      value={editor.value}
+      labels={editor.labels}
+      size={editor.size}
+      disabled={editor.disabled}
+      className="[&_svg]:size-3.5"
+    />
   );
 }
 
 /** A toolbar button that copies the current value. */
 export function copy(): CodeEditorPlugin {
-  return { name: "copy", toolbar: () => <CopyButton /> };
+  return { name: "copy", toolbar: () => <EditorCopyButton /> };
 }
 
 function FormatButton() {

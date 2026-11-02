@@ -9,10 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useFullscreen } from "@/hooks/use-fullscreen";
-import { useViewerTheme } from "@/hooks/use-viewer-theme";
-import type { ViewerThemes } from "@/lib/viewer/shiki";
-import { useShikiThemes } from "@/lib/viewer/shiki-context";
+import { useShikiThemes } from "@/lib/highlight/provider";
+import type { HighlightThemes } from "@/lib/highlight/shiki";
 import { type CodeEditorLabelOverrides, codeEditorLabels } from "@/components/ui/code-editor/labels";
 import { normalizeLanguage } from "@/components/ui/code-editor/languages";
 import { usePreviewScrollSync } from "@/components/ui/code-editor/scroll-sync";
@@ -69,9 +69,9 @@ async function applyShikiTheme(
   name: string,
   isCurrent: () => boolean,
   language: string,
-  themes: ViewerThemes,
+  themes: HighlightThemes,
 ) {
-  const { applyEditorTheme } = await import("@/lib/editor/monaco-theme");
+  const { applyEditorTheme } = await import("@/components/ui/code-editor/monaco/monaco-theme");
   await applyEditorTheme(
     monaco,
     theme,
@@ -117,7 +117,7 @@ function useModelPath(language: string) {
 /** Follows the nearest `.dark` ancestor, so scoped dark sections work. */
 function useScopedTheme(element: { current: HTMLElement | null }) {
   const [localDark, setLocalDark] = useState(false);
-  const { resolvedTheme } = useViewerTheme();
+  const { resolvedTheme } = useColorScheme();
   useEffect(() => {
     const node = element.current;
     if (!node) return;

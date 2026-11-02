@@ -62,59 +62,62 @@ function scrollEditor(): ScrollEditor {
   return instance;
 }
 const { createRoot } = await import("react-dom/client");
-mock.module("../../../../packages/ui/src/lib/editor/monaco-client.tsx", () => ({
-  default: function MonacoBridge({
-    value,
-    path,
-    language,
-    onChange,
-    onMount,
-  }: {
-    value: string;
-    path: string;
-    language: string;
-    onChange: (value: string) => void;
-    onMount?: (editor: ScrollEditor, monaco: object) => void;
-  }) {
-    const currentPath = useRef(path);
-    const instance = useRef(scrollEditor());
-    useEffect(() => {
-      mountedEditor = instance.current;
-      onMount?.(instance.current, {});
-      return () => {
-        editorScrollListeners.delete(instance.current);
-      };
-    }, []);
-    useEffect(() => {
-      liveModels.add(path);
-      currentPath.current = path;
-    }, [path]);
-    // The React Monaco bridge disposes its current model on unmount; it retains
-    // previously visited paths when its path prop changes without unmounting.
-    useEffect(
-      () => () => {
-        disposedModels.push(currentPath.current);
-        liveModels.delete(currentPath.current);
-      },
-      [],
-    );
-    return (
-      <div>
-        <span data-editor-value>{value}</span>
-        <span data-editor-language>{language}</span>
-        <button type="button" onClick={() => onChange("edited")}>
-          Simulate Monaco edit
-        </button>
-      </div>
-    );
-  },
-}));
+mock.module(
+  "../../../../packages/ui/src/components/code-editor/monaco/monaco-client.tsx",
+  () => ({
+    default: function MonacoBridge({
+      value,
+      path,
+      language,
+      onChange,
+      onMount,
+    }: {
+      value: string;
+      path: string;
+      language: string;
+      onChange: (value: string) => void;
+      onMount?: (editor: ScrollEditor, monaco: object) => void;
+    }) {
+      const currentPath = useRef(path);
+      const instance = useRef(scrollEditor());
+      useEffect(() => {
+        mountedEditor = instance.current;
+        onMount?.(instance.current, {});
+        return () => {
+          editorScrollListeners.delete(instance.current);
+        };
+      }, []);
+      useEffect(() => {
+        liveModels.add(path);
+        currentPath.current = path;
+      }, [path]);
+      // The React Monaco bridge disposes its current model on unmount; it retains
+      // previously visited paths when its path prop changes without unmounting.
+      useEffect(
+        () => () => {
+          disposedModels.push(currentPath.current);
+          liveModels.delete(currentPath.current);
+        },
+        [],
+      );
+      return (
+        <div>
+          <span data-editor-value>{value}</span>
+          <span data-editor-language>{language}</span>
+          <button type="button" onClick={() => onChange("edited")}>
+            Simulate Monaco edit
+          </button>
+        </div>
+      );
+    },
+  }),
+);
 const { CodeEditor, languageSelect, preview } = await import(
   "@workspace/ui/components/code-editor"
 );
-const { HtmlViewer } = await import("@workspace/ui/components/html-viewer");
+const { HtmlViewer } = await import("@workspace/ui/viewers/html-viewer");
 const { MarkdownViewer } = await import(
-  "@workspace/ui/components/markdown-viewer"
+  "@workspace/ui/viewers/markdown-viewer"
 );
 type PreviewContext =
   import("@workspace/ui/components/code-editor").CodeEditorPreviewContext;
@@ -154,10 +157,10 @@ const htmlPreview = preview({
   render: (value, context) => <HtmlPreview content={value} context={context} />,
   defaultMode: "edit",
 });
-const { CodeViewer } = await import("@workspace/ui/components/code-viewer");
-const { DiffViewer } = await import("@workspace/ui/components/diff-viewer");
+const { CodeViewer } = await import("@workspace/ui/viewers/code-viewer");
+const { DiffViewer } = await import("@workspace/ui/viewers/diff-viewer");
 const { useStreamingScroll } = await import(
-  "../../../../packages/ui/src/hooks/use-viewer-code"
+  "../../../../packages/ui/src/viewers/shared/use-streaming-code"
 );
 const { useFullscreen } = await import(
   "../../../../packages/ui/src/hooks/use-fullscreen"
@@ -551,11 +554,18 @@ await secondDoc.inner.happyDOM.close();
 
 scenario("the diff viewer switches between split and unified tables");
 assert.equal(host.querySelectorAll("table").length, 2);
+assert.equal(button("Split"), undefined, "the toggle offers the other view");
 await click(button("Unified"));
 assert.equal(host.querySelectorAll("table").length, 1);
-assert.equal(button("Unified")?.getAttribute("aria-pressed"), "true");
-const { codeToViewerTokens } = await import(
-  "../../../../packages/ui/src/lib/viewer/shiki"
+assert(button("Split"), "after switching, the toggle offers split again");
+assert.equal(button("Unified"), undefined);
+// The diff toggle names the view it switches to, so only click when needed.
+async function showView(label: "Split" | "Unified") {
+  const toggle = button(label);
+  if (toggle) await click(toggle);
+}
+const { codeToTokens } = await import(
+  "../../../../packages/ui/src/lib/highlight/shiki"
 );
 async function ready() {
   const started = Date.now();
@@ -605,7 +615,7 @@ try {
         copyable={false}
       />,
     );
-    await click(button("Split"));
+    await showView("Split");
     await ready();
     const tables = [...host.querySelectorAll("table")];
     assert.equal(tables.length, 2);
@@ -638,12 +648,12 @@ for (const [oldCode, newCode] of [
   ["const value = `old\nshared\n`;", 'const value = "new";\nshared\n`;'],
   ["/* old\nshared\n*/", "const ready = true;\nshared\n*/"],
 ]) {
-  const oldTokens = await codeToViewerTokens(oldCode, "typescript", "light");
-  const newTokens = await codeToViewerTokens(newCode, "typescript", "light");
+  const oldTokens = await codeToTokens(oldCode, "typescript", "light");
+  const newTokens = await codeToTokens(newCode, "typescript", "light");
   await render(
     <DiffViewer oldCode={oldCode} newCode={newCode} copyable={false} />,
   );
-  await click(button("Split"));
+  await showView("Split");
   await ready();
   const shared = contentCells().filter((cell) => cell.textContent === "shared");
   assert.equal(shared.length, 2);
@@ -657,7 +667,7 @@ for (const [oldCode, newCode] of [
     expectedPairs(newTokens[1]),
     "the new pane has its independent lexical context",
   );
-  await click(button("Unified"));
+  await showView("Unified");
   const firstNew = contentCells().find(
     (cell) => cell.textContent === newCode.split("\n")[0],
   );
@@ -709,7 +719,7 @@ assert(finalCell);
 assert.deepEqual(
   tokenPairs(finalCell),
   expectedPairs(
-    (await codeToViewerTokens("const final = 4;", "typescript", "light"))[0],
+    (await codeToTokens("const final = 4;", "typescript", "light"))[0],
   ),
   "rapid source updates display only the latest source tokens",
 );
@@ -776,19 +786,17 @@ assert(host.textContent?.includes("return 42"));
 scenario("completion follows the latest raw rows while tokens are pending");
 // Hold the real tokenizer so completion is checked while highlighting is pending.
 const highlightModule = await import(
-  "../../../../packages/ui/src/lib/viewer/shiki"
+  "../../../../packages/ui/src/lib/highlight/shiki"
 );
 let releaseHighlight: () => void = () => {};
 const highlightGate = new Promise<void>((resolve) => {
   releaseHighlight = resolve;
 });
-mock.module("../../../../packages/ui/src/lib/viewer/shiki", () => ({
+mock.module("../../../../packages/ui/src/lib/highlight/shiki", () => ({
   ...highlightModule,
-  codeToViewerTokens: async (
-    ...args: Parameters<typeof codeToViewerTokens>
-  ) => {
+  codeToTokens: async (...args: Parameters<typeof codeToTokens>) => {
     await highlightGate;
-    return codeToViewerTokens(...args);
+    return codeToTokens(...args);
   },
 }));
 const streamedRows = Array.from(
@@ -850,9 +858,9 @@ await act(async () => {
 });
 await ready();
 assert.equal(completedViewport.scrollTop, 316);
-mock.module("../../../../packages/ui/src/lib/viewer/shiki", () => ({
+mock.module("../../../../packages/ui/src/lib/highlight/shiki", () => ({
   ...highlightModule,
-  codeToViewerTokens,
+  codeToTokens,
 }));
 
 scenario("streaming scroll follows appends through its own smooth scrolling");
