@@ -25,7 +25,9 @@ export type TabBarItem = {
 
 const tabBarVariants = cva(
   // Equal tracks: every item takes the width (or height) of the largest one.
-  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10",
+  // The selection's spring overshoots the last item for a moment, so the bar
+  // scrolls without ever showing a scrollbar, as on iOS.
+  "group/tab-bar relative isolate grid w-fit max-w-full touch-pan-y select-none auto-cols-fr grid-flow-col gap-1 overflow-auto rounded-full bg-muted p-1 text-foreground glass:ring-1 glass:ring-foreground/5 [scrollbar-width:none] data-[orientation=vertical]:touch-pan-x data-[orientation=vertical]:grid-flow-row data-[orientation=vertical]:auto-rows-fr data-[pressed=true]:overflow-visible glass:dark:ring-foreground/10 [&::-webkit-scrollbar]:hidden",
   {
     variants: { size: { sm: "text-xs", default: "text-sm", lg: "text-sm" } },
     defaultVariants: { size: "default" },
