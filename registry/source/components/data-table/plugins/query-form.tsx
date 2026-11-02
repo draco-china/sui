@@ -20,7 +20,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "cn";
 import { ChevronDown, ChevronsUpDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type ReactNode,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDataTableContext } from "@/components/ui/data-table/context";
 import { DataTableDateField, DataTableDateRangeField } from "@/components/ui/data-table/date-field";
 import { menuPanel } from "@/components/ui/data-table/menu";
@@ -281,6 +288,10 @@ function QueryField(props: FieldProps) {
   );
 }
 
+// One curve for every part of expanding and collapsing, so the height, the
+// fields, the buttons and the chevron move together both ways.
+const toggleTransition = { duration: 0.2, ease: [0.4, 0, 0.2, 1] } as const;
+
 // Container queries: the form often sits in a narrower panel than the page.
 const gridColumns = {
   2: "@lg/query:grid-cols-2",
@@ -319,6 +330,19 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
   const collapsible = fields.length > collapsedCount;
   const shown =
     collapsible && collapsed ? fields.slice(0, collapsedCount) : fields;
+  // The form's height, measured, so the frame around it opens and closes
+  // smoothly rather than jumping when fields are added or removed.
+  const formRef = useRef<HTMLFormElement>(null);
+  const [height, setHeight] = useState<number>();
+  const hasFields = fields.length > 0;
+  useLayoutEffect(() => {
+    const form = formRef.current;
+    if (!hasFields || !form) return;
+    const observer = new ResizeObserver(() => setHeight(form.offsetHeight));
+    observer.observe(form);
+    return () => observer.disconnect();
+  }, [hasFields]);
+  const transition = reduced ? { duration: 0 } : toggleTransition;
 
   function change(id: string, value: unknown) {
     setDraft((current) => {
@@ -341,10 +365,18 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
     setDraft(initial);
     table.setSearch(initial);
   }
-  if (fields.length === 0) return null;
+  if (!hasFields) return null;
   return (
-    <div className="@container/query">
+    <motion.div
+      // Clipped while its height animates; it never shrinks in a fill
+      // layout, which would squeeze the form below its fields.
+      className="@container/query shrink-0 overflow-hidden"
+      initial={false}
+      animate={{ height: height ?? "auto" }}
+      transition={transition}
+    >
       <form
+        ref={formRef}
         data-slot="data-table-query-form"
         onSubmit={submit}
         onReset={(event) => {
@@ -352,11 +384,13 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
           reset();
         }}
         className={cn(
-          "grid grid-cols-1 items-end gap-x-4 gap-y-3 rounded-xl border bg-card p-4",
+          "relative grid grid-cols-1 items-end gap-x-4 gap-y-3 rounded-xl border bg-card p-4",
           gridColumns[options.columns ?? 4],
         )}
       >
-        <AnimatePresence initial={false}>
+        {/* Leaving fields drop out of the grid at once and fade while the
+            frame closes, mirroring how new ones fade in as it opens. */}
+        <AnimatePresence initial={false} mode="popLayout">
           {shown.map((column) => {
             const id = `${formId}-${column.id}`;
             return (
@@ -364,7 +398,8 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
                 key={column.id}
                 initial={reduced ? false : { opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={reduced ? undefined : { opacity: 0 }}
+                exit={reduced ? undefined : { opacity: 0, y: -4 }}
+                transition={transition}
                 className="grid min-w-0 gap-1.5"
                 style={{
                   gridColumn: column.search?.colSpan
@@ -390,7 +425,11 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
             );
           })}
         </AnimatePresence>
-        <div className="@lg/query:col-end-[-1] flex flex-wrap items-center justify-end gap-2">
+        <motion.div
+          layout="position"
+          transition={transition}
+          className="@lg/query:col-end-[-1] flex flex-wrap items-center justify-end gap-2"
+        >
           <Button type="reset" variant="outline">
             {table.labels.reset}
           </Button>
@@ -405,15 +444,15 @@ function QueryForm({ options }: { options: QueryFormOptions }) {
               {collapsed ? table.labels.expand : table.labels.collapse}
               <ChevronDown
                 className={cn(
-                  "transition-transform",
+                  "transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
                   !collapsed && "rotate-180",
                 )}
               />
             </Button>
           )}
-        </div>
+        </motion.div>
       </form>
-    </div>
+    </motion.div>
   );
 }
 
