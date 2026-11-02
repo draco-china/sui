@@ -421,11 +421,13 @@ function TableView({ className }: { className?: string }) {
   else if (!table.loading && table.rows.length === 0)
     status = <DataTableStatus title={table.labels.noData} />;
   return (
-    // Base UI scrollbars stay visible, unlike overlay scrollbars on macOS.
+    // Base UI draws the scrollbars, so every platform shows them the same
+    // way: only while the pointer is over the table, it scrolls, or it has
+    // keyboard focus.
     <ScrollAreaPrimitive.Root
       data-slot="data-table-scroll-area"
       className={cn(
-        "relative flex min-h-0 flex-col overflow-hidden",
+        "group/scroll-area relative flex min-h-0 flex-col overflow-hidden",
         className,
       )}
     >
@@ -525,10 +527,12 @@ function TableScrollbar({
   return (
     // The vertical track starts below the sticky header (h-11), so the
     // header stays on top and the thumb only runs beside the rows. Base UI
-    // sets `top` inline, hence the important modifier.
+    // sets `top` inline, hence the important modifier. Hidden until the
+    // pointer enters the table, it scrolls (touch has no hover), or the
+    // scroller has keyboard focus.
     <ScrollAreaPrimitive.Scrollbar
       orientation={orientation}
-      className="z-30 flex touch-none select-none p-0.5 opacity-70 transition-opacity hover:opacity-100 data-[orientation=vertical]:top-11! data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col"
+      className="z-30 flex touch-none select-none p-0.5 opacity-0 transition-opacity group-has-[[data-slot=data-table-scroller]:focus-visible]/scroll-area:opacity-70 data-[orientation=vertical]:top-11! data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-hovering:opacity-70 data-scrolling:opacity-70 data-hovering:hover:opacity-100 motion-reduce:transition-none"
     >
       <ScrollAreaPrimitive.Thumb className="flex-1 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60" />
     </ScrollAreaPrimitive.Scrollbar>
