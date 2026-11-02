@@ -1,5 +1,5 @@
 import { Button } from "@workspace/ui/components/button";
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 import { themePresets } from "@workspace/ui/lib/theme/theme";
 import { cn } from "cn";
 import { useState } from "react";
@@ -65,7 +65,7 @@ export default function Example({ locale }: ExampleProps) {
                   {zh ? preset.zh : preset.en}
                 </h3>
                 {"color" in preset && (
-                  <InlineCopyText
+                  <CopyText
                     className="text-muted-foreground text-xs"
                     aria-label={
                       zh
@@ -74,7 +74,7 @@ export default function Example({ locale }: ExampleProps) {
                     }
                   >
                     {preset.color}
-                  </InlineCopyText>
+                  </CopyText>
                 )}
               </div>
               <div className="grid grid-cols-5 gap-2">
@@ -85,7 +85,7 @@ export default function Example({ locale }: ExampleProps) {
                       className="h-10 rounded-lg"
                       style={{ background: `var(--chart-${index + 1})` }}
                     />
-                    <InlineCopyText
+                    <CopyText
                       value={color}
                       truncate={false}
                       className="justify-center gap-1 text-[10px]"
@@ -94,7 +94,7 @@ export default function Example({ locale }: ExampleProps) {
                       }
                     >
                       {"palette" in preset ? color : `chart-${index + 1}`}
-                    </InlineCopyText>
+                    </CopyText>
                   </div>
                 ))}
               </div>

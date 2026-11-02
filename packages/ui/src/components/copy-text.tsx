@@ -4,14 +4,10 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva } from "class-variance-authority";
 import { cn } from "cn";
 import type { ReactNode } from "react";
-import {
-  type ClipboardLabels,
-  type ClipboardOptions,
-  useClipboard,
-} from "@/hooks/use-clipboard";
-import { CopyIcon } from "@/components/ui/copy-icon";
+import { type ClipboardOptions, useClipboard } from "../hooks/use-clipboard";
+import { CopyIcon } from "./copy-icon";
 
-type InlineCopyTextProps = Omit<
+type CopyTextProps = Omit<
   ButtonPrimitive.Props,
   "children" | "onCopy" | "value" | "variant" | "size"
 > &
@@ -22,11 +18,10 @@ type InlineCopyTextProps = Omit<
     size?: "sm" | "default";
     truncate?: boolean;
     iconVisibility?: "hover" | "always";
-    labels?: ClipboardLabels;
   };
 
-const inlineCopyVariants = cva(
-  "group/inline-copy inline-flex min-w-0 max-w-full select-text items-center gap-1.5 rounded-sm border-0 bg-transparent p-0 align-baseline font-normal outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[copy-status=pending]:disabled:opacity-100",
+const copyTextVariants = cva(
+  "group/copy-text inline-flex min-w-0 max-w-full select-text items-center gap-1.5 rounded-sm border-0 bg-transparent p-0 align-baseline font-normal outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[copy-status=pending]:disabled:opacity-100",
   {
     variants: {
       variant: {
@@ -43,7 +38,7 @@ const inlineCopyVariants = cva(
   },
 );
 
-function InlineCopyText({
+function CopyText({
   children,
   value,
   variant = "default",
@@ -59,35 +54,28 @@ function InlineCopyText({
   onClick,
   className,
   ...props
-}: InlineCopyTextProps) {
+}: CopyTextProps) {
   const text = value ?? (typeof children === "string" ? children : null);
   if (text === null)
-    throw new Error(
-      "InlineCopyText requires value when children is not a string.",
-    );
-  const { status, copy } = useClipboard(text, {
+    throw new Error("CopyText requires value when children is not a string.");
+  const { status, message, copy } = useClipboard(text, {
     disabled,
     resetDelay,
     onCopy,
     onCopyError,
     feedback,
+    labels,
   });
-  const message = {
-    idle: "",
-    copied: labels?.copied ?? "Copied",
-    error: labels?.failed ?? "Copy failed. Select and copy the text manually.",
-    pending: labels?.pending ?? "Copying…",
-  }[status];
   return (
     <ButtonPrimitive
       {...props}
       type="button"
       disabled={disabled || status === "pending"}
-      data-slot="inline-copy-text"
+      data-slot="copy-text"
       data-copy-status={status}
       aria-busy={status === "pending"}
       aria-label={props["aria-label"] ?? labels?.copy ?? `Copy ${text}`}
-      className={cn(cn(inlineCopyVariants({ variant, size })), className)}
+      className={cn(copyTextVariants({ variant, size }), className)}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) void copy();
@@ -102,21 +90,18 @@ function InlineCopyText({
           "relative inline-flex size-3.5 shrink-0 items-center justify-center transition-opacity motion-reduce:transition-none",
           status === "idle" &&
             iconVisibility === "hover" &&
-            "opacity-0 group-focus-within/inline-copy:opacity-100 group-focus-within:opacity-100 group-hover/inline-copy:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100",
+            "opacity-0 group-focus-within/copy-text:opacity-100 group-focus-within:opacity-100 group-hover/copy-text:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100",
         )}
       >
-        <CopyIcon
-          status={status}
-          className={cn("size-3.5", status === "error" && "text-destructive")}
-        />
+        <CopyIcon status={status} className="size-3.5" />
       </span>
       <span role="status" className="sr-only">
-        {message}
+        {status === "idle" ? "" : message}
       </span>
     </ButtonPrimitive>
   );
 }
 
-export type { InlineCopyTextProps };
+export type { CopyTextProps };
 
-export { InlineCopyText };
+export { CopyText, copyTextVariants };

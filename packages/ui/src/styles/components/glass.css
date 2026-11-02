@@ -113,7 +113,6 @@
 ):focus-visible,
 [data-glass="true"]:is(
   [data-slot="input-group"],
-  [data-slot="sensitive-input"],
   [data-slot="select-chips"],
   [data-slot="tag-input"],
   [data-slot="wheel-picker"]
@@ -251,7 +250,6 @@
   [data-slot="input"],
   [data-slot="textarea"],
   [data-slot="input-group"],
-  [data-slot="sensitive-input"],
   [data-slot="select-trigger"],
   [data-slot="select-chips"],
   [data-slot="tag-input"]

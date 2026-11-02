@@ -1,8 +1,6 @@
 "use client";
-import {
-  CopyButton,
-  copyButtonLabelsZhCN,
-} from "@workspace/ui/components/copy-button";
+import { CopyButton } from "@workspace/ui/components/copy-button";
+import { clipboardLabelsZhCN } from "@workspace/ui/hooks/use-clipboard";
 import type { ExampleProps } from "../types";
 
 const command = "bunx --bun shadcn@latest add @sui/copy-button";
@@ -14,7 +12,7 @@ export default function Example({ locale }: ExampleProps) {
       <span className="min-w-0 flex-1 truncate">{command}</span>
       <CopyButton
         value={command}
-        labels={chinese ? copyButtonLabelsZhCN : undefined}
+        labels={chinese ? clipboardLabelsZhCN : undefined}
       />
     </div>
   );

@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 import { renderToString } from "react-dom/server";
 
 describe("inline copy text composition", () => {
   test("is a non-submitting inline button with accessible feedback and no press movement", () => {
-    const html = renderToString(<InlineCopyText>bun run dev</InlineCopyText>);
+    const html = renderToString(<CopyText>bun run dev</CopyText>);
     expect(html).toContain('type="button"');
     expect(html).toContain('aria-label="Copy bun run dev"');
     expect(html).toContain('data-copy-status="idle"');
@@ -17,7 +17,7 @@ describe("inline copy text composition", () => {
 
   test("accepts rich display content and an independent value without leaking it into markup", () => {
     const html = renderToString(
-      <InlineCopyText
+      <CopyText
         value="/workspace/projects/studio"
         variant="muted"
         size="sm"
@@ -25,7 +25,7 @@ describe("inline copy text composition", () => {
         labels={{ copy: "复制完整路径", copied: "已复制" }}
       >
         <span>projects/…</span>
-      </InlineCopyText>,
+      </CopyText>,
     );
     expect(html).toContain('aria-label="复制完整路径"');
     expect(html).toContain("projects/…");
@@ -36,18 +36,18 @@ describe("inline copy text composition", () => {
   test("requires an explicit value for rich content", () => {
     expect(() =>
       renderToString(
-        <InlineCopyText>
+        <CopyText>
           <span>Display name</span>
-        </InlineCopyText>,
+        </CopyText>,
       ),
-    ).toThrow("InlineCopyText requires value");
+    ).toThrow("CopyText requires value");
   });
 
   test("keeps Base UI render composition, disabled semantics and SSR free of copy callbacks", () => {
     let copied = false;
     let failed = false;
     const html = renderToString(
-      <InlineCopyText
+      <CopyText
         render={<button type="button" data-composed="true" />}
         disabled
         aria-label="Workspace ID"
@@ -59,7 +59,7 @@ describe("inline copy text composition", () => {
         }}
       >
         workspace_72c31
-      </InlineCopyText>,
+      </CopyText>,
     );
     expect(html).toContain('data-composed="true"');
     expect(html).toContain('aria-label="Workspace ID"');

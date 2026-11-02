@@ -105,7 +105,7 @@ Glass belongs to navigation, controls and floating layers; content stays ordinar
 - Controls inside a glass surface stay ordinary. Prefer ghost or outline variants on glass, which sit on the material without a solid fill.
 - Glass never blurs twice: a glass or frosted component inside another glass layer keeps its tint and edge light but does not blur or refract the backdrop again, because a nested backdrop filter would only frost the outer layer's content. A popup is not inside its trigger's layer, so a glass menu opened from a glass bar is its own full layer.
 - A glass `ButtonGroup` is one capsule its buttons sit on; in a group of groups, give each inner group its own `glass`. `Toolbar`, `TabsList`, `PaginationContent` and `Command` work the same way.
-- Form fields (`Input`, `Textarea`, `InputGroup`, `SelectTrigger`, `ComboboxChips`, `TagInput`, `SensitiveInput`, `ClipboardText`) with glass are capsules like iOS search fields, and brighten slightly while focused.
+- Form fields (`Input`, `Textarea`, `InputGroup`, `SelectTrigger`, `TagInput`) with glass are capsules like iOS search fields, and brighten slightly while focused.
 - `Switch` and `Slider` with `glass` turn their thumb into a Clear lens only while dragged. Pressed buttons bloom slightly, and glass buttons also brighten.
 - Components that render their glass pieces themselves pass the prop on: `TabBar` (its bar and lens), `NavigationMenu` (its popup), `Toaster` (its toasts), `Image` (its preview controls), `ColorPicker` (its trigger and popup), `PaginationControls` and `PaginationPageSize`.
 - Card, QR code, Accordion, Calendar, editors and viewers are content. `Card` and `QRCode` accept `glass` or `frosted`, for example for a widget over media.

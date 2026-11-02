@@ -114,7 +114,7 @@ test("blocks put navigation, controls and floating layers in glass while content
     expect(panel.getAttribute("data-glass")).toBe("true");
   }
   // Copy components stay ordinary content inside a glass panel.
-  for (const slot of ["clipboard-text", "inline-copy-text"]) {
+  for (const slot of ["copy-button", "copy-text"]) {
     const copy = document.querySelector(`[data-slot="${slot}"]`);
     expect(copy?.closest('[data-slot="glass-lab-panel"]')).not.toBeNull();
     expect(copy?.hasAttribute("data-glass")).toBe(false);

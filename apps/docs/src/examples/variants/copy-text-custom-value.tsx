@@ -1,4 +1,4 @@
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 import type { ExampleProps } from "../types";
 export default function Example({ locale }: ExampleProps) {
   const zh = locale === "zh-CN";
@@ -8,18 +8,20 @@ export default function Example({ locale }: ExampleProps) {
         <span className="min-w-0 truncate">
           {zh ? "工作区路径" : "Workspace path"}
         </span>
-        <InlineCopyText
+        <CopyText
           value="/workspace/projects/sui/packages/ui/src/components"
           variant="muted"
           className="max-w-[60%]"
           labels={{
             copy: zh ? "复制完整路径" : "Copy full path",
             copied: zh ? "完整路径已复制" : "Full path copied",
-            failed: zh ? "无法复制，请手动复制" : "Copy failed. Copy manually.",
+            copyFailed: zh
+              ? "无法复制，请手动复制"
+              : "Copy failed. Copy manually.",
           }}
         >
           <span>packages/ui/…</span>
-        </InlineCopyText>
+        </CopyText>
       </div>
       <p className="text-muted-foreground text-sm">
         {zh

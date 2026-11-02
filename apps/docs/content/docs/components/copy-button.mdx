@@ -26,17 +26,25 @@ import { CopyButton } from "@workspace/ui/components/copy-button";
 
 The icon morphs to a check mark after the clipboard write succeeds, or to a cross when it fails, and the tooltip and a polite live region say the same. The button is disabled while a write is pending. It is a [Tooltip Button](/docs/components/tooltip-button), so `variant`, `size`, `disabled` and `className` pass through; it defaults to a small ghost icon button. [Code Viewer](/docs/viewers/code-viewer), [Diff Viewer](/docs/viewers/diff-viewer) and the [Code Editor](/docs/components/code-editor) `copy()` plugin use it.
 
+## Copy field
+
+A read-only copy field is an [Input Group](/docs/components/input-group) composition, as in shadcn: `render` turns the button into an `InputGroupButton`.
+
+<ComponentPreview name="copy-button-input-group" />
+
 ## Labels
 
-`labels` overrides `copy`, `copied` and `copyFailed`. Pass `copyButtonLabelsZhCN` for Chinese.
+`labels` overrides `copy`, `pending`, `copied` and `copyFailed`. Pass `clipboardLabelsZhCN` from `@workspace/ui/hooks/use-clipboard` for Chinese. `CopyText` shares the same labels.
 
 ## API reference
 
 | Prop | Type | Default / behavior |
 | --- | --- | --- |
 | `value` | `string` | Required text to copy. |
-| `labels` | `Partial<CopyButtonLabels>` | English labels. |
+| `labels` | `ClipboardLabels` | English labels. |
+| `render` | `ReactElement` | Renders another button, such as `<InputGroupButton />`. |
+| `disabled`, `resetDelay`, `onCopy`, `onCopyError` | Clipboard options | As in `CopyText`. |
 | `variant`, `size` | Button props | `"ghost"`, `"icon-sm"`. |
 | `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; haptics when a copy succeeds or fails. |
 
-The module exports `CopyButtonProps`, `CopyButtonLabels`, `copyButtonLabels` and `copyButtonLabelsZhCN`.
+The module exports `CopyButtonProps`. The button carries `data-copy-status` (`idle`, `pending`, `copied` or `error`) for `data-[copy-status=copied]:` styles.

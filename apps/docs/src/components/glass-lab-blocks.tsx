@@ -36,7 +36,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
-import { ClipboardText } from "@workspace/ui/components/clipboard-text";
 import {
   Command,
   CommandEmpty,
@@ -46,6 +45,8 @@ import {
   CommandList,
   CommandShortcut,
 } from "@workspace/ui/components/command";
+import { CopyButton } from "@workspace/ui/components/copy-button";
+import { CopyText } from "@workspace/ui/components/copy-text";
 import {
   Dialog,
   DialogClose,
@@ -66,11 +67,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 import { Input } from "@workspace/ui/components/input";
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
 } from "@workspace/ui/components/input-group";
 import {
@@ -102,7 +103,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { SensitiveInput } from "@workspace/ui/components/sensitive-input";
 import {
   Sheet,
   SheetContent,
@@ -775,7 +775,7 @@ function CommandPalette({ zh }: { zh: boolean }) {
 function Share({ zh }: { zh: boolean }) {
   const labels = {
     copied: zh ? "已复制" : "Copied",
-    failed: zh ? "复制失败，请手动复制" : "Copy failed. Copy manually.",
+    copyFailed: zh ? "复制失败，请手动复制" : "Copy failed. Copy manually.",
   };
   return (
     <Block title={zh ? "玻璃中的内容" : "Content inside glass"}>
@@ -790,17 +790,30 @@ function Share({ zh }: { zh: boolean }) {
               : "Copy components stay ordinary content inside glass."}
           </p>
         </div>
-        <ClipboardText
-          text="https://sui.dev/s/coastline"
-          labels={{ ...labels, copy: zh ? "复制共享链接" : "Copy share link" }}
-        />
+        <InputGroup>
+          <InputGroupInput
+            readOnly
+            value="https://sui.dev/s/coastline"
+            aria-label={zh ? "共享链接" : "Share link"}
+          />
+          <InputGroupAddon align="inline-end">
+            <CopyButton
+              value="https://sui.dev/s/coastline"
+              render={<InputGroupButton size="icon-xs" />}
+              labels={{
+                ...labels,
+                copy: zh ? "复制共享链接" : "Copy share link",
+              }}
+            />
+          </InputGroupAddon>
+        </InputGroup>
         <p className="text-sm">
           {zh ? "邀请码 " : "Invite code "}
-          <InlineCopyText
+          <CopyText
             labels={{ ...labels, copy: zh ? "复制邀请码" : "Copy invite code" }}
           >
             COAST-2026
-          </InlineCopyText>
+          </CopyText>
         </p>
       </Panel>
     </Block>
@@ -857,16 +870,20 @@ function Forms({ zh }: { zh: boolean }) {
           placeholder={zh ? "添加标签…" : "Add a tag…"}
           labels={{ input: zh ? "标签" : "Tags" }}
         />
-        <ClipboardText
-          {...material}
-          text="bun add @workspace/ui"
-          labels={{ copy: zh ? "复制安装命令" : "Copy install command" }}
-        />
-        <SensitiveInput
-          {...material}
-          aria-label={zh ? "访问令牌" : "Access token"}
-          defaultValue="sk-live-coastline-2026"
-        />
+        <InputGroup {...material}>
+          <InputGroupInput
+            readOnly
+            value="bun add @workspace/ui"
+            aria-label={zh ? "安装命令" : "Install command"}
+          />
+          <InputGroupAddon align="inline-end">
+            <CopyButton
+              value="bun add @workspace/ui"
+              render={<InputGroupButton size="icon-xs" />}
+              labels={{ copy: zh ? "复制安装命令" : "Copy install command" }}
+            />
+          </InputGroupAddon>
+        </InputGroup>
         <Textarea
           {...material}
           aria-label={zh ? "备注" : "Notes"}

@@ -105,7 +105,7 @@ CSS 材质是它的回退：在表面完成测量前、浏览器无法绘制 SVG
 - 玻璃表面内的控件保持普通。在玻璃上优先使用 ghost 或 outline 变体，它们没有实色填充，直接落在材质上。
 - 玻璃不会重复模糊：玻璃层里的玻璃或磨砂组件保留自己的着色和边缘光，但不再模糊或折射背景，因为嵌套的背景滤镜只会把外层内容再磨砂一次。弹出层不在触发器所在的层里，所以从玻璃工具栏打开的玻璃菜单仍是完整的独立一层。
 - 玻璃 `ButtonGroup` 是一个胶囊，按钮落在它的材质上；组中组需要给每个内层组单独写 `glass`。`Toolbar`、`TabsList`、`PaginationContent` 和 `Command` 同理。
-- 写了玻璃的表单字段（`Input`、`Textarea`、`InputGroup`、`SelectTrigger`、`ComboboxChips`、`TagInput`、`SensitiveInput`、`ClipboardText`）像 iOS 搜索框一样呈胶囊状，聚焦时略微提亮。
+- 写了玻璃的表单字段（`Input`、`Textarea`、`InputGroup`、`SelectTrigger`、`TagInput`）像 iOS 搜索框一样呈胶囊状，聚焦时略微提亮。
 - 写了 `glass` 的 `Switch` 和 `Slider` 只在拖动时把滑块变成清透镜片。按下的按钮会轻微放大，玻璃按钮还会提亮。
 - 自己渲染玻璃部件的组件会把属性传下去：`TabBar`（标签栏和镜片）、`NavigationMenu`（弹出层）、`Toaster`（通知）、`Image`（预览控件）、`ColorPicker`（触发器和弹出层）、`PaginationControls` 和 `PaginationPageSize`。
 - Card、二维码、Accordion、Calendar、编辑器和查看器属于内容。`Card` 和 `QRCode` 接受 `glass` 或 `frosted`，例如用于媒体上的小组件。

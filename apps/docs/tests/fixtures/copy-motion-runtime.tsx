@@ -84,15 +84,8 @@ const { MorphIcon } = await import("@workspace/ui/components/morph-icon");
 const genericRef =
   createRef<import("@workspace/ui/components/morph-icon").MorphHandle>();
 const { CopyIcon } = await import("@workspace/ui/components/copy-icon");
-const { InlineCopyText } = await import(
-  "@workspace/ui/components/inline-copy-text"
-);
-const { ClipboardText } = await import(
-  "@workspace/ui/components/clipboard-text"
-);
-const { SensitiveInput } = await import(
-  "@workspace/ui/components/sensitive-input"
-);
+const { CopyText } = await import("@workspace/ui/components/copy-text");
+const { CopyButton } = await import("@workspace/ui/components/copy-button");
 const { CodeBlock } = await import("../../src/components/code-block");
 const { Heading } = await import("../../src/components/heading");
 const { MarkdownCopyButton } = await import(
@@ -154,14 +147,10 @@ function Example() {
     >
       <MorphIcon id="generic" ref={genericRef} icon="M2 2L22 22" />
       <CopyIcon id="geometry" status={state} size={22} strokeWidth={1.65} />
-      <InlineCopyText value="full inline value" iconVisibility="always">
+      <CopyText value="full inline value" iconVisibility="always">
         Visible
-      </InlineCopyText>
-      <ClipboardText
-        text="visible clipboard value"
-        textToCopy="full clipboard value"
-      />
-      <SensitiveInput defaultValue="private value" />
+      </CopyText>
+      <CopyButton value="full clipboard value" />
       <CodeBlock
         title="example.ts"
         Actions={({ className, children }) => (
@@ -299,7 +288,7 @@ function button(selector: string) {
   return found as HTMLButtonElement;
 }
 deferred = true;
-const inline = button('[data-slot="inline-copy-text"]');
+const inline = button('[data-slot="copy-text"]');
 const inlinePath = inline.querySelector("svg path");
 await interaction(() => inline.click());
 assert.equal(inline.getAttribute("aria-busy"), "true");
@@ -310,8 +299,8 @@ await interaction(resolveWrite);
 assert.equal(inline.getAttribute("data-copy-status"), "copied");
 assert.equal(inline.querySelector("svg path"), inlinePath);
 
-scenario("clipboard text copies the full value and shows a failed write");
-const clipboard = button('[data-slot="clipboard-text"] button');
+scenario("copy button copies its value and shows a failed write");
+const clipboard = button('[data-slot="copy-button"]');
 await interaction(() => clipboard.click());
 assert.equal(writes.at(-1), "full clipboard value");
 await interaction(() => rejectWrite(new Error("No clipboard permission")));
@@ -322,17 +311,7 @@ assert.equal(
   "copy-icon",
 );
 
-scenario("a sensitive input copies its private value");
 deferred = false;
-const sensitive = button('[data-slot="sensitive-input-copy"]');
-await interaction(() => sensitive.click());
-assert.equal(writes.at(-1), "private value");
-assert.equal(
-  sensitive
-    .querySelector('[data-copy-state="copied"]')
-    ?.getAttribute("data-slot"),
-  "copy-icon",
-);
 
 scenario("code blocks copy without ignored nodes and keep custom actions");
 const codeCopy = button('figure button[aria-label="复制代码"]');

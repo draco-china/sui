@@ -26,17 +26,25 @@ import { CopyButton } from "@workspace/ui/components/copy-button";
 
 剪贴板写入成功后图标变为对勾，失败变为叉号，提示文字和礼貌型实时区域同步播报。写入进行中按钮禁用。它是一个 [Tooltip Button](/zh-CN/docs/components/tooltip-button)，`variant`、`size`、`disabled`、`className` 均可透传，默认为小号 ghost 图标按钮。[Code Viewer](/zh-CN/docs/viewers/code-viewer)、[Diff Viewer](/zh-CN/docs/viewers/diff-viewer) 以及 [Code Editor](/zh-CN/docs/components/code-editor) 的 `copy()` 插件都使用它。
 
+## 复制字段
+
+只读的复制字段按 shadcn 的方式用 [Input Group](/zh-CN/docs/components/input-group) 组合：`render` 把按钮渲染成 `InputGroupButton`。
+
+<ComponentPreview name="copy-button-input-group" />
+
 ## 文案
 
-`labels` 可覆盖 `copy`、`copied`、`copyFailed`，传入 `copyButtonLabelsZhCN` 使用中文。
+`labels` 可覆盖 `copy`、`pending`、`copied`、`copyFailed`，传入 `@workspace/ui/hooks/use-clipboard` 导出的 `clipboardLabelsZhCN` 使用中文。`CopyText` 使用同一套 labels。
 
 ## API 参考
 
 | 属性 | 类型 | 默认值 / 行为 |
 | --- | --- | --- |
 | `value` | `string` | 必填，要复制的文本。 |
-| `labels` | `Partial<CopyButtonLabels>` | 英文文案。 |
+| `labels` | `ClipboardLabels` | 英文文案。 |
+| `render` | `ReactElement` | 渲染为其他按钮，例如 `<InputGroupButton />`。 |
+| `disabled`、`resetDelay`、`onCopy`、`onCopyError` | 复制选项 | 与 `CopyText` 相同。 |
 | `variant`、`size` | Button 属性 | `"ghost"`、`"icon-sm"`。 |
 | `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；复制成功或失败时反馈。 |
 
-模块导出 `CopyButtonProps`、`CopyButtonLabels`、`copyButtonLabels` 和 `copyButtonLabelsZhCN`。
+模块导出 `CopyButtonProps`。按钮带有 `data-copy-status`（`idle`、`pending`、`copied`、`error`），可以用 `data-[copy-status=copied]:` 写样式。

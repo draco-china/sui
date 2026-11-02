@@ -28,7 +28,7 @@ description: 以纯文本读取 SUI 文档和完整示例
 
 无效语言和不存在的文档返回 `404`。显式访问 `/en-US/llms.txt` 或 `/en-US/llms-full.txt` 时，会重定向到没有语言前缀的英文地址。
 
-[读取 Sensitive Input Markdown](/api/llms-markdown?locale=zh-CN&slug=components/sensitive-input)
+[读取 Copy Button Markdown](/api/llms-markdown?locale=zh-CN&slug=components/copy-button)
 
 结果包含标题、描述、页面地址、API 说明，以及该页面共享示例的完整源码。预览和代码展示读取同一份示例文件，纯文本内容也与可运行文档保持一致。
 
@@ -39,7 +39,7 @@ description: 以纯文本读取 SUI 文档和完整示例
 ## 请求示例 [#example-request]
 
 ```text
-读取 SUI 的 llms.txt，再阅读 Field 和 Sensitive Input 文档。
+读取 SUI 的 llms.txt，再阅读 Field 和 Copy Button 文档。
 组合一个带标签的敏感输入框，校验信息由应用提供。
 验证逻辑和翻译文案保留在应用中。
 安装源码后，使用我的 components.json 中配置的导入别名。

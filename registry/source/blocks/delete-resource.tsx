@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { CopyText } from "@/components/ui/copy-text";
 import {
   Field,
   FieldDescription,
@@ -17,7 +18,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { InlineCopyText } from "@/components/ui/inline-copy-text";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/ui/loader";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
@@ -171,7 +171,7 @@ function DeleteResourceDialog({
                     {hintNameIndex >= 0
                       ? labels.hint.slice(0, hintNameIndex)
                       : `${labels.hint} `}
-                    <InlineCopyText
+                    <CopyText
                       iconVisibility="always"
                       value={resourceName}
                       disabled={busy}
@@ -179,11 +179,11 @@ function DeleteResourceDialog({
                         copy: labels.copy,
                         pending: labels.copying,
                         copied: labels.copied,
-                        failed: labels.copyFailed,
+                        copyFailed: labels.copyFailed,
                       }}
                     >
                       {resourceName}
-                    </InlineCopyText>
+                    </CopyText>
                     {hintNameIndex >= 0 &&
                       labels.hint.slice(hintNameIndex + resourceName.length)}
                   </>

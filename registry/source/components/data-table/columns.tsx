@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { InlineCopyText } from "@/components/ui/inline-copy-text";
+import { CopyText } from "@/components/ui/copy-text";
 import { LongText } from "@/components/ui/long-text";
 import type { ReactNode } from "react";
 import { getPath, isEmptyValue, toTime } from "@/components/ui/data-table/engine";
@@ -168,7 +168,7 @@ export function normalizeColumns<TData>(
         return <span className="text-muted-foreground">-</span>;
       if (valueType === "enum") return renderEnum(value, column.valueEnum);
       const text = formatValue(valueType, value, context);
-      if (column.copyable) return <InlineCopyText>{text}</InlineCopyText>;
+      if (column.copyable) return <CopyText>{text}</CopyText>;
       if (column.ellipsis) return <LongText>{text}</LongText>;
       return text;
     }

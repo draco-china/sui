@@ -56,6 +56,7 @@ function CopyIcon({
       data-copy-state={state}
       className={cn(
         state === "pending" && "animate-spin motion-reduce:animate-none",
+        state === "copied" && "text-primary",
         state === "error" && "text-destructive",
         className,
       )}

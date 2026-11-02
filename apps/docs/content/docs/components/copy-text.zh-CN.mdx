@@ -1,27 +1,27 @@
 ---
-title: Inline Copy Text
+title: Copy Text
 description: 可读的行内代码，点击或键盘激活后复制其值
 component: true
 ---
 
-<ComponentPreview name="inline-copy-text-demo" />
+<ComponentPreview name="copy-text-demo" />
 
 ## 安装 [#installation]
 
 ```bash
-bunx --bun shadcn@latest add @sui/inline-copy-text
+bunx --bun shadcn@latest add @sui/copy-text
 ```
 
 通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
 
 ```tsx
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 ```
 
 ## 使用 [#usage]
 
 ```tsx
-<p>运行 <InlineCopyText>bun run dev</InlineCopyText> 启动开发服务。</p>
+<p>运行 <CopyText>bun run dev</CopyText> 启动开发服务。</p>
 ```
 
 这是紧凑、无边框的行内代码按钮，支持键盘操作，不会提交外层表单。按压时不缩放或位移；复制、成功与失败图标共享固定位置，反馈不会改变文本宽度。只有异步写入成功后才显示成功图标；失败会播报并传入 `onCopyError`。
@@ -30,7 +30,7 @@ import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 
 当 `children` 为 React 元素而不是字符串时，必须显式设置 `value`。展示内容可以与复制的纯文本不同。使用 `variant="muted"` 让按钮融入周围正文。
 
-<ComponentPreview name="inline-copy-text-custom-value" />
+<ComponentPreview name="copy-text-custom-value" />
 
 ## 资源行 [#resource-row]
 
@@ -39,9 +39,9 @@ import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 ```tsx
 <div className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground">
   <span className="min-w-0 truncate text-sm">生产数据库</span>
-  <InlineCopyText labels={{ copy: "复制数据库 ID", copied: "数据库 ID 已复制" }}>
+  <CopyText labels={{ copy: "复制数据库 ID", copied: "数据库 ID 已复制" }}>
     database_72c31
-  </InlineCopyText>
+  </CopyText>
 </div>;
 ```
 
@@ -49,19 +49,19 @@ import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 
 使用 `size="sm"` 呈现紧凑文本、`truncate={false}` 展示完整内容，或用 `disabled` 禁用复制。
 
-<ComponentPreview name="inline-copy-text-disabled" />
+<ComponentPreview name="copy-text-disabled" />
 
 ## 反馈 [#feedback]
 
 ```tsx
-<InlineCopyText
+<CopyText
   value="workspace_72c31"
-  labels={{ copy: "复制工作区 ID", copied: "已复制", failed: "复制失败" }}
+  labels={{ copy: "复制工作区 ID", copied: "已复制", copyFailed: "复制失败" }}
   onCopy={(value) => console.log(value)}
   onCopyError={(error) => console.error(error)}
 >
   工作区 ID
-</InlineCopyText>
+</CopyText>
 ```
 
 只有激活按钮后才访问剪贴板。Clipboard API 不可用时，可选择文本后手动复制。写入期间不能并发复制；过期的结果不会覆盖新值或已卸载组件的反馈。
@@ -81,7 +81,7 @@ import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
 | `onCopy` | `(value: string) => void` | — |
 | `onCopyError` | `(error: Error) => void` | — |
 | `feedback` | `FeedbackOption` | 跟随 `FeedbackProvider`；复制成功或失败时反馈。 |
-| `labels` | `{ copy?, pending?, copied?, failed? }` | 英文文案 |
+| `labels` | `{ copy?, pending?, copied?, copyFailed? }` | 英文文案 |
 
 使用 Base UI Button 原语，支持 `ref`、`render`、`onClick`、`className` 等属性。行内样式不继承普通 Button 的按压位移。在 `onClick` 中调用 `event.preventDefault()` 可取消复制。通过 `data-copy-status` 暴露 `idle`、`pending`、`copied` 或 `error` 状态。组合方式参见 [Base UI Button](https://base-ui.com/react/components/button)。
 

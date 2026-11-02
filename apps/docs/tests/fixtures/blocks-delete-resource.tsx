@@ -75,7 +75,7 @@ async function render(
 }
 function copyButton() {
   const button = document.querySelector<HTMLButtonElement>(
-    '[data-slot="inline-copy-text"]',
+    '[data-slot="copy-text"]',
   );
   assert.ok(button);
   return button;
@@ -179,7 +179,7 @@ await act(async () => finishCopy?.());
 
 scenario("an empty resource name hides the copy action");
 await render({ resourceName: "" });
-assert.equal(document.querySelector('[data-slot="inline-copy-text"]'), null);
+assert.equal(document.querySelector('[data-slot="copy-text"]'), null);
 assert.equal(deleteButton().disabled, true);
 await act(async () => root.unmount());
 await window.happyDOM.abort();

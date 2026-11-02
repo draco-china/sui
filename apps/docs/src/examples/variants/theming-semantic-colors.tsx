@@ -1,5 +1,5 @@
 import { Button } from "@workspace/ui/components/button";
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 import { useState } from "react";
 import { previewTokens, tokenValue } from "../support/theming-tokens";
 import type { ExampleProps } from "../types";
@@ -160,7 +160,7 @@ export default function Example({ locale }: ExampleProps) {
   const labels = {
     copy: zh ? "复制" : "Copy",
     copied: zh ? "已复制" : "Copied",
-    failed: zh
+    copyFailed: zh
       ? "复制失败，请手动复制"
       : "Copy failed. Copy the text manually.",
   };
@@ -186,11 +186,11 @@ export default function Example({ locale }: ExampleProps) {
           <li key={token} className="grid gap-3 p-4 sm:grid-cols-2">
             <div className="min-w-0 space-y-1">
               <p className="font-semibold">{zh ? cn : en}</p>
-              <InlineCopyText labels={labels}>{`--${token}`}</InlineCopyText>
+              <CopyText labels={labels}>{`--${token}`}</CopyText>
               <div>
-                <InlineCopyText labels={labels} variant="muted">
+                <CopyText labels={labels} variant="muted">
                   {utility ?? ""}
-                </InlineCopyText>
+                </CopyText>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -209,7 +209,7 @@ export default function Example({ locale }: ExampleProps) {
                     <p className="text-muted-foreground">
                       {dark ? stateLabels.dark : stateLabels.light}
                     </p>
-                    <InlineCopyText labels={labels}>{value}</InlineCopyText>
+                    <CopyText labels={labels}>{value}</CopyText>
                   </div>
                 );
               })}

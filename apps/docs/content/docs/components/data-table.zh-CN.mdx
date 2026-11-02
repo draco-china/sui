@@ -62,7 +62,7 @@ const columns: DataTableColumn<User>[] = [
 
 | `valueType` | 单元格 | 默认查询字段 |
 | --- | --- | --- |
-| `text` | 纯文本；`ellipsis` 与 `copyable` 分别使用 LongText 和 InlineCopyText | `text` |
+| `text` | 纯文本；`ellipsis` 与 `copyable` 分别使用 LongText 和 CopyText | `text` |
 | `number`、`money`、`percent` | `Intl.NumberFormat`；可设置 `format`，如 `{ currency: "CNY" }` | `numberRange` |
 | `date`、`datetime` | 按文案中的 `locale` 使用 `Intl.DateTimeFormat` | `dateRange`、`datetimeRange` |
 | `enum` | 根据 `valueEnum` 渲染徽标，每个选项可设置 `color` | `select` |

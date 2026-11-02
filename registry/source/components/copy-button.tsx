@@ -1,31 +1,26 @@
 "use client";
 
 import { cn } from "cn";
-import { useClipboard } from "@/hooks/use-clipboard";
+import { type ComponentProps, cloneElement, type ReactElement } from "react";
+import { type ClipboardOptions, useClipboard } from "@/hooks/use-clipboard";
+import { Button } from "@/components/ui/button";
 import { CopyIcon } from "@/components/ui/copy-icon";
-import type { FeedbackOption } from "@/components/ui/feedback";
-import { TooltipButton, type TooltipButtonProps } from "@/components/ui/tooltip-button";
-
-export const copyButtonLabels = {
-  copy: "Copy",
-  copied: "Copied",
-  copyFailed: "Copy failed",
-};
-
-export type CopyButtonLabels = typeof copyButtonLabels;
-
-export const copyButtonLabelsZhCN: CopyButtonLabels = {
-  copy: "复制",
-  copied: "已复制",
-  copyFailed: "复制失败",
-};
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface CopyButtonProps
-  extends Omit<TooltipButtonProps, "tooltip" | "value" | "onClick"> {
+  extends Omit<
+      ComponentProps<typeof Button>,
+      "value" | "onClick" | "onCopy" | "render"
+    >,
+    ClipboardOptions {
   readonly value: string;
-  /** Haptics for a finished copy; follows `FeedbackProvider` when unset. */
-  readonly feedback?: FeedbackOption;
-  readonly labels?: Partial<CopyButtonLabels>;
+  /** Renders another button, such as `<InputGroupButton />`, in place of `Button`. */
+  readonly render?: ReactElement<{ className?: string }>;
 }
 
 /** Copies `value`, with copied and failed feedback in the icon and tooltip. */
@@ -35,43 +30,60 @@ export function CopyButton({
   variant = "ghost",
   size = "icon-sm",
   disabled,
-  className,
+  resetDelay,
+  onCopy,
+  onCopyError,
   feedback,
+  render,
+  className,
+  children,
   ...props
 }: Readonly<CopyButtonProps>) {
-  const text = { ...copyButtonLabels, ...labels };
-  const { status, copy } = useClipboard(value, { feedback });
-  const message = {
-    idle: text.copy,
-    pending: text.copy,
-    copied: text.copied,
-    error: text.copyFailed,
-  }[status];
+  const { status, message, copy } = useClipboard(value, {
+    disabled,
+    resetDelay,
+    onCopy,
+    onCopyError,
+    feedback,
+    labels,
+  });
   return (
     <>
-      <TooltipButton
-        {...props}
-        variant={variant}
-        size={size}
-        tooltip={message}
-        disabled={disabled || status === "pending"}
-        aria-busy={status === "pending"}
-        onClick={() => void copy(value)}
-        className={cn(
-          "text-muted-foreground hover:bg-background/70 hover:text-foreground",
-          className,
-        )}
-      >
-        <CopyIcon
-          status={status}
-          aria-hidden="true"
-          className={cn(
-            "size-3.5",
-            status === "copied" && "text-primary",
-            status === "error" && "text-destructive",
-          )}
-        />
-      </TooltipButton>
+      {/* The provider keeps the tooltip open while the label changes. */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger
+            render={cloneElement(
+              render ?? <Button variant={variant} size={size} />,
+              {
+                ...props,
+                type: "button",
+                "data-slot": "copy-button",
+                "data-copy-status": status,
+                "aria-label": message,
+                "aria-busy": status === "pending",
+                disabled: disabled || status === "pending",
+                onClick: () => void copy(),
+                className: cn(
+                  !render &&
+                    "text-muted-foreground hover:bg-background/70 hover:text-foreground",
+                  render?.props.className,
+                  className,
+                ),
+              },
+            )}
+          >
+            {children ?? (
+              <CopyIcon
+                status={status}
+                aria-hidden="true"
+                className="size-3.5"
+              />
+            )}
+          </TooltipTrigger>
+          <TooltipContent>{message}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <span className="sr-only" role="status">
         {status === "copied" || status === "error" ? message : ""}
       </span>

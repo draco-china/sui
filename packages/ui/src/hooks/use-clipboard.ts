@@ -4,12 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import { type FeedbackOption, useFeedback } from "../components/feedback";
 
 type ClipboardStatus = "idle" | "pending" | "copied" | "error";
-type ClipboardLabels = {
-  copy?: string;
-  pending?: string;
-  copied?: string;
-  failed?: string;
+/** English defaults. Pass overrides or `clipboardLabelsZhCN` through `labels`. */
+const clipboardLabels = {
+  copy: "Copy",
+  pending: "Copying…",
+  copied: "Copied",
+  copyFailed: "Copy failed",
 };
+const clipboardLabelsZhCN: ClipboardLabels = {
+  copy: "复制",
+  pending: "正在复制…",
+  copied: "已复制",
+  copyFailed: "复制失败",
+};
+type ClipboardLabels = Partial<typeof clipboardLabels>;
 type ClipboardOptions = {
   disabled?: boolean;
   resetDelay?: number;
@@ -17,10 +25,11 @@ type ClipboardOptions = {
   onCopyError?: (error: Error) => void;
   /** Haptics for a finished copy; follows `FeedbackProvider` when unset. */
   feedback?: FeedbackOption;
+  labels?: ClipboardLabels;
 };
 type ClipboardControllerOptions = Omit<
   ClipboardOptions,
-  "disabled" | "feedback"
+  "disabled" | "feedback" | "labels"
 > & {
   writeText: (value: string) => Promise<void>;
   onStatusChange: (status: ClipboardStatus) => void;
@@ -136,8 +145,16 @@ function useClipboard(value: string, options: ClipboardOptions = {}) {
     if (options.disabled) controller.reset();
     else controller.synchronize(value);
   }, [controller, value, options.disabled]);
+  const text = { ...clipboardLabels, ...options.labels };
   return {
     status,
+    /** The label for the current status: the copy action while idle. */
+    message: {
+      idle: text.copy,
+      pending: text.pending,
+      copied: text.copied,
+      error: text.copyFailed,
+    }[status],
     copy: (text = value) =>
       options.disabled ? Promise.resolve(false) : controller.copy(text),
     reset: controller.reset,
@@ -145,4 +162,9 @@ function useClipboard(value: string, options: ClipboardOptions = {}) {
 }
 
 export type { ClipboardLabels, ClipboardOptions, ClipboardStatus };
-export { createClipboardController, useClipboard };
+export {
+  clipboardLabels,
+  clipboardLabelsZhCN,
+  createClipboardController,
+  useClipboard,
+};

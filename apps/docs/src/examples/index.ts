@@ -166,14 +166,9 @@ export const examples = {
   "checkbox-invalid": () => import("./variants/checkbox-invalid"),
   "checkbox-rtl": () => import("./variants/checkbox-rtl"),
   "checkbox-table": () => import("./variants/checkbox-table"),
-  "clipboard-text-demo": () => import("./variants/clipboard-text-demo"),
-  "clipboard-text-variants": () => import("./variants/clipboard-text-variants"),
   "color-picker-demo": () => import("./variants/color-picker-demo"),
   "color-picker-alpha": () => import("./variants/color-picker-alpha"),
   "color-picker-swatches": () => import("./variants/color-picker-swatches"),
-  "clipboard-text-display-value": () =>
-    import("./variants/clipboard-text-display-value"),
-  "clipboard-text-feedback": () => import("./variants/clipboard-text-feedback"),
   "collapsible-basic": () => import("./variants/collapsible-basic"),
   "collapsible-demo": () => import("./variants/collapsible-demo"),
   "collapsible-file-tree": () => import("./variants/collapsible-file-tree"),
@@ -203,6 +198,7 @@ export const examples = {
   "context-menu-sides": () => import("./variants/context-menu-sides"),
   "context-menu-submenu": () => import("./variants/context-menu-submenu"),
   "copy-button-demo": () => import("./variants/copy-button-demo"),
+  "copy-button-input-group": () => import("./variants/copy-button-input-group"),
   "design-guidelines-collapse-content-size": () =>
     import("./variants/design-guidelines-collapse-content-size"),
   "design-guidelines-concentric-border-radius": () =>
@@ -293,11 +289,9 @@ export const examples = {
   "hover-card-demo": () => import("./variants/hover-card-demo"),
   "hover-card-rtl": () => import("./variants/hover-card-rtl"),
   "hover-card-sides": () => import("./variants/hover-card-sides"),
-  "inline-copy-text-custom-value": () =>
-    import("./variants/inline-copy-text-custom-value"),
-  "inline-copy-text-demo": () => import("./variants/inline-copy-text-demo"),
-  "inline-copy-text-disabled": () =>
-    import("./variants/inline-copy-text-disabled"),
+  "copy-text-custom-value": () => import("./variants/copy-text-custom-value"),
+  "copy-text-demo": () => import("./variants/copy-text-demo"),
+  "copy-text-disabled": () => import("./variants/copy-text-disabled"),
   "input-badge": () => import("./variants/input-badge"),
   "input-basic": () => import("./variants/input-basic"),
   "input-button-group": () => import("./variants/input-button-group"),
@@ -469,10 +463,6 @@ export const examples = {
   "select-invalid": () => import("./variants/select-invalid"),
   "select-rtl": () => import("./variants/select-rtl"),
   "select-scrollable": () => import("./variants/select-scrollable"),
-  "sensitive-input-controlled": () =>
-    import("./variants/sensitive-input-controlled"),
-  "sensitive-input-demo": () => import("./variants/sensitive-input-demo"),
-  "sensitive-input-states": () => import("./variants/sensitive-input-states"),
   "separator-demo": () => import("./variants/separator-demo"),
   "separator-list": () => import("./variants/separator-list"),
   "separator-menu": () => import("./variants/separator-menu"),
@@ -794,17 +784,10 @@ export const sourceFiles = {
   "checkbox-invalid": () => import("./variants/checkbox-invalid.tsx?raw"),
   "checkbox-rtl": () => import("./variants/checkbox-rtl.tsx?raw"),
   "checkbox-table": () => import("./variants/checkbox-table.tsx?raw"),
-  "clipboard-text-demo": () => import("./variants/clipboard-text-demo.tsx?raw"),
-  "clipboard-text-variants": () =>
-    import("./variants/clipboard-text-variants.tsx?raw"),
   "color-picker-demo": () => import("./variants/color-picker-demo.tsx?raw"),
   "color-picker-alpha": () => import("./variants/color-picker-alpha.tsx?raw"),
   "color-picker-swatches": () =>
     import("./variants/color-picker-swatches.tsx?raw"),
-  "clipboard-text-display-value": () =>
-    import("./variants/clipboard-text-display-value.tsx?raw"),
-  "clipboard-text-feedback": () =>
-    import("./variants/clipboard-text-feedback.tsx?raw"),
   "collapsible-basic": () => import("./variants/collapsible-basic.tsx?raw"),
   "collapsible-demo": () => import("./variants/collapsible-demo.tsx?raw"),
   "collapsible-file-tree": () =>
@@ -839,6 +822,8 @@ export const sourceFiles = {
   "context-menu-submenu": () =>
     import("./variants/context-menu-submenu.tsx?raw"),
   "copy-button-demo": () => import("./variants/copy-button-demo.tsx?raw"),
+  "copy-button-input-group": () =>
+    import("./variants/copy-button-input-group.tsx?raw"),
   "design-guidelines-collapse-content-size": () =>
     import("./variants/design-guidelines-collapse-content-size.tsx?raw"),
   "design-guidelines-concentric-border-radius": () =>
@@ -936,12 +921,10 @@ export const sourceFiles = {
   "hover-card-demo": () => import("./variants/hover-card-demo.tsx?raw"),
   "hover-card-rtl": () => import("./variants/hover-card-rtl.tsx?raw"),
   "hover-card-sides": () => import("./variants/hover-card-sides.tsx?raw"),
-  "inline-copy-text-custom-value": () =>
-    import("./variants/inline-copy-text-custom-value.tsx?raw"),
-  "inline-copy-text-demo": () =>
-    import("./variants/inline-copy-text-demo.tsx?raw"),
-  "inline-copy-text-disabled": () =>
-    import("./variants/inline-copy-text-disabled.tsx?raw"),
+  "copy-text-custom-value": () =>
+    import("./variants/copy-text-custom-value.tsx?raw"),
+  "copy-text-demo": () => import("./variants/copy-text-demo.tsx?raw"),
+  "copy-text-disabled": () => import("./variants/copy-text-disabled.tsx?raw"),
   "input-badge": () => import("./variants/input-badge.tsx?raw"),
   "input-basic": () => import("./variants/input-basic.tsx?raw"),
   "input-button-group": () => import("./variants/input-button-group.tsx?raw"),
@@ -1138,12 +1121,6 @@ export const sourceFiles = {
   "select-invalid": () => import("./variants/select-invalid.tsx?raw"),
   "select-rtl": () => import("./variants/select-rtl.tsx?raw"),
   "select-scrollable": () => import("./variants/select-scrollable.tsx?raw"),
-  "sensitive-input-controlled": () =>
-    import("./variants/sensitive-input-controlled.tsx?raw"),
-  "sensitive-input-demo": () =>
-    import("./variants/sensitive-input-demo.tsx?raw"),
-  "sensitive-input-states": () =>
-    import("./variants/sensitive-input-states.tsx?raw"),
   "separator-demo": () => import("./variants/separator-demo.tsx?raw"),
   "separator-list": () => import("./variants/separator-list.tsx?raw"),
   "separator-menu": () => import("./variants/separator-menu.tsx?raw"),

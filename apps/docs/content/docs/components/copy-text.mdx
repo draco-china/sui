@@ -1,27 +1,27 @@
 ---
-title: Inline Copy Text
+title: Copy Text
 description: Inline code that stays readable and copies its value when activated.
 component: true
 ---
 
-<ComponentPreview name="inline-copy-text-demo" />
+<ComponentPreview name="copy-text-demo" />
 
 ## Installation
 
 ```bash
-bunx --bun shadcn@latest add @sui/inline-copy-text
+bunx --bun shadcn@latest add @sui/copy-text
 ```
 
 Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
 
 ```tsx
-import { InlineCopyText } from "@workspace/ui/components/inline-copy-text";
+import { CopyText } from "@workspace/ui/components/copy-text";
 ```
 
 ## Usage
 
 ```tsx
-<p>Run <InlineCopyText>bun run dev</InlineCopyText> to start.</p>
+<p>Run <CopyText>bun run dev</CopyText> to start.</p>
 ```
 
 This is a compact, borderless inline code button with keyboard support. It does not submit a surrounding form. Pressing it does not scale or move the text; copy, success, and failure icons share a fixed position so feedback does not change its width. The check mark appears after the asynchronous write succeeds; failure is announced and sent to `onCopyError`.
@@ -30,7 +30,7 @@ This is a compact, borderless inline code button with keyboard support. It does 
 
 Set `value` whenever `children` is a React element rather than a string. The displayed content and copied plain text can differ. `variant="muted"` blends the control into surrounding prose.
 
-<ComponentPreview name="inline-copy-text-custom-value" />
+<ComponentPreview name="copy-text-custom-value" />
 
 ## Resource row
 
@@ -39,9 +39,9 @@ Add an unnamed `group` to the enclosing row to reveal the copy icon when the row
 ```tsx
 <div className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground">
   <span className="min-w-0 truncate text-sm">Production database</span>
-  <InlineCopyText labels={{ copy: "Copy database ID", copied: "Database ID copied" }}>
+  <CopyText labels={{ copy: "Copy database ID", copied: "Database ID copied" }}>
     database_72c31
-  </InlineCopyText>
+  </CopyText>
 </div>;
 ```
 
@@ -49,19 +49,19 @@ Add an unnamed `group` to the enclosing row to reveal the copy icon when the row
 
 Use `size="sm"` for compact text, `truncate={false}` to show the complete visible content, or `disabled` to prevent copying.
 
-<ComponentPreview name="inline-copy-text-disabled" />
+<ComponentPreview name="copy-text-disabled" />
 
 ## Feedback
 
 ```tsx
-<InlineCopyText
+<CopyText
   value="workspace_72c31"
-  labels={{ copy: "Copy workspace ID", copied: "Copied", failed: "Copy failed" }}
+  labels={{ copy: "Copy workspace ID", copied: "Copied", copyFailed: "Copy failed" }}
   onCopy={(value) => console.log(value)}
   onCopyError={(error) => console.error(error)}
 >
   Workspace ID
-</InlineCopyText>
+</CopyText>
 ```
 
 Clipboard access is requested only on activation. If Clipboard API access is unavailable, select and copy the text manually. Pending writes cannot overlap; stale writes cannot overwrite feedback for a changed value or an unmounted control.
@@ -81,7 +81,7 @@ Clipboard access is requested only on activation. If Clipboard API access is una
 | `onCopy` | `(value: string) => void` | — |
 | `onCopyError` | `(error: Error) => void` | — |
 | `feedback` | `FeedbackOption` | Follows `FeedbackProvider`; haptics when a copy succeeds or fails. |
-| `labels` | `{ copy?, pending?, copied?, failed? }` | English labels |
+| `labels` | `{ copy?, pending?, copied?, copyFailed? }` | English labels |
 
 Uses the Base UI Button primitive and supports `ref`, `render`, `onClick`, and `className`. Its inline styling does not inherit the regular Button press movement. Calling `event.preventDefault()` in `onClick` cancels copying. `data-copy-status` exposes `idle`, `pending`, `copied`, or `error`. See [Base UI Button](https://base-ui.com/react/components/button) for composition.
 

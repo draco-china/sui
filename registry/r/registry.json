@@ -1194,153 +1194,6 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "clipboard-text",
-      "title": "Clipboard Text",
-      "description": "SUI component: clipboard-text. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "morphicons@1.7.1",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/button.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/clipboard-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/clipboard-text.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/copy-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/copy-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/feedback.tsx",
-          "type": "registry:ui",
-          "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/input-group.tsx",
-          "type": "registry:ui",
-          "target": "@ui/input-group.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/input.tsx",
-          "type": "registry:ui",
-          "target": "@ui/input.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/morph-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/morph-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/textarea.tsx",
-          "type": "registry:ui",
-          "target": "@ui/textarea.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/tooltip.tsx",
-          "type": "registry:ui",
-          "target": "@ui/tooltip.tsx"
-        },
-        {
-          "path": "packages/ui/src/hooks/use-clipboard.ts",
-          "type": "registry:hook",
-          "target": "@hooks/use-clipboard.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/backend.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/backend.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/color.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/color.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/defaults.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/defaults.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/dom.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/dom.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/edge.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/edge.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/geometry.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/geometry.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/material.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/material.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/refraction.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/refraction.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/runtime.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/runtime.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/svg-renderer.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/with-glass.tsx",
-          "type": "registry:lib",
-          "target": "@lib/glass/with-glass.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/haptics.ts",
-          "type": "registry:lib",
-          "target": "@lib/haptics.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/tick-sound.ts",
-          "type": "registry:lib",
-          "target": "@lib/tick-sound.ts"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/clipboard-text"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "code-editor",
       "title": "Code Editor",
       "description": "SUI component: code-editor. Includes its local dependencies and SUI styles.",
@@ -2075,11 +1928,6 @@
           "target": "@ui/morph-icon.tsx"
         },
         {
-          "path": "packages/ui/src/components/tooltip-button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/tooltip-button.tsx"
-        },
-        {
           "path": "packages/ui/src/components/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
@@ -2231,6 +2079,73 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "copy-text",
+      "title": "Copy Text",
+      "description": "SUI component: copy-text. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@base-ui/react@^1.8.0",
+        "@fontsource-variable/inter@^5.3.0",
+        "class-variance-authority@^0.7.1",
+        "cn@^0.4.0",
+        "morphicons@1.7.1",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/components/copy-icon.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/copy-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-text.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/morph-icon.tsx",
+          "type": "registry:ui",
+          "target": "@ui/morph-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/hooks/use-clipboard.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-clipboard.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/ui/copy-text"
+        ]
+      },
+      "categories": [
+        "sui",
+        "components"
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "data-table",
       "title": "Data Table",
       "description": "SUI component: data-table. Includes its local dependencies and SUI styles.",
@@ -2281,6 +2196,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/copy-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-text.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table.tsx",
@@ -2421,11 +2341,6 @@
           "path": "packages/ui/src/components/feedback.tsx",
           "type": "registry:ui",
           "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/inline-copy-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/inline-copy-text.tsx"
         },
         {
           "path": "packages/ui/src/components/input-group.tsx",
@@ -3367,73 +3282,6 @@
         "base": "base",
         "entrypoints": [
           "@/components/ui/image"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "inline-copy-text",
-      "title": "Inline Copy Text",
-      "description": "SUI component: inline-copy-text. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "morphicons@1.7.1",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/copy-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/copy-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/feedback.tsx",
-          "type": "registry:ui",
-          "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/inline-copy-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/inline-copy-text.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/morph-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/morph-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/hooks/use-clipboard.ts",
-          "type": "registry:hook",
-          "target": "@hooks/use-clipboard.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/haptics.ts",
-          "type": "registry:lib",
-          "target": "@lib/haptics.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/tick-sound.ts",
-          "type": "registry:lib",
-          "target": "@lib/tick-sound.ts"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/inline-copy-text"
         ]
       },
       "categories": [
@@ -5263,154 +5111,6 @@
         "base": "base",
         "entrypoints": [
           "@/components/ui/select"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "sensitive-input",
-      "title": "Sensitive Input",
-      "description": "SUI component: sensitive-input. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "lucide-react@^1.52.0",
-        "morphicons@1.7.1",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/button.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/copy-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/copy-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/feedback.tsx",
-          "type": "registry:ui",
-          "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/input-group.tsx",
-          "type": "registry:ui",
-          "target": "@ui/input-group.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/input.tsx",
-          "type": "registry:ui",
-          "target": "@ui/input.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/morph-icon.tsx",
-          "type": "registry:ui",
-          "target": "@ui/morph-icon.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/sensitive-input.tsx",
-          "type": "registry:ui",
-          "target": "@ui/sensitive-input.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/textarea.tsx",
-          "type": "registry:ui",
-          "target": "@ui/textarea.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/tooltip.tsx",
-          "type": "registry:ui",
-          "target": "@ui/tooltip.tsx"
-        },
-        {
-          "path": "packages/ui/src/hooks/use-clipboard.ts",
-          "type": "registry:hook",
-          "target": "@hooks/use-clipboard.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/backend.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/backend.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/color.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/color.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/defaults.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/defaults.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/dom.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/dom.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/edge.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/edge.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/geometry.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/geometry.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/material.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/material.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/refraction.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/refraction.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/runtime.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/runtime.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/svg-renderer.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/with-glass.tsx",
-          "type": "registry:lib",
-          "target": "@lib/glass/with-glass.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/haptics.ts",
-          "type": "registry:lib",
-          "target": "@lib/haptics.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/tick-sound.ts",
-          "type": "registry:lib",
-          "target": "@lib/tick-sound.ts"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/sensitive-input"
         ]
       },
       "categories": [
@@ -7350,6 +7050,11 @@
           "target": "@ui/copy-icon.tsx"
         },
         {
+          "path": "packages/ui/src/components/copy-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-text.tsx"
+        },
+        {
           "path": "packages/ui/src/components/feedback.tsx",
           "type": "registry:ui",
           "target": "@ui/feedback.tsx"
@@ -7358,11 +7063,6 @@
           "path": "packages/ui/src/components/field.tsx",
           "type": "registry:ui",
           "target": "@ui/field.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/inline-copy-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/inline-copy-text.tsx"
         },
         {
           "path": "packages/ui/src/components/input.tsx",
@@ -8733,11 +8433,6 @@
           "target": "@ui/skeleton.tsx"
         },
         {
-          "path": "packages/ui/src/components/tooltip-button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/tooltip-button.tsx"
-        },
-        {
           "path": "packages/ui/src/components/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
@@ -9598,11 +9293,6 @@
           "target": "@ui/checkbox.tsx"
         },
         {
-          "path": "packages/ui/src/components/clipboard-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/clipboard-text.tsx"
-        },
-        {
           "path": "packages/ui/src/components/code-editor.tsx",
           "type": "registry:ui",
           "target": "@ui/code-editor.tsx"
@@ -9726,6 +9416,11 @@
           "path": "packages/ui/src/components/copy-icon.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-icon.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/copy-text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/copy-text.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table.tsx",
@@ -9923,11 +9618,6 @@
           "target": "@ui/image/transform.ts"
         },
         {
-          "path": "packages/ui/src/components/inline-copy-text.tsx",
-          "type": "registry:ui",
-          "target": "@ui/inline-copy-text.tsx"
-        },
-        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -10051,11 +9741,6 @@
           "path": "packages/ui/src/components/select.tsx",
           "type": "registry:ui",
           "target": "@ui/select.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/sensitive-input.tsx",
-          "type": "registry:ui",
-          "target": "@ui/sensitive-input.tsx"
         },
         {
           "path": "packages/ui/src/components/separator.tsx",
@@ -10407,7 +10092,6 @@
           "@/components/ui/carousel",
           "@/components/ui/chart",
           "@/components/ui/checkbox",
-          "@/components/ui/clipboard-text",
           "@/components/ui/code-editor",
           "@/components/ui/code-editor/code-editor",
           "@/components/ui/code-editor/content",
@@ -10433,6 +10117,7 @@
           "@/components/ui/context-menu",
           "@/components/ui/copy-button",
           "@/components/ui/copy-icon",
+          "@/components/ui/copy-text",
           "@/components/ui/data-table",
           "@/components/ui/data-table/column-header",
           "@/components/ui/data-table/columns",
@@ -10472,7 +10157,6 @@
           "@/components/ui/image/labels",
           "@/components/ui/image/preview",
           "@/components/ui/image/transform",
-          "@/components/ui/inline-copy-text",
           "@/components/ui/input-group",
           "@/components/ui/input-otp",
           "@/components/ui/input",
@@ -10498,7 +10182,6 @@
           "@/components/ui/resizable",
           "@/components/ui/scroll-area",
           "@/components/ui/select",
-          "@/components/ui/sensitive-input",
           "@/components/ui/separator",
           "@/components/ui/sheet",
           "@/components/ui/sidebar",
