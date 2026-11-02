@@ -51,6 +51,12 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 
 <ComponentPreview name="qr-code-logo" />
 
+## 无背景 [#background]
+
+`background={false}` 去掉卡片背景，二维码直接显示在下方的任意背景上，颜色取自 `currentColor`。扫码仍依赖对比度：请放在纯色背景上，并保持四周留白。带标记时，标记下方的码点会从二维码中直接挖空，因此无需底板也能保持标记清晰。
+
+<ComponentPreview name="qr-code-transparent" />
+
 ## 玻璃 [#glass]
 
 二维码属于内容，在玻璃中保持不透明的识别区域。传入 `glass` 可把二维码放在玻璃上，识别区域变为透明，并使用二维码自身的材质。在繁杂背景上建议使用 `frosted`，以保证可扫描。
@@ -66,6 +72,7 @@ import { QRCode } from "@workspace/ui/components/qr-code";
 | `label` | `string` | `"QR code"`；可访问描述 |
 | `margin` | `number` | `16`；四周留白，按目标尺寸的 CSS 像素计 |
 | `logo` | `ReactNode` | 可选中心覆盖内容 |
+| `background` | `boolean` | `true`；`false` 去掉二维码后的卡片背景。 |
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | 在清透或磨砂玻璃上显示二维码 |
 | `render`、`ref`、其他属性 | div／useRender 属性 | 透传到根节点 |
 

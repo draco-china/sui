@@ -152,6 +152,19 @@ describe("QR code asynchronous SSR boundary", () => {
     expect(html).not.toContain("<mask");
     expect(html).toContain('aria-busy="true"');
   });
+  test("background={false} drops the card from the root and the content", () => {
+    const html = renderToString(
+      <QRCode value="connect:workspace" background={false} />,
+    );
+    const root = html.match(/<div[^>]*data-slot="qr-code"[^>]*>/)?.[0] ?? "";
+    expect(root).not.toContain("bg-card");
+    expect(html).not.toMatch(/data-slot="qr-code-content"[^>]*bg-card/);
+    expect(html).toContain("text-foreground");
+    const card = renderToString(<QRCode value="connect:workspace" />);
+    expect(card.match(/<div[^>]*data-slot="qr-code"[^>]*>/)?.[0]).toContain(
+      "bg-card",
+    );
+  });
   test("plain QR retains its solid neutral background inside an outer glass layout", () => {
     const html = renderToString(
       <GlassSurface glass>

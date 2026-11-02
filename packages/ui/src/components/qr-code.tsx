@@ -18,10 +18,22 @@ type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
   margin?: number;
   logo?: ReactNode;
   size?: number;
+  /**
+   * `false` drops the card behind the code, so the modules sit straight on
+   * whatever is behind it. Keep the backdrop plain and contrasting.
+   */
+  background?: boolean;
 };
 const qrCodeVariants = cva(
-  "group/qr-code relative isolate mx-auto aspect-square w-full overflow-hidden rounded-xl bg-card text-foreground",
+  "group/qr-code relative isolate mx-auto aspect-square w-full overflow-hidden rounded-xl text-foreground",
+  {
+    variants: { background: { true: "bg-card", false: "" } },
+    defaultVariants: { background: true },
+  },
 );
+// The logo plate, as a share of the 512-unit code: the modules under it are
+// cut out of the code itself, so the logo stays clear without a card.
+const logoShare = 0.16;
 
 type Dot = {
   x: number;
@@ -292,6 +304,7 @@ function QRCodeContent({
   margin = 16,
   logo,
   size = 256,
+  background = true,
   className,
   style,
   render,
@@ -409,12 +422,17 @@ function QRCodeContent({
     props: mergeProps<"div">(
       {
         "aria-busy": !ready && !failed,
-        className: cn(qrCodeVariants(), className),
+        className: cn(qrCodeVariants({ background }), className),
         style: { width: pixels, maxWidth: "100%", ...style },
         children: (
           <div
             data-slot="qr-code-content"
-            className="absolute inset-0 overflow-hidden rounded-[inherit] bg-card text-foreground group-glass/qr-code:bg-transparent"
+            className={cn(
+              // The code draws in currentColor, inherited from the root, so a
+              // text color on the root recolors it.
+              "absolute inset-0 overflow-hidden rounded-[inherit] group-glass/qr-code:bg-transparent",
+              background && "bg-card",
+            )}
           >
             {!ready && !failed && (
               <div
@@ -463,6 +481,16 @@ function QRCodeContent({
                           setResult({ key: resultKey, error: true });
                         }}
                       />
+                      {logo && (
+                        <rect
+                          x={256 * (1 - logoShare)}
+                          y={256 * (1 - logoShare)}
+                          width={512 * logoShare}
+                          height={512 * logoShare}
+                          rx="12"
+                          fill="#000000"
+                        />
+                      )}
                     </mask>
                   </defs>
                   {animated && (
@@ -510,7 +538,10 @@ function QRCodeContent({
                   <span
                     aria-hidden="true"
                     data-slot="qr-code-logo"
-                    className="absolute top-1/2 left-1/2 flex size-[16%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-md border-4 border-card bg-card text-foreground"
+                    className={cn(
+                      "absolute top-1/2 left-1/2 flex size-[16%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-md border-4 border-transparent",
+                      background && "border-card bg-card",
+                    )}
                   >
                     {logo}
                   </span>

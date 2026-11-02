@@ -624,6 +624,7 @@ export const examples = {
   "qr-code-margin": () => import("./variants/qr-code-margin"),
   "qr-code-logo": () => import("./variants/qr-code-logo"),
   "qr-code-states": () => import("./variants/qr-code-states"),
+  "qr-code-transparent": () => import("./variants/qr-code-transparent"),
   "theme-toggle-demo": () => import("./variants/theme-toggle-demo"),
   "theme-toggle-variants": () => import("./variants/theme-toggle-variants"),
 } satisfies Record<
@@ -1333,6 +1334,7 @@ export const sourceFiles = {
   "qr-code-margin": () => import("./variants/qr-code-margin.tsx?raw"),
   "qr-code-logo": () => import("./variants/qr-code-logo.tsx?raw"),
   "qr-code-states": () => import("./variants/qr-code-states.tsx?raw"),
+  "qr-code-transparent": () => import("./variants/qr-code-transparent.tsx?raw"),
   "theme-toggle-demo": () => import("./variants/theme-toggle-demo.tsx?raw"),
   "theme-toggle-variants": () =>
     import("./variants/theme-toggle-variants.tsx?raw"),

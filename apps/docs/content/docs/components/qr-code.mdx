@@ -51,6 +51,12 @@ Finder patterns use concentric rounded outer rings and rounded solid centers. Th
 
 <ComponentPreview name="qr-code-logo" />
 
+## Without a background [#background]
+
+`background={false}` drops the card, so the code sits straight on whatever is behind it and takes its color from `currentColor`. Scanners still need contrast: put it on a plain backdrop and keep the quiet zone clear. With a logo, the modules under the logo are cut out of the code itself, so the logo stays clear without a plate.
+
+<ComponentPreview name="qr-code-transparent" />
+
 ## Glass [#glass]
 
 QR codes are content and keep their opaque reading area inside glass. Pass `glass` to place the code on glass instead; its reading area turns transparent and takes the code's own material. Prefer `frosted` over busy backgrounds so the code stays scannable.
@@ -66,6 +72,7 @@ QR codes are content and keep their opaque reading area inside glass. Pass `glas
 | `label` | `string` | `"QR code"`; accessible description. |
 | `margin` | `number` | `16`; quiet space in CSS pixels at the requested size. |
 | `logo` | `ReactNode` | Optional center overlay. |
+| `background` | `boolean` | `true`; `false` drops the card behind the code. |
 | `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Shows the code on Clear or frosted glass. |
 | `render`, `ref`, other props | Div / useRender props | Forwarded to the root. |
 
