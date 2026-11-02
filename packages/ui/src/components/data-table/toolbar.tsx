@@ -82,6 +82,8 @@ export function DataTableSearch({
       </InputGroupAddon>
       <InputGroupInput
         type="search"
+        // The clear button below replaces the browser's own.
+        className="[&::-webkit-search-cancel-button]:hidden"
         value={value}
         aria-label={placeholder ?? table.labels.keywordPlaceholder}
         placeholder={placeholder ?? table.labels.keywordPlaceholder}
