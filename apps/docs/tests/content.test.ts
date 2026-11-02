@@ -68,6 +68,7 @@ function workspaceFile(specifier: string) {
     relative.startsWith("components/") ||
     relative.startsWith("blocks/") ||
     relative.startsWith("viewers/") ||
+    relative.startsWith("charts/") ||
     (relative.startsWith("layouts/") && relative !== "layouts/types")
       ? ".tsx"
       : ".ts";

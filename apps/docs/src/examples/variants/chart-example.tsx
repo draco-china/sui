@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  type ChartConfig,
-  ChartContainer,
-} from "@workspace/ui/components/chart";
+import { type ChartConfig, ChartContainer } from "@workspace/ui/charts/chart";
 import { Bar, BarChart } from "recharts";
 
 const chartData = [

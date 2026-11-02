@@ -1,0 +1,51 @@
+---
+title: Composed Chart
+description: 柱与线组合，例如数量与比率并列。
+---
+
+<ComponentPreview name="composed-chart-demo" />
+
+## 安装 [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/composed-chart
+```
+
+使用 shadcn CLI 安装，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+## 用法 [#usage]
+
+```tsx
+import { ComposedChart } from "@workspace/ui/charts/composed-chart";
+
+<ComposedChart data={data} config={config} index="month" bars={["orders"]} lines={["conversion"]} lineAxis />;
+```
+
+## 定制 [#customize]
+
+封装覆盖常见场景。需要更多控制时，传入 Recharts 元素作为 `children`，或直接使用 [Chart](/zh-CN/docs/charts/chart) 原语组合图表。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `bars` | `readonly string[]` | 必填，绘制为柱的系列。 |
+| `lines` | `readonly string[]` | 必填，绘制为线的系列。 |
+| `lineAxis` | `boolean` | `false`，线使用第二条 y 轴。 |
+| `lineValueFormatter` | `(value: number) => string` | `valueFormatter`。 |
+| `curve` | `"linear" \| "natural" \| "monotone" \| "step"` | `"monotone"`。 |
+| `index` | `string` | 必填，分类轴的 key。 |
+| `showGrid` / `showXAxis` / `showYAxis` | `boolean` | 默认显示网格和 x 轴；y 轴因图表而异。 |
+| `dir` | `"ltr" \| "rtl"` | `"ltr"`，镜像坐标轴。 |
+| `data` | `readonly Record<string, unknown>[]` | 必填，数据行。 |
+| `config` | `ChartConfig` | 必填。按 key 配置标签、颜色和图标；未设置颜色的系列使用 `--chart-1` 至 `--chart-5`。 |
+| `valueFormatter` | `(value: number) => string` | `toLocaleString`。用于坐标轴、提示框和读屏数据表；可用 `numberFormatter` 创建。 |
+| `showLegend` | `boolean` | `false`。图例按钮可显示或隐藏系列。 |
+| `showTooltip` | `boolean` | `true`。 |
+| `loading` | `boolean` | `false`。显示骨架。 |
+| `labels` | `Partial<ChartLabels>` | 英文文案；中文传入 `chartLabelsZhCN`。 |
+| `aria-label` | `string` | 为图表命名，并作为数据表标题。 |
+| `className` | `string` | 控制尺寸，默认 16:9。 |
+| `children` | `ReactNode` | 额外的 Recharts 元素，例如 `ReferenceLine`。 |
+
+模块还导出 `ComposedChartProps`、`numberFormatter` 以及文案预设 `chartLabels` 和 `chartLabelsZhCN`。读屏用户会读到一张隐藏的数据表，图表本身对辅助技术隐藏；系统开启减少动态效果时不播放动画。

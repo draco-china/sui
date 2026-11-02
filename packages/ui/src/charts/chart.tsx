@@ -22,6 +22,18 @@ export type ChartConfig = Record<
   )
 >;
 
+/**
+ * Escapes a series key for a CSS custom property name. Letters, digits, `_`,
+ * `-` and non-ASCII characters such as Chinese stay as they are; anything
+ * else becomes a CSS escape, so distinct keys never share a variable.
+ */
+function chartKey(key: string) {
+  return key.replace(
+    /[^\w\u0080-￿-]/g,
+    (char) => `\\${char.charCodeAt(0).toString(16)} `,
+  );
+}
+
 type ChartContextProps = {
   config: ChartConfig;
 };
@@ -100,7 +112,7 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
       itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    return color ? `  --color-${chartKey(key)}: ${color};` : null;
   })
   .join("\n")}
 }
@@ -423,4 +435,5 @@ export {
   ChartStyle,
   ChartTooltip,
   ChartTooltipContent,
+  chartKey,
 };

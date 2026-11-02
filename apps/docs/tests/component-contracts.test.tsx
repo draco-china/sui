@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { Button } from "@workspace/ui/components/button";
-import { Calendar } from "@workspace/ui/components/calendar";
 import {
   ChartContainer,
   ChartLegendContent,
   ChartTooltipContent,
-} from "@workspace/ui/components/chart";
+} from "@workspace/ui/charts/chart";
+import { Button } from "@workspace/ui/components/button";
+import { Calendar } from "@workspace/ui/components/calendar";
 import { Slider } from "@workspace/ui/components/slider";
 import { Toggle } from "@workspace/ui/components/toggle";
 import { renderToStaticMarkup } from "react-dom/server";

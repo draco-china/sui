@@ -1,0 +1,43 @@
+---
+title: Sparkline Chart
+description: A small chart without axes for KPI cards and table cells.
+---
+
+<ComponentPreview name="sparkline-chart-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/sparkline-chart
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { SparklineChart } from "@workspace/ui/charts/sparkline-chart";
+
+<SparklineChart data={data} config={config} variant="area" />;
+```
+
+## Customize [#customize]
+
+The wrapper covers common cases. For more control, pass Recharts elements as `children`, or compose your own chart with the [Chart](/docs/charts/chart) primitives.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `categories` | `readonly string[]` | Every key in `config`. |
+| `variant` | `"line" \| "area"` | `"line"`. |
+| `data` | `readonly Record<string, unknown>[]` | Required rows. |
+| `config` | `ChartConfig` | Required. Labels, colors and icons by key; series without a color use `--chart-1` to `--chart-5`. |
+| `valueFormatter` | `(value: number) => string` | `toLocaleString`. Formats axes, tooltip and the screen-reader table; build one with `numberFormatter`. |
+| `loading` | `boolean` | `false`. Shows a skeleton. |
+| `labels` | `Partial<ChartLabels>` | English labels; pass `chartLabelsZhCN` for Chinese. |
+| `aria-label` | `string` | Names the figure and captions its data table. |
+| `className` | `string` | Sizes the chart; defaults to a 16:9 box. |
+| `children` | `ReactNode` | Extra Recharts elements, such as `ReferenceLine`. |
+
+The module also exports `SparklineChartProps`, `numberFormatter`, and the label presets `chartLabels` and `chartLabelsZhCN`. Screen readers get a hidden data table while the drawing itself is hidden from assistive technology, and animation is off when reduced motion is requested.

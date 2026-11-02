@@ -1108,41 +1108,6 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "chart",
-      "title": "Chart",
-      "description": "SUI component: chart. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@fontsource-variable/inter@^5.3.0",
-        "cn@^0.4.0",
-        "recharts@3.8.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/chart.tsx",
-          "type": "registry:ui",
-          "target": "@ui/chart.tsx"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/chart"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "checkbox",
       "title": "Checkbox",
       "description": "SUI component: checkbox. Includes its local dependencies and SUI styles.",
@@ -9001,6 +8966,624 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "area-chart",
+      "title": "Area Chart",
+      "description": "SUI block: area-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/area-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/area-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/axes.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/axes.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/area-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "bar-chart",
+      "title": "Bar Chart",
+      "description": "SUI block: bar-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/bar-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/bar-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/axes.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/axes.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/bar-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "chart",
+      "title": "Chart",
+      "description": "SUI block: chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "composed-chart",
+      "title": "Composed Chart",
+      "description": "SUI block: composed-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/composed-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/composed-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/axes.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/axes.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/composed-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "line-chart",
+      "title": "Line Chart",
+      "description": "SUI block: line-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/line-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/line-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/axes.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/axes.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/line-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "pie-chart",
+      "title": "Pie Chart",
+      "description": "SUI block: pie-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/pie-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/pie-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/pie-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "radar-chart",
+      "title": "Radar Chart",
+      "description": "SUI block: radar-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/radar-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/radar-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/radar-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "radial-chart",
+      "title": "Radial Chart",
+      "description": "SUI block: radial-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/radial-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/radial-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/radial-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "sparkline-chart",
+      "title": "Sparkline Chart",
+      "description": "SUI block: sparkline-chart. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "motion@^14.0.0",
+        "recharts@3.8.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/sparkline-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/sparkline-chart.tsx"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/charts/sparkline-chart"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "theme-bamboo",
       "title": "Bamboo theme",
       "description": "Optional bamboo palette. Install SUI base styles first, then select data-color=\"bamboo\".",
@@ -9208,6 +9791,86 @@
           "target": "@components/blocks/tanstack-form.tsx"
         },
         {
+          "path": "packages/ui/src/charts/area-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/area-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/bar-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/bar-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/composed-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/composed-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/line-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/line-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/pie-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/pie-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/radar-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/radar-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/radial-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/radial-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/axes.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/axes.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/format.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/format.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/frame.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/frame.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/labels.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/series.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/series.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/tooltip.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/shared/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/charts/shared/types.ts",
+          "type": "registry:component",
+          "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/charts/sparkline-chart.tsx",
+          "type": "registry:component",
+          "target": "@components/charts/sparkline-chart.tsx"
+        },
+        {
           "path": "packages/ui/src/components/accordion.tsx",
           "type": "registry:ui",
           "target": "@ui/accordion.tsx"
@@ -9281,11 +9944,6 @@
           "path": "packages/ui/src/components/carousel.tsx",
           "type": "registry:ui",
           "target": "@ui/carousel.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/chart.tsx",
-          "type": "registry:ui",
-          "target": "@ui/chart.tsx"
         },
         {
           "path": "packages/ui/src/components/checkbox.tsx",
@@ -10075,6 +10733,22 @@
         "entrypoints": [
           "@/components/blocks/delete-resource",
           "@/components/blocks/tanstack-form",
+          "@/components/charts/area-chart",
+          "@/components/charts/bar-chart",
+          "@/components/charts/chart",
+          "@/components/charts/composed-chart",
+          "@/components/charts/line-chart",
+          "@/components/charts/pie-chart",
+          "@/components/charts/radar-chart",
+          "@/components/charts/radial-chart",
+          "@/components/charts/shared/axes",
+          "@/components/charts/shared/format",
+          "@/components/charts/shared/frame",
+          "@/components/charts/shared/labels",
+          "@/components/charts/shared/series",
+          "@/components/charts/shared/tooltip",
+          "@/components/charts/shared/types",
+          "@/components/charts/sparkline-chart",
           "@/components/ui/accordion",
           "@/components/ui/alert-dialog",
           "@/components/ui/alert",
@@ -10090,7 +10764,6 @@
           "@/components/ui/calendar",
           "@/components/ui/card",
           "@/components/ui/carousel",
-          "@/components/ui/chart",
           "@/components/ui/checkbox",
           "@/components/ui/code-editor",
           "@/components/ui/code-editor/code-editor",

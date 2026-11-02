@@ -1,0 +1,48 @@
+---
+title: Radial Chart
+description: Progress rings with a value in the center.
+---
+
+<ComponentPreview name="radial-chart-demo" />
+
+## Installation [#installation]
+
+```bash
+bunx --bun shadcn@latest add @sui/radial-chart
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+## Usage [#usage]
+
+```tsx
+import { RadialChart } from "@workspace/ui/charts/radial-chart";
+
+<RadialChart data={data} config={config} nameKey="goal" valueKey="progress" max={100} />;
+```
+
+## Customize [#customize]
+
+The wrapper covers common cases. For more control, pass Recharts elements as `children`, or compose your own chart with the [Chart](/docs/charts/chart) primitives.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `nameKey` | `string` | Required. Names each ring. |
+| `valueKey` | `string` | Required. |
+| `max` | `number` | The largest value. |
+| `value` | `number` | Center value, formatted with `valueFormatter`. |
+| `label` | `string` | Text under the center value. |
+| `data` | `readonly Record<string, unknown>[]` | Required rows. |
+| `config` | `ChartConfig` | Required. Labels, colors and icons by key; series without a color use `--chart-1` to `--chart-5`. |
+| `valueFormatter` | `(value: number) => string` | `toLocaleString`. Formats axes, tooltip and the screen-reader table; build one with `numberFormatter`. |
+| `showLegend` | `boolean` | `false`. Lists each slice or ring. |
+| `showTooltip` | `boolean` | `true`. |
+| `loading` | `boolean` | `false`. Shows a skeleton. |
+| `labels` | `Partial<ChartLabels>` | English labels; pass `chartLabelsZhCN` for Chinese. |
+| `aria-label` | `string` | Names the figure and captions its data table. |
+| `className` | `string` | Sizes the chart; defaults to a 16:9 box. |
+| `children` | `ReactNode` | Extra Recharts elements, such as `ReferenceLine`. |
+
+The module also exports `RadialChartProps`, `numberFormatter`, and the label presets `chartLabels` and `chartLabelsZhCN`. Screen readers get a hidden data table while the drawing itself is hidden from assistive technology, and animation is off when reduced motion is requested.

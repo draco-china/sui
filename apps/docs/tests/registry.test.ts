@@ -25,7 +25,13 @@ function targetForImport(name: string) {
 }
 
 test("each component, block and layout has a complete standalone registry manifest", async () => {
-  for (const directory of ["components", "blocks", "layouts"]) {
+  for (const directory of [
+    "components",
+    "blocks",
+    "layouts",
+    "viewers",
+    "charts",
+  ]) {
     const entries = await readdir(
       join(repositoryRoot, "packages/ui/src", directory),
     );

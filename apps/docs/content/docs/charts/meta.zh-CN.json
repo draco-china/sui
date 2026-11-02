@@ -1,0 +1,15 @@
+{
+  "title": "Charts",
+  "defaultOpen": true,
+  "pages": [
+    "chart",
+    "area-chart",
+    "bar-chart",
+    "line-chart",
+    "pie-chart",
+    "radar-chart",
+    "radial-chart",
+    "sparkline-chart",
+    "composed-chart"
+  ]
+}

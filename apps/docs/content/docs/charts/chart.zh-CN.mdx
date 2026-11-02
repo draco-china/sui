@@ -1,34 +1,34 @@
 ---
 title: Chart
-description: Beautiful charts. Built using Recharts. Copy and paste into your apps.
+description: "漂亮的图表。使用 Recharts 构建。复制并粘贴到您的应用程序中"
 base: base
 component: true
 ---
 
+<ComponentPreview name="chart-demo" />
+
 <Callout className="mt-4">
 
-**Updated:** The `chart` component now uses Recharts v3. If you're upgrading existing chart code, see [Updating to Recharts v3](#updating-to-recharts-v3).
+**更新：** `chart` 组件现在使用 Recharts v3。如果您要升级现有图表代码，请参阅[更新到 Recharts v3](#updating-to-recharts-v3)。
 
 </Callout>
 
-<ComponentPreview name="chart-demo" />
+介绍**图表**。您可以将其复制并粘贴到应用程序中的图表组件的集合。
 
-Introducing **Charts**. A collection of chart components that you can copy and paste into your apps.
+图表设计得看起来很棒，开箱即用。它们与其他组件配合良好，并且可以完全定制以适合您的项目。
 
-Charts are designed to look great out of the box. They work well with the other components and are fully customizable to fit your project.
+[浏览图表库](https://ui.shadcn.com/charts)。
 
-[Browse the Charts Library](https://ui.shadcn.com/charts).
+## 组件 [#component]
 
-## Component
+我们在后台使用 [Recharts](https://recharts.org/)。
 
-We use [Recharts](https://recharts.org/) under the hood.
-
-We designed the `chart` component with composition in mind. **You build your charts using Recharts components and only bring in custom components, such as `ChartTooltip`, when and where you need it**.
+我们设计 `chart` 组件时考虑到了组合。 **您可以使用 Recharts 组件构建图表，并且仅在需要的时间和地点引入自定义组件，例如 `ChartTooltip`**。
 
 ```tsx showLineNumbers /ChartContainer/ /ChartTooltipContent/
 import { Bar, BarChart } from "recharts"
 
-import { ChartContainer, ChartTooltipContent } from "@workspace/ui/components/chart"
+import { ChartContainer, ChartTooltipContent } from "@workspace/ui/charts/chart"
 
 export function MyChart() {
   return (
@@ -42,40 +42,40 @@ export function MyChart() {
 }
 ```
 
-We do not wrap Recharts. This means you're not locked into an abstraction. When a new Recharts version is released, you can follow the official upgrade path to upgrade your charts.
+我们不包装 Recharts。这意味着您没有被锁定在抽象中。当Recharts新版本发布时，您可以按照官方升级路径升级您的图表。
 
-**The components are yours**.
+**组件是你的**。
 
-## Updating to Recharts v3
+## 升级至 Recharts v3 [#updating-to-recharts-v3]
 
-If you're updating older chart code to Recharts v3:
+如果您要将旧的图表代码更新到 Recharts v3：
 
-- Use `var(--chart-1)` instead of `hsl(var(--chart-1))` when you reference chart tokens from your CSS variables.
-- Use `ChartTooltip.defaultIndex` for initial tooltip state only. Keep persistent active shapes in your own chart state.
-- Remove `layout` from `<Bar>` when the parent `<BarChart>` already defines it.
-- Keep a height, `min-h-*`, or `aspect-*` on `ChartContainer` so `ResponsiveContainer` can measure on first render.
+-  当您从 CSS 变量引用图表标记时，请使用 `var(--chart-1)` 而不是 `hsl(var(--chart-1))`。
+-  仅将 `ChartTooltip.defaultIndex` 用于初始工具提示状态。将持久的活动形状保留在您自己的图表状态中。
+-  当父 `<BarChart>` 已定义 `layout` 时，从 `<Bar>` 中删除 `layout`。
+- 在 `ChartContainer` 上保留高度、`min-h-*` 或 `aspect-*`，以便 `ResponsiveContainer` 可以在首次渲染时进行测量。
 
-## Installation
+## 安装 [#installation]
 
 ```bash
 bunx --bun shadcn@latest add @sui/chart
 ```
 
-Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+通过 shadcn CLI 安装组件源码。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
 
-## Your First Chart
+## 第一张图表 [#your-first-chart]
 
-Let's build your first chart. We'll build a bar chart, add a grid, axis, tooltip and legend.
+让我们构建您的第一个图表。我们将构建一个条形图，添加网格、轴、工具提示和图例。
 
 <Steps>
 
-<Step>Start by defining your data</Step>
+<Step>首先定义您的数据</Step>
 
-The following data represents the number of desktop and mobile users for each month.
+以下数据代表每个月的桌面和移动用户数量。
 
 <Callout className="mt-4">
 
-**Note:** Your data can be in any shape. You are not limited to the shape of the data below. Use the `dataKey` prop to map your data to the chart.
+**注意：** 您的数据可以是任何形状。您不限于以下数据的形状。使用 `dataKey` 属性将数据映射到图表。
 
 </Callout>
 
@@ -90,12 +90,12 @@ const chartData = [
 ]
 ```
 
-<Step>Define your chart config</Step>
+<Step>定义您的图表配置</Step>
 
-The chart config holds configuration for the chart. This is where you place human-readable strings, such as labels, icons and color tokens for theming.
+图表配置保存图表的配置。您可以在此处放置人类可读的字符串，例如用于主题化的标签、图标和颜色标记。
 
 ```tsx title="components/example-chart.tsx" showLineNumbers
-import { type ChartConfig } from "@workspace/ui/components/chart"
+import { type ChartConfig } from "@workspace/ui/charts/chart"
 
 const chartConfig = {
   desktop: {
@@ -109,13 +109,13 @@ const chartConfig = {
 } satisfies ChartConfig
 ```
 
-<Step>Build your chart</Step>
+<Step>构建您的图表</Step>
 
-You can now build your chart using Recharts components.
+您现在可以使用 Recharts 组件构建图表。
 
 <Callout className="mt-4 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-950">
 
-**Important:** Remember to set a `min-h-[VALUE]` on the `ChartContainer` component. This is required for the chart to be responsive.
+**重要提示：** 请记住在 `ChartContainer` 组件上设置 `min-h-[VALUE]`。这是图表响应所必需的。
 
 </Callout>
 
@@ -123,19 +123,19 @@ You can now build your chart using Recharts components.
 
 </Steps>
 
-### Add a Grid
+### 添加网格 [#add-a-grid]
 
-Let's add a grid to the chart.
+让我们向图表添加一个网格。
 
 <Steps className="mb-0 pt-2">
 
-<Step>Import the `CartesianGrid` component.</Step>
+<Step>导入`CartesianGrid`组件。</Step>
 
 ```tsx /CartesianGrid/
 import { Bar, BarChart, CartesianGrid } from "recharts"
 ```
 
-<Step>Add the `CartesianGrid` component to your chart.</Step>
+<Step>将 `CartesianGrid` 组件添加到您的图表中。</Step>
 
 ```tsx showLineNumbers {3}
 <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -151,19 +151,19 @@ import { Bar, BarChart, CartesianGrid } from "recharts"
 
 </Steps>
 
-### Add an Axis
+### 添加坐标轴 [#add-an-axis]
 
-To add an x-axis to the chart, we'll use the `XAxis` component.
+要向图表添加 x 轴，我们将使用 `XAxis` 组件。
 
 <Steps className="mb-0 pt-2">
 
-<Step>Import the `XAxis` component.</Step>
+<Step>导入`XAxis`组件。</Step>
 
 ```tsx /XAxis/
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 ```
 
-<Step>Add the `XAxis` component to your chart.</Step>
+<Step>将 `XAxis` 组件添加到您的图表中。</Step>
 
 ```tsx showLineNumbers {4-10}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
@@ -186,21 +186,21 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 </Steps>
 
-### Add Tooltip
+### 添加提示框 [#add-tooltip]
 
-So far we've only used components from Recharts. They look great out of the box thanks to some customization in the `chart` component.
+到目前为止，我们只使用了 Recharts 中的组件。由于 `chart` 组件中的一些定制，它们开箱即用看起来很棒。
 
-To add a tooltip, we'll use the custom `ChartTooltip` and `ChartTooltipContent` components from `chart`.
+为了添加工具提示，我们将使用 `chart` 中的自定义 `ChartTooltip` 和 `ChartTooltipContent` 组件。
 
 <Steps className="mb-0 pt-2">
 
-<Step>Import the `ChartTooltip` and `ChartTooltipContent` components.</Step>
+<Step>导入`ChartTooltip`和`ChartTooltipContent`组件。</Step>
 
 ```tsx
-import { ChartTooltip, ChartTooltipContent } from "@workspace/ui/components/chart"
+import { ChartTooltip, ChartTooltipContent } from "@workspace/ui/charts/chart"
 ```
 
-<Step>Add the components to your chart.</Step>
+<Step>将组件添加到图表中。</Step>
 
 ```tsx showLineNumbers {11}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
@@ -222,23 +222,23 @@ import { ChartTooltip, ChartTooltipContent } from "@workspace/ui/components/char
 
 <ComponentPreview name="chart-example-tooltip" previewClassName="h-80" />
 
-Hover to see the tooltips. Easy, right? Two components, and we've got a beautiful tooltip.
+将鼠标悬停即可查看工具提示。容易，对吧？两个组件，我们有一个漂亮的工具提示。
 
 </Steps>
 
-### Add Legend
+### 添加图例 [#add-legend]
 
-We'll do the same for the legend. We'll use the `ChartLegend` and `ChartLegendContent` components from `chart`.
+我们将对图例做同样的事情。我们将使用 `chart` 中的 `ChartLegend` 和 `ChartLegendContent` 组件。
 
 <Steps className="mb-0 pt-2">
 
-<Step>Import the `ChartLegend` and `ChartLegendContent` components.</Step>
+<Step>导入`ChartLegend`和`ChartLegendContent`组件。</Step>
 
 ```tsx
-import { ChartLegend, ChartLegendContent } from "@workspace/ui/components/chart"
+import { ChartLegend, ChartLegendContent } from "@workspace/ui/charts/chart"
 ```
 
-<Step>Add the components to your chart.</Step>
+<Step>将组件添加到图表中。</Step>
 
 ```tsx showLineNumbers {12}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
@@ -263,24 +263,24 @@ import { ChartLegend, ChartLegendContent } from "@workspace/ui/components/chart"
 
 </Steps>
 
-Done. You've built your first chart! What's next?
+完成。您已经构建了第一个图表！接下来怎么办？
 
-- [Themes and Colors](/docs/components/chart#theming)
-- [Tooltip](/docs/components/chart#tooltip)
-- [Legend](/docs/components/chart#legend)
+- [主题和颜色](/zh-CN/docs/charts/chart#theming)
+- [工具提示](/zh-CN/docs/charts/chart#tooltip)
+- [图例](/zh-CN/docs/charts/chart#legend)
 
-## Chart Config
+## 图表配置 [#chart-config]
 
-The chart config is where you define the labels, icons and colors for a chart.
+图表配置是您定义图表的标签、图标和颜色的地方。
 
-It is intentionally decoupled from chart data.
+它有意与图表数据分离。
 
-This allows you to share config and color tokens between charts. It can also work independently for cases where your data or color tokens live remotely or in a different format.
+这允许您在图表之间共享配置和颜色标记。对于数据或颜色令牌远程存在或以不同格式存在的情况，它还可以独立工作。
 
 ```tsx showLineNumbers /ChartConfig/
 import { Monitor } from "lucide-react"
 
-import { type ChartConfig } from "@workspace/ui/components/chart"
+import { type ChartConfig } from "@workspace/ui/charts/chart"
 
 const chartConfig = {
   desktop: {
@@ -297,15 +297,15 @@ const chartConfig = {
 } satisfies ChartConfig
 ```
 
-## Theming
+## 主题 [#theming]
 
-Charts have built-in support for theming. You can use css variables (recommended) or color values in any color format, such as hex, hsl or oklch.
+图表具有对主题的内置支持。您可以使用 css 变量（推荐）或任何颜色格式的颜色值，例如 hex、hsl 或 oklch。
 
-### CSS Variables
+### CSS 变量 [#css-variables]
 
 <Steps className="mb-0 pt-2">
 
-<Step>Define your colors in your css file</Step>
+<Step>在 css 文件中定义颜色</Step>
 
 ```css title="app/globals.css" showLineNumbers
 @layer base {
@@ -321,7 +321,7 @@ Charts have built-in support for theming. You can use css variables (recommended
 }
 ```
 
-<Step>Add the color to your `chartConfig`</Step>
+<Step>为您的`chartConfig`</Step>添加颜色
 
 ```tsx title="components/example-chart.tsx" showLineNumbers
 const chartConfig = {
@@ -338,9 +338,9 @@ const chartConfig = {
 
 </Steps>
 
-### hex, hsl or oklch
+### HEX、HSL 或 OKLCH [#hex-hsl-or-oklch]
 
-You can also define your colors directly in the chart config. Use the color format you prefer.
+您还可以直接在图表配置中定义颜色。使用您喜欢的颜色格式。
 
 ```tsx title="components/example-chart.tsx" showLineNumbers
 const chartConfig = {
@@ -363,17 +363,17 @@ const chartConfig = {
 } satisfies ChartConfig
 ```
 
-### Using Colors
+### 使用颜色 [#using-colors]
 
-To use the theme colors in your chart, reference the colors using the format `var(--color-KEY)`.
+要在图表中使用主题颜色，请使用 `var(--color-KEY)` 格式引用颜色。
 
-#### Components
+#### Components [#components]
 
 ```tsx
 <Bar dataKey="desktop" fill="var(--color-desktop)" />
 ```
 
-#### Chart Data
+#### 图表数据 [#chart-data]
 
 ```tsx title="components/example-chart.tsx" showLineNumbers
 const chartData = [
@@ -382,51 +382,51 @@ const chartData = [
 ]
 ```
 
-#### Tailwind
+#### Tailwind [#tailwind]
 
 ```tsx title="components/example-chart.tsx"
 <LabelList className="fill-(--color-desktop)" />
 ```
 
-## Tooltip
+## 提示框组合 [#tooltip]
 
-A chart tooltip contains a label, name, indicator and value. You can use a combination of these to customize your tooltip.
+图表工具提示包含标签、名称、指示器和值。您可以使用这些的组合来自定义您的工具提示。
 
 <ComponentPreview name="chart-tooltip" />
 
-You can turn on/off any of these using the `hideLabel`, `hideIndicator` props and customize the indicator style using the `indicator` prop.
+您可以使用 `hideLabel`、`hideIndicator` 属性打开/关闭其中任何一个，并使用 `indicator` 属性自定义指示器样式。
 
-Use `labelKey` and `nameKey` to use a custom key for the tooltip label and name.
+使用 `labelKey` 和 `nameKey` 为工具提示标签和名称使用自定义键。
 
-Chart comes with the `<ChartTooltip>` and `<ChartTooltipContent>` components. You can use these two components to add custom tooltips to your chart.
+图表附带 `<ChartTooltip>` 和 `<ChartTooltipContent>` 组件。您可以使用这两个组件将自定义工具提示添加到图表中。
 
 ```tsx title="components/example-chart.tsx"
-import { ChartTooltip, ChartTooltipContent } from "@workspace/ui/components/chart"
+import { ChartTooltip, ChartTooltipContent } from "@workspace/ui/charts/chart"
 ```
 
 ```tsx title="components/example-chart.tsx"
 <ChartTooltip content={<ChartTooltipContent />} />
 ```
 
-### Props
+### 属性 [#props]
 
-Use the following props to customize the tooltip.
+使用以下属性来自定义工具提示
 
-| Prop            | Type                     | Description                                  |
-| :-------------- | :----------------------- | :------------------------------------------- |
-| `labelKey`      | string                   | The config or data key to use for the label. |
-| `nameKey`       | string                   | The config or data key to use for the name.  |
-| `indicator`     | `dot` `line` or `dashed` | The indicator style for the tooltip.         |
-| `hideLabel`     | boolean                  | Whether to hide the label.                   |
-| `hideIndicator` | boolean                  | Whether to hide the indicator.               |
+| 属性 |类型 |描述 |
+| ：-------------- | :------------------------ | ：------------------------------------------------------ |
+| `labelKey` |字符串|用于标签的配置或数据键 |
+| `nameKey` |字符串|用于名称的配置或数据键  |
+| `indicator` | `dot` `line` 或 `dashed` |工具提示的指示器样式         |
+| `hideLabel` |布尔 |是否隐藏标签                   |
+| `hideIndicator` |布尔 |是否隐藏指示器               |
 
-### Colors
+### 颜色 [#colors]
 
-Colors are automatically referenced from the chart config.
+颜色会自动从图表配置中引用。
 
-### Custom
+### 自定义 [#custom]
 
-To use a custom key for tooltip label and names, use the `labelKey` and `nameKey` props.
+要使用工具提示标签和名称的自定义键，请使用 `labelKey` 和 `nameKey` 属性。
 
 ```tsx showLineNumbers /browser/
 const chartData = [
@@ -455,27 +455,27 @@ const chartConfig = {
 />
 ```
 
-This will use `Total Visitors` for label and `Chrome` and `Safari` for the tooltip names.
+这将使用 `Total Visitors` 作为标签，使用 `Chrome` 和 `Safari` 作为工具提示名称。
 
-## Legend
+## 图例 [#legend]
 
-You can use the custom `<ChartLegend>` and `<ChartLegendContent>` components to add a legend to your chart.
+您可以使用自定义 `<ChartLegend>` 和 `<ChartLegendContent>` 组件向图表添加图例。
 
 ```tsx title="components/example-chart.tsx"
-import { ChartLegend, ChartLegendContent } from "@workspace/ui/components/chart"
+import { ChartLegend, ChartLegendContent } from "@workspace/ui/charts/chart"
 ```
 
 ```tsx title="components/example-chart.tsx"
 <ChartLegend content={<ChartLegendContent />} />
 ```
 
-### Colors
+### 颜色 [#colors-1]
 
-Colors are automatically referenced from the chart config.
+颜色会自动从图表配置中引用。
 
-### Custom
+### 自定义 [#custom-1]
 
-To use a custom key for legend names, use the `nameKey` prop.
+要对图例名称使用自定义键，请使用 `nameKey` 属性。
 
 ```tsx showLineNumbers /browser/
 const chartData = [
@@ -499,20 +499,20 @@ const chartConfig = {
 <ChartLegend content={<ChartLegendContent nameKey="browser" />} />
 ```
 
-This will use `Chrome` and `Safari` for the legend names.
+这将使用 `Chrome` 和 `Safari` 作为图例名称。
 
-## Accessibility
+## 无障碍 [#accessibility]
 
-You can turn on the `accessibilityLayer` prop to add an accessible layer to your chart.
+启用 `accessibilityLayer`，即可为图表添加无障碍支持。
 
-This prop adds keyboard access and screen reader support to your charts.
+该属性支持键盘访问与屏幕阅读器。
 
 ```tsx title="components/example-chart.tsx"
 <LineChart accessibilityLayer />
 ```
 
-## RTL
+## 从右到左 [#rtl]
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+关于 shadcn/ui 的 RTL 支持，参阅 [RTL 配置指南](https://ui.shadcn.com/docs/rtl)。
 
 <ComponentPreview name="chart-rtl" previewClassName="h-92" direction="rtl" />
