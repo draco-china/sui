@@ -1,3 +1,13 @@
+## [5.3.0](https://github.com/draco-china/sui/compare/v5.2.1...v5.3.0) (2026-11-02)
+
+### Features
+
+* **section-layout:** show sections as tabs above the content ([57f38c1](https://github.com/draco-china/sui/commit/57f38c17fe947a9a68c30237063d04dfc70d812a))
+
+### Bug Fixes
+
+* **data-table:** anchor resize handles to their own columns ([e61c4e9](https://github.com/draco-china/sui/commit/e61c4e97986e479dd29b6ca94847038efa888990))
+
 ## [5.2.1](https://github.com/draco-china/sui/compare/v5.2.0...v5.2.1) (2026-11-02)
 
 ### Bug Fixes
