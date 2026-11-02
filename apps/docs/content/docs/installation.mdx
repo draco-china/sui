@@ -24,7 +24,7 @@ Run the following commands from the consuming application directory:
 ```bash
 bunx --bun shadcn@latest search draco-china/sui -q button
 bunx --bun shadcn@latest view draco-china/sui/button
-bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/editor
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/code-editor
 ```
 
 Install the business blocks by their registry names:
@@ -33,7 +33,7 @@ Install the business blocks by their registry names:
 bunx --bun shadcn@latest add draco-china/sui/delete-resource draco-china/sui/tanstack-form
 ```
 
-To install the complete collection, including all components and blocks:
+To install the complete collection, including all components, blocks, layouts, viewers, chat and charts:
 
 ```bash
 bunx --bun shadcn@latest add draco-china/sui/sui
@@ -48,7 +48,7 @@ bunx --bun shadcn@latest add draco-china/sui/button --dry-run
 bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
-Editor uses locally bundled Monaco workers and requires a Vite-compatible `?worker` loader. Keep the installed `worker.d.ts` in your TypeScript include paths. This also applies when installing the complete collection.
+Code Editor uses locally bundled Monaco workers and requires a Vite-compatible `?worker` loader. Keep the installed `worker.d.ts` in your TypeScript include paths. This also applies when installing the complete collection.
 
 Blocks default to English. Pass labels from your application's locale configuration to customize their visible text; see the [Delete Resource](/docs/blocks/delete-resource) and [TanStack Form](/docs/blocks/tanstack-form) references.
 
@@ -64,7 +64,7 @@ export function SaveButton() {
 }
 ```
 
-Use the actual aliases in your `components.json` if they differ. Examples throughout this reference use workspace imports such as `@workspace/ui/components/button`. For a registry installation, replace `@workspace/ui/components/*` with your `ui` alias, `@workspace/ui/blocks/*` with your `components` alias followed by `/blocks/*`, and hook or helper imports with your `hooks` or `lib` alias. For example, the default aliases use `@/components/ui/button`, `@/components/blocks/data-table`, and `@/hooks/use-mobile`. The CLI adapts imports inside the installed files automatically.
+Use the actual aliases in your `components.json` if they differ. Examples throughout this reference use workspace imports such as `@workspace/ui/components/button`. For a registry installation, replace `@workspace/ui/components/*` with your `ui` alias; `@workspace/ui/blocks/*`, `layouts/*`, `viewers/*`, `chat/*` and `charts/*` with your `components` alias followed by the same folder; and hook or helper imports with your `hooks` or `lib` alias. For example, the default aliases use `@/components/ui/data-table`, `@/components/blocks/tanstack-form`, `@/components/charts/bar-chart`, and `@/hooks/use-mobile`. The CLI adapts imports inside the installed files automatically.
 
 ## Optional: keep using the namespace [#optional-namespace]
 

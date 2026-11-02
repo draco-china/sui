@@ -21,11 +21,11 @@ bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/copy-button
 bunx --bun shadcn@latest add draco-china/sui/data-table
 ```
 
-The CLI copies required source files into your configured `ui`, `components`, `lib`, and `hooks` directories, installs package dependencies, and merges SUI styles into the CSS file in `components.json`. Files become part of your application and can be edited locally.
+The CLI copies required source files into your configured `ui`, `components` (blocks, layouts, viewers, chat and charts), `lib`, and `hooks` directories, installs package dependencies, and merges SUI styles into the CSS file in `components.json`. Files become part of your application and can be edited locally.
 
 Each item carries its local dependency closure. Installing a component does not require first installing the entire library. Use `draco-china/sui/sui` for the complete collection, `draco-china/sui/sui-style` for shared CSS, or `draco-china/sui/sui-theme` for the theme helpers and styles.
 
-Editor and the complete collection require the local Monaco worker setup described in [compatibility](/docs/compatibility#editor-workers).
+Code Editor and the complete collection require the local Monaco worker setup described in [compatibility](/docs/compatibility#editor-workers).
 
 ## Review an update [#review-an-update]
 

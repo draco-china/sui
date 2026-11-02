@@ -23,7 +23,8 @@ CodeViewer and DiffViewer can still show and copy raw content if syntax highligh
 | --- | --- |
 | Clipboard | Browser permissions and a secure context determine availability; the components provide failure feedback. |
 | Fullscreen | Browser fullscreen is optional; permission or platform restrictions can prevent entry. |
-| Glass | SVG refraction by default, with a CSS material where SVG backdrops are unsupported (Safari), under reduced transparency or forced colors, or when rendering fails. |
+| Glass | Surfaces render with their theme background until the material is measured. SVG refraction by default, with a CSS material where SVG backdrops are unsupported (Safari), under reduced transparency or forced colors, or when rendering fails. |
+| Haptics and sound | Off unless `FeedbackProvider` or a `feedback` prop enables them. Android uses the Vibration API, iOS 18+ the system switch click; both need a user gesture, and sound uses Web Audio. |
 | Theme transitions | The toggle respects reduced motion and can apply the theme without a view transition. |
 | HTML preview | HtmlViewer defaults to a sandbox with scripts allowed and without same-origin permission. Pass `sandbox="allow-same-origin"` in a Code Editor preview to disable scripts while keeping scroll sync. |
 
@@ -33,7 +34,7 @@ Glass refracts the live backdrop with SVG and captures nothing, so cross-origin 
 
 Compose visible labels or accessible names for icon-only actions. Keep titles in dialogs, provide image descriptions, and use externally supplied labels for loading and feedback. Keyboard and focus behavior come from the underlying primitives; replacing native controls with custom markup can change those behaviors.
 
-Use [Direction](/docs/components/direction) for RTL context and keep the application's `dir` attribute consistent. Loader and theme transitions honor reduced-motion preferences; custom animations added by the application need the same consideration.
+Use [Direction](/docs/components/direction) for RTL context and keep the application's `dir` attribute consistent. Loader, theme transitions and Motion-driven components such as Tabs, Bottom Sheet, Wheel Picker, charts and data table rows honor reduced-motion preferences; custom animations added by the application need the same consideration.
 
 ## Verification [#verification]
 

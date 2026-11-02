@@ -24,7 +24,7 @@ bunx --bun shadcn@latest init --base base
 ```bash
 bunx --bun shadcn@latest search draco-china/sui -q button
 bunx --bun shadcn@latest view draco-china/sui/button
-bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/editor
+bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/code-editor
 ```
 
 按 registry 名称安装业务区块：
@@ -33,7 +33,7 @@ bunx --bun shadcn@latest add draco-china/sui/button draco-china/sui/editor
 bunx --bun shadcn@latest add draco-china/sui/delete-resource draco-china/sui/tanstack-form
 ```
 
-安装完整集合，包括所有组件与业务区块：
+安装完整集合，包括所有组件、业务区块、布局、查看器、聊天和图表：
 
 ```bash
 bunx --bun shadcn@latest add draco-china/sui/sui
@@ -48,7 +48,7 @@ bunx --bun shadcn@latest add draco-china/sui/button --dry-run
 bunx --bun shadcn@latest add draco-china/sui/button --diff
 ```
 
-Editor 使用本地打包的 Monaco workers，需要兼容 Vite 的 `?worker` 加载器。将安装的 `worker.d.ts` 保留在 TypeScript 的 include 范围内。安装完整集合时同样需要满足此条件。
+Code Editor 使用本地打包的 Monaco workers，需要兼容 Vite 的 `?worker` 加载器。将安装的 `worker.d.ts` 保留在 TypeScript 的 include 范围内。安装完整集合时同样需要满足此条件。
 
 Blocks 默认使用英文。通过应用语言配置传入文案，可定制界面文本，参见 [Delete Resource](/zh-CN/docs/blocks/delete-resource) 和 [TanStack Form](/zh-CN/docs/blocks/tanstack-form) 文档。
 
@@ -64,7 +64,7 @@ export function SaveButton() {
 }
 ```
 
-如果 `components.json` 中的别名不同，请使用实际配置。本文档的示例使用 `@workspace/ui/components/button` 等工作区路径。通过 registry 安装时，将 `@workspace/ui/components/*` 替换为 `ui` 别名，将 `@workspace/ui/blocks/*` 替换为 `components` 别名加 `/blocks/*`，将 hook 或工具导入替换为 `hooks` 或 `lib` 别名。例如，默认别名使用 `@/components/ui/button`、`@/components/blocks/data-table` 和 `@/hooks/use-mobile`。CLI 会自动适配安装文件内部的导入路径。
+如果 `components.json` 中的别名不同，请使用实际配置。本文档的示例使用 `@workspace/ui/components/button` 等工作区路径。通过 registry 安装时，将 `@workspace/ui/components/*` 替换为 `ui` 别名；将 `@workspace/ui/blocks/*`、`layouts/*`、`viewers/*`、`chat/*` 和 `charts/*` 替换为 `components` 别名加相同目录；将 hook 或工具导入替换为 `hooks` 或 `lib` 别名。例如，默认别名使用 `@/components/ui/data-table`、`@/components/blocks/tanstack-form`、`@/components/charts/bar-chart` 和 `@/hooks/use-mobile`。CLI 会自动适配安装文件内部的导入路径。
 
 ## 可选：继续使用命名空间 [#optional-namespace]
 

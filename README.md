@@ -27,9 +27,10 @@
 
 | Feature | Details |
 | --- | --- |
-| **Components & Blocks** | Form controls, navigation, feedback, content viewers, and composed workflows |
+| **Components & Blocks** | Form controls, data tables, layouts, content viewers, chat, charts, and composed workflows |
 | **Shared themes** | Default light/dark semantic OKLCH tokens, with seven opt-in accent palettes |
-| **Glass surfaces** | Three intensity levels with CSS, SVG refraction, and vgpu + WGSL rendering |
+| **Glass surfaces** | Three intensity levels with live SVG refraction and a CSS material fallback |
+| **Feedback** | Opt-in haptics and tick sounds, and Motion-driven interactions that respect reduced motion |
 | **Source ownership** | Install components and Blocks through shadcn, then adapt the source to your app |
 | **AI tooling** | Registry integration with shadcn MCP and LLM-ready documentation |
 | **Live documentation** | English and Chinese APIs and interactive examples, powered by Fumadocs and TanStack Start |
@@ -51,10 +52,10 @@ export function SaveButton() {
 }
 ```
 
-The GitHub registry needs no namespace configuration. Install the editor and business blocks directly too:
+The GitHub registry needs no namespace configuration. Install the code editor, data table, and charts directly too:
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
+bunx --bun shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
 ```
 
 Existing Raw URLs and the `@sui` namespace remain supported. To use the namespace, merge this entry into your application's `components.json`:
@@ -68,8 +69,8 @@ Existing Raw URLs and the `@sui` namespace remain supported. To use the namespac
 ```
 
 ```sh
-bunx --bun shadcn@latest add @sui/button @sui/code-editor
-bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+bunx --bun shadcn@latest add @sui/button @sui/code-editor @sui/data-table
+bunx --bun shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
 ```
 
 Each item installs its source, dependencies, and styles using your application's
@@ -124,7 +125,7 @@ Open [localhost:3000](http://localhost:3000) or
 
 ```text
 apps/docs/       Documentation, examples, and tests
-packages/ui/     Components, blocks, hooks, and styles
+packages/ui/     Components, blocks, layouts, viewers, chat, charts, hooks, and styles
 registry/r/      Installable shadcn registry items
 ```
 

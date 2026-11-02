@@ -27,9 +27,10 @@
 
 | 特色 | 说明 |
 | --- | --- |
-| **组件与 Blocks** | 表单控件、导航、反馈、内容查看器与组合工作流 |
+| **组件与 Blocks** | 表单控件、数据表格、布局、内容查看器、聊天、图表与组合工作流 |
 | **共享主题** | 语义化 OKLCH 变量、八套强调色与明暗模式 |
-| **玻璃表面** | 三档强度，支持 CSS、SVG 折射与 vgpu + WGSL 渲染 |
+| **玻璃表面** | 三档强度，实时 SVG 折射并以 CSS 材质兜底 |
+| **交互反馈** | 可选触感与提示音，Motion 驱动的交互遵循减少动态效果设置 |
 | **源码可控** | 通过 shadcn 安装组件和 Blocks，按应用需要调整源码 |
 | **AI 工具** | 通过 shadcn MCP 使用 registry，提供面向 LLM 的文档 |
 | **交互文档** | 中英文 API 与可运行示例，基于 Fumadocs 与 TanStack Start |
@@ -50,10 +51,10 @@ export function SaveButton() {
 }
 ```
 
-GitHub Registry 无需配置命名空间。也可以直接安装编辑器和业务区块：
+GitHub Registry 无需配置命名空间。也可以直接安装代码编辑器、数据表格和图表：
 
 ```sh
-bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
+bunx --bun shadcn@latest add draco-china/sui/code-editor draco-china/sui/data-table draco-china/sui/bar-chart
 ```
 
 现有 Raw 链接和 `@sui` 命名空间仍然受支持。使用命名空间时，将以下配置合并到应用的 `components.json`：
@@ -67,8 +68,8 @@ bunx --bun shadcn@latest add draco-china/sui/editor draco-china/sui/data-table
 ```
 
 ```sh
-bunx --bun shadcn@latest add @sui/button @sui/code-editor
-bunx --bun shadcn@latest add @sui/data-table @sui/delete-resource @sui/tanstack-form
+bunx --bun shadcn@latest add @sui/button @sui/code-editor @sui/data-table
+bunx --bun shadcn@latest add @sui/delete-resource @sui/tanstack-form @sui/app-shell
 ```
 
 每个条目将源码、依赖和样式安装到应用中，并使用应用的导入别名。
@@ -120,7 +121,7 @@ bun run dev
 
 ```text
 apps/docs/       文档、示例和测试
-packages/ui/     组件、Blocks、hooks 和样式
+packages/ui/     组件、Blocks、布局、查看器、聊天、图表、hooks 和样式
 registry/r/      可安装的 shadcn registry 条目
 ```
 
