@@ -194,7 +194,9 @@ function Calendar({
             defaultClassNames.range_end,
           ),
           today: cn(
-            "rounded-(--cell-radius) bg-accent text-accent-foreground data-[selected=true]:rounded-none",
+            // A single selected day is a round button; the square cell
+            // behind it stays clear. Inside a range the cell is the band.
+            "rounded-(--cell-radius) bg-accent text-accent-foreground has-data-[selected-single=true]:bg-transparent data-[selected=true]:rounded-none",
             defaultClassNames.today,
           ),
           outside: cn(
