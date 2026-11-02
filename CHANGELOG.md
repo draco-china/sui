@@ -1,3 +1,21 @@
+## [5.0.0](https://github.com/draco-china/sui/compare/v4.0.1...v5.0.0) (2026-11-02)
+
+### ⚠ BREAKING CHANGES
+
+* **tab-bar:** TabBar no longer accepts orientation; it is always
+horizontal.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **tab-bar:** add an iOS-style trailing search button ([213eb27](https://github.com/draco-china/sui/commit/213eb27164eca290ea5b7c5c0d5e33c24776bf0d))
+* **tab-bar:** drop vertical orientation ([e18437c](https://github.com/draco-china/sui/commit/e18437c766ef11dbf298247bffb4f4c85d6dc6a2))
+
+### Bug Fixes
+
+* **tab-bar:** never flash a scrollbar when switching tabs ([e92c648](https://github.com/draco-china/sui/commit/e92c648cc9e798d5ac26ae1b1271c384fd2955e4))
+
 ## [4.0.1](https://github.com/draco-china/sui/compare/v4.0.0...v4.0.1) (2026-11-02)
 
 ### Bug Fixes
