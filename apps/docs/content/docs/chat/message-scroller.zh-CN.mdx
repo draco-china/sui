@@ -54,7 +54,7 @@ bunx --bun shadcn@latest add @sui/message-scroller
 ## 使用方法 [#usage]
 
 ```tsx
-import { Message } from "@workspace/ui/components/message"
+import { Message } from "@workspace/ui/chat/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -62,7 +62,7 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@workspace/ui/components/message-scroller"
+} from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -269,7 +269,7 @@ const MotionMessageScrollerItem = motion.create(MessageScrollerItem)
 搜索结果、永久链接、目录项与工具栏按钮，经常需要从消息列表外部控制对话记录。可为这些控件使用 `useMessageScroller`。Hook 读取 `MessageScrollerProvider` 的上下文，因此 Provider 内的任意组件都能使用它，包括位于 `MessageScroller` 容器外部的控件。
 
 ```tsx
-import { useMessageScroller } from "@workspace/ui/components/message-scroller"
+import { useMessageScroller } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -287,7 +287,7 @@ const { scrollToMessage, scrollToEnd, scrollToStart } = useMessageScroller()
 使用 `useMessageScrollerVisibility` 跟踪用户在对话中的阅读位置。例如，目录或跳转菜单可以用它高亮当前锚定的轮次。
 
 ```tsx
-import { useMessageScrollerVisibility } from "@workspace/ui/components/message-scroller"
+import { useMessageScrollerVisibility } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -305,7 +305,7 @@ const { currentAnchorId, visibleMessageIds } = useMessageScrollerVisibility()
 需要在 JavaScript 中读取滚动状态时，例如实现状态指示器或自定义“跳到最新”控件，可使用 `useMessageScrollerScrollable`。它报告视口还可以向哪些边缘滚动：`!start`、`!end` 分别表示已到达起点或终点，`start || end` 表示仍可滚动。仅调整滚动容器样式时，优先使用 `data-scrollable` 属性。
 
 ```tsx
-import { useMessageScrollerScrollable } from "@workspace/ui/components/message-scroller"
+import { useMessageScrollerScrollable } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx

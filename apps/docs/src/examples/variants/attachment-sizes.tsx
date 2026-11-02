@@ -4,7 +4,7 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import { FileTextIcon } from "lucide-react";
 
 export function AttachmentSizes() {

@@ -1,6 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@workspace/ui/chat/message-scroller";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -23,13 +30,6 @@ import {
   InputGroupAddon,
   InputGroupButton,
 } from "@workspace/ui/components/input-group";
-import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-} from "@workspace/ui/components/message-scroller";
 import { Slider } from "@workspace/ui/components/slider";
 import {
   Tooltip,

@@ -2,7 +2,18 @@
 
 "use client";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
+import { Message, MessageContent } from "@workspace/ui/chat/message";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+  useMessageScroller,
+  useMessageScrollerVisibility,
+} from "@workspace/ui/chat/message-scroller";
 import {
   Card,
   CardContent,
@@ -15,17 +26,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@workspace/ui/components/hover-card";
-import { Message, MessageContent } from "@workspace/ui/components/message";
-import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerItem,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-  useMessageScroller,
-  useMessageScrollerVisibility,
-} from "@workspace/ui/components/message-scroller";
 import { createChat, getMessageText } from "../support/ai";
 
 const chat = createChat()

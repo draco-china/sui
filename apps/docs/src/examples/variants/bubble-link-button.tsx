@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Bubble,
-  BubbleContent,
-  BubbleGroup,
-} from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent, BubbleGroup } from "@workspace/ui/chat/bubble";
 import { toast } from "@workspace/ui/components/toast";
 
 export function BubbleLinkButtonDemo() {

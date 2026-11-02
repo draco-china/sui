@@ -8,9 +8,9 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
-import { Message, MessageContent } from "@workspace/ui/components/message";
+} from "@workspace/ui/chat/attachment";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
+import { Message, MessageContent } from "@workspace/ui/chat/message";
 import { DownloadIcon, FileTextIcon } from "lucide-react";
 
 export function MessageAttachmentDemo() {

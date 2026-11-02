@@ -1,10 +1,10 @@
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
 import {
   Message,
   MessageContent,
   MessageFooter,
   MessageHeader,
-} from "@workspace/ui/components/message";
+} from "@workspace/ui/chat/message";
 
 export function MessageHeaderFooterDemo() {
   return (

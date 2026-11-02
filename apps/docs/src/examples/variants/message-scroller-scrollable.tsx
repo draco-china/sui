@@ -1,6 +1,14 @@
 "use client";
 
 import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+  useMessageScrollerScrollable,
+} from "@workspace/ui/chat/message-scroller";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -8,14 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-  useMessageScrollerScrollable,
-} from "@workspace/ui/components/message-scroller";
 import { MessageAnimated } from "../support/message-animated";
 
 const messages = Array.from({ length: 12 }, (_, index) => ({

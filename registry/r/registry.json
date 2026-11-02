@@ -221,117 +221,6 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "attachment",
-      "title": "Attachment",
-      "description": "SUI component: attachment. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/attachment.tsx",
-          "type": "registry:ui",
-          "target": "@ui/attachment.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/button.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/feedback.tsx",
-          "type": "registry:ui",
-          "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/backend.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/backend.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/color.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/color.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/defaults.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/defaults.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/dom.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/dom.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/edge.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/edge.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/geometry.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/geometry.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/material.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/material.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/refraction.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/refraction.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/runtime.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/runtime.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/svg-renderer.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/with-glass.tsx",
-          "type": "registry:lib",
-          "target": "@lib/glass/with-glass.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/haptics.ts",
-          "type": "registry:lib",
-          "target": "@lib/haptics.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/tick-sound.ts",
-          "type": "registry:lib",
-          "target": "@lib/tick-sound.ts"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/attachment"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "avatar",
       "title": "Avatar",
       "description": "SUI component: avatar. Includes its local dependencies and SUI styles.",
@@ -545,42 +434,6 @@
         "base": "base",
         "entrypoints": [
           "@/components/ui/breadcrumb"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "bubble",
-      "title": "Bubble",
-      "description": "SUI component: bubble. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/bubble.tsx",
-          "type": "registry:ui",
-          "target": "@ui/bubble.tsx"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/bubble"
         ]
       },
       "categories": [
@@ -3914,42 +3767,6 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "marker",
-      "title": "Marker",
-      "description": "SUI component: marker. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/marker.tsx",
-          "type": "registry:ui",
-          "target": "@ui/marker.tsx"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/marker"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "menubar",
       "title": "Menubar",
       "description": "SUI component: menubar. Includes its local dependencies and SUI styles.",
@@ -4036,153 +3853,6 @@
         "base": "base",
         "entrypoints": [
           "@/components/ui/menubar"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "message-scroller",
-      "title": "Message Scroller",
-      "description": "SUI component: message-scroller. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@base-ui/react@^1.8.0",
-        "@fontsource-variable/inter@^5.3.0",
-        "@shadcn/react@^0.3.1",
-        "class-variance-authority@^0.7.1",
-        "cn@^0.4.0",
-        "lucide-react@^1.52.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/button.tsx",
-          "type": "registry:ui",
-          "target": "@ui/button.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/feedback.tsx",
-          "type": "registry:ui",
-          "target": "@ui/feedback.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/message-scroller.tsx",
-          "type": "registry:ui",
-          "target": "@ui/message-scroller.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/backend.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/backend.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/color.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/color.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/defaults.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/defaults.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/dom.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/dom.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/edge.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/edge.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/geometry.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/geometry.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/material.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/material.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/refraction.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/refraction.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/runtime.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/runtime.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
-          "type": "registry:lib",
-          "target": "@lib/glass/svg-renderer.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/glass/with-glass.tsx",
-          "type": "registry:lib",
-          "target": "@lib/glass/with-glass.tsx"
-        },
-        {
-          "path": "packages/ui/src/lib/haptics.ts",
-          "type": "registry:lib",
-          "target": "@lib/haptics.ts"
-        },
-        {
-          "path": "packages/ui/src/lib/tick-sound.ts",
-          "type": "registry:lib",
-          "target": "@lib/tick-sound.ts"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/message-scroller"
-        ]
-      },
-      "categories": [
-        "sui",
-        "components"
-      ],
-      "type": "registry:ui"
-    },
-    {
-      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "message",
-      "title": "Message",
-      "description": "SUI component: message. Includes its local dependencies and SUI styles.",
-      "dependencies": [
-        "@fontsource-variable/inter@^5.3.0",
-        "cn@^0.4.0",
-        "shadcn@^4.21.3",
-        "tw-animate-css@^1.4.0"
-      ],
-      "devDependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "packages/ui/src/components/message.tsx",
-          "type": "registry:ui",
-          "target": "@ui/message.tsx"
-        }
-      ],
-      "meta": {
-        "source": "https://github.com/draco-china/sui",
-        "tailwindVersion": "4",
-        "base": "base",
-        "entrypoints": [
-          "@/components/ui/message"
         ]
       },
       "categories": [
@@ -8966,6 +8636,336 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "attachment",
+      "title": "Attachment",
+      "description": "SUI block: attachment. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@base-ui/react@^1.8.0",
+        "@fontsource-variable/inter@^5.3.0",
+        "class-variance-authority@^0.7.1",
+        "cn@^0.4.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/chat/attachment.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/attachment.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/backend.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/backend.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/color.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/color.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/defaults.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/defaults.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/dom.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/dom.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/edge.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/geometry.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/geometry.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/material.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/material.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/refraction.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/refraction.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/runtime.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/runtime.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/svg-renderer.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/with-glass.tsx",
+          "type": "registry:lib",
+          "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/chat/attachment"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "bubble",
+      "title": "Bubble",
+      "description": "SUI block: bubble. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@base-ui/react@^1.8.0",
+        "@fontsource-variable/inter@^5.3.0",
+        "class-variance-authority@^0.7.1",
+        "cn@^0.4.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/chat/bubble.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/bubble.tsx"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/chat/bubble"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "marker",
+      "title": "Marker",
+      "description": "SUI block: marker. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@base-ui/react@^1.8.0",
+        "@fontsource-variable/inter@^5.3.0",
+        "class-variance-authority@^0.7.1",
+        "cn@^0.4.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/chat/marker.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/marker.tsx"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/chat/marker"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "message-scroller",
+      "title": "Message Scroller",
+      "description": "SUI block: message-scroller. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@base-ui/react@^1.8.0",
+        "@fontsource-variable/inter@^5.3.0",
+        "@shadcn/react@^0.3.1",
+        "class-variance-authority@^0.7.1",
+        "cn@^0.4.0",
+        "lucide-react@^1.52.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/chat/message-scroller.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/message-scroller.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/feedback.tsx",
+          "type": "registry:ui",
+          "target": "@ui/feedback.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/backend.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/backend.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/color.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/color.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/defaults.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/defaults.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/dom.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/dom.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/edge.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/edge.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/geometry.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/geometry.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/material.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/material.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/refraction.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/refraction.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/runtime.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/runtime.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/svg-renderer.ts",
+          "type": "registry:lib",
+          "target": "@lib/glass/svg-renderer.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/glass/with-glass.tsx",
+          "type": "registry:lib",
+          "target": "@lib/glass/with-glass.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/haptics.ts",
+          "type": "registry:lib",
+          "target": "@lib/haptics.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/tick-sound.ts",
+          "type": "registry:lib",
+          "target": "@lib/tick-sound.ts"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/chat/message-scroller"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "message",
+      "title": "Message",
+      "description": "SUI block: message. Includes its local dependencies and SUI styles.",
+      "dependencies": [
+        "@fontsource-variable/inter@^5.3.0",
+        "cn@^0.4.0",
+        "shadcn@^4.21.3",
+        "tw-animate-css@^1.4.0"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "packages/ui/src/chat/message.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/message.tsx"
+        }
+      ],
+      "meta": {
+        "source": "https://github.com/draco-china/sui",
+        "tailwindVersion": "4",
+        "base": "base",
+        "entrypoints": [
+          "@/components/chat/message"
+        ]
+      },
+      "categories": [
+        "sui",
+        "blocks"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "area-chart",
       "title": "Area Chart",
       "description": "SUI block: area-chart. Includes its local dependencies and SUI styles.",
@@ -9871,6 +9871,31 @@
           "target": "@components/charts/sparkline-chart.tsx"
         },
         {
+          "path": "packages/ui/src/chat/attachment.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/attachment.tsx"
+        },
+        {
+          "path": "packages/ui/src/chat/bubble.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/bubble.tsx"
+        },
+        {
+          "path": "packages/ui/src/chat/marker.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/marker.tsx"
+        },
+        {
+          "path": "packages/ui/src/chat/message-scroller.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/message-scroller.tsx"
+        },
+        {
+          "path": "packages/ui/src/chat/message.tsx",
+          "type": "registry:component",
+          "target": "@components/chat/message.tsx"
+        },
+        {
           "path": "packages/ui/src/components/accordion.tsx",
           "type": "registry:ui",
           "target": "@ui/accordion.tsx"
@@ -9891,11 +9916,6 @@
           "target": "@ui/aspect-ratio.tsx"
         },
         {
-          "path": "packages/ui/src/components/attachment.tsx",
-          "type": "registry:ui",
-          "target": "@ui/attachment.tsx"
-        },
-        {
           "path": "packages/ui/src/components/avatar.tsx",
           "type": "registry:ui",
           "target": "@ui/avatar.tsx"
@@ -9914,11 +9934,6 @@
           "path": "packages/ui/src/components/breadcrumb.tsx",
           "type": "registry:ui",
           "target": "@ui/breadcrumb.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/bubble.tsx",
-          "type": "registry:ui",
-          "target": "@ui/bubble.tsx"
         },
         {
           "path": "packages/ui/src/components/button-group.tsx",
@@ -10321,24 +10336,9 @@
           "target": "@ui/long-text.tsx"
         },
         {
-          "path": "packages/ui/src/components/marker.tsx",
-          "type": "registry:ui",
-          "target": "@ui/marker.tsx"
-        },
-        {
           "path": "packages/ui/src/components/menubar.tsx",
           "type": "registry:ui",
           "target": "@ui/menubar.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/message-scroller.tsx",
-          "type": "registry:ui",
-          "target": "@ui/message-scroller.tsx"
-        },
-        {
-          "path": "packages/ui/src/components/message.tsx",
-          "type": "registry:ui",
-          "target": "@ui/message.tsx"
         },
         {
           "path": "packages/ui/src/components/morph-icon.tsx",
@@ -10749,16 +10749,19 @@
           "@/components/charts/shared/tooltip",
           "@/components/charts/shared/types",
           "@/components/charts/sparkline-chart",
+          "@/components/chat/attachment",
+          "@/components/chat/bubble",
+          "@/components/chat/marker",
+          "@/components/chat/message-scroller",
+          "@/components/chat/message",
           "@/components/ui/accordion",
           "@/components/ui/alert-dialog",
           "@/components/ui/alert",
           "@/components/ui/aspect-ratio",
-          "@/components/ui/attachment",
           "@/components/ui/avatar",
           "@/components/ui/badge",
           "@/components/ui/bottom-sheet",
           "@/components/ui/breadcrumb",
-          "@/components/ui/bubble",
           "@/components/ui/button-group",
           "@/components/ui/button",
           "@/components/ui/calendar",
@@ -10839,10 +10842,7 @@
           "@/components/ui/loader",
           "@/components/ui/locale-toggle",
           "@/components/ui/long-text",
-          "@/components/ui/marker",
           "@/components/ui/menubar",
-          "@/components/ui/message-scroller",
-          "@/components/ui/message",
           "@/components/ui/morph-icon",
           "@/components/ui/navigation-menu",
           "@/components/ui/navigation-progress",

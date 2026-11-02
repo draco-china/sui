@@ -70,6 +70,7 @@
     "./blocks/data-table/url-state": "./src/blocks/data-table/url-state.ts",
     "./layouts/*": "./src/layouts/*.tsx",
     "./viewers/*": "./src/viewers/*.tsx",
+    "./chat/*": "./src/chat/*.tsx",
     "./charts/*": "./src/charts/*.tsx",
     "./layouts/types": "./src/layouts/types.ts"
   }

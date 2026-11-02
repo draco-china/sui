@@ -1,6 +1,6 @@
 "use client";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
 import { Button } from "@workspace/ui/components/button";
 import {
   Collapsible,

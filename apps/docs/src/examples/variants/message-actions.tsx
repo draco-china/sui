@@ -1,10 +1,10 @@
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
-import { Button } from "@workspace/ui/components/button";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
 import {
   Message,
   MessageContent,
   MessageFooter,
-} from "@workspace/ui/components/message";
+} from "@workspace/ui/chat/message";
+import { Button } from "@workspace/ui/components/button";
 import {
   CopyIcon,
   RefreshCcwIcon,

@@ -1,9 +1,5 @@
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/chat/marker";
 import { Loader } from "@workspace/ui/components/loader";
-import {
-  Marker,
-  MarkerContent,
-  MarkerIcon,
-} from "@workspace/ui/components/marker";
 import type { ExampleProps } from "../types";
 
 export default function ShimmerMarker({ locale }: ExampleProps = {}) {

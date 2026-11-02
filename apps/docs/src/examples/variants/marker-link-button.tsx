@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Marker,
-  MarkerContent,
-  MarkerIcon,
-} from "@workspace/ui/components/marker";
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/chat/marker";
 import { toast } from "@workspace/ui/components/toast";
 import { GitBranchIcon, RotateCcwIcon } from "lucide-react";
 

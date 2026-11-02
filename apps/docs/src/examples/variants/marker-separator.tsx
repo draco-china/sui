@@ -1,4 +1,4 @@
-import { Marker, MarkerContent } from "@workspace/ui/components/marker";
+import { Marker, MarkerContent } from "@workspace/ui/chat/marker";
 
 export function MarkerSeparatorDemo() {
   return (

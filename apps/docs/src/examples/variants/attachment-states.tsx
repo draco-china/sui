@@ -6,7 +6,7 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import { Loader } from "@workspace/ui/components/loader";
 import {
   CheckIcon,

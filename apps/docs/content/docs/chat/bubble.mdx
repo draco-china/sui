@@ -9,7 +9,7 @@ component: true
 
 The `Bubble` component displays framed conversational content. Use it for chat text, short structured output, quoted replies, suggestions, and reactions.
 
-For full-featured chat interfaces, use the [`Message`](/docs/components/message) component. `Bubble` is intentionally scoped to the bubble surface. Place avatars, names, timestamps, metadata, and message-level actions in [`Message`](/docs/components/message).
+For full-featured chat interfaces, use the [`Message`](/docs/chat/message) component. `Bubble` is intentionally scoped to the bubble surface. Place avatars, names, timestamps, metadata, and message-level actions in [`Message`](/docs/chat/message).
 
 ## Installation
 
@@ -22,7 +22,7 @@ Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow th
 ## Usage
 
 ```tsx showLineNumbers
-import { Bubble, BubbleContent, BubbleReactions } from "@workspace/ui/components/bubble"
+import { Bubble, BubbleContent, BubbleReactions } from "@workspace/ui/chat/bubble"
 ```
 
 ```tsx showLineNumbers
@@ -117,7 +117,7 @@ You can turn a bubble into a link or button by using the `render` prop on `Bubbl
 <ComponentPreview name="bubble-link-button" previewClassName="h-auto theme-blue" />
 
 ```tsx showLineNumbers
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble"
 
 export function BubbleLinkDemo() {
   return (

@@ -9,7 +9,7 @@ component: true
 
 `Bubble` 组件显示带样式的对话内容。将其用于聊天文本、简短的结构化输出、引用的回复、建议和回应。
 
-完整聊天界面应使用 [`Message`](/zh-CN/docs/components/message)。`Bubble` 仅负责气泡本身；头像、名称、时间戳、元数据和消息级操作放在 Message 中。
+完整聊天界面应使用 [`Message`](/zh-CN/docs/chat/message)。`Bubble` 仅负责气泡本身；头像、名称、时间戳、元数据和消息级操作放在 Message 中。
 
 ## 安装 [#installation]
 
@@ -22,7 +22,7 @@ bunx --bun shadcn@latest add @sui/bubble
 ## 使用方法 [#usage]
 
 ```tsx showLineNumbers
-import { Bubble, BubbleContent, BubbleReactions } from "@workspace/ui/components/bubble"
+import { Bubble, BubbleContent, BubbleReactions } from "@workspace/ui/chat/bubble"
 ```
 
 ```tsx showLineNumbers
@@ -117,7 +117,7 @@ BubbleGroup
 <ComponentPreview name="bubble-link-button" previewClassName="h-auto theme-blue" />
 
 ```tsx showLineNumbers
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble"
 
 export function BubbleLinkDemo() {
   return (

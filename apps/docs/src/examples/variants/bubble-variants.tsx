@@ -2,7 +2,7 @@ import {
   Bubble,
   BubbleContent,
   BubbleReactions,
-} from "@workspace/ui/components/bubble";
+} from "@workspace/ui/chat/bubble";
 
 export function BubbleVariantsDemo() {
   return (

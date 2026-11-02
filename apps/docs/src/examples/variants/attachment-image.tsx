@@ -8,7 +8,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
   AttachmentTrigger,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import { XIcon } from "lucide-react";
 
 const images = [

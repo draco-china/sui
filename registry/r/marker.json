@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "marker",
   "title": "Marker",
-  "description": "SUI component: marker. Includes its local dependencies and SUI styles.",
+  "description": "SUI block: marker. Includes its local dependencies and SUI styles.",
   "dependencies": [
     "@base-ui/react@^1.8.0",
     "@fontsource-variable/inter@^5.3.0",
@@ -15,10 +15,10 @@
   "registryDependencies": [],
   "files": [
     {
-      "path": "packages/ui/src/components/marker.tsx",
+      "path": "packages/ui/src/chat/marker.tsx",
       "content": "\"use client\";\n\nimport { mergeProps } from \"@base-ui/react/merge-props\";\nimport { useRender } from \"@base-ui/react/use-render\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport { cn } from \"cn\";\nimport type * as React from \"react\";\n\nconst markerVariants = cva(\n  \"group/marker relative flex min-h-4 w-full items-center gap-2 text-start text-muted-foreground text-sm [&_svg:not([class*='size-'])]:size-4 [a]:underline [a]:underline-offset-3 [a]:hover:text-foreground\",\n  {\n    variants: {\n      variant: {\n        default: \"\",\n        separator:\n          \"before:me-1 before:h-px before:min-w-0 before:flex-1 before:bg-border after:ms-1 after:h-px after:min-w-0 after:flex-1 after:bg-border\",\n        border: \"border-border border-b pb-2\",\n      },\n    },\n  },\n);\n\nfunction Marker({\n  className,\n  variant = \"default\",\n  render,\n  ...props\n}: useRender.ComponentProps<\"div\"> & VariantProps<typeof markerVariants>) {\n  return useRender({\n    defaultTagName: \"div\",\n    props: mergeProps<\"div\">(\n      {\n        className: cn(markerVariants({ variant, className })),\n      },\n      props,\n    ),\n    render,\n    state: {\n      slot: \"marker\",\n      variant,\n    },\n  });\n}\n\nfunction MarkerIcon({ className, ...props }: React.ComponentProps<\"span\">) {\n  return (\n    <span\n      data-slot=\"marker-icon\"\n      aria-hidden=\"true\"\n      className={cn(\n        \"size-4 shrink-0 [&_svg:not([class*='size-'])]:size-4\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction MarkerContent({ className, ...props }: React.ComponentProps<\"span\">) {\n  return (\n    <span\n      data-slot=\"marker-content\"\n      className={cn(\n        \"wrap-break-word min-w-0 group-data-[variant=separator]/marker:flex-none group-data-[variant=separator]/marker:text-center *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { Marker, MarkerContent, MarkerIcon, markerVariants };\n",
-      "type": "registry:ui",
-      "target": "@ui/marker.tsx"
+      "type": "registry:component",
+      "target": "@components/chat/marker.tsx"
     }
   ],
   "cssVars": {
@@ -792,12 +792,12 @@
     "tailwindVersion": "4",
     "base": "base",
     "entrypoints": [
-      "@/components/ui/marker"
+      "@/components/chat/marker"
     ]
   },
   "categories": [
     "sui",
-    "components"
+    "blocks"
   ],
-  "type": "registry:ui"
+  "type": "registry:block"
 }

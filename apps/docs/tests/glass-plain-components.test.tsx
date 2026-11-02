@@ -1,17 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@workspace/ui/components/alert";
-import {
   Attachment,
   AttachmentAction,
   AttachmentActions,
   AttachmentContent,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
+import { Bubble, BubbleContent, BubbleGroup } from "@workspace/ui/chat/bubble";
+import { Message, MessageAvatar } from "@workspace/ui/chat/message";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert";
 import {
   Avatar,
   AvatarBadge,
@@ -20,11 +22,6 @@ import {
   AvatarGroupCount,
 } from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
-import {
-  Bubble,
-  BubbleContent,
-  BubbleGroup,
-} from "@workspace/ui/components/bubble";
 import { Button } from "@workspace/ui/components/button";
 import {
   Collapsible,
@@ -42,7 +39,6 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 import { Input } from "@workspace/ui/components/input";
 import { Item, ItemTitle } from "@workspace/ui/components/item";
 import { Kbd } from "@workspace/ui/components/kbd";
-import { Message, MessageAvatar } from "@workspace/ui/components/message";
 import {
   Progress,
   ProgressLabel,

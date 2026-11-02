@@ -23,8 +23,8 @@ bunx --bun shadcn@latest add @sui/message
 
 ```tsx showLineNumbers
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar"
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
-import { Message, MessageAvatar, MessageContent } from "@workspace/ui/components/message"
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble"
+import { Message, MessageAvatar, MessageContent } from "@workspace/ui/chat/message"
 ```
 
 ```tsx showLineNumbers
@@ -43,7 +43,7 @@ import { Message, MessageAvatar, MessageContent } from "@workspace/ui/components
 </Message>
 ```
 
-**注意：** `Message` 负责消息行的布局，包括头像、对齐、页头和页脚。消息的气泡样式由 [`Bubble`](/zh-CN/docs/components/bubble) 提供；对话的滚动区域使用 [`MessageScroller`](/zh-CN/docs/components/message-scroller)。
+**注意：** `Message` 负责消息行的布局，包括头像、对齐、页头和页脚。消息的气泡样式由 [`Bubble`](/zh-CN/docs/chat/bubble) 提供；对话的滚动区域使用 [`MessageScroller`](/zh-CN/docs/chat/message-scroller)。
 
 ## 组合结构 [#composition]
 
@@ -126,7 +126,7 @@ MessageGroup
 
 ### 状态更新 [#status-updates]
 
-消息仍在处理中时，使用带有 `role="status"` 的 [`Marker`](/zh-CN/docs/components/marker)，让辅助技术及时播报状态更新。
+消息仍在处理中时，使用带有 `role="status"` 的 [`Marker`](/zh-CN/docs/chat/marker)，让辅助技术及时播报状态更新。
 
 ```tsx showLineNumbers
 <Message>

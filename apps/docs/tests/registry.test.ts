@@ -30,6 +30,7 @@ test("each component, block and layout has a complete standalone registry manife
     "blocks",
     "layouts",
     "viewers",
+    "chat",
     "charts",
   ]) {
     const entries = await readdir(

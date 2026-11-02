@@ -23,8 +23,8 @@ Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow th
 
 ```tsx showLineNumbers
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar"
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble"
-import { Message, MessageAvatar, MessageContent } from "@workspace/ui/components/message"
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble"
+import { Message, MessageAvatar, MessageContent } from "@workspace/ui/chat/message"
 ```
 
 ```tsx showLineNumbers
@@ -45,8 +45,8 @@ import { Message, MessageAvatar, MessageContent } from "@workspace/ui/components
 
 **Note:** `Message` owns the row layout—avatar, alignment, header, and footer.
 Render the visible message surface inside it with
-[`Bubble`](/docs/components/bubble). For the scroll container around a
-conversation, use [`MessageScroller`](/docs/components/message-scroller).
+[`Bubble`](/docs/chat/bubble). For the scroll container around a
+conversation, use [`MessageScroller`](/docs/chat/message-scroller).
 
 ## Composition
 
@@ -129,7 +129,7 @@ Action buttons in `MessageFooter` are usually icon-only, so give each one an `ar
 
 ### Status updates
 
-For in-progress messages, use a [`Marker`](/docs/components/marker) with `role="status"` so assistive tech announces the update as it appears.
+For in-progress messages, use a [`Marker`](/docs/chat/marker) with `role="status"` so assistive tech announces the update as it appears.
 
 ```tsx showLineNumbers
 <Message>

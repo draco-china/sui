@@ -7,7 +7,7 @@ import {
   AttachmentGroup,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import { Loader } from "@workspace/ui/components/loader";
 import { FileCodeIcon, XIcon } from "lucide-react";
 

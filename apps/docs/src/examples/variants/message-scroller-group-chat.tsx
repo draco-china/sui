@@ -1,6 +1,20 @@
 "use client";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
+import { Marker, MarkerContent } from "@workspace/ui/chat/marker";
+import {
+  Message,
+  MessageContent,
+  MessageHeader,
+} from "@workspace/ui/chat/message";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@workspace/ui/chat/message-scroller";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -11,20 +25,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { Marker, MarkerContent } from "@workspace/ui/components/marker";
-import {
-  Message,
-  MessageContent,
-  MessageHeader,
-} from "@workspace/ui/components/message";
-import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerItem,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
-} from "@workspace/ui/components/message-scroller";
 import {
   Tooltip,
   TooltipContent,

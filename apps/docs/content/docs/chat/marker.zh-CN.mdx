@@ -7,7 +7,7 @@ component: true
 
 <ComponentPreview name="marker-demo" previewClassName="h-auto theme-blue" />
 
-`Marker` 组件显示内联对话标记，例如状态更新、系统注释、带边框的行和带标签的分隔符。在对话线程中将其与 [`Message`](/zh-CN/docs/components/message) 组合。
+`Marker` 组件显示内联对话标记，例如状态更新、系统注释、带边框的行和带标签的分隔符。在对话线程中将其与 [`Message`](/zh-CN/docs/chat/message) 组合。
 
 ## 安装 [#installation]
 
@@ -20,7 +20,7 @@ bunx --bun shadcn@latest add @sui/marker
 ## 使用方法 [#usage]
 
 ```tsx showLineNumbers
-import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/components/marker"
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/chat/marker"
 ```
 
 ```tsx showLineNumbers
@@ -99,7 +99,7 @@ Marker
 <ComponentPreview name="marker-link-button" previewClassName="h-auto theme-blue" />
 
 ```tsx showLineNumbers
-import { Marker, MarkerContent } from "@workspace/ui/components/marker"
+import { Marker, MarkerContent } from "@workspace/ui/chat/marker"
 
 export function MarkerLinkDemo() {
   return (

@@ -7,7 +7,7 @@ import {
   AttachmentGroup,
   AttachmentMedia,
   AttachmentTitle,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import {
   FileCodeIcon,
   FileTextIcon,

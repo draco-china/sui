@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { Marker } from "@workspace/ui/chat/marker";
 import { Button } from "@workspace/ui/components/button";
 import {
   ButtonGroup,
@@ -20,7 +21,6 @@ import {
 } from "@workspace/ui/components/input-group";
 import { Kbd, KbdGroup } from "@workspace/ui/components/kbd";
 import { Label } from "@workspace/ui/components/label";
-import { Marker } from "@workspace/ui/components/marker";
 import {
   Menubar,
   MenubarMenu,

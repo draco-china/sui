@@ -7,7 +7,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
   AttachmentTrigger,
-} from "@workspace/ui/components/attachment";
+} from "@workspace/ui/chat/attachment";
 import {
   Dialog,
   DialogContent,

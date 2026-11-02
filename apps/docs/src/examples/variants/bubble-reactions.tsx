@@ -4,7 +4,7 @@ import {
   Bubble,
   BubbleContent,
   BubbleReactions,
-} from "@workspace/ui/components/bubble";
+} from "@workspace/ui/chat/bubble";
 import { Button } from "@workspace/ui/components/button";
 import { toast } from "@workspace/ui/components/toast";
 

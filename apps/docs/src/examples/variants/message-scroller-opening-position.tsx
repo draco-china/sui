@@ -2,16 +2,8 @@
 
 "use client";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Message, MessageContent } from "@workspace/ui/components/message";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
+import { Message, MessageContent } from "@workspace/ui/chat/message";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -20,7 +12,15 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
   useMessageScroller,
-} from "@workspace/ui/components/message-scroller";
+} from "@workspace/ui/chat/message-scroller";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import * as React from "react";
 

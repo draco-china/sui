@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "message",
   "title": "Message",
-  "description": "SUI component: message. Includes its local dependencies and SUI styles.",
+  "description": "SUI block: message. Includes its local dependencies and SUI styles.",
   "dependencies": [
     "@fontsource-variable/inter@^5.3.0",
     "cn@^0.4.0",
@@ -13,10 +13,10 @@
   "registryDependencies": [],
   "files": [
     {
-      "path": "packages/ui/src/components/message.tsx",
+      "path": "packages/ui/src/chat/message.tsx",
       "content": "\"use client\";\n\nimport { cn } from \"cn\";\nimport type * as React from \"react\";\n\nfunction MessageGroup({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"message-group\"\n      className={cn(\"flex min-w-0 flex-col gap-2\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction Message({\n  className,\n  align = \"start\",\n  ...props\n}: React.ComponentProps<\"div\"> & { align?: \"start\" | \"end\" }) {\n  return (\n    <div\n      data-slot=\"message\"\n      data-align={align}\n      className={cn(\n        \"group/message relative flex w-full min-w-0 gap-2 text-sm data-[align=end]:flex-row-reverse\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction MessageAvatar({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"message-avatar\"\n      className={cn(\n        \"flex w-fit min-w-8 shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted group-has-data-[slot=message-footer]/message:-translate-y-8\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction MessageContent({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"message-content\"\n      className={cn(\n        \"wrap-break-word flex w-full min-w-0 flex-col gap-2.5 group-data-[align=end]/message:*:data-slot:self-end\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction MessageHeader({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"message-header\"\n      className={cn(\n        \"flex min-w-0 max-w-full items-center px-3.5 font-medium text-muted-foreground text-xs group-has-data-[variant=ghost]/message:px-0\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nfunction MessageFooter({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"message-footer\"\n      className={cn(\n        \"flex min-w-0 max-w-full items-center px-3.5 font-medium text-muted-foreground text-xs group-has-data-[variant=ghost]/message:px-0 group-data-[align=end]/message:justify-end\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport {\n  Message,\n  MessageAvatar,\n  MessageContent,\n  MessageFooter,\n  MessageGroup,\n  MessageHeader,\n};\n",
-      "type": "registry:ui",
-      "target": "@ui/message.tsx"
+      "type": "registry:component",
+      "target": "@components/chat/message.tsx"
     }
   ],
   "cssVars": {
@@ -790,12 +790,12 @@
     "tailwindVersion": "4",
     "base": "base",
     "entrypoints": [
-      "@/components/ui/message"
+      "@/components/chat/message"
     ]
   },
   "categories": [
     "sui",
-    "components"
+    "blocks"
   ],
-  "type": "registry:ui"
+  "type": "registry:block"
 }

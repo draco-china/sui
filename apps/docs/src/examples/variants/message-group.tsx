@@ -1,15 +1,15 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
 import {
   Message,
   MessageAvatar,
   MessageContent,
   MessageGroup,
-} from "@workspace/ui/components/message";
+} from "@workspace/ui/chat/message";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 
 export function MessageGroupDemo() {
   return (

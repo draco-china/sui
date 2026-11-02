@@ -2,9 +2,9 @@
 
 "use client";
 
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
-import { Message, MessageContent } from "@workspace/ui/components/message";
-import { MessageScrollerItem } from "@workspace/ui/components/message-scroller";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
+import { Message, MessageContent } from "@workspace/ui/chat/message";
+import { MessageScrollerItem } from "@workspace/ui/chat/message-scroller";
 import { BrainIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type * as React from "react";

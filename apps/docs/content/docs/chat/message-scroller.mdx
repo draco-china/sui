@@ -68,7 +68,7 @@ Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow th
 ## Usage
 
 ```tsx
-import { Message } from "@workspace/ui/components/message"
+import { Message } from "@workspace/ui/chat/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -76,7 +76,7 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@workspace/ui/components/message-scroller"
+} from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -349,7 +349,7 @@ in any component inside the provider, including controls rendered outside the
 `MessageScroller` frame.
 
 ```tsx
-import { useMessageScroller } from "@workspace/ui/components/message-scroller"
+import { useMessageScroller } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -374,7 +374,7 @@ conversation. A common example is a table-of-contents or a jump menu that
 highlights the current anchored turn.
 
 ```tsx
-import { useMessageScrollerVisibility } from "@workspace/ui/components/message-scroller"
+import { useMessageScrollerVisibility } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx
@@ -400,7 +400,7 @@ edges the viewport can still scroll toward; "at the start/end" is the negation
 scroller itself, prefer the `data-scrollable` attribute.
 
 ```tsx
-import { useMessageScrollerScrollable } from "@workspace/ui/components/message-scroller"
+import { useMessageScrollerScrollable } from "@workspace/ui/chat/message-scroller"
 ```
 
 ```tsx

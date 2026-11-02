@@ -113,6 +113,12 @@ const installRules = [
     type: "registry:component",
   },
   {
+    folder: "chat/",
+    alias: "@/components/chat/",
+    target: "@components/chat/",
+    type: "registry:component",
+  },
+  {
     folder: "charts/",
     alias: "@/components/charts/",
     target: "@components/charts/",
@@ -498,11 +504,22 @@ export async function createRegistry() {
     (path) =>
       dirname(path) === join(sourceRoot, "viewers") && path.endsWith(".tsx"),
   );
+  const chat = tree.paths.filter(
+    (path) =>
+      dirname(path) === join(sourceRoot, "chat") && path.endsWith(".tsx"),
+  );
   const charts = tree.paths.filter(
     (path) =>
       dirname(path) === join(sourceRoot, "charts") && path.endsWith(".tsx"),
   );
-  const entries = [...components, ...blocks, ...layouts, ...viewers, ...charts];
+  const entries = [
+    ...components,
+    ...blocks,
+    ...layouts,
+    ...viewers,
+    ...chat,
+    ...charts,
+  ];
   const items = entries.map((path) =>
     item(
       relative(dirname(path), path).replace(/\.tsx$/, ""),

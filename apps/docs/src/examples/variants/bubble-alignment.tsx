@@ -1,4 +1,4 @@
-import { Bubble, BubbleContent } from "@workspace/ui/components/bubble";
+import { Bubble, BubbleContent } from "@workspace/ui/chat/bubble";
 
 export function BubbleAlignmentDemo() {
   return (

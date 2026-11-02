@@ -1,9 +1,5 @@
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/chat/marker";
 import { Loader } from "@workspace/ui/components/loader";
-import {
-  Marker,
-  MarkerContent,
-  MarkerIcon,
-} from "@workspace/ui/components/marker";
 
 export function MarkerStatusDemo() {
   return (

@@ -1,8 +1,4 @@
-import {
-  Marker,
-  MarkerContent,
-  MarkerIcon,
-} from "@workspace/ui/components/marker";
+import { Marker, MarkerContent, MarkerIcon } from "@workspace/ui/chat/marker";
 import { BookOpenCheck, GitBranchIcon, SearchIcon } from "lucide-react";
 
 export function MarkerIconDemo() {
