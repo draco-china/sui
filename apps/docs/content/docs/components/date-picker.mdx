@@ -1,0 +1,75 @@
+---
+title: Date Picker
+description: A typed, segmented date field with a calendar panel for one day or a range, optionally with a time of day.
+---
+
+DatePicker combines a segmented field you can type into with a calendar panel. One component covers a single date, a date range, and a date with time: `mode="range"` picks a start and an end, and `showTime` adds time segments and wheels. Segment order, month and weekday names, the first day of the week and the hour cycle all follow `locale` through `Intl`.
+
+<ComponentPreview name="date-picker-demo" />
+
+## Installation [#installation]
+
+```npm
+npx shadcn@latest add draco-china/sui/date-picker
+```
+
+Load SUI's base styles as described in [Installation](/docs/installation).
+
+## Usage [#usage]
+
+```tsx
+import { DatePicker } from "@workspace/ui/components/date-picker";
+
+const [date, setDate] = useState<Date>();
+
+<DatePicker aria-label="Due date" value={date} onValueChange={setDate} />;
+```
+
+Values are `Date` objects in local time. Leave out `value` and use `defaultValue` for uncontrolled use. Clearing the field, or leaving it unfinished, reports `undefined`.
+
+## Range [#range]
+
+`mode="range"` takes and reports `{ from?: Date; to?: Date }`. The panel shows two months. If the end comes before the start, the two are swapped once focus leaves the field or the panel closes, so an end being typed or spun never jumps; `onValueChange` only ever reports a range in order. `presets` lists quick ranges beside the calendar; a preset whose `value` is a function is read when clicked, so a range like "Next 7 days" stays current. `min` and `max` limit the calendar and mark out-of-range typed dates as invalid.
+
+<ComponentPreview name="date-picker-range" />
+
+## With time [#time]
+
+`showTime` adds hour and minute segments, plus time wheels next to the calendar. Pass `{ seconds, step, hourCycle }` to customize it. Picking a day keeps the time already chosen. In range mode, each end has its own wheels.
+
+<ComponentPreview name="date-picker-time" />
+
+## Typing and accessibility [#accessibility]
+
+Each segment is a `spinbutton`. Arrow Up/Down steps it, and the minute segment moves by `step`. Digits fill the segment and move on once no further digit fits, so typing `20261102` enters a whole date. Arrow Left/Right moves between segments, mirrored in RTL. Backspace clears a segment, then moves back. In 12-hour fields, `A` and `P` set the period. Give the field a name with `aria-label` or `aria-labelledby`; `id` lands on the first segment.
+
+`name` submits local `yyyy-mm-dd` (or `yyyy-mm-ddThh:mm`) through a hidden input; range mode submits two inputs with the same name. `disabled` and `aria-invalid` are supported.
+
+<ComponentPreview name="date-picker-states" />
+
+## On phones [#phones]
+
+On phones the panel opens in a bottom sheet sized to its content, with wheels instead of the calendar: year, month and day in the locale's order and names, then the time on the same row, as on iOS. Seconds together with AM/PM give the time a row of its own. In range mode the start's wheels sit above the end's, each captioned. The wheels keep a date within `min` and `max`; `disabledDates` only applies to the calendar.
+
+## Labels [#labels]
+
+Chinese locales use the Chinese copy by default. Override any text with `labels`, or import `dateTimeLabels` and `dateTimeLabelsZhCN` as a starting point.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `mode` | `"single" \| "range"` | `"single"`. |
+| `value`, `defaultValue` | `Date` or `DateRange` | Depends on `mode`. |
+| `onValueChange` | `(value) => void` | Reports `undefined` when empty or unfinished. |
+| `showTime` | `boolean \| { seconds?, step?, hourCycle? }` | Off. |
+| `presets` | `{ label, value }[]` | Range mode only. |
+| `min`, `max` | `Date` | Calendar limits; out-of-range values are invalid. |
+| `disabledDates` | `Matcher \| Matcher[]` | react-day-picker matchers. |
+| `locale` | `string` | Runtime locale. |
+| `labels` | `DateTimeLabelOverrides` | English or Chinese, by locale. |
+| `name`, `id`, `disabled` | | Form name, first segment id, disabled state. |
+| `calendarProps` | `Partial<PropsBase>` | Passed to Calendar. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Applies to the field and panel. |
+
+Exports `DatePicker`, `DatePickerProps`, `DatePickerPreset`, `DateRange`, `dateTimeLabels`, and `dateTimeLabelsZhCN`.

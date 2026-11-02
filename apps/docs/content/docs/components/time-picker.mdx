@@ -1,0 +1,58 @@
+---
+title: Time Picker
+description: A typed, segmented time field with wheels, for one time or a start and end.
+---
+
+TimePicker is a segmented field you can type into, with wheel columns in a popover (a bottom sheet on phones). Values are plain `"HH:mm"` strings, or `"HH:mm:ss"` with `seconds`. They have no date or time zone, so they go straight into forms, URLs and APIs. `range` picks a start and an end.
+
+<ComponentPreview name="time-picker-demo" />
+
+## Installation [#installation]
+
+```npm
+npx shadcn@latest add draco-china/sui/time-picker
+```
+
+## Usage [#usage]
+
+```tsx
+import { TimePicker } from "@workspace/ui/components/time-picker";
+
+const [time, setTime] = useState<string>();
+
+<TimePicker aria-label="Alarm" value={time} onValueChange={setTime} />;
+```
+
+The value is always 24-hour, even when the field shows a 12-hour clock.
+
+## Range [#range]
+
+`range` takes and reports `{ from?: string; to?: string }`. Each end has its own segments and wheels; on phones the start's wheels sit above the end's, as in Date Picker. The ends keep the order they were set in: an end before the start crosses midnight, as in `22:00 ~ 02:00`.
+
+<ComponentPreview name="time-picker-range" />
+
+## Options [#options]
+
+`seconds` adds a seconds segment and wheel. `step` sets the minute step for the wheel and the arrow keys; typed minutes stay exact. `hourCycle` (`"h12"` or `"h23"`) overrides the locale and adds an AM/PM segment and wheel in 12-hour mode.
+
+<ComponentPreview name="time-picker-options" />
+
+## Typing and accessibility [#accessibility]
+
+Typing works as in [Date Picker](/docs/components/date-picker#accessibility): digits fill segments, arrows step them, and Backspace clears them. `name` submits the time string through a hidden input (two inputs in range mode). Supports `disabled`, `aria-invalid`, `labels`, `glass`, and `frosted`.
+
+## API reference [#api-reference]
+
+| Prop | Type | Default / behavior |
+| --- | --- | --- |
+| `range` | `boolean` | `false`. |
+| `value`, `defaultValue` | `string` or `TimeRange` | Depends on `range`. |
+| `onValueChange` | `(value) => void` | Reports `undefined` when empty or unfinished. |
+| `seconds` | `boolean` | `false`. |
+| `step` | `number` | `1` minute. |
+| `hourCycle` | `"h12" \| "h23"` | Follows `locale`. |
+| `locale`, `labels` | `string`, `DateTimeLabelOverrides` | As in Date Picker. |
+| `name`, `id`, `disabled` | | Form name, first segment id, disabled state. |
+| `glass`, `frosted` | `boolean \| GlassConfig`, `boolean` | Applies to the field and wheels. |
+
+Exports `TimePicker`, `TimePickerProps`, `TimeValue`, `TimeRange`, `HourCycle`, `dateTimeLabels`, and `dateTimeLabelsZhCN`.

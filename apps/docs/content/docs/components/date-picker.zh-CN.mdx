@@ -1,0 +1,75 @@
+---
+title: Date Picker
+description: 可直接键入的分段日期输入框，带日历面板，支持单日、日期范围和日期时间。
+---
+
+DatePicker 把可键入的分段输入框和日历面板组合在一起。一个组件同时覆盖单日、日期范围和日期时间：`mode="range"` 选择起止日期，`showTime` 加上时间分段和滚轮。分段顺序、月份与星期名称、每周起始日和 12/24 小时制都通过 `Intl` 跟随 `locale`。
+
+<ComponentPreview name="date-picker-demo" />
+
+## 安装 [#installation]
+
+```npm
+npx shadcn@latest add draco-china/sui/date-picker
+```
+
+按[安装指南](/zh-CN/docs/installation)加载 SUI 基础样式。
+
+## 用法 [#usage]
+
+```tsx
+import { DatePicker } from "@workspace/ui/components/date-picker";
+
+const [date, setDate] = useState<Date>();
+
+<DatePicker aria-label="截止日期" value={date} onValueChange={setDate} />;
+```
+
+值是本地时间的 `Date` 对象。不传 `value`、改用 `defaultValue` 即为非受控。清空或尚未填完时回调 `undefined`。
+
+## 日期范围 [#range]
+
+`mode="range"` 的值是 `{ from?: Date; to?: Date }`。面板显示两个月。结束早于开始时，会在焦点离开输入框或面板关闭时自动交换，所以正在输入或滚动的那一端不会跳走；`onValueChange` 收到的范围始终是有序的。`presets` 在日历旁列出快捷范围；`value` 写成函数时会在点击时才计算，所以“最近 7 天”这类范围总是最新的。`min` / `max` 会限制日历可选范围，并把手动输入的越界日期标记为无效。
+
+<ComponentPreview name="date-picker-range" />
+
+## 带时间 [#time]
+
+`showTime` 会加上时和分的分段，并在日历旁显示时间滚轮。可以传 `{ seconds, step, hourCycle }` 自定义。重新选择日期时保留已选的时间；范围模式下起止各有一组滚轮。
+
+<ComponentPreview name="date-picker-time" />
+
+## 键盘输入与无障碍 [#accessibility]
+
+每个分段都是 `spinbutton`：上下方向键增减，分钟按 `step` 步进。输入数字会填入当前分段，填满后自动跳到下一段，所以连续输入 `20261102` 就能填完整个日期。左右方向键在分段之间移动（RTL 下方向相反）。Backspace 先清空当前分段，再回到上一段。12 小时制下按 `A` / `P` 切换上午/下午。请用 `aria-label` 或 `aria-labelledby` 为输入框命名；`id` 会落在第一个分段上。
+
+`name` 通过隐藏 input 提交本地格式的 `yyyy-mm-dd`（带时间时为 `yyyy-mm-ddThh:mm`）；范围模式会提交两个同名 input。支持 `disabled` 和 `aria-invalid`。
+
+<ComponentPreview name="date-picker-states" />
+
+## 手机上 [#phones]
+
+在手机上，面板通过按内容定高的底部抽屉打开，用滚轮代替日历：年、月、日按 locale 的顺序和名称排列，时间接在同一行，与 iOS 一致。同时开启秒和上午/下午时，时间单独占一行。范围模式下，开始和结束的滚轮上下排列，各带标题。滚轮会把日期限制在 `min` 和 `max` 之内；`disabledDates` 只作用于日历。
+
+## 文案 [#labels]
+
+中文 locale 默认使用中文文案。可以用 `labels` 覆盖任意文字，也可以导入 `dateTimeLabels` / `dateTimeLabelsZhCN` 在此基础上修改。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `mode` | `"single" \| "range"` | `"single"`。 |
+| `value`、`defaultValue` | `Date` 或 `DateRange` | 取决于 `mode`。 |
+| `onValueChange` | `(value) => void` | 为空或未填完时回调 `undefined`。 |
+| `showTime` | `boolean \| { seconds?, step?, hourCycle? }` | 默认关闭。 |
+| `presets` | `{ label, value }[]` | 仅范围模式可用。 |
+| `min`、`max` | `Date` | 日历可选范围；越界的值标记为无效。 |
+| `disabledDates` | `Matcher \| Matcher[]` | react-day-picker 的匹配器。 |
+| `locale` | `string` | 运行时 locale。 |
+| `labels` | `DateTimeLabelOverrides` | 按 locale 默认为中文或英文。 |
+| `name`、`id`、`disabled` | | 表单字段名、第一个分段的 id、禁用。 |
+| `calendarProps` | `Partial<PropsBase>` | 透传给 Calendar。 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 作用于输入框和面板。 |
+
+导出 `DatePicker`、`DatePickerProps`、`DatePickerPreset`、`DateRange`、`dateTimeLabels`、`dateTimeLabelsZhCN`。

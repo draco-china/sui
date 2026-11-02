@@ -31,6 +31,13 @@ export const examples = {
     import("./variants/block-delete-resource-error"),
   "block-delete-resource-insensitive": () =>
     import("./variants/block-delete-resource-insensitive"),
+  "date-picker-demo": () => import("./variants/date-picker-demo"),
+  "date-picker-range": () => import("./variants/date-picker-range"),
+  "date-picker-time": () => import("./variants/date-picker-time"),
+  "date-picker-states": () => import("./variants/date-picker-states"),
+  "time-picker-demo": () => import("./variants/time-picker-demo"),
+  "time-picker-range": () => import("./variants/time-picker-range"),
+  "time-picker-options": () => import("./variants/time-picker-options"),
   "wheel-picker-demo": () => import("./variants/wheel-picker-demo"),
   "wheel-picker-composed": () => import("./variants/wheel-picker-composed"),
   "wheel-picker-states": () => import("./variants/wheel-picker-states"),
@@ -660,6 +667,13 @@ export const sourceFiles = {
     import("./variants/block-delete-resource-error.tsx?raw"),
   "block-delete-resource-insensitive": () =>
     import("./variants/block-delete-resource-insensitive.tsx?raw"),
+  "date-picker-demo": () => import("./variants/date-picker-demo.tsx?raw"),
+  "date-picker-range": () => import("./variants/date-picker-range.tsx?raw"),
+  "date-picker-time": () => import("./variants/date-picker-time.tsx?raw"),
+  "date-picker-states": () => import("./variants/date-picker-states.tsx?raw"),
+  "time-picker-demo": () => import("./variants/time-picker-demo.tsx?raw"),
+  "time-picker-range": () => import("./variants/time-picker-range.tsx?raw"),
+  "time-picker-options": () => import("./variants/time-picker-options.tsx?raw"),
   "wheel-picker-demo": () => import("./variants/wheel-picker-demo.tsx?raw"),
   "wheel-picker-composed": () =>
     import("./variants/wheel-picker-composed.tsx?raw"),

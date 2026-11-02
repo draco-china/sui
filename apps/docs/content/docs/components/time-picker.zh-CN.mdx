@@ -1,0 +1,58 @@
+---
+title: Time Picker
+description: 可直接键入的分段时间输入框，带滚轮，支持单个时间和起止时间。
+---
+
+TimePicker 是一个可键入的分段输入框，滚轮放在弹层里（手机上为底部抽屉）。值是普通的 `"HH:mm"` 字符串，开启 `seconds` 时为 `"HH:mm:ss"`。值里不含日期和时区，可以直接用于表单、URL 和接口。`range` 用来选择起止时间。
+
+<ComponentPreview name="time-picker-demo" />
+
+## 安装 [#installation]
+
+```npm
+npx shadcn@latest add draco-china/sui/time-picker
+```
+
+## 用法 [#usage]
+
+```tsx
+import { TimePicker } from "@workspace/ui/components/time-picker";
+
+const [time, setTime] = useState<string>();
+
+<TimePicker aria-label="闹钟" value={time} onValueChange={setTime} />;
+```
+
+无论输入框显示 12 小时还是 24 小时制，值始终是 24 小时制。
+
+## 时间范围 [#range]
+
+`range` 的值是 `{ from?: string; to?: string }`。起止时间各有一组分段和滚轮，手机上开始的滚轮排在结束的上方，与 Date Picker 一致；起止保持设置时的顺序：结束早于开始表示跨过午夜，例如 `22:00 ~ 02:00`。
+
+<ComponentPreview name="time-picker-range" />
+
+## 选项 [#options]
+
+`seconds` 加上秒的分段和滚轮。`step` 设置分钟的步长，作用于滚轮和方向键，手动输入的分钟不受影响。`hourCycle`（`"h12"` 或 `"h23"`）覆盖 locale 的默认设置；12 小时制会多出上午/下午的分段和滚轮。
+
+<ComponentPreview name="time-picker-options" />
+
+## 键盘输入与无障碍 [#accessibility]
+
+键盘输入方式与 [Date Picker](/zh-CN/docs/components/date-picker#accessibility) 相同：输入数字填写分段，方向键增减，Backspace 清空。`name` 通过隐藏 input 提交时间字符串，范围模式提交两个。支持 `disabled`、`aria-invalid`、`labels`、`glass` 和 `frosted`。
+
+## API 参考 [#api-reference]
+
+| 属性 | 类型 | 默认值 / 行为 |
+| --- | --- | --- |
+| `range` | `boolean` | `false`。 |
+| `value`、`defaultValue` | `string` 或 `TimeRange` | 取决于 `range`。 |
+| `onValueChange` | `(value) => void` | 为空或未填完时回调 `undefined`。 |
+| `seconds` | `boolean` | `false`。 |
+| `step` | `number` | `1` 分钟。 |
+| `hourCycle` | `"h12" \| "h23"` | 跟随 `locale`。 |
+| `locale`、`labels` | `string`、`DateTimeLabelOverrides` | 同 Date Picker。 |
+| `name`、`id`、`disabled` | | 表单字段名、第一个分段的 id、禁用。 |
+| `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 作用于输入框和滚轮。 |
+
+导出 `TimePicker`、`TimePickerProps`、`TimeValue`、`TimeRange`、`HourCycle`、`dateTimeLabels`、`dateTimeLabelsZhCN`。
