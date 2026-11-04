@@ -82,8 +82,14 @@
       "target": "@ui/tooltip.tsx"
     },
     {
+      "path": "packages/ui/src/hooks/use-media-query.ts",
+      "content": "import { useLayoutEffect, useState } from \"react\";\n\n/**\n * Whether a media query matches. `undefined` on the server and until the first\n * layout effect, so a component can render something that suits every size\n * until it knows.\n */\nexport function useMediaQuery(query: string) {\n  const [matches, setMatches] = useState<boolean>();\n  useLayoutEffect(() => {\n    if (typeof window.matchMedia !== \"function\") return;\n    const mql = window.matchMedia(query);\n    const onChange = () => setMatches(mql.matches);\n    mql.addEventListener(\"change\", onChange);\n    onChange();\n    return () => mql.removeEventListener(\"change\", onChange);\n  }, [query]);\n  return matches;\n}\n",
+      "type": "registry:hook",
+      "target": "@hooks/use-media-query.ts"
+    },
+    {
       "path": "packages/ui/src/hooks/use-mobile.ts",
-      "content": "import * as React from \"react\";\n\nconst MOBILE_BREAKPOINT = 768;\n\nexport function useIsMobile() {\n  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(\n    undefined,\n  );\n\n  React.useLayoutEffect(() => {\n    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);\n    const onChange = () => {\n      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);\n    };\n    mql.addEventListener(\"change\", onChange);\n    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);\n    return () => mql.removeEventListener(\"change\", onChange);\n  }, []);\n\n  return !!isMobile;\n}\n",
+      "content": "import { useMediaQuery } from \"@/hooks/use-media-query\";\n\nconst MOBILE_BREAKPOINT = 768;\n\nexport function useIsMobile() {\n  return !!useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);\n}\n",
       "type": "registry:hook",
       "target": "@hooks/use-mobile.ts"
     },

@@ -208,7 +208,9 @@ await act(async () => {
 });
 assert.deepEqual(visited, ["/settings/account"]);
 
-scenario("sections are tabs by default, and a capped column when vertical");
+scenario(
+  "sections are a capped side column by default, and a row when horizontal",
+);
 const sections = [
   { title: "Profile", href: "/settings" },
   { title: "Account", href: "/settings/account" },
@@ -217,7 +219,7 @@ const sections = [
 await act(async () => {
   root.render(
     <LayoutProvider currentPath="/settings">
-      <SectionLayout title="Settings" orientation="vertical" items={sections}>
+      <SectionLayout title="Settings" items={sections}>
         Content
       </SectionLayout>
     </LayoutProvider>,
@@ -229,8 +231,8 @@ assert.ok(aside?.className.includes("lg:min-w-48"), "and a floor");
 const asideLists = [...(aside?.querySelectorAll('[role="tablist"]') ?? [])];
 assert.deepEqual(
   asideLists.map((list) => list.getAttribute("aria-orientation")),
-  ["vertical", null],
-  "a column of tabs from lg up, and a row below it",
+  ["vertical"],
+  "one set of tabs, a column when the page is wide",
 );
 visited.length = 0;
 await act(async () => {
@@ -239,13 +241,20 @@ await act(async () => {
       currentPath="/settings"
       onNavigate={(href) => visited.push(href)}
     >
-      <SectionLayout title="Settings" items={sections}>
+      <SectionLayout title="Settings" orientation="horizontal" items={sections}>
         Content
       </SectionLayout>
     </LayoutProvider>,
   );
 });
 assert.equal(document.querySelector("aside"), null, "no side column");
+assert.deepEqual(
+  [...document.querySelectorAll('[role="tablist"]')].map((list) =>
+    list.getAttribute("aria-orientation"),
+  ),
+  [null],
+  "a row of tabs when horizontal",
+);
 const tablist = document.querySelector('[role="tablist"]');
 const labelledBy = tablist?.getAttribute("aria-labelledby");
 assert.ok(labelledBy, "the tabs are named by an element");

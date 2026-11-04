@@ -3,7 +3,7 @@ title: Section Layout
 description: Page heading with its own sub-navigation, such as settings or account pages.
 ---
 
-Adapted from the shadcn-admin settings page. The sections are [Tabs](/docs/components/tabs) between the heading and the content, at every size; they scroll when they outgrow the page. Choosing one calls the layout's `onNavigate`, and the tabs take their accessible name from `title`.
+Adapted from the shadcn-admin settings page. The sections are [Tabs](/docs/components/tabs) in a side column from the `lg` breakpoint, on a rail between them and the content. The column is a fifth of the page wide but held between 192 and 256px; below `lg` the tabs are a scrolling row above the content. Choosing one calls the layout's `onNavigate`, and the tabs take their accessible name from `title`.
 
 <ComponentPreview name="layout-section" />
 
@@ -27,11 +27,11 @@ import { SectionLayout } from "@workspace/ui/layouts/section-layout"
 
 Inside an `AppShell`, links and active state come from its `currentPath` and `linkComponent`. Elsewhere, wrap the page in `LayoutProvider` with the same props.
 
-## Vertical [#vertical]
+## Horizontal [#horizontal]
 
-`orientation="vertical"` stands the tabs in a side column from the `lg` breakpoint, on a rail between them and the content. The column is a fifth of the page wide but held between 192 and 256px; below `lg` the tabs are a scrolling row again. Use it for many sections, or for long section titles.
+`orientation="horizontal"` shows the tabs between the heading and the content at every size; they scroll when they outgrow the page. Use it for a few short sections.
 
-<ComponentPreview name="layout-section-vertical" />
+<ComponentPreview name="layout-section-horizontal" />
 
 ## API
 
@@ -39,7 +39,10 @@ Inside an `AppShell`, links and active state come from its `currentPath` and `li
 | --- | --- | --- |
 | `title` | Required | Page heading. |
 | `description` | — | Text under the heading. |
+| `actions` | — | Controls for every section, such as a date range or a primary action, at the end of the heading row. |
 | `items` | Required | Links `{ title, href, icon?, disabled? }`. |
-| `orientation` | `"horizontal"` | `"vertical"` stands the tabs in a side column from `lg` up. |
+| `orientation` | `"vertical"` | `"vertical"` stands the tabs in a side column from `lg` up; `"horizontal"` keeps them above the content. |
+
+The content is a flex column, so a list in a fixed-height AppMain scrolls inside it and keeps its pagination in view.
 
 `SectionTabs` renders the tabs alone, with `orientation` for a column. `SectionNav` renders the earlier link navigation: links from `lg` up, a scrolling row on tablets and a select on phones.

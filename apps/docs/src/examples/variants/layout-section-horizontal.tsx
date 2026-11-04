@@ -6,7 +6,7 @@ import { Bell, Monitor, Palette, UserCog, Wrench } from "lucide-react";
 import { useDemoRouter } from "../support/layout-router";
 import type { ExampleProps } from "../types";
 
-export default function LayoutSectionVertical({ locale }: ExampleProps) {
+export default function LayoutSectionHorizontal({ locale }: ExampleProps) {
   const zh = locale === "zh-CN";
   const router = useDemoRouter("/settings");
   const items = [
@@ -39,7 +39,7 @@ export default function LayoutSectionVertical({ locale }: ExampleProps) {
             ? "管理账户设置和邮件偏好。"
             : "Manage your account settings and email preferences."
         }
-        orientation="vertical"
+        orientation="horizontal"
         items={items}
       >
         <h2 className="font-medium text-lg">{current?.title}</h2>

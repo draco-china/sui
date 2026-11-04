@@ -3,7 +3,7 @@ title: Section Layout
 description: 带标题和独立二级导航的页面，例如设置页和账户页
 ---
 
-改编自 shadcn-admin 的设置页。各分区在所有尺寸下都以[标签页](/zh-CN/docs/components/tabs)显示在标题与内容之间，超出页面宽度时可以滚动。选择某一项时调用布局的 `onNavigate`，标签页的无障碍名称取自 `title`。
+改编自 shadcn-admin 的设置页。各分区以[标签页](/zh-CN/docs/components/tabs)显示：`lg` 断点以上纵向排列在侧栏中，侧栏与内容之间有一条分隔线，宽度为页面的五分之一，但限制在 192 到 256px 之间；`lg` 以下为内容上方可滚动的一行。选择某一项时调用布局的 `onNavigate`，标签页的无障碍名称取自 `title`。
 
 <ComponentPreview name="layout-section" />
 
@@ -26,11 +26,11 @@ import { SectionLayout } from "@workspace/ui/layouts/section-layout"
 ```
 
 在 `AppShell` 内时，链接和激活状态来自它的 `currentPath` 和 `linkComponent`；在其他位置，用 `LayoutProvider` 包裹并传入相同属性。
-## 纵向 [#vertical]
+## 横向 [#horizontal]
 
-`orientation="vertical"` 在 `lg` 断点以上把标签页纵向排列在侧栏中，侧栏与内容之间有一条分隔线。侧栏宽度为页面的五分之一，但限制在 192 到 256px 之间；`lg` 以下仍为可滚动的一行。适合分区较多、或分区标题较长的页面。
+`orientation="horizontal"` 在所有尺寸下都把标签页放在标题与内容之间，超出页面宽度时可以滚动。适合分区少、标题短的页面。
 
-<ComponentPreview name="layout-section-vertical" />
+<ComponentPreview name="layout-section-horizontal" />
 
 ## API
 
@@ -38,7 +38,10 @@ import { SectionLayout } from "@workspace/ui/layouts/section-layout"
 | --- | --- | --- |
 | `title` | 必填 | 页面标题。 |
 | `description` | — | 标题下方的说明。 |
+| `actions` | — | 所有分区共用的控件，比如日期范围或主操作，放在标题行末尾。 |
 | `items` | 必填 | 链接 `{ title, href, icon?, disabled? }`。 |
-| `orientation` | `"horizontal"` | `"vertical"` 在 `lg` 以上把标签页纵向排列在侧栏中。 |
+| `orientation` | `"vertical"` | `"vertical"` 在 `lg` 以上把标签页纵向排列在侧栏中；`"horizontal"` 让标签页始终位于内容上方。 |
+
+内容区是 flex 列：放在固定高度 AppMain 里的列表会在内部滚动，分页始终可见。
 
 `SectionTabs` 单独渲染标签页，用 `orientation` 设为纵向。`SectionNav` 渲染原先的链接导航：`lg` 以上为链接，平板上为可滚动的一行，手机上为下拉框。

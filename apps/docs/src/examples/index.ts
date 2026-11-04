@@ -26,7 +26,8 @@ export const examples = {
   "layout-app-shell": () => import("./variants/layout-app-shell"),
   "layout-top-nav": () => import("./variants/layout-top-nav"),
   "layout-section": () => import("./variants/layout-section"),
-  "layout-section-vertical": () => import("./variants/layout-section-vertical"),
+  "layout-section-horizontal": () =>
+    import("./variants/layout-section-horizontal"),
   "layout-auth": () => import("./variants/layout-auth"),
   "layout-auth-split": () => import("./variants/layout-auth-split"),
   "block-delete-resource-error": () =>
@@ -640,8 +641,8 @@ export const sourceFiles = {
   "layout-app-shell": () => import("./variants/layout-app-shell.tsx?raw"),
   "layout-top-nav": () => import("./variants/layout-top-nav.tsx?raw"),
   "layout-section": () => import("./variants/layout-section.tsx?raw"),
-  "layout-section-vertical": () =>
-    import("./variants/layout-section-vertical.tsx?raw"),
+  "layout-section-horizontal": () =>
+    import("./variants/layout-section-horizontal.tsx?raw"),
   "layout-auth": () => import("./variants/layout-auth.tsx?raw"),
   "layout-auth-split": () => import("./variants/layout-auth-split.tsx?raw"),
   "long-text-demo": () => import("./variants/long-text-demo.tsx?raw"),

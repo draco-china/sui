@@ -2258,6 +2258,11 @@
           "target": "@hooks/use-clipboard.ts"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -2431,6 +2436,11 @@
           "path": "packages/ui/src/hooks/use-bottom-sheet-controller.ts",
           "type": "registry:hook",
           "target": "@hooks/use-bottom-sheet-controller.ts"
+        },
+        {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
         },
         {
           "path": "packages/ui/src/hooks/use-mobile.ts",
@@ -5181,6 +5191,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -6181,6 +6196,11 @@
           "path": "packages/ui/src/hooks/use-bottom-sheet-controller.ts",
           "type": "registry:hook",
           "target": "@hooks/use-bottom-sheet-controller.ts"
+        },
+        {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
         },
         {
           "path": "packages/ui/src/hooks/use-mobile.ts",
@@ -7429,6 +7449,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -7610,6 +7635,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -7780,6 +7810,11 @@
           "path": "packages/ui/src/components/tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
         },
         {
           "path": "packages/ui/src/hooks/use-mobile.ts",
@@ -8031,6 +8066,11 @@
           "target": "@ui/tooltip.tsx"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -8187,6 +8227,11 @@
           "path": "packages/ui/src/components/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
         },
         {
           "path": "packages/ui/src/layouts/layout-provider.tsx",
@@ -10930,6 +10975,11 @@
           "target": "@hooks/use-fullscreen.ts"
         },
         {
+          "path": "packages/ui/src/hooks/use-media-query.ts",
+          "type": "registry:hook",
+          "target": "@hooks/use-media-query.ts"
+        },
+        {
           "path": "packages/ui/src/hooks/use-mobile.ts",
           "type": "registry:hook",
           "target": "@hooks/use-mobile.ts"
@@ -11305,6 +11355,7 @@
           "@/hooks/use-clipboard",
           "@/hooks/use-color-scheme",
           "@/hooks/use-fullscreen",
+          "@/hooks/use-media-query",
           "@/hooks/use-mobile",
           "@/components/layouts/app-header",
           "@/components/layouts/app-main",

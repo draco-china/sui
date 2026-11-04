@@ -11,6 +11,7 @@ import {
 } from "@workspace/ui/components/select";
 import { Separator } from "@workspace/ui/components/separator";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { useMediaQuery } from "@workspace/ui/hooks/use-media-query";
 import { cn } from "cn";
 import type * as React from "react";
 import { useId } from "react";
@@ -142,14 +143,19 @@ function SectionTabs({
   );
 }
 
+/** Whether a side column fits: SUI's `lg`. */
+const WIDE_QUERY = "(min-width: 1024px)";
+
 type SectionLayoutProps = Omit<React.ComponentProps<"div">, "title"> & {
   title: React.ReactNode;
   description?: React.ReactNode;
+  /** Controls for every section (a date range, a primary action), on the heading's row. */
+  actions?: React.ReactNode;
   items: NavLink[];
   /**
-   * `"horizontal"` (default) shows the sections as tabs above the content at
-   * every size. `"vertical"` lists them in a side column from `lg` up, and
-   * as a scrolling row of tabs below it.
+   * `"vertical"` (default) lists the sections in a side column from `lg` up,
+   * and as a scrolling row of tabs above the content below it.
+   * `"horizontal"` shows them as tabs above the content at every size.
    */
   orientation?: "horizontal" | "vertical";
 };
@@ -158,21 +164,35 @@ type SectionLayoutProps = Omit<React.ComponentProps<"div">, "title"> & {
 function SectionLayout({
   title,
   description,
+  actions,
   items,
-  orientation = "horizontal",
+  orientation = "vertical",
   className,
   children,
   ...props
 }: SectionLayoutProps) {
   // The heading names the tabs, whatever `title` holds.
   const titleId = useId();
+  // Unknown on the server and the first paint: render both orientations, CSS
+  // showing the right one, then a single set once the width is known.
+  const wide = useMediaQuery(WIDE_QUERY);
   const tabs = { items, labelledBy: titleId };
   const header = (
-    <div className="space-y-1">
-      <h1 id={titleId} className="font-semibold text-2xl md:text-3xl">
-        {title}
-      </h1>
-      {description && <p className="text-muted-foreground">{description}</p>}
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="min-w-0 space-y-1">
+        <h1 id={titleId} className="font-semibold text-2xl md:text-3xl">
+          {title}
+        </h1>
+        {description && <p className="text-muted-foreground">{description}</p>}
+      </div>
+      {actions && (
+        <div
+          data-slot="section-layout-actions"
+          className="flex flex-wrap items-center gap-2"
+        >
+          {actions}
+        </div>
+      )}
     </div>
   );
   if (orientation === "horizontal") {
@@ -186,7 +206,9 @@ function SectionLayout({
         {header}
         <SectionTabs {...tabs} className="mt-4 lg:mt-6" />
         <Separator />
-        <div className="min-h-0 min-w-0 flex-1 pt-4 lg:pt-6">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col pt-4 lg:pt-6">
+          {children}
+        </div>
       </div>
     );
   }
@@ -203,16 +225,27 @@ function SectionLayout({
         {/* A fifth of the page, held between 192 and 256px, so the column
             neither crowds short titles nor sprawls on wide screens. */}
         <aside className="lg:sticky lg:top-0 lg:w-1/5 lg:min-w-48 lg:max-w-64 lg:shrink-0 lg:self-start">
-          {/* Tabs take their orientation as a prop, so each width renders its
-              own; the hidden one leaves the accessibility tree. */}
-          <SectionTabs
-            {...tabs}
-            orientation="vertical"
-            className="hidden lg:flex"
-          />
-          <SectionTabs {...tabs} className="lg:hidden" />
+          {/* One set of tabs: a column beside the content when it fits,
+              otherwise a row above it. */}
+          {wide === undefined ? (
+            <>
+              <SectionTabs
+                {...tabs}
+                orientation="vertical"
+                className="hidden lg:flex"
+              />
+              <SectionTabs {...tabs} className="lg:hidden" />
+            </>
+          ) : (
+            <SectionTabs
+              {...tabs}
+              orientation={wide ? "vertical" : "horizontal"}
+            />
+          )}
         </aside>
-        <div className="min-w-0 flex-1">{children}</div>
+        {/* A bounded column, so a list in a fixed AppMain scrolls inside and
+            keeps its pagination in view, as on a page of its own. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
       </div>
     </div>
   );
