@@ -2,9 +2,10 @@ import { useParams } from "@tanstack/react-router";
 import { buttonVariants } from "@workspace/ui/components/button";
 import { LocaleToggle } from "@workspace/ui/components/locale-toggle";
 import { cn } from "cn";
+import type * as PageTree from "fumadocs-core/page-tree";
 import { SidebarTrigger } from "fumadocs-ui/components/sidebar/base";
 import { useI18n } from "fumadocs-ui/contexts/i18n";
-import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import type { BaseLayoutProps, LayoutTab } from "fumadocs-ui/layouts/shared";
 import type { LanguageSelectProps } from "fumadocs-ui/layouts/shared/slots/language-select";
 import { useSpaciousLayout } from "fumadocs-ui/layouts/spacious";
 import { PanelLeft } from "lucide-react";
@@ -101,6 +102,36 @@ export function layoutOptions(locale: Locale): BaseLayoutProps {
       languageSelect: { root: LayoutLocaleSwitch, text: LayoutLocaleText },
     },
   };
+}
+
+/**
+ * The documentation's sections as the sidebar's section switcher, fixed above
+ * the page list so it sits in the same place on every page. Each separator in
+ * the page tree starts a section; picking one opens its first page.
+ */
+export function sectionTabs(tree: PageTree.Root): LayoutTab[] {
+  const tabs: LayoutTab[] = [];
+  let current: LayoutTab | undefined;
+  const collect = (nodes: PageTree.Node[]) => {
+    for (const node of nodes) {
+      if (node.type === "separator") {
+        current = { title: node.name, url: "", urls: new Set() };
+        tabs.push(current);
+      } else if (node.type === "page") {
+        if (!current) continue;
+        if (!current.url) current.url = node.url;
+        current.urls?.add(node.url);
+      } else {
+        if (current && node.index) {
+          if (!current.url) current.url = node.index.url;
+          current.urls?.add(node.index.url);
+        }
+        collect(node.children);
+      }
+    }
+  };
+  collect(tree.children);
+  return tabs.filter((tab) => tab.url);
 }
 
 export function DocumentationActions({

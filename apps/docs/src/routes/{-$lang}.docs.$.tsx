@@ -18,6 +18,7 @@ import {
   DocumentationActions,
   DocumentationMobileHeader,
   layoutOptions,
+  sectionTabs,
 } from "../lib/layout";
 import { docs, source } from "../lib/source";
 
@@ -124,7 +125,7 @@ function Documentation() {
         actions: DocumentationActions,
         header: DocumentationMobileHeader,
       }}
-      tabs={false}
+      tabs={sectionTabs(pageTree)}
     >
       <Suspense
         fallback={
