@@ -469,6 +469,10 @@ function TabsListImplementation({
         >
           {children}
           <motion.span
+            // Motion keeps inline styles a later render leaves out, so a line
+            // indicator turning from a column into a row would keep its old
+            // height; a fresh element per orientation starts clean.
+            key={orientation}
             aria-hidden="true"
             data-slot="tabs-indicator"
             data-orientation={orientation}
