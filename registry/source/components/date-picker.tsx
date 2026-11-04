@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "cn";
 import { CalendarIcon } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import type { DateRange, Matcher, PropsBase } from "react-day-picker";
@@ -421,7 +422,8 @@ function RangeDatePicker(props: DatePickerRangeProps) {
         invalid={invalid}
         glass={props.glass}
         frosted={props.frosted}
-        className={props.className}
+        // A range is as wide as its two dates, not the row it sits in.
+        className={cn("w-fit max-w-full", props.className)}
         onClear={
           value || reversed
             ? () => {
@@ -516,7 +518,8 @@ function RangeDatePicker(props: DatePickerRangeProps) {
           role="group"
           aria-label={props["aria-label"]}
           aria-labelledby={props["aria-labelledby"]}
-          className="flex min-w-0 flex-1 items-center overflow-x-auto"
+          // Scrolls sideways when narrower than both dates, with no scrollbar
+          className="flex min-w-0 flex-1 items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           onBlur={(event) => {
             if (event.currentTarget.contains(event.relatedTarget)) return;
             putInOrder();
