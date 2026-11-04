@@ -25,7 +25,7 @@ export function compiledStylesheet(path: string, minify = false): string {
     .replace(/@custom-variant[^;{]*;/g, "")
     .replaceAll(
       "@variant glass-off {",
-      "@media (prefers-reduced-transparency: reduce), (forced-colors: active) {",
+      "@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce), (forced-colors: active) {",
     );
   return optimize(source, { minify }).code;
 }

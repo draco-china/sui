@@ -5,11 +5,11 @@ let instance: SvgGlassRenderer | undefined;
 let failed = false;
 let controller = new AbortController();
 
-/** CSS-only material where reduced transparency or forced colors are preferred. */
+/** CSS-only material where reduced transparency, reduced motion or forced colors are preferred. */
 export function glassBaseOnly() {
   return Boolean(
     window.matchMedia?.(
-      "(prefers-reduced-transparency: reduce), (forced-colors: active)",
+      "(prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce), (forced-colors: active)",
     ).matches,
   );
 }

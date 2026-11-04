@@ -115,7 +115,7 @@ test("the textGlow switch alone decides, with nothing inside a glowing surface e
 test("each rule undoes itself under reduced transparency or forced colors", () => {
   // A positive query stays safe where the feature is unsupported.
   const reduced =
-    "@media (prefers-reduced-transparency:reduce),(forced-colors:active){";
+    "@media (prefers-reduced-transparency:reduce),(prefers-reduced-motion:reduce),(forced-colors:active){";
   for (const revert of [
     "[data-glass=true][data-glass-state]{--glass-initial-edge-shadow:0 0 #0000;background-color:var(--glass-base,var(--popover));",
     "[data-glass=true][data-glass-state]{text-shadow:none}",

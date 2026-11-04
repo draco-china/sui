@@ -217,7 +217,7 @@
     },
     "@custom-variant glass (&:is([data-glass=\"true\"], [data-frosted=\"true\"]))": {},
     "@custom-variant glass-off": {
-      "@media (prefers-reduced-transparency: reduce), (forced-colors: active)": {
+      "@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce), (forced-colors: active)": {
         "@slot": {}
       }
     },

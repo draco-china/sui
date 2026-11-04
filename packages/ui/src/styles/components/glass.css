@@ -11,12 +11,13 @@
    utilities style both, such as `glass:rounded-4xl`. */
 @custom-variant glass (&:is([data-glass="true"], [data-frosted="true"]));
 
-/* Reduced transparency and forced colors turn glass back into ordinary
+/* Reduced transparency, reduced motion and forced colors turn glass back into ordinary
    paint: `@variant glass-off` holds each rule's undo. A positive query stays
    safe in browsers without the feature, while "not reduce" would turn glass
    off there. */
 @custom-variant glass-off {
-  @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  @media (prefers-reduced-transparency: reduce),
+    (prefers-reduced-motion: reduce), (forced-colors: active) {
     @slot;
   }
 }

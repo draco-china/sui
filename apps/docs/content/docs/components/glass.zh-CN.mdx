@@ -51,7 +51,7 @@ import { GlassSurface } from "@workspace/ui/components/glass";
 
 清透玻璃使用原生 SVG 折射：几何位移贴图通过 `feDisplacementMap` 沿边缘弯折实时背景，再进行模糊和饱和处理。整个过程不截取画面，因此视频、滚动和动画都能以显示器帧率保持实时。
 
-CSS 材质是它的回退：在表面完成测量前、浏览器无法绘制 SVG 背景时（Safari）、`prefers-reduced-transparency` 或强制颜色模式下，以及渲染器失败时生效。完全不透明的填充会遮住背景，这类表面保留 CSS 和共享的边缘高光。减少透明度与强制颜色模式显示不透明底色和原生焦点样式。
+CSS 材质是它的回退：在表面完成测量前、浏览器无法绘制 SVG 背景时（Safari）、`prefers-reduced-transparency`、`prefers-reduced-motion` 或强制颜色模式下，以及渲染器失败时生效。完全不透明的填充会遮住背景，这类表面保留 CSS 和共享的边缘高光。减少透明度、减少动态效果与强制颜色模式显示不透明底色和原生焦点样式。
 
 磨砂玻璃从不运行 JavaScript，也不加载渲染器：它只是作用在组件自身元素上的样式规则。
 

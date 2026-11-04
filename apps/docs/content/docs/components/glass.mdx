@@ -51,7 +51,7 @@ Pass `render` to keep native semantics, for example `<GlassSurface render={<nav 
 
 Clear glass renders native SVG refraction: a geometric displacement map bends the live backdrop along the edges with `feDisplacementMap`, then blurs and saturates it. Nothing is captured, so video, scrolling and animation stay live at the display's frame rate.
 
-The CSS material is its fallback. It applies before a surface is measured, in browsers that cannot paint SVG backdrops (Safari), under `prefers-reduced-transparency` or forced colors, and if the renderer fails. Fully opaque paint covers the backdrop, so such surfaces keep CSS with the shared edge highlight. Reduced transparency and forced colors show an opaque base with native focus styles.
+The CSS material is its fallback. It applies before a surface is measured, in browsers that cannot paint SVG backdrops (Safari), under `prefers-reduced-transparency`, `prefers-reduced-motion` or forced colors, and if the renderer fails. Fully opaque paint covers the backdrop, so such surfaces keep CSS with the shared edge highlight. Reduced transparency, reduced motion and forced colors show an opaque base with native focus styles.
 
 Frosted glass never runs JavaScript or loads the renderer: it is a stylesheet rule on the component's own element.
 
