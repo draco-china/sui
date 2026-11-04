@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { Badge } from "@workspace/ui/components/badge";
 import {
   columnSettings,
   DataTable,
@@ -14,7 +15,10 @@ import {
   toCsv,
   writeUrlState,
 } from "@workspace/ui/components/data-table";
-import { normalizeColumns } from "@workspace/ui/components/data-table/columns";
+import {
+  normalizeColumns,
+  optionText,
+} from "@workspace/ui/components/data-table/columns";
 import { renderToString } from "react-dom/server";
 
 type Row = {
@@ -366,5 +370,17 @@ describe("server rendering", () => {
     );
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('data-slot="skeleton"');
+  });
+});
+
+describe("filter option text", () => {
+  test("reads the text inside an element label", () => {
+    expect(optionText({ value: "on", label: <Badge>Enabled</Badge> })).toBe(
+      "Enabled",
+    );
+  });
+
+  test("falls back to the value when a label has no text", () => {
+    expect(optionText({ value: "on", label: <span /> })).toBe("on");
   });
 });

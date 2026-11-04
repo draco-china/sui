@@ -20,8 +20,10 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Filter, Plus, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
+import { optionText } from "../columns";
 import { useDataTableContext } from "../context";
 import { DataTableDateField, DataTableDateRangeField } from "../date-field";
+import { isEmptyValue } from "../engine";
 import { menuLabel } from "../menu";
 import type {
   DataTableInstance,
@@ -194,7 +196,7 @@ function RuleValue({
                 )
               }
             >
-              {option.label}
+              {optionText(option)}
             </Badge>
           );
         })}
@@ -209,7 +211,7 @@ function RuleValue({
         value={String(rule.value ?? options[0]?.value ?? "")}
         items={options.map((option) => ({
           value: option.value,
-          label: typeof option.label === "string" ? option.label : option.value,
+          label: optionText(option),
         }))}
         onChange={onChange}
       />
@@ -276,8 +278,13 @@ function AdvancedFilter({ storageKey }: { storageKey?: string }) {
         rule.id === id ? { ...rule, ...update } : rule,
       ),
     }));
-  const apply = (group: FilterGroup) =>
-    table.setAdvanced(group.rules.length ? group : undefined);
+  // A condition left without a value filters nothing, so it is not applied.
+  const apply = (group: FilterGroup) => {
+    const rules = group.rules.filter(
+      (rule) => rule.operator === "isEmpty" || !isEmptyValue(rule.value),
+    );
+    table.setAdvanced(rules.length ? { ...group, rules } : undefined);
+  };
   const saveViews = (next: SavedView[]) => {
     setViews(next);
     if (storageKey) writeViews(storageKey, next);

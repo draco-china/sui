@@ -26,7 +26,7 @@ import { cn } from "cn";
 import { CirclePlus, Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
-import { formatValue } from "./columns";
+import { formatValue, optionText } from "./columns";
 import { useDataTableContext } from "./context";
 import { isEmptyValue } from "./engine";
 import { menuLabel, menuPanel, menuWidth } from "./menu";
@@ -130,7 +130,7 @@ export function DataTableOptionList({
             return (
               <CommandItem
                 key={option.value}
-                value={`${option.value} ${typeof option.label === "string" ? option.label : ""}`}
+                value={`${option.value} ${optionText(option)}`}
                 data-checked={checked}
                 onSelect={() =>
                   onChange(
@@ -140,7 +140,7 @@ export function DataTableOptionList({
                   )
                 }
               >
-                <span className="flex-1 truncate">{option.label}</span>
+                <span className="flex-1 truncate">{optionText(option)}</span>
                 {counts?.has(option.value) && (
                   <span className="font-mono text-muted-foreground text-xs">
                     {counts.get(option.value)}
@@ -201,7 +201,7 @@ export function DataTableFacetedFilter({
             ) : (
               selected.map((option) => (
                 <Badge key={option.value} variant="secondary">
-                  {option.label}
+                  {optionText(option)}
                 </Badge>
               ))
             )}

@@ -3,7 +3,7 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { CopyText } from "@workspace/ui/components/copy-text";
 import { LongText } from "@workspace/ui/components/long-text";
-import type { ReactNode } from "react";
+import { isValidElement, type ReactNode } from "react";
 import { getPath, isEmptyValue, toTime } from "./engine";
 import type { DataTableLabels } from "./labels";
 import type {
@@ -101,6 +101,21 @@ const defaultSearchTypes: Record<DataTableValueType, DataTableSearchType> = {
   enum: "select",
   boolean: "boolean",
 };
+
+/** The text inside a node, through elements such as a badge. */
+function nodeText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(nodeText).join("");
+  if (isValidElement<{ children?: ReactNode }>(node))
+    return nodeText(node.props.children);
+  return "";
+}
+
+/** Filter controls list an option by its text; table cells keep its label. */
+export function optionText(option: DataTableOption) {
+  return nodeText(option.label) || option.value;
+}
 
 function textOf(node: ReactNode, fallback: string) {
   return typeof node === "string" || typeof node === "number"
