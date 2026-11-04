@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Separator } from "@workspace/ui/components/separator";
-import { Filter, Plus, Trash2, X } from "lucide-react";
+import { ListFilter, Plus, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { optionText } from "../columns";
@@ -249,6 +249,7 @@ function newRule(column: NormalizedColumn<unknown>): FilterRule {
   };
 }
 
+/** Rule fields: every data column, including those 筛选 also offers. */
 function filterableColumns(table: DataTableInstance<unknown>) {
   return table.columns.filter((column) => !column.display);
 }
@@ -257,14 +258,24 @@ function AdvancedFilter({ storageKey }: { storageKey?: string }) {
   const table = useDataTableContext();
   const { labels } = table;
   const columns = filterableColumns(table);
+  // An empty panel starts with one blank condition to fill in, on a column
+  // without fixed options so nothing looks chosen already.
+  const blank = (): FilterGroup => {
+    const column =
+      columns.find(
+        (entry) => !entry.valueEnum && entry.valueType !== "boolean",
+      ) ?? columns[0];
+    return {
+      logic: "and",
+      rules: column ? [{ ...newRule(column), value: undefined }] : [],
+    };
+  };
   const applied = table.state.query.advanced;
-  const [draft, setDraft] = useState<FilterGroup>(
-    applied ?? { logic: "and", rules: [] },
-  );
+  const [draft, setDraft] = useState<FilterGroup>(() => applied ?? blank());
   const syncedFrom = useRef(applied);
   if (syncedFrom.current !== applied) {
     syncedFrom.current = applied;
-    setDraft(applied ?? { logic: "and", rules: [] });
+    setDraft(applied ?? blank());
   }
   const [views, setViews] = useState(() => readViews(storageKey));
   const [viewName, setViewName] = useState("");
@@ -291,109 +302,125 @@ function AdvancedFilter({ storageKey }: { storageKey?: string }) {
   };
 
   return (
-    <Popover>
+    <Popover
+      onOpenChange={(open) => {
+        if (open && draft.rules.length === 0) setDraft(blank());
+      }}
+    >
       <PopoverTrigger
         render={
-          <Button variant="outline" size="sm" className="h-8 border-dashed" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 border-dashed px-2.5 sm:px-3"
+          />
         }
       >
-        <Filter />
-        {labels.advancedFilter}
+        {/* Its own icon: on phones it shows alone, beside 筛选's */}
+        <ListFilter />
+        <span className="sr-only sm:not-sr-only">{labels.advancedFilter}</span>
         {count > 0 && <Badge variant="secondary">{count}</Badge>}
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[min(36rem,calc(100vw-2rem))] gap-1 p-1.5"
+        className="w-[min(36rem,calc(100vw-2rem))] gap-0 p-1.5"
       >
         <div className={menuLabel}>{labels.advancedFilter}</div>
-        <div className="space-y-3 px-1.5 pb-1.5">
-          <SimpleSelect
-            label={labels.advancedFilter}
-            className="w-44"
-            value={draft.logic}
-            items={[
-              { value: "and", label: labels.matchAll },
-              { value: "or", label: labels.matchAny },
-            ]}
-            onChange={(logic) => setDraft((current) => ({ ...current, logic }))}
-          />
-          <ul className="space-y-2">
-            <AnimatePresence initial={false}>
-              {draft.rules.map((rule) => {
-                const column = byId.get(rule.field);
-                if (!column) return null;
-                return (
-                  <motion.li
-                    key={rule.id}
-                    layout
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex flex-wrap items-start gap-1.5 sm:flex-nowrap"
-                  >
-                    <SimpleSelect
-                      label={column.titleText}
-                      className="w-32"
-                      value={rule.field}
-                      items={columns.map((entry) => ({
-                        value: entry.id,
-                        label: entry.titleText,
-                      }))}
-                      onChange={(field) => {
-                        const next = byId.get(field);
-                        if (next)
-                          updateRule(rule.id, {
-                            ...newRule(next),
-                            id: rule.id,
-                          });
-                      }}
-                    />
-                    <SimpleSelect
-                      label={column.titleText}
-                      className="w-32"
-                      value={rule.operator}
-                      items={operatorsByType[column.valueType].map(
-                        (operator) => ({
-                          value: operator,
-                          label: labels.operators[operator],
-                        }),
-                      )}
-                      onChange={(operator) =>
-                        updateRule(rule.id, {
-                          operator,
-                          value: initialValue(column, operator),
-                        })
-                      }
-                    />
-                    <RuleValue
-                      rule={rule}
-                      column={column}
-                      onChange={(value) => updateRule(rule.id, { value })}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={labels.removeRule}
-                      onClick={() =>
-                        setDraft((current) => ({
-                          ...current,
-                          rules: current.rules.filter(
-                            (entry) => entry.id !== rule.id,
-                          ),
-                        }))
-                      }
-                    >
-                      <X />
-                    </Button>
-                  </motion.li>
-                );
-              })}
-            </AnimatePresence>
-          </ul>
+        <div className="space-y-3 px-3 pt-2 pb-3">
+          {columns.length > 0 && (
+            <>
+              <SimpleSelect
+                label={labels.advancedFilter}
+                className="w-44"
+                value={draft.logic}
+                items={[
+                  { value: "and", label: labels.matchAll },
+                  { value: "or", label: labels.matchAny },
+                ]}
+                onChange={(logic) =>
+                  setDraft((current) => ({ ...current, logic }))
+                }
+              />
+              <ul className="space-y-2">
+                <AnimatePresence initial={false}>
+                  {draft.rules.map((rule) => {
+                    const column = byId.get(rule.field);
+                    if (!column) return null;
+                    return (
+                      <motion.li
+                        key={rule.id}
+                        layout
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex flex-wrap items-start gap-1.5 sm:flex-nowrap"
+                      >
+                        <SimpleSelect
+                          label={column.titleText}
+                          className="w-32"
+                          value={rule.field}
+                          items={columns.map((entry) => ({
+                            value: entry.id,
+                            label: entry.titleText,
+                          }))}
+                          onChange={(field) => {
+                            const next = byId.get(field);
+                            if (next)
+                              updateRule(rule.id, {
+                                ...newRule(next),
+                                id: rule.id,
+                              });
+                          }}
+                        />
+                        <SimpleSelect
+                          label={column.titleText}
+                          className="w-32"
+                          value={rule.operator}
+                          items={operatorsByType[column.valueType].map(
+                            (operator) => ({
+                              value: operator,
+                              label: labels.operators[operator],
+                            }),
+                          )}
+                          onChange={(operator) =>
+                            updateRule(rule.id, {
+                              operator,
+                              value: initialValue(column, operator),
+                            })
+                          }
+                        />
+                        <RuleValue
+                          rule={rule}
+                          column={column}
+                          onChange={(value) => updateRule(rule.id, { value })}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={labels.removeRule}
+                          onClick={() =>
+                            setDraft((current) => ({
+                              ...current,
+                              rules: current.rules.filter(
+                                (entry) => entry.id !== rule.id,
+                              ),
+                            }))
+                          }
+                        >
+                          <X />
+                        </Button>
+                      </motion.li>
+                    );
+                  })}
+                </AnimatePresence>
+              </ul>
+            </>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
+              className={columns.length === 0 ? "hidden" : undefined}
               disabled={columns.length === 0}
               onClick={() =>
                 setDraft((current) => ({
@@ -410,7 +437,7 @@ function AdvancedFilter({ storageKey }: { storageKey?: string }) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setDraft({ logic: "and", rules: [] });
+                  setDraft(blank());
                   apply({ logic: "and", rules: [] });
                 }}
               >

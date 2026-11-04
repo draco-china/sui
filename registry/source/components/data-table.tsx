@@ -46,17 +46,24 @@ export {
   reload,
   type UrlSyncOptions,
   urlSync,
+  type ViewsOptions,
   type VirtualOptions,
+  views,
   virtual,
   writeUrlState,
 } from "@/components/ui/data-table/plugins/index";
 export {
+  DataTableChoiceMenu,
   DataTableFacetedFilter,
   DataTableFilterChips,
+  DataTableFilterFields,
+  DataTableMoreFilters,
   DataTableOptionList,
+  DataTableRangeFilter,
   DataTableSearch,
   DataTableSlotContent,
   DataTableToolbar,
+  isRangeColumn,
 } from "@/components/ui/data-table/toolbar";
 export type {
   DataTableActions,
@@ -82,6 +89,7 @@ export type {
   DataTableSlot,
   DataTableState,
   DataTableValueType,
+  DataTableView,
   FilterGroup,
   FilterOperator,
   FilterRule,

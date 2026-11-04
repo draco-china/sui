@@ -1,3 +1,4 @@
+import type { DatePickerPreset } from "@/components/ui/date-picker";
 import type { ComponentProps, ReactNode } from "react";
 import type { DataTableLabels } from "@/components/ui/data-table/labels";
 
@@ -74,6 +75,8 @@ export interface DataTableSearchConfig {
     | ((values: Record<string, unknown>) => readonly DataTableOption[]);
   /** Fields whose change clears this one, such as a province for a city. */
   readonly dependencies?: readonly string[];
+  /** Quick ranges for a date range field, such as the last seven days. */
+  readonly presets?: readonly DatePickerPreset[];
   /** Maps the form value to request parameters, such as `{ startAt, endAt }`. */
   readonly transform?: (value: unknown) => Record<string, unknown>;
   /** Local matcher; overrides the matcher of the field type. */
@@ -218,6 +221,9 @@ export interface DataTableColumnState {
 
 export type DataTableDensity = "compact" | "default" | "comfortable";
 
+/** How the rows are shown: the table, a list, or a grid of cards (the `views` plugin). */
+export type DataTableView = "table" | "list" | "grid";
+
 export interface DataTableRequestParams extends Omit<DataTableQuery, "search"> {
   readonly page: number;
   readonly pageSize: number;
@@ -266,6 +272,8 @@ export interface DataTableFeatures {
 
 export type DataTableSlot =
   | "header"
+  /** More inputs right after the keyword search, before the filters. */
+  | "toolbarSearch"
   | "toolbarStart"
   | "toolbarEnd"
   | "floating";
@@ -290,6 +298,10 @@ export interface DataTablePlugin<TData = unknown> {
   readonly initialState?: () => Partial<DataTableState> | undefined;
   readonly initialColumnState?: () => Partial<DataTableColumnState> | undefined;
   readonly initialDensity?: () => DataTableDensity | undefined;
+  /** The view a reader starts in, known on the server too. */
+  readonly defaultView?: DataTableView;
+  /** A view restored for this reader (persist); wins over `defaultView`. */
+  readonly initialView?: () => DataTableView | undefined;
   readonly columns?: (
     columns: readonly NormalizedColumn<TData>[],
   ) => NormalizedColumn<TData>[];
@@ -305,6 +317,14 @@ export interface DataTablePlugin<TData = unknown> {
     props: DataTableRowRenderProps<TData>,
     table: DataTableInstance<TData>,
   ) => ReactNode;
+  /**
+   * The rows in a view other than the table; `undefined` leaves the view to
+   * the next plugin, and to the table when none renders it.
+   */
+  readonly renderView?: (
+    view: DataTableView,
+    table: DataTableInstance<TData>,
+  ) => ReactNode | undefined;
   readonly renderAfterRow?: (
     row: TData,
     id: string,
@@ -335,6 +355,7 @@ export interface DataTableInstance<TData> extends DataTableActions {
   readonly state: DataTableState;
   readonly columnState: DataTableColumnState;
   readonly density: DataTableDensity;
+  readonly view: DataTableView;
   readonly selection: DataTableSelection<TData> | undefined;
   readonly labels: DataTableLabels;
   readonly locale: string | undefined;
@@ -357,6 +378,7 @@ export interface DataTableInstance<TData> extends DataTableActions {
   ): void;
   resetColumns(): void;
   setDensity(density: DataTableDensity): void;
+  setView(view: DataTableView): void;
   isExpanded(id: string): boolean;
   toggleExpanded(id: string): void;
   /** Option counts for a column, when rows are local. */

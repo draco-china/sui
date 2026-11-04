@@ -15,22 +15,27 @@ import { cn } from "cn";
 import { Download, RotateCw, Rows3 } from "lucide-react";
 import { useDataTableContext } from "../context";
 import { downloadText, toCsv } from "../engine";
+import { DataTableIconTooltip } from "../icon-tooltip";
 import { menuWidth } from "../menu";
 import type { DataTableDensity, DataTablePlugin } from "../types";
 
 function ReloadButton() {
   const table = useDataTableContext();
   return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      aria-label={table.labels.reload}
-      title={table.labels.reload}
-      disabled={table.loading}
-      onClick={table.reload}
+    <DataTableIconTooltip
+      label={table.labels.reload}
+      render={
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={table.labels.reload}
+          disabled={table.loading}
+          onClick={table.reload}
+        />
+      }
     >
       <RotateCw className={cn(table.loading && "animate-spin")} />
-    </Button>
+    </DataTableIconTooltip>
   );
 }
 
@@ -49,18 +54,24 @@ function DensityMenu() {
   ];
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
+      <DataTableIconTooltip
+        label={labels.density}
         render={
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={labels.density}
-            title={labels.density}
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={labels.density}
+                // Phones have one density worth having
+                className="hidden sm:inline-flex"
+              />
+            }
           />
         }
       >
         <Rows3 />
-      </DropdownMenuTrigger>
+      </DataTableIconTooltip>
       <DropdownMenuContent align="end" className={menuWidth}>
         <DropdownMenuGroup>
           <DropdownMenuLabel>{labels.density}</DropdownMenuLabel>
@@ -105,18 +116,22 @@ function ExportMenu({ filename }: { filename: string }) {
   const selected = table.selection?.rows ?? [];
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
+      <DataTableIconTooltip
+        label={labels.export}
         render={
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={labels.export}
-            title={labels.export}
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={labels.export}
+              />
+            }
           />
         }
       >
         <Download />
-      </DropdownMenuTrigger>
+      </DataTableIconTooltip>
       <DropdownMenuContent align="end" className={menuWidth}>
         <DropdownMenuGroup>
           <DropdownMenuLabel>{labels.export}</DropdownMenuLabel>

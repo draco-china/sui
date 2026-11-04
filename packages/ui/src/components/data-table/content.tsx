@@ -644,6 +644,26 @@ export function DataTableContent({
   responsive = true,
 }: DataTableContentProps) {
   const mobile = useIsMobile();
+  const table = useDataTableContext();
+  // A list or card view from the views plugin, when the reader picked one
+  if (table.view !== "table")
+    for (const plugin of table.plugins) {
+      const view = plugin.renderView?.(table.view, table);
+      // The view draws its own surface, so only the layout classes carry over
+      if (view !== undefined)
+        return (
+          <div
+            data-slot="data-table-view"
+            className={cn(
+              "flex min-h-0 flex-col",
+              className,
+              "rounded-none border-0",
+            )}
+          >
+            {view}
+          </div>
+        );
+    }
   if (responsive && mobile) return <CardView className={className} />;
   return <TableView className={className} />;
 }

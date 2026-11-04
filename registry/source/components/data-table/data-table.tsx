@@ -21,6 +21,11 @@ interface DataTableFrameProps {
    */
   readonly chips?: boolean;
   /**
+   * Filters that sit on the toolbar row; past this the first stays and the
+   * rest share one Filters button. Defaults to 2.
+   */
+  readonly maxFilters?: number;
+  /**
    * `fill` takes the parent's height: the table is as tall as its rows up to
    * the space left, then scrolls, and the pagination stays at the bottom.
    * `auto` grows with its rows.
@@ -48,6 +53,7 @@ function DataTableFrame<TData>({
   title,
   toolbar,
   chips,
+  maxFilters,
   layout = "fill",
   responsive = true,
   className,
@@ -74,7 +80,12 @@ function DataTableFrame<TData>({
         {children ?? (
           <>
             <DataTableSlotContent slot="header" />
-            <DataTableToolbar title={title} actions={toolbar} chips={chips} />
+            <DataTableToolbar
+              title={title}
+              actions={toolbar}
+              chips={chips}
+              maxFilters={maxFilters}
+            />
             {/* A few rows keep their own height; the space goes between the
                 table and the pagination rather than into an empty table. */}
             <DataTableContent
@@ -103,6 +114,7 @@ function DataTableWithState<TData>({
   title,
   toolbar,
   chips,
+  maxFilters,
   layout,
   responsive,
   className,
@@ -117,6 +129,7 @@ function DataTableWithState<TData>({
       title={title}
       toolbar={toolbar}
       chips={chips}
+      maxFilters={maxFilters}
       layout={layout}
       responsive={responsive}
       className={className}

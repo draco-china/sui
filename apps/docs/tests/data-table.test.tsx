@@ -13,6 +13,7 @@ import {
   requestSearch,
   sortRows,
   toCsv,
+  views,
   writeUrlState,
 } from "@workspace/ui/components/data-table";
 import {
@@ -382,5 +383,61 @@ describe("filter option text", () => {
 
   test("falls back to the value when a label has no text", () => {
     expect(optionText({ value: "on", label: <span /> })).toBe("on");
+  });
+});
+
+describe("toolbar filters", () => {
+  /** The HTML of the toolbar's filter strip, before its actions. */
+  const strip = (html: string) =>
+    html.slice(
+      html.indexOf('data-slot="data-table-toolbar-filters"'),
+      html.indexOf('data-slot="data-table-toolbar-actions"'),
+    );
+  test("a date range sits on the row without a query form", () => {
+    const html = renderToString(
+      <DataTable rowKey="id" columns={columns} data={rows} />,
+    );
+    expect(strip(html)).toContain('data-slot="date-time-field"');
+  });
+  test("with a query form the date range stays in the form only", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={columns}
+        data={rows}
+        plugins={[queryForm<Row>()]}
+      />,
+    );
+    expect(strip(html)).not.toContain('data-slot="date-time-field"');
+  });
+  test("maxFilters={0} moves every filter behind the Filters button", () => {
+    const html = strip(
+      renderToString(
+        <DataTable rowKey="id" columns={columns} data={rows} maxFilters={0} />,
+      ),
+    );
+    expect(html).toContain(dataTableLabels.moreFilters);
+    expect(html).not.toContain('data-slot="date-time-field"');
+    expect(html).not.toContain(">Status<");
+  });
+});
+
+describe("views", () => {
+  test("defaultView renders on the server, before any restore", () => {
+    const html = renderToString(
+      <DataTable
+        rowKey="id"
+        columns={columns}
+        data={rows}
+        plugins={[
+          views<Row>({
+            defaultView: "grid",
+            grid: (row) => <div>{row.name}</div>,
+          }),
+        ]}
+      />,
+    );
+    expect(html).toContain('data-slot="data-table-grid"');
+    expect(html).toContain('data-slot="data-table-view"');
   });
 });

@@ -1,6 +1,9 @@
 "use client";
 
-import { DatePicker } from "@/components/ui/date-picker";
+import {
+  DatePicker,
+  type DatePickerPreset,
+} from "@/components/ui/date-picker";
 import { formatLocalDate, parseLocalDate } from "@/lib/date-time";
 import { useMemo } from "react";
 import { useDataTableContext } from "@/components/ui/data-table/context";
@@ -14,6 +17,8 @@ interface DateFieldProps {
   readonly label?: string;
   readonly labelledBy?: string;
   readonly className?: string;
+  /** Quick ranges shown beside the calendar (range fields only). */
+  readonly presets?: readonly DatePickerPreset[];
 }
 
 /**
@@ -56,6 +61,7 @@ export function DataTableDateRangeField({
   label,
   labelledBy,
   className,
+  presets,
 }: DateFieldProps) {
   const table = useDataTableContext();
   const { rangeStart, rangeEnd, locale } = table.labels;
@@ -77,6 +83,7 @@ export function DataTableDateRangeField({
       aria-label={label}
       aria-labelledby={labelledBy}
       value={from || to ? { from, to } : undefined}
+      presets={presets}
       onValueChange={(next) => {
         const pair = [next?.from, next?.to].map((date) =>
           date ? formatLocalDate(date, time && {}) : undefined,

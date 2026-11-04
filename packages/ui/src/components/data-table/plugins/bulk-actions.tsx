@@ -117,15 +117,22 @@ function BulkBar<TData>({
           <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto">
             {render(selection.rows, table)}
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full"
-            aria-label={table.labels.clearSelection}
-            onClick={selection.clear}
-          >
-            <X />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full"
+                  aria-label={table.labels.clearSelection}
+                  onClick={selection.clear}
+                />
+              }
+            >
+              <X />
+            </TooltipTrigger>
+            <TooltipContent>{table.labels.clearSelection}</TooltipContent>
+          </Tooltip>
         </motion.div>
       )}
     </AnimatePresence>

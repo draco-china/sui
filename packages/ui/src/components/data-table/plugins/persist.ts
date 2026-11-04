@@ -6,6 +6,7 @@ import type {
   DataTableDensity,
   DataTableInstance,
   DataTablePlugin,
+  DataTableView,
 } from "../types";
 
 export interface PersistOptions {
@@ -17,6 +18,7 @@ export interface PersistOptions {
 interface Stored {
   readonly columns?: DataTableColumnState;
   readonly density?: DataTableDensity;
+  readonly view?: DataTableView;
 }
 
 const browserStorage = () =>
@@ -36,20 +38,26 @@ function usePersist<TData>(
   options: PersistOptions,
 ) {
   const { columnState, density } = table;
+  // Only a table with other views has a choice to keep
+  const view = table.hasPlugin("views") ? table.view : undefined;
   const { key, storage = browserStorage } = options;
   useEffect(() => {
     try {
       storage()?.setItem(
         key,
-        JSON.stringify({ columns: columnState, density } satisfies Stored),
+        JSON.stringify({
+          columns: columnState,
+          density,
+          view,
+        } satisfies Stored),
       );
     } catch {
       // Private browsing or a full quota; the table keeps working unsaved.
     }
-  }, [columnState, density, key, storage]);
+  }, [columnState, density, view, key, storage]);
 }
 
-/** Remembers column visibility, order, pinning, widths and density. */
+/** Remembers column visibility, order, pinning, widths, density and view. */
 export function persist<TData>(
   options: PersistOptions,
 ): DataTablePlugin<TData> {
@@ -57,6 +65,7 @@ export function persist<TData>(
     name: "persist",
     initialColumnState: () => read(options).columns,
     initialDensity: () => read(options).density,
+    initialView: () => read(options).view,
     setup: (table) => usePersist(table, options),
   };
 }

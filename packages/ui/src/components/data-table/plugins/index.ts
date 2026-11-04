@@ -24,6 +24,7 @@ export {
   urlSync,
   writeUrlState,
 } from "./url-sync";
+export { type ViewsOptions, views } from "./views";
 export { type VirtualOptions, virtual } from "./virtual";
 
 export interface ProPluginsOptions {

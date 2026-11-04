@@ -30,9 +30,13 @@ export function DataTablePagination({ className }: { className?: string }) {
         pageNumber: labels.pageNumber,
         pageSize: labels.pageSize,
       }}
-      className={cn("flex-wrap gap-y-2", className)}
+      // Phones: the count and page size, then the pages below, all centred
+      className={cn(
+        "flex-wrap justify-center gap-y-2 sm:justify-between",
+        className,
+      )}
     >
-      <PaginationInfo className="min-w-0 flex-1">
+      <PaginationInfo className="min-w-0 sm:flex-1">
         {total === undefined
           ? labels.pageRows(table.rows.length)
           : labels.total(total)}

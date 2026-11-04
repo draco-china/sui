@@ -12,24 +12,38 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "cn";
-import { CirclePlus, Search, X } from "lucide-react";
+import { ChevronDown, CirclePlus, Filter, Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 import { formatValue, optionText } from "@/components/ui/data-table/columns";
 import { useDataTableContext } from "@/components/ui/data-table/context";
+import { DataTableDateRangeField } from "@/components/ui/data-table/date-field";
 import { isEmptyValue } from "@/components/ui/data-table/engine";
-import { menuLabel, menuPanel, menuWidth } from "@/components/ui/data-table/menu";
+import { DataTableIconTooltip } from "@/components/ui/data-table/icon-tooltip";
+import { menuLabel, menuPanel, menuWidth, panelList } from "@/components/ui/data-table/menu";
 import type {
   DataTableInstance,
   DataTableOption,
@@ -37,6 +51,7 @@ import type {
   NormalizedColumn,
 } from "@/components/ui/data-table/types";
 
+/** The plain text of an element tree, such as a label passed as a badge. */
 /** Renders every plugin's content for a slot. */
 export function DataTableSlotContent({ slot }: { slot: DataTableSlot }) {
   const table = useDataTableContext();
@@ -76,7 +91,10 @@ export function DataTableSearch({
     return () => clearTimeout(timer);
   }, [value, delay, setKeyword]);
   return (
-    <InputGroup className={cn("h-8 w-full sm:w-64", className)}>
+    <InputGroup
+      // On phones it gives way (down to min-w-24) so the row keeps 筛选 and the actions
+      className={cn("h-8 w-40 min-w-24 sm:w-64 sm:shrink-0", className)}
+    >
       <InputGroupAddon>
         <Search />
       </InputGroupAddon>
@@ -118,11 +136,11 @@ export function DataTableOptionList({
 }) {
   const table = useDataTableContext();
   return (
-    <Command className="rounded-none bg-transparent p-0">
+    <Command className="rounded-none bg-transparent p-0 [&_[data-slot=command-input-wrapper]]:px-0">
       {options.length > 7 && (
         <CommandInput placeholder={table.labels.optionSearch} />
       )}
-      <CommandList>
+      <CommandList className={panelList}>
         <CommandEmpty>{table.labels.noOptions}</CommandEmpty>
         <CommandGroup>
           {options.map((option) => {
@@ -218,6 +236,332 @@ export function DataTableFacetedFilter({
         />
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** A date range filter on the toolbar row, as wide as the search box. */
+export function DataTableRangeFilter({ column: columnId }: { column: string }) {
+  const table = useDataTableContext();
+  const column = table.columns.find((entry) => entry.id === columnId);
+  if (!column) return null;
+  const { [columnId]: _current, ...others } = table.state.query.search;
+  return (
+    <DataTableDateRangeField
+      label={column.titleText}
+      time={column.search?.type === "datetimeRange"}
+      presets={column.search?.presets}
+      className="h-8 w-40 shrink-0 sm:w-64"
+      value={table.state.query.search[columnId]}
+      onChange={(next) =>
+        table.setSearch(
+          next === undefined ? others : { ...others, [columnId]: next },
+        )
+      }
+    />
+  );
+}
+
+/** Columns whose search config is a date range: rows of the 筛选 panel. */
+export function isRangeColumn(column: NormalizedColumn<unknown>) {
+  return (
+    column.search?.type === "dateRange" ||
+    column.search?.type === "datetimeRange"
+  );
+}
+
+/**
+ * The filters that do not fit on the toolbar row, behind one button: quick
+ * filters past the first few and date ranges, one labelled row each,
+ * applied together with Apply.
+ */
+export function DataTableMoreFilters({
+  columns: columnIds,
+}: {
+  columns: readonly string[];
+}) {
+  const table = useDataTableContext();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<Record<string, unknown>>({});
+  const columns = columnIds.flatMap((id) => {
+    const column = table.columns.find((entry) => entry.id === id);
+    return column ? [column] : [];
+  });
+  const { filters, search } = table.state.query;
+  const current = (column: NormalizedColumn<unknown>) =>
+    isRangeColumn(column) ? search[column.id] : (filters[column.id] ?? []);
+  const applied = columns.filter(
+    (column) => !isEmptyValue(current(column)),
+  ).length;
+  const apply = () => {
+    table.setState((state) => {
+      const nextFilters = { ...state.query.filters };
+      const nextSearch = { ...state.query.search };
+      for (const column of columns) {
+        const value = draft[column.id];
+        if (isRangeColumn(column)) {
+          if (isEmptyValue(value)) delete nextSearch[column.id];
+          else nextSearch[column.id] = value;
+        } else nextFilters[column.id] = [...((value as string[]) ?? [])];
+      }
+      return {
+        ...state,
+        page: 1,
+        query: { ...state.query, filters: nextFilters, search: nextSearch },
+      };
+    });
+    setOpen(false);
+  };
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (next)
+          setDraft(
+            Object.fromEntries(
+              columns.map((column) => [column.id, current(column)]),
+            ),
+          );
+        setOpen(next);
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 border-dashed px-2.5 sm:px-3"
+          />
+        }
+      >
+        <Filter />
+        {/* Icon only on phones; the name stays for screen readers */}
+        <span className="sr-only sm:not-sr-only">
+          {table.labels.moreFilters}
+        </span>
+        {applied > 0 && (
+          <Badge variant="secondary" className="ms-1">
+            {applied}
+          </Badge>
+        )}
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        // A date range needs room for both of its dates.
+        className={cn(
+          columns.some(isRangeColumn)
+            ? "w-[min(30rem,calc(100vw-2rem))]"
+            : "w-80",
+          menuPanel,
+        )}
+      >
+        <div className={menuLabel}>{table.labels.moreFilters}</div>
+        <form
+          className="space-y-3 px-3 pt-2 pb-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            apply();
+          }}
+        >
+          <DataTableFilterFields
+            idPrefix="more-filter"
+            columns={columns}
+            value={draft}
+            onChange={(id, next) =>
+              setDraft((values) => ({ ...values, [id]: next }))
+            }
+          />
+          {/* As SUI's query form and advanced filter: Reset, then Apply. */}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setDraft(
+                  Object.fromEntries(
+                    columns.map((column) => [
+                      column.id,
+                      isRangeColumn(column) ? undefined : [],
+                    ]),
+                  ),
+                )
+              }
+            >
+              {table.labels.reset}
+            </Button>
+            <Button type="submit" size="sm">
+              {table.labels.applyFilter}
+            </Button>
+          </div>
+        </form>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/**
+ * Conditions in a filter panel, one row each: the label beside a date range
+ * or a dropdown of checkable options.
+ */
+export function DataTableFilterFields({
+  idPrefix,
+  columns,
+  value,
+  onChange,
+}: {
+  idPrefix: string;
+  columns: readonly NormalizedColumn<unknown>[];
+  value: Record<string, unknown>;
+  onChange: (column: string, value: unknown) => void;
+}) {
+  return (
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2">
+      {columns.map((column) => {
+        const id = `${idPrefix}-${column.id}`;
+        return (
+          <Fragment key={column.id}>
+            <Label htmlFor={id} className="font-normal text-muted-foreground">
+              {column.title}
+            </Label>
+            {isRangeColumn(column) ? (
+              <DataTableDateRangeField
+                id={id}
+                label={column.titleText}
+                time={column.search?.type === "datetimeRange"}
+                presets={column.search?.presets}
+                className="h-8 w-full"
+                value={value[column.id]}
+                onChange={(next) => onChange(column.id, next)}
+              />
+            ) : (
+              <DataTableOptionSelect
+                id={id}
+                options={column.valueEnum ?? []}
+                value={(value[column.id] as readonly string[]) ?? []}
+                onChange={(next) => onChange(column.id, next)}
+              />
+            )}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A filter condition's dropdown of checkable options. */
+export function DataTableOptionSelect({
+  id,
+  options,
+  value,
+  onChange,
+}: {
+  id: string;
+  options: readonly DataTableOption[];
+  value: readonly string[];
+  onChange: (value: string[]) => void;
+}) {
+  const table = useDataTableContext();
+  const selected = options.filter((option) => value.includes(option.value));
+  // Chosen values sit side by side; past two, a count as on the quick filters.
+  let summary: ReactNode = table.labels.any;
+  if (selected.length > 2) summary = table.labels.selected(selected.length);
+  else if (selected.length)
+    summary = selected.map((option) => (
+      <span key={option.value} className="truncate">
+        {optionText(option)}
+      </span>
+    ));
+  return (
+    <DropdownMenu>
+      {/* Drawn as SUI's small SelectTrigger, like the other panel fields. */}
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            id={id}
+            className="flex h-8 w-full items-center justify-between gap-1.5 whitespace-nowrap rounded-3xl border border-transparent bg-input/50 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+          />
+        }
+      >
+        <span
+          className={cn(
+            "flex min-w-0 items-center gap-2 overflow-hidden",
+            !selected.length && "text-muted-foreground",
+          )}
+        >
+          {summary}
+        </span>
+        <ChevronDown className="opacity-50" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="max-h-72 w-(--anchor-width) overflow-auto">
+        {options.map((option) => (
+          <DropdownMenuCheckboxItem
+            key={option.value}
+            checked={value.includes(option.value)}
+            closeOnClick={false}
+            onCheckedChange={(checked) =>
+              onChange(
+                checked
+                  ? [...value, option.value]
+                  : value.filter((item) => item !== option.value),
+              )
+            }
+          >
+            {optionText(option)}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * A single choice for the right of the toolbar (a unit, a period, the sort
+ * order), drawn like SUI's own toolbar buttons: an icon that opens a menu.
+ */
+export function DataTableChoiceMenu<TValue extends string>({
+  icon,
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: TValue;
+  options: readonly { value: TValue; label: ReactNode }[];
+  onChange: (value: TValue) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DataTableIconTooltip
+        label={label}
+        render={
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon-sm" aria-label={label} />
+            }
+          />
+        }
+      >
+        {icon}
+      </DataTableIconTooltip>
+      <DropdownMenuContent align="end" className={menuWidth}>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{label}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={value}
+            onValueChange={(next) => onChange(next as TValue)}
+          >
+            {options.map((option) => (
+              <DropdownMenuRadioItem key={option.value} value={option.value}>
+                {option.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -364,9 +708,17 @@ export function DataTableFilterChips({ className }: { className?: string }) {
   );
 }
 
+/** Below `sm`, where the toolbar row has room for little beside the search. */
+function useNarrow() {
+  return !!useMediaQuery("(max-width: 639px)");
+}
+
 /**
  * The toolbar row. Without children it shows keyword search and quick
  * filters from the column configuration, plugin controls, and `actions`.
+ * It never wraps: past `maxFilters` filters the first stays and the rest
+ * share one 筛选 button, and when space still runs out the search and filters
+ * scroll sideways while the actions stay at the end.
  * Each control shows and clears its own value, so active conditions get one
  * clear-all button on the row rather than a row of chips; `chips` brings the
  * chip row back.
@@ -375,48 +727,91 @@ export function DataTableToolbar({
   title,
   actions,
   chips = false,
+  maxFilters = 2,
   children,
   className,
 }: {
   title?: ReactNode;
   actions?: ReactNode;
+  /**
+   * Filters on the row (date ranges and quick filters): past this the first
+   * stays and the rest share one 筛选 button.
+   */
+  maxFilters?: number;
   /** Lists active conditions as removable chips below the row. */
   chips?: boolean;
   children?: ReactNode;
   className?: string;
 }) {
   const table = useDataTableContext();
-  // The chip row carries its own clear-all button.
-  const clearable = !chips && activeChips(table).length > 0;
+  // The chip row carries its own clear-all button; on phones the 筛选 and
+  // 高级筛选 panels' Reset does it, as the row has no room.
+  const narrow = useNarrow();
+  const clearable = !chips && !narrow && activeChips(table).length > 0;
   const keyword =
     !table.hasPlugin("queryForm") &&
     table.columns.some((column) => column.keyword);
-  const filters = table.columns.filter((column) => column.filter);
+  // Date ranges first, then quick filters. Up to `maxFilters` of them sit on
+  // the row; past that the first stays and the rest share one 筛选 button.
+  // The query form already holds the search fields, date ranges among them.
+  const items = [
+    ...(table.hasPlugin("queryForm")
+      ? []
+      : table.columns.filter(isRangeColumn)),
+    ...table.columns.filter((column) => column.filter),
+  ];
+  // On phones the row keeps the search: every filter waits in 筛选.
+  const inline = narrow ? [] : items;
+  const limit = Math.max(0, Math.floor(maxFilters));
+  const shown =
+    inline.length > limit ? inline.slice(0, Math.max(0, limit - 1)) : inline;
+  const more = items.filter((column) => !shown.includes(column));
   return (
     <div data-slot="data-table-toolbar" className={cn("space-y-2", className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        {title && <div className="me-2 font-semibold text-base">{title}</div>}
-        {children ?? (
-          <>
-            {keyword && <DataTableSearch />}
-            {filters.map((column) => (
-              <DataTableFacetedFilter key={column.id} column={column.id} />
-            ))}
-            <DataTableSlotContent slot="toolbarStart" />
-          </>
+      <div className="flex items-center gap-2">
+        {title && (
+          <div className="me-2 shrink-0 font-semibold text-base">{title}</div>
         )}
-        {clearable && (
-          <Button
-            data-slot="data-table-clear-filters"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground"
-            onClick={table.resetQuery}
-          >
-            {table.labels.clearFilters}
-          </Button>
-        )}
-        <div className="ms-auto flex items-center gap-1.5">
+        {/* Padding keeps focus rings inside the scrolling strip. */}
+        <div
+          data-slot="data-table-toolbar-filters"
+          className="-m-1 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {children ?? (
+            <>
+              {keyword && <DataTableSearch />}
+              <DataTableSlotContent slot="toolbarSearch" />
+              {shown.map((column) =>
+                isRangeColumn(column) ? (
+                  <DataTableRangeFilter key={column.id} column={column.id} />
+                ) : (
+                  <DataTableFacetedFilter key={column.id} column={column.id} />
+                ),
+              )}
+              {more.length > 0 && (
+                <DataTableMoreFilters
+                  columns={more.map((column) => column.id)}
+                />
+              )}
+              <DataTableSlotContent slot="toolbarStart" />
+            </>
+          )}
+          {clearable && (
+            <Button
+              data-slot="data-table-clear-filters"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={table.resetQuery}
+            >
+              {table.labels.clearFilters}
+            </Button>
+          )}
+        </div>
+        <div
+          data-slot="data-table-toolbar-actions"
+          className="flex shrink-0 items-center gap-1.5"
+        >
           {actions}
           <DataTableSlotContent slot="toolbarEnd" />
         </div>

@@ -11,6 +11,8 @@ export const examples = {
   "data-table-fill-few-rows": () =>
     import("./variants/data-table-fill-few-rows"),
   "data-table-local": () => import("./variants/data-table-local"),
+  "data-table-toolbar": () => import("./variants/data-table-toolbar"),
+  "data-table-views": () => import("./variants/data-table-views"),
   "data-table-value-types": () => import("./variants/data-table-value-types"),
   "data-table-query-form": () => import("./variants/data-table-query-form"),
   "data-table-advanced-filter": () =>
@@ -653,6 +655,8 @@ export const sourceFiles = {
   "data-table-fill-few-rows": () =>
     import("./variants/data-table-fill-few-rows.tsx?raw"),
   "data-table-local": () => import("./variants/data-table-local.tsx?raw"),
+  "data-table-toolbar": () => import("./variants/data-table-toolbar.tsx?raw"),
+  "data-table-views": () => import("./variants/data-table-views.tsx?raw"),
   "data-table-value-types": () =>
     import("./variants/data-table-value-types.tsx?raw"),
   "data-table-query-form": () =>

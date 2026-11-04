@@ -2073,6 +2073,11 @@
           "target": "@ui/data-table/engine.ts"
         },
         {
+          "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/icon-tooltip.tsx"
+        },
+        {
           "path": "packages/ui/src/components/data-table/labels.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/labels.ts"
@@ -2136,6 +2141,11 @@
           "path": "packages/ui/src/components/data-table/plugins/url-sync.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/url-sync.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/plugins/views.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/views.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/plugins/virtual.ts",
@@ -10580,6 +10590,11 @@
           "target": "@ui/data-table/engine.ts"
         },
         {
+          "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/icon-tooltip.tsx"
+        },
+        {
           "path": "packages/ui/src/components/data-table/labels.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/labels.ts"
@@ -10643,6 +10658,11 @@
           "path": "packages/ui/src/components/data-table/plugins/url-sync.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/url-sync.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/plugins/views.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/views.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/plugins/virtual.ts",
@@ -11276,6 +11296,7 @@
           "@/components/ui/data-table/data-table",
           "@/components/ui/data-table/date-field",
           "@/components/ui/data-table/engine",
+          "@/components/ui/data-table/icon-tooltip",
           "@/components/ui/data-table/labels",
           "@/components/ui/data-table/menu",
           "@/components/ui/data-table/pagination",
@@ -11289,6 +11310,7 @@
           "@/components/ui/data-table/plugins/query-form",
           "@/components/ui/data-table/plugins/toolbar-buttons",
           "@/components/ui/data-table/plugins/url-sync",
+          "@/components/ui/data-table/plugins/views",
           "@/components/ui/data-table/plugins/virtual",
           "@/components/ui/data-table/toolbar",
           "@/components/ui/data-table/types",

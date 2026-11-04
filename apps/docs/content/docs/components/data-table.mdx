@@ -56,6 +56,10 @@ Requests are cancelled when parameters change, so late responses never replace n
 
 Columns with `keyword` share the toolbar search box. Enum columns get quick filters with option counts. Features beyond the core are plugins: `density()`, `columnSettings()` (visibility, drag ordering, pinning and header-edge width handles) and `exportCsv()` (current page, every match, or the selection).
 
+The toolbar stays on one row. The search box and filters scroll sideways and the actions stay at the end. Date range columns sit on the row next to the quick filters, with `search.presets` for quick ranges such as the last seven days. Past `maxFilters` (2 by default), the first filter stays and the rest share one Filters button (`DataTableMoreFilters`), applied together. On phones only the search box stays on the row. The `toolbarSearch` slot adds inputs right after the search box, and `DataTableChoiceMenu` is an icon button with a single-choice menu for toolbar options.
+
+<ComponentPreview name="data-table-toolbar" align="start" />
+
 <ComponentPreview name="data-table-local" align="start" />
 
 ## Value types
@@ -122,6 +126,12 @@ On narrow screens rows become cards. Mark the heading column with `primary`, or 
 
 <ComponentPreview name="data-table-composition" align="start" />
 
+## Views [#views]
+
+`views({ grid, list, defaultView, onOpen })` lets readers switch the rows between the table, a list built from the columns, and a grid of cards when `grid` renders a row as a card. `persist` remembers the view a reader picked. Plugins can render views of their own with `renderView`, and the table exposes `view` and `setView()`.
+
+<ComponentPreview name="data-table-views" align="start" />
+
 ## URL sync and persistence
 
 `urlSync({ prefix })` keeps pagination, sorting, keyword, query form values, quick filters and advanced rules in the address bar with `history.replaceState`, without a router dependency. `persist({ key })` remembers column visibility, order, pinning, widths and density. `proPlugins()` combines the query form, advanced filter, reload, density, column settings, CSV export and URL sync.
@@ -144,9 +154,10 @@ A plugin is an object with a `name` and any of these hooks into the core:
 
 | Field | Purpose |
 | --- | --- |
-| `slots` | Render into `header`, `toolbarStart`, `toolbarEnd` or `floating` |
+| `slots` | Render into `header`, `toolbarStart`, `toolbarSearch`, `toolbarEnd` or `floating` |
 | `columns` | Add utility columns, such as checkboxes or handles |
 | `features` | Turn on `virtual`, `dragSort`, `expandable` or `resizable` |
+| `defaultView`, `initialView`, `renderView` | The starting view, a view restored for the reader (it wins over `defaultView`), or the rows in a view other than the table |
 | `initialState`, `initialColumnState`, `initialDensity` | Restore state before the first request |
 | `setup` | Runs as a hook in its own component, for effects such as syncing |
 | `wrapBody`, `renderRow`, `renderAfterRow` | Wrap or extend rows |
@@ -169,6 +180,7 @@ English is the default. Pass `labels={dataTableLabelsZhCN}` for Chinese, or over
 | `initialState` | Initial `page`, `pageSize`, `sort` and `query`. |
 | `onStateChange` | Called with the state after each change. |
 | `title`, `toolbar` | Toolbar heading and actions. |
+| `maxFilters` | Filters on the toolbar row before the rest share a Filters button; defaults to `2`. |
 | `chips` | `false` (default); `true` lists active conditions as removable chips below the toolbar. |
 | `layout` | `fill` (default) or `auto`. |
 | `responsive` | Cards on narrow screens; defaults to `true`. |

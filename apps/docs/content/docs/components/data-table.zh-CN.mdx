@@ -56,6 +56,10 @@ const columns: DataTableColumn<User>[] = [
 
 带 `keyword` 的列共用工具栏搜索框；枚举列自动生成带计数的快速筛选。核心之外的功能都是插件：`density()` 切换密度，`columnSettings()` 提供列显隐、拖拽排序、固定列以及表头边缘的列宽拖拽，`exportCsv()` 导出当前页、全部匹配结果或选中行。
 
+工具栏始终保持一行：搜索框和筛选项可以横向滚动，操作按钮固定在末尾。日期范围列和快速筛选并排放在这一行，`search.presets` 提供最近七天这类快捷范围。筛选项超过 `maxFilters`（默认 2）时，第一个留在行内，其余收进一个「筛选」按钮（`DataTableMoreFilters`），一起应用。手机上这一行只保留搜索框。`toolbarSearch` 插槽可以在搜索框后面加输入控件，`DataTableChoiceMenu` 是带单选菜单的图标按钮，用于工具栏选项。
+
+<ComponentPreview name="data-table-toolbar" align="start" />
+
 <ComponentPreview name="data-table-local" align="start" />
 
 ## 值类型 [#value-types]
@@ -122,6 +126,12 @@ const columns: DataTableColumn<User>[] = [
 
 <ComponentPreview name="data-table-composition" align="start" />
 
+## 视图 [#views]
+
+`views({ grid, list, defaultView, onOpen })` 让用户在表格、按列生成的列表和卡片网格之间切换；卡片网格需要 `grid` 把一行渲染成卡片。`persist` 会记住用户选过的视图。插件可以用 `renderView` 渲染自己的视图，表格实例提供 `view` 和 `setView()`。
+
+<ComponentPreview name="data-table-views" align="start" />
+
 ## URL 同步与持久化 [#url-sync-and-persistence]
 
 `urlSync({ prefix })` 通过 `history.replaceState` 将分页、排序、关键字、查询表单、快速筛选和高级筛选同步到地址栏，不依赖路由库。`persist({ key })` 记住列显隐、顺序、固定、列宽和密度。`proPlugins()` 一次启用查询表单、高级筛选、刷新、密度、列设置、CSV 导出和 URL 同步。
@@ -144,9 +154,10 @@ const columns: DataTableColumn<User>[] = [
 
 | 字段 | 用途 |
 | --- | --- |
-| `slots` | 渲染到 `header`、`toolbarStart`、`toolbarEnd` 或 `floating` |
+| `slots` | 渲染到 `header`、`toolbarStart`、`toolbarSearch`、`toolbarEnd` 或 `floating` |
 | `columns` | 添加工具列，如复选框或拖拽手柄 |
 | `features` | 开启 `virtual`、`dragSort`、`expandable` 或 `resizable` |
+| `defaultView`、`initialView`、`renderView` | 初始视图、为用户恢复的视图（优先于 `defaultView`），或在表格以外的视图里渲染行 |
 | `initialState`、`initialColumnState`、`initialDensity` | 在首次请求前恢复状态 |
 | `setup` | 在独立组件中以 hook 方式运行，用于同步等副作用 |
 | `wrapBody`、`renderRow`、`renderAfterRow` | 包裹或扩展行 |
@@ -169,6 +180,7 @@ const columns: DataTableColumn<User>[] = [
 | `initialState` | 初始 `page`、`pageSize`、`sort` 和 `query`。 |
 | `onStateChange` | 每次状态变化后调用。 |
 | `title`、`toolbar` | 工具栏标题和操作按钮。 |
+| `maxFilters` | 工具栏行内最多放几个筛选项，其余收进「筛选」按钮；默认 `2`。 |
 | `chips` | 默认 `false`；`true` 在工具栏下方列出可单独移除的条件标签。 |
 | `layout` | `fill`（默认）或 `auto`。 |
 | `responsive` | 窄屏显示为卡片，默认 `true`。 |

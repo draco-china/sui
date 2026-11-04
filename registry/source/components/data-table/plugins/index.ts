@@ -24,6 +24,7 @@ export {
   urlSync,
   writeUrlState,
 } from "@/components/ui/data-table/plugins/url-sync";
+export { type ViewsOptions, views } from "@/components/ui/data-table/plugins/views";
 export { type VirtualOptions, virtual } from "@/components/ui/data-table/plugins/virtual";
 
 export interface ProPluginsOptions {

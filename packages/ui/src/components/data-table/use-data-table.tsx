@@ -31,6 +31,7 @@ import type {
   DataTableRowSelection,
   DataTableSelection,
   DataTableState,
+  DataTableView,
   NormalizedColumn,
 } from "./types";
 
@@ -145,6 +146,7 @@ function restoredState<TData>(plugins: readonly DataTablePlugin<TData>[]) {
       ...plugins.map((plugin) => plugin.initialColumnState?.()),
     ) as Partial<DataTableColumnState>,
     density: plugins.map((plugin) => plugin.initialDensity?.()).find(Boolean),
+    view: plugins.map((plugin) => plugin.initialView?.()).find(Boolean),
   };
 }
 
@@ -310,6 +312,12 @@ export function useDataTable<TData>(
   const [density, setDensity] = useState<DataTableDensity>(
     () => restored?.density ?? defaultDensity,
   );
+  const [view, setView] = useState<DataTableView>(
+    () =>
+      restored?.view ??
+      plugins.map((plugin) => plugin.defaultView).find(Boolean) ??
+      "table",
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: restores once, from the options of the hydrating render.
   useLayoutEffect(() => {
@@ -329,6 +337,7 @@ export function useDataTable<TData>(
     if (Object.keys(late.columns).length > 0)
       setColumnStateValue((current) => ({ ...current, ...late.columns }));
     if (late.density) setDensity(late.density);
+    if (late.view) setView(late.view);
   }, []);
 
   // Drag sorting replaces local rows until the data prop changes.
@@ -406,6 +415,7 @@ export function useDataTable<TData>(
     [state, columns],
   );
   const requestKey = JSON.stringify(requestParams);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: requestKey captures every parameter; reloadToken forces a refetch.
   useEffect(() => {
     if (!remote) return;
@@ -654,6 +664,7 @@ export function useDataTable<TData>(
     state,
     columnState,
     density,
+    view,
     selection,
     labels,
     locale: labels.locale,
@@ -667,6 +678,7 @@ export function useDataTable<TData>(
     setState,
     setColumnState: setColumnStateValue,
     setDensity,
+    setView,
     isExpanded: (id) => expanded.has(id),
     getFacets,
     getAllRows,
