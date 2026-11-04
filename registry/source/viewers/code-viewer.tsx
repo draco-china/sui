@@ -9,6 +9,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { ThemedToken } from "@/lib/highlight/shiki";
+import { type CodeViewerLabels, codeViewerLabels } from "@/components/viewers/code-labels";
 import { ViewerStatus } from "@/components/viewers/shared/status";
 import {
   useHighlightedLines,
@@ -23,21 +24,6 @@ interface CodeLine {
   isFoldable: boolean;
   foldEnd: number;
 }
-
-export type CodeViewerLabels = {
-  copy: string;
-  loading: string;
-  error: string;
-  empty: string;
-  expand: string;
-  collapse: string;
-  writing: string;
-  ready: string;
-  copied: string;
-  copyFailed: string;
-  /** Text of the button that unfolds a folded block. */
-  foldedLines: (count: number) => string;
-};
 
 export interface CodeViewerProps {
   readonly variant?: "default" | "plain";
@@ -54,35 +40,6 @@ export interface CodeViewerProps {
   readonly wrap?: boolean;
   readonly copyable?: boolean;
 }
-
-/** English defaults. Pass overrides or `codeViewerLabelsZhCN` through `labels`. */
-export const codeViewerLabels: CodeViewerLabels = {
-  copy: "Copy code",
-  loading: "Loading...",
-  error: "Unable to highlight code",
-  empty: "No code",
-  expand: "Expand",
-  collapse: "Collapse",
-  writing: "Writing",
-  ready: "Ready",
-  copied: "Copied",
-  copyFailed: "Copy failed",
-  foldedLines: (count) => `${count} ${count === 1 ? "line" : "lines"}`,
-};
-
-export const codeViewerLabelsZhCN: CodeViewerLabels = {
-  copy: "复制代码",
-  loading: "正在加载",
-  error: "无法高亮代码",
-  empty: "没有代码",
-  expand: "展开",
-  collapse: "收起",
-  writing: "正在生成",
-  ready: "就绪",
-  copied: "已复制",
-  copyFailed: "复制失败",
-  foldedLines: (count) => `${count} 行`,
-};
 
 const EMPTY_LINES: number[] = [];
 
@@ -367,3 +324,9 @@ export function CodeViewer({
 
 export type { ShikiProviderProps } from "@/lib/highlight/provider";
 export { ShikiProvider } from "@/lib/highlight/provider";
+
+export {
+  type CodeViewerLabels,
+  codeViewerLabels,
+  codeViewerLabelsZhCN,
+} from "@/components/viewers/code-labels";

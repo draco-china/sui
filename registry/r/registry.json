@@ -8611,6 +8611,11 @@
           "target": "@lib/tick-sound.ts"
         },
         {
+          "path": "packages/ui/src/viewers/code-labels.ts",
+          "type": "registry:component",
+          "target": "@components/viewers/code-labels.ts"
+        },
+        {
           "path": "packages/ui/src/viewers/code-viewer.tsx",
           "type": "registry:component",
           "target": "@components/viewers/code-viewer.tsx"
@@ -8780,6 +8785,11 @@
           "path": "packages/ui/src/lib/tick-sound.ts",
           "type": "registry:lib",
           "target": "@lib/tick-sound.ts"
+        },
+        {
+          "path": "packages/ui/src/viewers/diff-labels.ts",
+          "type": "registry:component",
+          "target": "@components/viewers/diff-labels.ts"
         },
         {
           "path": "packages/ui/src/viewers/diff-viewer.tsx",
@@ -9031,6 +9041,11 @@
           "path": "packages/ui/src/lib/tick-sound.ts",
           "type": "registry:lib",
           "target": "@lib/tick-sound.ts"
+        },
+        {
+          "path": "packages/ui/src/viewers/code-labels.ts",
+          "type": "registry:component",
+          "target": "@components/viewers/code-labels.ts"
         },
         {
           "path": "packages/ui/src/viewers/code-viewer.tsx",
@@ -9477,6 +9492,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9553,6 +9573,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9588,6 +9613,11 @@
           "path": "packages/ui/src/charts/chart.tsx",
           "type": "registry:component",
           "target": "@components/charts/chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9664,6 +9694,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9740,6 +9775,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9811,6 +9851,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9882,6 +9927,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -9953,6 +10003,11 @@
           "path": "packages/ui/src/charts/shared/types.ts",
           "type": "registry:component",
           "target": "@components/charts/shared/types.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -10019,6 +10074,11 @@
           "path": "packages/ui/src/charts/sparkline-chart.tsx",
           "type": "registry:component",
           "target": "@components/charts/sparkline-chart.tsx"
+        },
+        {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
         }
       ],
       "meta": {
@@ -11060,6 +11120,11 @@
           "target": "@lib/bottom-sheet.ts"
         },
         {
+          "path": "packages/ui/src/lib/chart-key.ts",
+          "type": "registry:lib",
+          "target": "@lib/chart-key.ts"
+        },
+        {
           "path": "packages/ui/src/lib/color/model.ts",
           "type": "registry:lib",
           "target": "@lib/color/model.ts"
@@ -11170,9 +11235,19 @@
           "target": "@lib/sui/types/worker.d.ts"
         },
         {
+          "path": "packages/ui/src/viewers/code-labels.ts",
+          "type": "registry:component",
+          "target": "@components/viewers/code-labels.ts"
+        },
+        {
           "path": "packages/ui/src/viewers/code-viewer.tsx",
           "type": "registry:component",
           "target": "@components/viewers/code-viewer.tsx"
+        },
+        {
+          "path": "packages/ui/src/viewers/diff-labels.ts",
+          "type": "registry:component",
+          "target": "@components/viewers/diff-labels.ts"
         },
         {
           "path": "packages/ui/src/viewers/diff-viewer.tsx",
@@ -11390,6 +11465,7 @@
           "@/components/layouts/top-nav",
           "@/components/layouts/types",
           "@/lib/bottom-sheet",
+          "@/lib/chart-key",
           "@/lib/color/model",
           "@/lib/date-time-field",
           "@/lib/date-time",
@@ -11412,7 +11488,9 @@
           "@/lib/theme/theme",
           "@/lib/tick-sound",
           "@/lib/sui/types/worker",
+          "@/components/viewers/code-labels",
           "@/components/viewers/code-viewer",
+          "@/components/viewers/diff-labels",
           "@/components/viewers/diff-viewer",
           "@/components/viewers/html-viewer",
           "@/components/viewers/markdown-viewer",

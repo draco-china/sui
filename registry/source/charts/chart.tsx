@@ -4,6 +4,7 @@ import { cn } from "cn";
 import * as React from "react";
 import type { TooltipValueType } from "recharts";
 import * as RechartsPrimitive from "recharts";
+import { chartKey } from "@/lib/chart-key";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -21,18 +22,6 @@ export type ChartConfig = Record<
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   )
 >;
-
-/**
- * Escapes a series key for a CSS custom property name. Letters, digits, `_`,
- * `-` and non-ASCII characters such as Chinese stay as they are; anything
- * else becomes a CSS escape, so distinct keys never share a variable.
- */
-function chartKey(key: string) {
-  return key.replace(
-    /[^\w\u0080-￿-]/g,
-    (char) => `\\${char.charCodeAt(0).toString(16)} `,
-  );
-}
 
 type ChartContextProps = {
   config: ChartConfig;
