@@ -1,3 +1,30 @@
+## [5.4.0](https://github.com/draco-china/sui/compare/v5.3.1...v5.4.0) (2026-11-04)
+
+### Features
+
+* **a11y:** accept the accessible text components hard-coded in English ([053882c](https://github.com/draco-china/sui/commit/053882c3d1868d49ef0b531ec268c59b369ca964))
+* **data-table:** one-row toolbar, more filters menu and row views ([8d55c80](https://github.com/draco-china/sui/commit/8d55c80f49ea3b5b72c4dd732d1fe5fd759d4c68))
+* **lib:** add lazyComponent and stale module reload helpers ([92e801d](https://github.com/draco-china/sui/commit/92e801dce5f124d6385db98884c3a2026696c606))
+* **locale-toggle:** draw the language glyph at 20px with a lighter stroke ([4967755](https://github.com/draco-china/sui/commit/4967755821807f66a5797c3010fb83196af5f343))
+* **section-layout:** add actions and show the sections in a side column ([a60c779](https://github.com/draco-china/sui/commit/a60c779161893639cf23134c74cf19ccd6eda8e8))
+* **tabs:** add a ghost variant without the muted track ([ebfd43b](https://github.com/draco-china/sui/commit/ebfd43be30a80716d7dfdfbfae4ddd99c530d761))
+* **theme:** use the system font stack with Chinese fallbacks ([6b3cb0d](https://github.com/draco-china/sui/commit/6b3cb0da32c72eaa92654c5acbb84926fb711e35))
+
+### Bug Fixes
+
+* **app-header:** size the sidebar trigger like the other icon buttons ([60f744a](https://github.com/draco-china/sui/commit/60f744a7da760f6f6643ed66b87f23b74e2407bd))
+* **checkbox:** show a dash when indeterminate ([3ba6feb](https://github.com/draco-china/sui/commit/3ba6febf1c6ced1c43a57857b4f20c8f3ac956b8))
+* **data-table:** list filter options by their text and skip empty conditions ([149bce8](https://github.com/draco-china/sui/commit/149bce88bba070667a0a17b00fe593284024f84f))
+* **date-picker:** size a range to its dates and hide the strip scrollbar ([b4b043d](https://github.com/draco-china/sui/commit/b4b043d160f7a1009f6bdd98b90217fbf9bb7b56))
+* **glass:** turn glass off under reduced motion too ([8f5aa57](https://github.com/draco-china/sui/commit/8f5aa5737d5b656699142993be1013099cf4919b))
+* **highlight:** load shiki on first use and retry after a failure ([42a3ec5](https://github.com/draco-china/sui/commit/42a3ec504f283e17c9dbc86770050cdabaaaaa51))
+* **locale-toggle:** center the glyph and honour size in select mode ([e580825](https://github.com/draco-china/sui/commit/e58082544449e6bce30330c320a9bc8e5a8fa77b))
+* **registry:** flatten nested CSS so the shadcn CLI keeps each selector ([08dcc20](https://github.com/draco-china/sui/commit/08dcc20839eccccc24b25e58b7c4e82825a7c20b))
+* **sheet:** slide in a sheet that mounts already open ([b497e81](https://github.com/draco-china/sui/commit/b497e81d8435620f7b42734634e8a84946e049e8))
+* **tabs:** reset the line indicator when the orientation changes ([0c34e09](https://github.com/draco-china/sui/commit/0c34e09f0bb3f6125bc3cfd9807c1b4244062e05))
+* **tooltip:** open without delay outside a provider too ([05f322e](https://github.com/draco-china/sui/commit/05f322e8fe7a29f9337f8756f1b58db12f0ce5b3))
+* **ui:** bring components in line with the design rules ([93426a6](https://github.com/draco-china/sui/commit/93426a605907ae5848a5ae0bc7bfd8a87b837fcd))
+
 ## [5.3.1](https://github.com/draco-china/sui/compare/v5.3.0...v5.3.1) (2026-11-02)
 
 ### Bug Fixes
