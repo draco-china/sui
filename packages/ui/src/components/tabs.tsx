@@ -90,6 +90,9 @@ const tabsListVariants = cva(
         default: "rounded-full bg-muted group-data-vertical/tabs:rounded-2xl",
         line: "gap-1 rounded-none bg-transparent",
         segment: "rounded-lg bg-muted p-0.5",
+        /** The pill indicator without the muted track, for side menus. */
+        ghost:
+          "gap-1.5 rounded-full bg-transparent group-data-vertical/tabs:rounded-2xl",
       },
     },
     defaultVariants: { variant: "default" },
@@ -428,7 +431,10 @@ function TabsListImplementation({
         "relative isolate flex w-fit min-w-0 max-w-full shrink-0 self-start rounded-full data-vertical:max-h-full data-vertical:min-h-0 data-vertical:shrink data-vertical:rounded-2xl",
         variant === "segment" && "rounded-lg",
         variant === "line" && "rounded-none",
-        edges.overflow && variant !== "line" && "bg-muted",
+        edges.overflow &&
+          variant !== "line" &&
+          variant !== "ghost" &&
+          "bg-muted",
         wrapperClassName,
       )}
     >
