@@ -1,7 +1,5 @@
-import { createHighlighterCore } from "shiki/core";
-import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import { type BundledLanguage, bundledLanguages } from "shiki/langs";
-import { type BundledTheme, bundledThemes } from "shiki/themes";
+import type { BundledLanguage } from "shiki/langs";
+import type { BundledTheme } from "shiki/themes";
 
 export type { ThemedToken } from "shiki/core";
 export type HighlightThemes = { light: BundledTheme; dark: BundledTheme };
@@ -9,11 +7,32 @@ export const defaultHighlightThemes: HighlightThemes = {
   light: "one-light",
   dark: "one-dark-pro",
 };
-const highlighter = createHighlighterCore({
-  engine: createJavaScriptRegexEngine(),
-  langs: [],
-  themes: [],
-});
+let dependencies: ReturnType<typeof loadDependencies> | undefined;
+async function loadDependencies() {
+  const [core, regex, languages, themes] = await Promise.all([
+    import("shiki/core"),
+    import("shiki/engine/javascript"),
+    import("shiki/langs"),
+    import("shiki/themes"),
+  ]);
+  const instance = await core.createHighlighterCore({
+    engine: regex.createJavaScriptRegexEngine(),
+    langs: [],
+    themes: [],
+  });
+  return {
+    instance,
+    bundledLanguages: languages.bundledLanguages,
+    bundledThemes: themes.bundledThemes,
+  };
+}
+function loadHighlighter() {
+  dependencies ??= loadDependencies().catch((error) => {
+    dependencies = undefined;
+    throw error;
+  });
+  return dependencies;
+}
 const loadedLanguages = new Map<string, Promise<void>>();
 const loadedThemes = new Map<BundledTheme, Promise<void>>();
 export async function getHighlighter(
@@ -21,7 +40,7 @@ export async function getHighlighter(
   theme: "light" | "dark",
   themes: HighlightThemes = defaultHighlightThemes,
 ) {
-  const instance = await highlighter;
+  const { instance, bundledLanguages, bundledThemes } = await loadHighlighter();
   const requested = language.trim().toLowerCase();
   const languageLoader = Object.hasOwn(bundledLanguages, requested)
     ? (
