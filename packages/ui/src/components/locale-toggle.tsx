@@ -27,6 +27,15 @@ import {
   TooltipTrigger,
 } from "./tooltip";
 
+/** The select mode's trigger, sized like Button's icon sizes. */
+const squareSizes = {
+  // The select trigger sets its own height; these win over it
+  "icon-xs": "size-6 data-[size=default]:h-6",
+  "icon-sm": "size-8 data-[size=default]:h-8",
+  icon: "size-9",
+  "icon-lg": "size-10 data-[size=default]:h-10",
+} as const;
+
 type LocaleOption = { value: string; label: string; indicatorPath?: string };
 type LocaleToggleProps = Omit<
   ComponentProps<typeof Button>,
@@ -263,7 +272,10 @@ function LocaleToggle({
                 className={cn(
                   cn(
                     localeToggleVariants({ glass: Boolean(glass) }),
-                    "size-9 justify-center bg-transparent p-0 hover:bg-muted/50 [&>svg:last-child]:hidden",
+                    // SelectTrigger wraps the value in a full-width span, so center inside it
+                    // too, and stay as square as the matching icon button
+                    squareSizes[size as keyof typeof squareSizes] ?? "size-9",
+                    "justify-center bg-transparent p-0 hover:bg-muted/50 [&>span]:justify-center [&>svg:last-child]:hidden",
                     changing && !disabled && "disabled:opacity-100",
                   ),
                   className,
