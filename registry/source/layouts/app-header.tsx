@@ -57,7 +57,8 @@ function AppHeader({
       >
         {sidebarTrigger && (
           <>
-            <SidebarTrigger className="-ms-1" />
+            {/* The header's icon size, as its toggles and actions */}
+            <SidebarTrigger size="icon" className="-ms-1" />
             <Separator
               orientation="vertical"
               className="data-vertical:h-5 data-vertical:self-center"
