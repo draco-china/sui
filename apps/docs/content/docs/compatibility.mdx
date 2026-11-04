@@ -19,6 +19,10 @@ Components that render text for assistive technology also default to English and
 
 CodeViewer and DiffViewer can still show and copy raw content if syntax highlighting fails. The code editor and viewers share the Shiki-based highlighting infrastructure.
 
+## Lazy loading [#lazy-loading]
+
+`lazyComponent(() => import("./heavy"))` from `lib/lazy-component` wraps a heavy component (an editor, a chart, a viewer) in `React.lazy` and `Suspense` with an optional `fallback` prop. Unlike plain `React.lazy`, a failed load is not kept, so the next render, such as an error boundary's retry, loads again. `lib/stale-module` pairs with it after a release: `isStaleModuleError(error)` recognises a chunk that no longer exists, and `reloadForStaleModule()` reloads the page once a minute at most to pick up the new files. Viewer labels live in `viewers/code-labels` and `viewers/diff-labels`, and `chartKey` in `lib/chart-key`, so a lazy wrapper can import them without loading the heavy module.
+
 ## Browser features [#browser-features]
 
 | Feature | Application consideration |

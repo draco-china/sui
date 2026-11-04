@@ -11210,9 +11210,19 @@
           "target": "@lib/highlight/shiki.ts"
         },
         {
+          "path": "packages/ui/src/lib/lazy-component.tsx",
+          "type": "registry:lib",
+          "target": "@lib/lazy-component.tsx"
+        },
+        {
           "path": "packages/ui/src/lib/qr-code/finder.ts",
           "type": "registry:lib",
           "target": "@lib/qr-code/finder.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/stale-module.ts",
+          "type": "registry:lib",
+          "target": "@lib/stale-module.ts"
         },
         {
           "path": "packages/ui/src/lib/theme/palette.ts",
@@ -11483,7 +11493,9 @@
           "@/lib/haptics",
           "@/lib/highlight/provider",
           "@/lib/highlight/shiki",
+          "@/lib/lazy-component",
           "@/lib/qr-code/finder",
+          "@/lib/stale-module",
           "@/lib/theme/palette",
           "@/lib/theme/theme",
           "@/lib/tick-sound",

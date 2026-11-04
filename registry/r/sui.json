@@ -1142,10 +1142,22 @@
       "target": "@lib/highlight/shiki.ts"
     },
     {
+      "path": "packages/ui/src/lib/lazy-component.tsx",
+      "content": "\"use client\";\n\nimport { type ComponentType, lazy, type ReactNode, Suspense } from \"react\";\n\n/**\n * Heavy modules are requested only on render. Labels and fallback UI belong\n * to the app. A failed load is not kept: React's `lazy` would rethrow it on\n * every render, so the next render (an error page's retry) loads again.\n */\nexport function lazyComponent<P extends object>(\n  load: () => Promise<{ default: ComponentType<P> }>,\n) {\n  const create = (): ComponentType<P> =>\n    lazy(() =>\n      load().catch((error: unknown) => {\n        Component = create();\n        throw error;\n      }),\n    );\n  let Component = create();\n  return function LazyComponent(props: P & { fallback?: ReactNode }) {\n    const { fallback = null, ...rest } = props;\n    return (\n      <Suspense fallback={fallback}>\n        <Component {...(rest as P)} />\n      </Suspense>\n    );\n  };\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/lazy-component.tsx"
+    },
+    {
       "path": "packages/ui/src/lib/qr-code/finder.ts",
       "content": "export function applyQRCodeFinderGeometry(svg: SVGElement) {\n  let moduleSize = 12;\n  for (const rect of svg.querySelectorAll<SVGRectElement>(\n    'clipPath[id*=\"corners-dot\"] rect',\n  )) {\n    moduleSize = Number(rect.getAttribute(\"width\")) / 3;\n    const radius = moduleSize / 2;\n    rect.setAttribute(\"rx\", String(radius));\n    rect.setAttribute(\"ry\", String(radius));\n  }\n  return moduleSize;\n}\n",
       "type": "registry:lib",
       "target": "@lib/qr-code/finder.ts"
+    },
+    {
+      "path": "packages/ui/src/lib/stale-module.ts",
+      "content": "/**\n * A lazily loaded module that could not be fetched because the files changed\n * under the open page: a new release replaced them, or the dev server\n * re-bundled its dependencies.\n */\nexport function isStaleModuleError(error: unknown) {\n  const message = error instanceof Error ? error.message : String(error ?? \"\");\n  return /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(\n    message,\n  );\n}\n\nconst reloadedAt = \"sui:stale-module-reload\";\n\n/**\n * Reloads the page once to pick up the current files. Returns `false`, and\n * leaves the error showing, when it already reloaded in the last minute.\n */\nexport function reloadForStaleModule() {\n  try {\n    const last = Number(sessionStorage.getItem(reloadedAt) ?? 0);\n    if (Date.now() - last < 60_000) return false;\n    sessionStorage.setItem(reloadedAt, String(Date.now()));\n  } catch {\n    return false;\n  }\n  window.location.reload();\n  return true;\n}\n",
+      "type": "registry:lib",
+      "target": "@lib/stale-module.ts"
     },
     {
       "path": "packages/ui/src/lib/theme/palette.ts",
@@ -2204,7 +2216,9 @@
       "@/lib/haptics",
       "@/lib/highlight/provider",
       "@/lib/highlight/shiki",
+      "@/lib/lazy-component",
       "@/lib/qr-code/finder",
+      "@/lib/stale-module",
       "@/lib/theme/palette",
       "@/lib/theme/theme",
       "@/lib/tick-sound",

@@ -64,6 +64,7 @@
     "./lib/*": "./src/lib/*.ts",
     "./lib/glass/with-glass": "./src/lib/glass/with-glass.tsx",
     "./lib/date-time-field": "./src/lib/date-time-field.tsx",
+    "./lib/lazy-component": "./src/lib/lazy-component.tsx",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./themes/*.css": "./src/styles/themes/*.css",
@@ -72,6 +73,8 @@
     "./blocks/data-table/url-state": "./src/blocks/data-table/url-state.ts",
     "./layouts/*": "./src/layouts/*.tsx",
     "./viewers/*": "./src/viewers/*.tsx",
+    "./viewers/code-labels": "./src/viewers/code-labels.ts",
+    "./viewers/diff-labels": "./src/viewers/diff-labels.ts",
     "./chat/*": "./src/chat/*.tsx",
     "./charts/*": "./src/charts/*.tsx",
     "./layouts/types": "./src/layouts/types.ts"

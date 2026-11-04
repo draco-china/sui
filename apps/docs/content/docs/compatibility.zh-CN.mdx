@@ -19,6 +19,10 @@ SUI 使用 React 19、Tailwind CSS 4 和 Base UI 基础交互。源码安装复�
 
 高亮失败时，CodeViewer 和 DiffViewer 仍可展示并复制原始内容。编辑器与 Viewer 复用基于 Shiki 的高亮基础。
 
+## 懒加载 [#lazy-loading]
+
+`lib/lazy-component` 提供 `lazyComponent(() => import("./heavy"))`，用 `React.lazy` 和 `Suspense` 包起编辑器、图表、查看器这类重型组件，并支持可选的 `fallback` 属性。和直接用 `React.lazy` 不同，加载失败的结果不会被缓存，下一次渲染（比如错误边界里的重试）会重新加载。`lib/stale-module` 用于发版之后：`isStaleModuleError(error)` 识别已经不存在的旧代码块，`reloadForStaleModule()` 刷新页面以加载新文件，一分钟内最多刷新一次。查看器的文案放在 `viewers/code-labels` 和 `viewers/diff-labels`，`chartKey` 放在 `lib/chart-key`，懒加载包装可以直接引用它们，不会连带加载重型模块。
+
 ## 浏览器能力 [#browser-features]
 
 | 功能 | 应用注意事项 |
