@@ -1,5 +1,5 @@
 ---
-title: 设计规范
+title: 规范细则
 description: 完整的排版、间距、表面与交互设计规则，包含每条规则的推荐和避免对照
 ---
 
@@ -9,7 +9,7 @@ description: 完整的排版、间距、表面与交互设计规则，包含每�
 
 导入 `@workspace/ui/globals.css`，使用 `@workspace/ui/components/*` 中的组件。原生文字元素通过 Tailwind 类设置字号和字重。组件颜色使用 `bg-background`、`bg-card`、`text-foreground`、`text-muted-foreground`、`bg-primary`、`border-border` 与 `ring-ring` 等语义 token，危险操作保留独立的 `destructive` 语义。
 
-默认外观为 Apple 风格的中性色背景与蓝色强调色。共享配色通过 `data-color` 选择 `default`、`bamboo`、`mauve`、`mist`、`sand`、`pine` 或 `rose`。移除该属性或设置 `default` 可恢复默认外观；`dark` 控制暗色模式。配色只调整强调色、焦点和图表，背景与正文保持中性。具体配置见[主题](/zh-CN/docs/theming)。
+默认外观为 Apple 风格的中性色背景与蓝色强调色。共享配色通过 `data-color` 选择 `default`、`bamboo`、`mauve`、`mist`、`sand`、`pine` 或 `rose`。移除该属性或设置 `default` 可恢复默认外观；`dark` 控制暗色模式。配色只调整强调色、焦点和图表，背景与正文保持中性。具体配置见[主题定制](/zh-CN/docs/theming)。
 
 ```css
 @import "@workspace/ui/globals.css";

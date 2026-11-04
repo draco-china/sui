@@ -19,7 +19,8 @@ const messages = {
     summary:
       "SUI is a collection of composable React components built on Base UI and Tailwind CSS. These documents include complete examples from the workspace.",
     groups: {
-      "Getting Started": "Getting started",
+      "Getting started": "Getting started",
+      Design: "Design",
       Resources: "Resources",
       Components: "Components",
       Blocks: "Blocks",
@@ -27,7 +28,7 @@ const messages = {
       Viewers: "Viewers",
       Chat: "Chat",
       Charts: "Charts",
-      Utils: "Utils",
+      Utilities: "Utilities",
     } as Record<string, string>,
     full: "Complete documentation",
     source: "Page",
@@ -39,7 +40,8 @@ const messages = {
     summary:
       "SUI 是基于 Base UI 和 Tailwind CSS 构建的可组合 React 组件库。本文档包含工作区中的完整示例源码",
     groups: {
-      "Getting Started": "开始使用",
+      "Getting started": "开始使用",
+      Design: "设计",
       Resources: "资源",
       Components: "组件",
       Blocks: "Blocks",
@@ -47,7 +49,7 @@ const messages = {
       Viewers: "查看器",
       Chat: "聊天",
       Charts: "图表",
-      Utils: "工具",
+      Utilities: "工具",
     } as Record<string, string>,
     full: "完整文档",
     source: "页面",

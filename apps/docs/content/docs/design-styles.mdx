@@ -1,0 +1,134 @@
+---
+title: Foundations
+description: Color, typography, spacing, layout, shape, elevation, icons, motion and dark mode, the foundations every SUI component shares.
+---
+
+These foundations come from `@workspace/ui/globals.css` and the components themselves. Use the tokens and utilities named here instead of fixed values, so a page follows the theme, dark mode and the reader's preferences. [Rules](/docs/design-guidelines) show each rule with a side-by-side example.
+
+## Color [#color]
+
+Choose colors by role, never by hue. Each surface token has a matching foreground: `bg-card` with `text-card-foreground`, `bg-primary` with `text-primary-foreground`.
+
+| Role | Tokens | Use |
+| --- | --- | --- |
+| Canvas and surfaces | `background`, `card`, `popover`, `secondary`, `muted` | The page, grouped content, floating panels, secondary controls, quiet areas |
+| Primary | `primary`, `primary-foreground` | The main action, filled selections such as tabs and checkboxes |
+| Selection | `accent`, `accent-foreground` | Hovered and selected items, current links |
+| Text | `foreground`, `muted-foreground` | Body text, descriptions and secondary labels |
+| Lines and focus | `border`, `input`, `ring` | Separators, field fills, keyboard focus |
+| Danger | `destructive`, `destructive-foreground` | Destructive actions and invalid input |
+| Data | `chart-1` to `chart-5` | Chart series only |
+
+- Keep one accent. Palettes such as `pine` or `rose` change the accent, focus and chart colors together while surfaces stay neutral; see [Theming](/docs/theming).
+- Never carry meaning by color alone. Pair status with text or an icon, and series with a legend or label.
+- SUI has no success, warning or information tokens. Say the state in words and with an icon, or define application tokens beside the theme.
+
+## Typography [#typography]
+
+Inter is the typeface (`--font-sans`, falling back to the browser's sans-serif). Sizes come from Tailwind's scale.
+
+| Use | Size | Weight |
+| --- | --- | --- |
+| Page title | `text-2xl` to `text-3xl` | `font-semibold` |
+| Section heading | `text-lg` to `text-xl` | `font-semibold` |
+| Body, controls, data | `text-sm` (14px) | `font-normal` |
+| Emphasis inside text | `text-sm` | `font-medium` |
+| Captions, badges, labels in menus | `text-xs` | `font-normal` or `font-medium` |
+
+- Content text is 14px everywhere: body, buttons, inputs, table cells. 16px and up is for headings.
+- Use two weights for structure: `font-semibold` for headings, `font-medium` for emphasis. Never `font-bold`.
+- Write headings in sentence case and leave tracking as the font sets it.
+- Show inline code a step smaller than the text around it, and align numbers in tables with `tabular-nums`.
+
+## Spacing [#spacing]
+
+Spacing follows Tailwind's 4px steps. Use few of them and use them consistently.
+
+| Step | Value | Typical use |
+| --- | --- | --- |
+| `1`, `1.5`, `2` | 4–8px | Icon and label, items in a toolbar, a label and its field |
+| `3`, `4` | 12–16px | Fields in a form, items in a list, small card padding (`size="sm"`) |
+| `6` | 24px | Card padding, groups inside a page |
+| `8`, `10`, `12` | 32–48px | Sections of a page |
+
+- Related things sit closer than unrelated ones: the space inside a group is smaller than the space around it.
+- Prefer `gap-*` on flex and grid containers over margins on children.
+- Adjust spacing optically around text, whose line box adds space above and below the glyphs.
+
+## Layout [#layout]
+
+Build application pages from the [layouts](/docs/layouts/app-shell): `AppShell` with a sidebar or top navigation, `AppMain` for the content area, and `SectionLayout` for pages with their own sections.
+
+| Breakpoint | Width | What changes |
+| --- | --- | --- |
+| Phone | below 768px (`md`) | The sidebar becomes a sheet, tables become cards, toolbars keep only search |
+| Tablet | 768–1023px | The sidebar stays beside the content; section tabs are a row |
+| Desktop | 1024px and up (`lg`) | Section tabs become a side column; full toolbars |
+
+- Let the content area fill its space and scroll inside, so headers, toolbars and pagination stay in view (`AppMain fixed`, DataTable's `layout="fill"`).
+- Keep readable text under about 70 characters a line; forms rarely need more than `max-w-2xl`.
+- Use logical properties (`ms-*`, `pe-*`, `start-*`) so layouts mirror in right-to-left languages.
+
+## Shape [#shape]
+
+Every radius is a multiple of `--radius` (`0.5rem` by default), so changing it on the root or a container rescales every corner.
+
+| Utility | Default | Typical use |
+| --- | --- | --- |
+| `rounded-xl` | 12px | Tables, tooltips, small nested surfaces |
+| `rounded-2xl` | 16px | Menu items and options inside a panel |
+| `rounded-3xl` | 24px | Inputs, selects, badges, popovers, menus |
+| `rounded-4xl` | 32px | Buttons (a pill at control height), cards, dialogs |
+| `rounded-full` | — | Avatars and other round elements |
+
+Controls share one height so they line up in a row: `h-9` (36px) by default, `h-8` small and `h-10` large.
+
+When one rounded shape sits inside another within 8px, keep them concentric: outer radius = inner radius + padding.
+
+## Elevation [#elevation]
+
+Elevation separates layers, not importance. Use as few levels as possible.
+
+| Level | Surface | Use |
+| --- | --- | --- |
+| Base | `bg-background` | The page |
+| Raised | `bg-card` with SUI Card's shadow and ring | Grouped content on the page |
+| Floating | `bg-popover` with a shadow | Menus, popovers, tooltips |
+| Overlay | Dialog, Sheet, Drawer with a backdrop | Tasks that take over the page |
+
+- Never combine a border with a drop shadow on the same surface; use `ring-1 ring-border` for a crisp edge.
+- Never stack elevated cards inside each other. Group inside a card with spacing, a separator or a muted area.
+- Separate a sticky header or footer from the scrolling content with a border, not a shadow.
+- [Glass](/docs/components/glass) is a material for floating controls over rich backgrounds. It turns back into opaque paint under reduced transparency, reduced motion and forced colors.
+
+## Icons [#icons]
+
+Icons come from [Lucide](https://lucide.dev) at 16px (`size-4`) with a 2px stroke, the optical size of 14px text.
+
+- Center an icon on the first line of its text; for wrapping text, wrap the icon in `h-lh flex items-center`.
+- Decorative icons get `aria-hidden`. An icon-only button needs an accessible name, and a tooltip showing it.
+- Use an icon to support a label, not to replace it, unless the meaning is universal (close, search, more).
+
+## Motion [#motion]
+
+Motion explains a change. It is short, it never blocks input, and it follows the reader's preference.
+
+| Kind | Duration | Example |
+| --- | --- | --- |
+| Small surface | 100ms | Popovers, menus, dialogs fading and scaling in |
+| Backdrop | 150ms | The dimmed layer behind sheets and dialogs |
+| Edge surface | 200ms | Sheets sliding from their side |
+| Drag-driven surface | Follows the gesture | Drawers and bottom sheets settling after a swipe |
+
+- Hover colors change immediately; transition transforms and shadows only.
+- Overlays enter from where they belong: sheets from their edge, popovers from their trigger. A sheet that mounts already open still slides in.
+- Keep content its full size while it collapses, and clip it, rather than squashing it.
+- Under `prefers-reduced-motion`, components drop movement and keep at most a fade.
+
+## Dark mode [#dark-mode]
+
+Add `dark` to the root element. Every token has a dark value, so components need no dark-specific classes.
+
+- Use tokens and the dark mode comes for free. A fixed color, such as `bg-white` or `text-gray-500`, needs a `dark:` counterpart, which is a sign it should be a token.
+- Check images and illustrations on both backgrounds; give transparent artwork a surface if it disappears.
+- Follow the system setting by default and let people choose light, dark or system with [ThemeToggle](/docs/components/theme-toggle). Persisting the choice is up to the app.

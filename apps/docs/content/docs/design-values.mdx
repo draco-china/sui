@@ -1,0 +1,66 @@
+---
+title: Principles
+description: What SUI interfaces aim for, and the principles that turn those aims into layout and interaction decisions.
+---
+
+SUI is built for tools people work in every day: admin consoles, dashboards, settings and data-heavy pages. These values decide between two reasonable options; the principles below put them into practice. [Foundations](/docs/design-styles) and [Rules](/docs/design-guidelines) give the concrete rules, and [Patterns](/docs/design-patterns) show them in common tasks.
+
+## Values [#values]
+
+### Calm [#calm]
+
+An interface that people use for hours should not compete for attention. Neutral surfaces carry the content and one accent marks what matters: the main action, the current selection, keyboard focus. Motion confirms a change rather than decorating it. When in doubt, remove emphasis rather than add it.
+
+### Certain [#certain]
+
+People should be able to predict what a control does and see that it worked. The same task looks and behaves the same way on every page: one button style for the main action, one way to confirm a destructive change, one place for errors. Components carry their states (loading, empty, invalid, disabled) so pages do not invent their own.
+
+### Efficient [#efficient]
+
+Respect the reader's time. Keep frequent actions one step away, keep context on screen while editing, and prefer defaults that are right for most people. Dense data stays legible through alignment and spacing, not through more borders and colors.
+
+### Inclusive [#inclusive]
+
+Every interface works with a keyboard, a screen reader, a small screen, a right-to-left language, dark mode, reduced motion and reduced transparency. These are part of the component, not extra work for each page: use the components as they are and these preferences hold.
+
+## Principles [#principles]
+
+### Proximity [#proximity]
+
+Things that belong together sit together. Space separates groups before lines or boxes do: tighter spacing inside a group, more between groups. A label sits closer to its field than to the field above.
+
+### Alignment [#alignment]
+
+Align to a shared edge so the eye can scan. Text starts on one line, numbers align on the end, and icons align with the first line of their text. In tables, align columns by content type rather than centering everything.
+
+### Contrast [#contrast]
+
+Make the difference between levels obvious, and keep the number of levels small. One primary action per view; others are secondary or ghost. Headings step up in size, body text stays at 14px, and supporting text uses `muted-foreground` rather than a smaller size.
+
+### Repetition [#repetition]
+
+Reuse the same component for the same job. Repetition is what makes an interface learnable: when every list filters the same way and every form shows errors in the same place, people stop thinking about the interface.
+
+### Direct manipulation [#direct-manipulation]
+
+Let people act where they look. Edit in place, sort by the column header, drag to reorder, and reveal row actions on the row. Move to a separate page only when the task needs the room.
+
+### Stay in context [#stay-in-context]
+
+Prefer overlays that keep the page visible: a popover for a quick choice, a sheet for a record's details, a dialog for a short decision. Return focus to where it came from when they close, and keep the page's filters and scroll position.
+
+### Keep it simple [#keep-it-simple]
+
+Show what most people need and reveal the rest on demand: advanced filters behind a button, rarely used settings in a section further down, extra columns in column settings. Remove an option before explaining it.
+
+### Invite the next step [#invite-the-next-step]
+
+Empty and first-run states say what the page is for and offer the action that fills it. Hover and focus states show what is interactive, and placeholders show the expected format without replacing the label.
+
+### Meaningful motion [#meaningful-motion]
+
+Use motion to show where something came from and where it went: a sheet slides from its edge, a panel keeps its content while it collapses, a tab indicator moves to the new tab. Keep it short, never block input, and drop it under reduced motion.
+
+### Respond immediately [#respond-immediately]
+
+Every action gets feedback at once: a pressed state, a spinner in the button that started the request, a skeleton in place of loading content, a toast for work that finishes in the background. When something fails, say what happened and how to recover, next to where it happened.

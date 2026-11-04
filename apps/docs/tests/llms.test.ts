@@ -190,6 +190,7 @@ describe("LLM Markdown conversion", () => {
       [...index.matchAll(/^## (.+)$/gm)].map(([, heading]) => heading),
     ).toEqual([
       "Getting started",
+      "Design",
       "Resources",
       "Components",
       "Blocks",
@@ -197,7 +198,7 @@ describe("LLM Markdown conversion", () => {
       "Viewers",
       "Chat",
       "Charts",
-      "Utils",
+      "Utilities",
       "Optional",
     ]);
     const charts = index.split("## Charts\n\n")[1]?.split("\n\n## ")[0];

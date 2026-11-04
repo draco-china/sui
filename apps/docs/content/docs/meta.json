@@ -1,12 +1,16 @@
 {
   "title": "Documentation",
   "pages": [
-    "---Getting Started---",
+    "---Getting started---",
     "index",
     "installation",
+    "compatibility",
+    "---Design---",
+    "design-values",
+    "design-styles",
     "theming",
     "design-guidelines",
-    "compatibility",
+    "design-patterns",
     "---Resources---",
     "cli",
     "registry",
@@ -24,7 +28,7 @@
     "...chat",
     "---Charts---",
     "...charts",
-    "---Utils---",
+    "---Utilities---",
     "...utils"
   ]
 }

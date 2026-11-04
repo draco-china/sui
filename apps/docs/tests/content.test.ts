@@ -131,7 +131,9 @@ describe("documentation coverage", () => {
         );
         expect(tree).toContain(`"url":"${prefix}/docs/${slug}"`);
       }
-      expect(tree).toContain('"name":"Resources"');
+      expect(tree).toContain(
+        locale === "zh-CN" ? '"name":"资源"' : '"name":"Resources"',
+      );
     }
     const layout = readFileSync(join(appRoot, "src/lib/layout.tsx"), "utf8");
     expect(layout).not.toContain('"/docs/blocks"');

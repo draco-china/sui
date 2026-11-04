@@ -1,0 +1,105 @@
+---
+title: Patterns
+description: How SUI components combine for navigation, actions, data entry, data display, overlays, feedback and copy in everyday tasks.
+---
+
+Patterns are the answers SUI gives to recurring tasks. Following them keeps pages consistent with each other, and each one is built from components that already handle keyboard, screen reader, mobile and right-to-left use.
+
+## Navigation [#navigation]
+
+| Need | Use |
+| --- | --- |
+| The app's main areas | [AppShell](/docs/layouts/app-shell) with a sidebar, or [TopNav](/docs/layouts/app-shell#top-navigation) for a few areas |
+| Sections of one page, such as settings | [SectionLayout](/docs/layouts/section-layout): a side column on desktop, a row of tabs below it |
+| Views of the same content | [Tabs](/docs/components/tabs) |
+| Where the page sits in a hierarchy | [Breadcrumb](/docs/components/breadcrumb), when the hierarchy is deeper than two levels |
+| Jumping anywhere by name | [Command](/docs/components/command) as a palette on `⌘K` |
+
+- Mark the current place in exactly one way per level: the active sidebar item, the selected tab.
+- Keep navigation in the same place on every page. Changing pages should not move the menu.
+- Put page actions in the page header (`SectionLayout`'s `actions`), not in the navigation.
+
+## Actions [#actions]
+
+| Weight | Button variant | Use |
+| --- | --- | --- |
+| Primary | `default` | The one main action of a view or a dialog |
+| Secondary | `secondary`, `outline` | Other actions beside it, such as Cancel |
+| Quiet | `ghost` | Toolbar and row actions, icon buttons |
+| Danger | `destructive` | Actions that delete or cannot be undone |
+| Inline | `link` | Navigation inside text |
+
+- One primary action per view. If two actions seem equal, one of them is secondary.
+- Put the primary action last in a row of buttons (at the end in right-to-left too), with Cancel before it.
+- Show at most three actions in a row; put the rest in a "More" menu.
+- Icon-only buttons are `ghost` and named by a tooltip.
+
+## Data entry [#data-entry]
+
+- Build forms with [Field](/docs/components/field) for label, description and error, or the [TanStack Form block](/docs/blocks/tanstack-form) for validation.
+- Every field has a visible label. Placeholders show a format, never the only label.
+- Choose the control by the number of options: a switch or checkbox for on and off, radio buttons for two to five, a select for more, and a select with its search box (`SelectSearch`) for long lists.
+- Validate when a field loses focus or on submit, not on every keystroke, and show the message under the field in `destructive` text. Keep what the person typed.
+- Put the primary action at the end of the form; on a page, keep it visible with a sticky footer if the form is long.
+- Disable submit only while a request is in flight, and show progress in the button.
+
+## Data display [#data-display]
+
+| Data | Use |
+| --- | --- |
+| Records to search, filter, sort and act on | [DataTable](/docs/components/data-table) |
+| A few records, or records with rich content | [Item](/docs/components/item) lists, or DataTable's list and card views |
+| One record's fields | A description list in a Card, or a [Sheet](/docs/components/sheet) beside the list |
+| Trends and comparisons | [Charts](/docs/charts/chart) |
+| Long text or code | [LongText](/docs/components/long-text), [Code Viewer](/docs/viewers/code-viewer) |
+
+- Align text columns to the start and numbers to the end, with `tabular-nums`.
+- Show an empty cell as a muted `-`, not a blank.
+- Keep filters on the toolbar row while they fit; move the rest behind the filter button.
+- Every list has three more states: loading ([Skeleton](/docs/components/skeleton) shaped like the content), empty ([Empty](/docs/components/empty) with the action that fills it) and failed (what happened, and a retry).
+
+## Overlays [#overlays]
+
+Pick the overlay by how much of the page the task needs, and keep the page visible behind it whenever you can.
+
+| Task | Use | Where it opens |
+| --- | --- | --- |
+| A short decision or a small form that needs focus | [Dialog](/docs/components/dialog) | The center, `sm:max-w-md` by default |
+| Confirming something that cannot be undone | [AlertDialog](/docs/components/alert-dialog) | The center; clicking outside does not close it |
+| Viewing or editing one record while keeping the list | [Sheet](/docs/components/sheet) | The right edge by default (`side`), `sm:max-w-sm` |
+| Choices and actions on a phone | [Drawer](/docs/components/drawer) or [BottomSheet](/docs/components/bottom-sheet) | The bottom edge, within thumb reach |
+| A quick choice or a few settings beside a control | [Popover](/docs/components/popover) | Next to its trigger |
+| A list of actions | [DropdownMenu](/docs/components/dropdown-menu), [ContextMenu](/docs/components/context-menu) | Next to the trigger or the pointer |
+| A preview, or the name of an icon button | [HoverCard](/docs/components/hover-card), [Tooltip](/docs/components/tooltip) | Next to the element; never holds actions |
+
+- Use a dialog for something people answer and leave; use a sheet for something they read or edit alongside the page. A task that needs more room than a wide sheet gets its own page.
+- Open one overlay at a time. The only overlay that opens over another is the confirmation for an action inside it.
+- Every overlay has a title, closes with Escape and its close button, moves focus inside when it opens and returns it to the trigger when it closes.
+- Keep a dialog's actions in view: long content scrolls inside the body while the header and footer stay put.
+- When an overlay holds unsaved changes, ask before closing it from the backdrop, Escape or a swipe; never discard silently.
+- On phones, prefer a bottom drawer to a centered dialog for choices and short forms. A sheet covers three quarters of a phone screen, leaving the page in view behind it.
+- Keep overlays mounted and control them with `open`, so they animate in and out instead of appearing and vanishing.
+
+## Feedback [#feedback]
+
+| Situation | Use |
+| --- | --- |
+| An action takes time | A spinner in the button that started it; [Skeleton](/docs/components/skeleton) for content |
+| An action finished out of view, or can be undone | [Toast](/docs/components/toast), with an undo action when possible |
+| Something on the page needs attention | [Alert](/docs/components/alert) near the content it concerns |
+| A destructive or irreversible action | [AlertDialog](/docs/components/alert-dialog), or the [Delete resource block](/docs/blocks/delete-resource) when typing a name confirms it |
+| Progress through a long task | [Progress](/docs/components/progress), or [NavigationProgress](/docs/components/navigation-progress) between pages |
+
+- Confirm only what cannot be undone. Prefer undo over a confirmation for everything else.
+- Name the action in the confirm button ("Delete project"), not "OK", and make it `destructive`.
+- Don't toast what the page already shows. If the change is visible where the person is looking, it is its own feedback.
+- Errors say what happened and what to do next, next to where it happened.
+
+## Copy [#copy]
+
+- Write in sentence case: "Save changes", not "Save Changes".
+- Buttons start with a verb and name the result: "Create project", "Export CSV".
+- Use the same word for the same thing everywhere. If it is a "workspace" in the menu, it is a "workspace" in the dialog.
+- Be brief and specific. "Password must be at least 8 characters" beats "Invalid input".
+- Address the reader as "you"; avoid blaming them ("You entered…") and avoid exclamation marks.
+- Give every icon-only control an accessible name, and translate it along with the visible text. Components take their accessible text as props for this ([Compatibility](/docs/compatibility)).

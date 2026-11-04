@@ -1,0 +1,105 @@
+---
+title: 场景模式
+description: 在导航、操作、数据录入、数据展示、浮层、反馈和文案这些日常任务中，SUI 组件如何组合使用。
+---
+
+设计模式是 SUI 对反复出现的任务给出的答案。照着做，页面之间就能保持一致；而且每种模式用的组件都已经处理好了键盘、读屏软件、手机和从右到左的语言。
+
+## 导航 [#navigation]
+
+| 需求 | 使用 |
+| --- | --- |
+| 应用的主要区域 | 带侧边栏的 [AppShell](/zh-CN/docs/layouts/app-shell)，区域少时用 [TopNav](/zh-CN/docs/layouts/app-shell#top-navigation) |
+| 同一页面的分区，比如设置 | [SectionLayout](/zh-CN/docs/layouts/section-layout)：桌面上是侧栏，以下是一行标签 |
+| 同一内容的不同视图 | [Tabs](/zh-CN/docs/components/tabs) |
+| 页面在层级中的位置 | 层级超过两级时用 [Breadcrumb](/zh-CN/docs/components/breadcrumb) |
+| 按名称跳到任意位置 | 用 [Command](/zh-CN/docs/components/command) 做 `⌘K` 命令面板 |
+
+- 每一级只用一种方式标出当前位置：侧边栏的当前项、选中的标签。
+- 导航在每个页面上的位置保持不变，切换页面时菜单不应移动。
+- 页面操作放在页面标题行（`SectionLayout` 的 `actions`），不要放进导航。
+
+## 操作 [#actions]
+
+| 层级 | 按钮变体 | 用途 |
+| --- | --- | --- |
+| 主要 | `default` | 一个视图或对话框里唯一的主操作 |
+| 次要 | `secondary`、`outline` | 旁边的其他操作，比如取消 |
+| 安静 | `ghost` | 工具栏和行内操作、图标按钮 |
+| 危险 | `destructive` | 删除或无法撤销的操作 |
+| 行内 | `link` | 正文中的跳转 |
+
+- 每个视图只有一个主操作。两个操作看起来同样重要时，其中一个就是次要的。
+- 一排按钮中主操作放在最后（从右到左的语言也放在末端），取消放在它前面。
+- 一排最多显示三个操作，其余收进「更多」菜单。
+- 只有图标的按钮用 `ghost`，并用文字提示说明名称。
+
+## 数据录入 [#data-entry]
+
+- 表单用 [Field](/zh-CN/docs/components/field) 组合标签、说明和错误信息，需要校验时用 [TanStack Form 区块](/zh-CN/docs/blocks/tanstack-form)。
+- 每个字段都有可见的标签。占位文字只说明格式，不能当作唯一的标签。
+- 按选项数量选择控件：开关或复选框表示开和关，两到五项用单选按钮，再多用下拉选择，很长的列表用带搜索框（`SelectSearch`）的下拉选择。
+- 在字段失去焦点或提交时校验，不要每输入一个字符就校验；错误信息用 `destructive` 文字显示在字段下方，并保留用户已经输入的内容。
+- 主操作放在表单末尾；页面上的长表单用吸底的页脚让它保持可见。
+- 只在请求进行中禁用提交按钮，并在按钮里显示进度。
+
+## 数据展示 [#data-display]
+
+| 数据 | 使用 |
+| --- | --- |
+| 需要搜索、筛选、排序和操作的记录 | [DataTable](/zh-CN/docs/components/data-table) |
+| 少量记录，或内容丰富的记录 | [Item](/zh-CN/docs/components/item) 列表，或 DataTable 的列表和卡片视图 |
+| 单条记录的字段 | Card 中的描述列表，或列表旁的 [Sheet](/zh-CN/docs/components/sheet) |
+| 趋势和对比 | [图表](/zh-CN/docs/charts/chart) |
+| 长文本或代码 | [LongText](/zh-CN/docs/components/long-text)、[Code Viewer](/zh-CN/docs/viewers/code-viewer) |
+
+- 文本列靠开头对齐，数字列靠末端对齐并使用 `tabular-nums`。
+- 空单元格显示为浅色的 `-`，不要留白。
+- 筛选项放得下时就放在工具栏这一行，其余收进筛选按钮。
+- 每个列表还有三种状态：加载中（形状和内容一致的 [Skeleton](/zh-CN/docs/components/skeleton)）、空（带有填充操作的 [Empty](/zh-CN/docs/components/empty)）和失败（说明发生了什么，并提供重试）。
+
+## 浮层与弹窗 [#overlays]
+
+按任务需要占用多少页面来选浮层，并尽量让背后的页面保持可见。
+
+| 任务 | 使用 | 打开位置 |
+| --- | --- | --- |
+| 简短的决定，或需要专注的小表单 | [Dialog](/zh-CN/docs/components/dialog) | 屏幕中央，默认 `sm:max-w-md` |
+| 确认无法撤销的操作 | [AlertDialog](/zh-CN/docs/components/alert-dialog) | 屏幕中央，点外面不会关闭 |
+| 查看或编辑一条记录，同时保留列表 | [Sheet](/zh-CN/docs/components/sheet) | 默认右侧（可用 `side` 指定），`sm:max-w-sm` |
+| 手机上的选择和操作 | [Drawer](/zh-CN/docs/components/drawer) 或 [BottomSheet](/zh-CN/docs/components/bottom-sheet) | 屏幕底部，拇指够得到 |
+| 控件旁的快速选择或少量设置 | [Popover](/zh-CN/docs/components/popover) | 紧挨触发元素 |
+| 一组操作 | [DropdownMenu](/zh-CN/docs/components/dropdown-menu)、[ContextMenu](/zh-CN/docs/components/context-menu) | 紧挨触发元素或指针 |
+| 预览，或图标按钮的名称 | [HoverCard](/zh-CN/docs/components/hover-card)、[Tooltip](/zh-CN/docs/components/tooltip) | 紧挨元素，不放操作 |
+
+- 回答完就离开的事用对话框；需要对照页面阅读或编辑的内容用侧边抽屉。比加宽的抽屉还需要更多空间的任务，给它单独一个页面。
+- 同一时间只打开一个浮层。唯一可以叠在浮层上的，是确认浮层内某个操作的确认框。
+- 每个浮层都有标题，可以用 Esc 和关闭按钮关闭；打开时焦点移入，关闭后焦点回到触发它的元素。
+- 对话框的操作按钮保持可见：内容过长时在主体内滚动，标题和底部按钮固定。
+- 浮层里有未保存的更改时，点遮罩、按 Esc 或下滑关闭前先确认，绝不悄悄丢弃。
+- 在手机上，选择和简短表单优先用底部抽屉代替居中对话框。侧边抽屉在手机上占屏幕的四分之三，背后的页面仍然可见。
+- 浮层保持挂载，用 `open` 控制开关，这样才有进出动画，而不是突然出现和消失。
+
+## 反馈 [#feedback]
+
+| 情况 | 使用 |
+| --- | --- |
+| 操作需要时间 | 在发起操作的按钮里显示加载图标；内容用 [Skeleton](/zh-CN/docs/components/skeleton) |
+| 操作在视线之外完成，或者可以撤销 | [Toast](/zh-CN/docs/components/toast)，尽量附带撤销 |
+| 页面上有需要注意的事 | 在相关内容附近放 [Alert](/zh-CN/docs/components/alert) |
+| 危险或不可逆的操作 | [AlertDialog](/zh-CN/docs/components/alert-dialog)；需要输入名称确认时用[删除资源区块](/zh-CN/docs/blocks/delete-resource) |
+| 长任务的进度 | [Progress](/zh-CN/docs/components/progress)，页面之间用 [NavigationProgress](/zh-CN/docs/components/navigation-progress) |
+
+- 只确认无法撤销的操作，其余优先提供撤销。
+- 确认按钮写出具体操作（「删除项目」），不要写「确定」，并使用 `destructive` 样式。
+- 页面上已经能看到的变化，不要再弹提示。用户正看着的地方发生了变化，这本身就是反馈。
+- 错误信息要说明发生了什么、下一步怎么做，并显示在出错的位置。
+
+## 文案 [#copy]
+
+- 英文使用句首大写：「Save changes」，而不是「Save Changes」。
+- 按钮以动词开头并说明结果：「创建项目」「导出 CSV」。
+- 同一个东西在各处用同一个词。菜单里叫「工作区」，对话框里也叫「工作区」。
+- 简短具体。「密码至少 8 个字符」好过「输入无效」。
+- 用「你」称呼用户；不要责怪用户（「你输入了……」），也不要用感叹号。
+- 每个只有图标的控件都要有无障碍名称，并和可见文字一起翻译。组件为此把无障碍文案开放为属性，详见[兼容性](/zh-CN/docs/compatibility)。
