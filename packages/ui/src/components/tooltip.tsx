@@ -2,18 +2,30 @@
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { cn } from "cn";
+import { createContext, useContext } from "react";
 import { withGlass } from "../lib/glass/with-glass";
 
+/**
+ * How long hovering waits before a tooltip opens when nothing else sets it
+ * (Base UI's own default is 600 ms).
+ */
+const TOOLTIP_DELAY = 0;
+
+/** Whether a TooltipProvider is above, so its delay applies to the triggers. */
+const InProvider = createContext(false);
+
 function TooltipProvider({
-  delay = 0,
+  delay = TOOLTIP_DELAY,
   ...props
 }: TooltipPrimitive.Provider.Props) {
   return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delay={delay}
-      {...props}
-    />
+    <InProvider.Provider value={true}>
+      <TooltipPrimitive.Provider
+        data-slot="tooltip-provider"
+        delay={delay}
+        {...props}
+      />
+    </InProvider.Provider>
   );
 }
 
@@ -21,8 +33,16 @@ function Tooltip(props: TooltipPrimitive.Root.Props) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
-function TooltipTrigger(props: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
+function TooltipTrigger({ delay, ...props }: TooltipPrimitive.Trigger.Props) {
+  // Inside a provider its delay applies; on its own a trigger opens at once.
+  const inProvider = useContext(InProvider);
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      delay={delay ?? (inProvider ? undefined : TOOLTIP_DELAY)}
+      {...props}
+    />
+  );
 }
 
 function TooltipContentImplementation({
