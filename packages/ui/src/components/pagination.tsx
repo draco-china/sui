@@ -630,11 +630,12 @@ function PaginationNext({
 }
 function PaginationEllipsis({
   className,
+  label = "More pages",
   ...props
-}: React.ComponentProps<"span">) {
+}: React.ComponentProps<"span"> & { label?: string }) {
   return (
+    // The icon is decorative; the label names the gap for screen readers
     <span
-      aria-hidden
       data-slot="pagination-ellipsis"
       className={cn(
         "flex size-9 items-center justify-center [&_svg:not([class*='size-'])]:size-4",
@@ -643,7 +644,7 @@ function PaginationEllipsis({
       {...props}
     >
       <MoreHorizontalIcon />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }

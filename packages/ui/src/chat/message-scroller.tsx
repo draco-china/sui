@@ -83,6 +83,7 @@ function MessageScrollerItem({
 
 function MessageScrollerButtonImplementation({
   direction = "end",
+  labels,
   className,
   children,
   render,
@@ -90,7 +91,10 @@ function MessageScrollerButtonImplementation({
   size = "icon-sm",
   ...props
 }: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
-  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
+  Pick<React.ComponentProps<typeof Button>, "variant" | "size"> & {
+    /** Accessible names for the scroll-to-start and scroll-to-end buttons. */
+    labels?: { start?: string; end?: string };
+  }) {
   return (
     <MessageScrollerPrimitive.Button
       data-slot="message-scroller-button"
@@ -109,7 +113,9 @@ function MessageScrollerButtonImplementation({
         <>
           <ArrowDownIcon />
           <span className="sr-only">
-            {direction === "end" ? "Scroll to end" : "Scroll to start"}
+            {direction === "end"
+              ? (labels?.end ?? "Scroll to end")
+              : (labels?.start ?? "Scroll to start")}
           </span>
         </>
       )}

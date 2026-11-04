@@ -31,7 +31,20 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+export type SidebarLabels = {
+  toggle: string;
+  title: string;
+  description: string;
+  close: string;
+};
+const sidebarLabels: SidebarLabels = {
+  toggle: "Toggle Sidebar",
+  title: "Sidebar",
+  description: "Displays the mobile sidebar.",
+  close: "Close",
+};
 type SidebarContextProps = {
+  labels: SidebarLabels;
   state: "expanded" | "collapsed";
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -53,6 +66,7 @@ function useSidebar() {
 }
 
 function SidebarProvider({
+  labels: labelOverrides,
   defaultOpen = true,
   open: openProp,
   onOpenChange: setOpenProp,
@@ -61,10 +75,22 @@ function SidebarProvider({
   children,
   ...props
 }: React.ComponentProps<"div"> & {
+  labels?: Partial<SidebarLabels>;
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  // Keyed by the strings, so an inline `labels` object keeps the context stable
+  const { toggle, title, description, close } = labelOverrides ?? {};
+  const labels = React.useMemo<SidebarLabels>(
+    () => ({
+      toggle: toggle ?? sidebarLabels.toggle,
+      title: title ?? sidebarLabels.title,
+      description: description ?? sidebarLabels.description,
+      close: close ?? sidebarLabels.close,
+    }),
+    [toggle, title, description, close],
+  );
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
 
@@ -112,6 +138,7 @@ function SidebarProvider({
 
   const contextValue = React.useMemo<SidebarContextProps>(
     () => ({
+      labels,
       state,
       open,
       setOpen,
@@ -120,7 +147,7 @@ function SidebarProvider({
       setOpenMobile,
       toggleSidebar,
     }),
-    [state, open, setOpen, isMobile, openMobile, toggleSidebar],
+    [labels, state, open, setOpen, isMobile, openMobile, toggleSidebar],
   );
 
   return (
@@ -159,7 +186,7 @@ function Sidebar({
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const { labels, isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
   if (collapsible === "none") {
     return (
@@ -180,6 +207,7 @@ function Sidebar({
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
+          closeLabel={labels.close}
           dir={dir}
           data-sidebar="sidebar"
           data-slot="sidebar"
@@ -193,8 +221,8 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+            <SheetTitle>{labels.title}</SheetTitle>
+            <SheetDescription>{labels.description}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
@@ -252,7 +280,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { labels, toggleSidebar } = useSidebar();
 
   return (
     <Button
@@ -267,22 +295,22 @@ function SidebarTrigger({
       {...props}
     >
       <PanelLeftIcon className="rtl:rotate-180" />
-      <span className="sr-only">Toggle Sidebar</span>
+      <span className="sr-only">{labels.toggle}</span>
     </Button>
   );
 }
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar } = useSidebar();
+  const { labels, toggleSidebar } = useSidebar();
 
   return (
     <button
       data-sidebar="rail"
       data-slot="sidebar-rail"
-      aria-label="Toggle Sidebar"
+      aria-label={labels.toggle}
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
+      title={labels.toggle}
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear after:absolute after:inset-s-1/2 after:inset-y-0 after:w-0.5 hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize rtl:in-data-[side=left]:cursor-e-resize rtl:in-data-[side=right]:cursor-w-resize",

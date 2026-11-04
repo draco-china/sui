@@ -15,6 +15,7 @@ type QRCodeProps = Omit<useRender.ComponentProps<"div">, "children"> & {
   loading?: boolean;
   animated?: boolean;
   label?: string;
+  errorLabel?: string;
   margin?: number;
   logo?: ReactNode;
   size?: number;
@@ -301,6 +302,7 @@ function QRCodeContent({
   loading = false,
   animated = false,
   label = "QR code",
+  errorLabel = "Unable to generate QR code",
   margin = 16,
   logo,
   size = 256,
@@ -557,7 +559,7 @@ function QRCodeContent({
                   aria-hidden="true"
                   className="size-6 text-foreground/50"
                 />
-                <span className="sr-only">Unable to generate QR code</span>
+                <span className="sr-only">{errorLabel}</span>
               </span>
             )}
           </div>

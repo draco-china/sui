@@ -11,6 +11,8 @@ The documentation site uses TanStack Start and SSR. Browser-dependent viewers an
 
 Theme persistence, language routing, validation, and business requests belong to the application. ThemeToggle and LocaleToggle receive controlled values and callbacks. Blocks provide English defaults and accept `labels`; pass translations from your application's locale system. Use [Field](/docs/components/field) to compose labels, descriptions, and validation messages.
 
+Components that render text for assistive technology also default to English and take that text as a prop: `closeLabel` on DialogContent, DialogFooter and SheetContent; `labels` on SidebarProvider; `label` on CarouselPrevious, CarouselNext, BreadcrumbEllipsis and PaginationEllipsis; `scrollLabels` on TabsList; `labels` on MessageScrollerButton; and `errorLabel` on QRCode.
+
 ## Code Editor workers [#editor-workers]
 
 [Code Editor](/docs/components/code-editor) loads Monaco and its workers locally. Its installed source uses Vite-compatible `?worker` imports. A different bundler requires an equivalent worker integration; installing source does not configure that bundler automatically. Include the installed `worker.d.ts` in TypeScript's source paths.

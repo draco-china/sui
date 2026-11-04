@@ -11,6 +11,8 @@ SUI 使用 React 19、Tailwind CSS 4 和 Base UI 基础交互。源码安装复�
 
 主题持久化、语言路由、校验和业务请求由应用负责。ThemeToggle 和 LocaleToggle 接受受控值与回调。Blocks 提供英文默认文案，通过 `labels` 接收应用语言系统的翻译。标签、描述和校验信息使用 [Field](/zh-CN/docs/components/field)组合。
 
+为辅助技术输出文案的组件同样默认英文，并通过属性接收这段文案：DialogContent、DialogFooter 和 SheetContent 的 `closeLabel`；SidebarProvider 的 `labels`；CarouselPrevious、CarouselNext、BreadcrumbEllipsis 和 PaginationEllipsis 的 `label`；TabsList 的 `scrollLabels`；MessageScrollerButton 的 `labels`；QRCode 的 `errorLabel`。
+
 ## Code Editor Workers [#editor-workers]
 
 [Code Editor](/zh-CN/docs/components/code-editor) 在本地加载 Monaco 与 Workers，安装源码使用兼容 Vite 的 `?worker` 导入。其他构建工具需要提供等价的 Worker 接入，安装源码不会自动配置该构建工具。将安装的 `worker.d.ts` 包含在 TypeScript 的源码范围中。

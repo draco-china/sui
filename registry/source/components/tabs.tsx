@@ -124,6 +124,7 @@ function TabsListImplementation({
   wrapperClassName,
   indicatorClassName,
   variant = "default",
+  scrollLabels,
   children,
   ref,
   ...props
@@ -131,6 +132,13 @@ function TabsListImplementation({
   VariantProps<typeof tabsListVariants> & {
     wrapperClassName?: string;
     indicatorClassName?: string;
+    /** Accessible names for the overflow scroll buttons. */
+    scrollLabels?: {
+      up?: string;
+      down?: string;
+      left?: string;
+      right?: string;
+    };
   }) {
   const { orientation } = React.useContext(TabsContext);
   const vertical = orientation === "vertical";
@@ -484,7 +492,11 @@ function TabsListImplementation({
               controlClassName,
               vertical ? "inset-x-0 top-0 w-full" : "inset-y-0 left-0 h-full",
             )}
-            aria-label={vertical ? "Scroll tabs up" : "Scroll tabs left"}
+            aria-label={
+              vertical
+                ? (scrollLabels?.up ?? "Scroll tabs up")
+                : (scrollLabels?.left ?? "Scroll tabs left")
+            }
             aria-controls={viewportId}
             disabled={!edges.start}
             onClick={() => scroll(-1)}
@@ -502,7 +514,11 @@ function TabsListImplementation({
                 ? "inset-x-0 bottom-0 w-full"
                 : "inset-y-0 right-0 h-full",
             )}
-            aria-label={vertical ? "Scroll tabs down" : "Scroll tabs right"}
+            aria-label={
+              vertical
+                ? (scrollLabels?.down ?? "Scroll tabs down")
+                : (scrollLabels?.right ?? "Scroll tabs right")
+            }
             aria-controls={viewportId}
             disabled={!edges.end}
             onClick={() => scroll(1)}
