@@ -8,7 +8,7 @@ import { cn } from "cn";
 import type * as React from "react";
 
 const attachmentVariants = cva(
-  "group/attachment relative flex w-fit min-w-0 max-w-full shrink-0 flex-wrap rounded-3xl border bg-card text-card-foreground transition-colors focus-within:ring-1 focus-within:ring-ring/30 has-[>a,>button]:hover:bg-muted/50 data-[state=error]:border-destructive/30 data-[state=idle]:border-dashed",
+  "group/attachment relative flex w-fit min-w-0 max-w-full shrink-0 flex-wrap rounded-3xl border bg-card text-card-foreground focus-within:ring-1 focus-within:ring-ring/30 has-[>a,>button]:hover:bg-muted/50 data-[state=error]:border-destructive/30 data-[state=idle]:border-dashed",
   {
     variants: {
       size: {

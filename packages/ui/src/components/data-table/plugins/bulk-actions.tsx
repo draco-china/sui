@@ -105,7 +105,7 @@ function BulkBar<TData>({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={reduced ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 420, damping: 32 }}
-          className="pointer-events-auto flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full border bg-popover p-1.5 ps-4 text-popover-foreground text-sm shadow-lg"
+          className="pointer-events-auto flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full bg-popover p-1.5 ps-4 text-popover-foreground text-sm shadow-lg ring-1 ring-foreground/5 dark:ring-foreground/10"
         >
           <span className="whitespace-nowrap font-medium tabular-nums">
             {table.labels.selected(count)}

@@ -50,10 +50,12 @@ Sizes and line heights come from Tailwind's scale. Keep to three to five sizes i
 | `text-xs` | 12 / 16px | Captions, badges, labels in menus | `font-normal` or `font-medium` |
 | `text-sm` | 14 / 20px | Body, controls, table cells, data | `font-normal` |
 | `text-base` | 16 / 24px | Long-form reading, such as articles | `font-normal` |
+| `text-base`, `text-lg` | 16 / 24px, 18 / 28px | Titles of cards, dialogs, sheets, drawers and empty states | `font-semibold` |
 | `text-lg`, `text-xl` | 18 / 28px, 20 / 28px | Section headings | `font-semibold` |
 | `text-2xl`, `text-3xl` | 24 / 32px, 30 / 36px | Page titles | `font-semibold` |
 
-- Content text is 14px everywhere: body, buttons, inputs, table cells. 16px and up is for headings and long reading.
+- Content text is 14px everywhere: body, buttons, inputs, table cells. 16px and up is for headings and long reading. The one exception is a multi-line field: Textarea is 16px below `md`, so iOS does not zoom the page when it takes focus.
+- Every title is `font-semibold`, whatever its size. Short labels at 14px, such as the title of an alert, toast or list item, are emphasis and use `font-medium`.
 - Keep the scale's line heights; don't tighten body text with `leading-none` or `leading-tight`.
 
 ### Weight [#font-weight-scale]
@@ -127,7 +129,7 @@ Elevation separates layers, not importance. Use as few levels as possible.
 | Floating | `bg-popover` with a shadow | Menus, popovers, tooltips |
 | Overlay | Dialog, Sheet, Drawer with a backdrop | Tasks that take over the page |
 
-- Never combine a border with a drop shadow on the same surface; use `ring-1 ring-border` for a crisp edge.
+- Never combine a border with a drop shadow on the same surface. Floating surfaces (dialogs, sheets, drawers, popovers, toasts) pair their shadow with `ring-1 ring-foreground/5`, `ring-foreground/10` in dark mode.
 - Never stack elevated cards inside each other. Group inside a card with spacing, a separator or a muted area.
 - Separate a sticky header or footer from the scrolling content with a border, not a shadow.
 - [Glass](/docs/components/glass) is a material for floating controls over rich backgrounds. It turns back into opaque paint under reduced transparency, reduced motion and forced colors.

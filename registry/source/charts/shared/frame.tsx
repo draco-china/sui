@@ -91,7 +91,7 @@ export function ChartFrame({
             data-slot="chart-center"
             className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
           >
-            <span className="font-bold text-3xl text-foreground tabular-nums">
+            <span className="font-semibold text-3xl text-foreground tabular-nums">
               {center.value}
             </span>
             {center.label ? (

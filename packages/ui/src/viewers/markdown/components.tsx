@@ -202,7 +202,7 @@ const markdownBlockElements: Pick<
     return (
       <blockquote
         className={cn(
-          "my-6 border-primary/60 border-l-2 pl-5 text-muted-foreground italic [&>p]:my-0",
+          "my-6 border-primary/60 border-s-2 ps-5 text-muted-foreground italic [&>p]:my-0",
           className,
         )}
         {...elementProps}
@@ -230,10 +230,7 @@ const markdownBlockElements: Pick<
   img: function MarkdownImage(props) {
     const { labels } = useContext(MarkdownContext);
     const { className, alt, src, ...elementProps } = withoutMarkdownNode(props);
-    const imageClass = cn(
-      "my-6 max-w-full rounded-lg border shadow-sm",
-      className,
-    );
+    const imageClass = cn("my-6 max-w-full rounded-lg border", className);
     if (typeof src !== "string" || !src)
       return <img className={imageClass} alt={alt ?? ""} {...elementProps} />;
     // Inside the viewer's ImageGroup, so every image in a document is one
@@ -252,13 +249,13 @@ const markdownBlockElements: Pick<
   },
   li: (props) => {
     const { className, ...elementProps } = withoutMarkdownNode(props);
-    return <li className={cn("mt-2 pl-1", className)} {...elementProps} />;
+    return <li className={cn("mt-2 ps-1", className)} {...elementProps} />;
   },
   ol: (props) => {
     const { className, ...elementProps } = withoutMarkdownNode(props);
     return (
       <ol
-        className={cn("my-5 ml-6 list-decimal space-y-1", className)}
+        className={cn("my-5 ms-6 list-decimal space-y-1", className)}
         {...elementProps}
       />
     );
@@ -285,7 +282,7 @@ const markdownBlockElements: Pick<
     const { className, ...elementProps } = withoutMarkdownNode(props);
     return (
       <ul
-        className={cn("my-5 ml-6 list-disc space-y-1", className)}
+        className={cn("my-5 ms-6 list-disc space-y-1", className)}
         {...elementProps}
       />
     );
@@ -528,7 +525,7 @@ export const markdownComponents: Components = {
     return (
       <div
         className={
-          "not-prose my-6 w-full overflow-x-auto rounded-2xl border border-border shadow-sm"
+          "not-prose my-6 w-full overflow-x-auto rounded-2xl border border-border"
         }
       >
         <table
@@ -556,7 +553,7 @@ export const markdownComponents: Components = {
       <td
         align={align}
         className={cn(
-          "border-border border-r border-b px-4 py-2.5 align-top last:border-r-0",
+          "border-border border-e border-b px-4 py-2.5 align-top last:border-e-0",
           getMarkdownTableAlignClass(align),
           className,
         )}
@@ -571,7 +568,7 @@ export const markdownComponents: Components = {
       <th
         align={align}
         className={cn(
-          "border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0",
+          "border-border border-e border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-e-0",
           getMarkdownTableAlignClass(align),
           className,
         )}

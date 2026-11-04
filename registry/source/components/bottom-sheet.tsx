@@ -259,7 +259,7 @@ function BottomSheetContentImplementation({
           data-expandable={sheet.expandable ? "" : undefined}
           className={cn(
             cn(
-              "pointer-events-auto absolute mx-auto flex max-w-(--bottom-sheet-max-width) flex-col overflow-hidden rounded-(--bottom-sheet-radius) border border-popover bg-popover text-popover-foreground text-sm shadow-xl outline-none will-change-transform dark:border-border",
+              "pointer-events-auto absolute mx-auto flex max-w-(--bottom-sheet-max-width) flex-col overflow-hidden rounded-(--bottom-sheet-radius) bg-popover text-popover-foreground text-sm shadow-xl outline-none ring-1 ring-foreground/5 will-change-transform dark:ring-foreground/10",
               // Compact floats with a margin on each side and below; it fades
               // out while expanding, so the expanded sheet meets the edges.
               "[--bottom-sheet-gap:--spacing(2)] [--bottom-sheet-margin:calc(var(--bottom-sheet-gap)*(1-var(--bottom-sheet-progress)))] [--bottom-sheet-max-width:none] [--bottom-sheet-radius:var(--radius-5xl)] [--bottom-sheet-safe-bottom:max(0px,env(safe-area-inset-bottom,0px)-var(--bottom-sheet-margin))]",
@@ -303,7 +303,7 @@ function BottomSheetGrabber({
       aria-hidden={expandable ? undefined : true}
       disabled={!expandable}
       className={cn(
-        "absolute inset-x-0 top-0 z-20 flex h-5 cursor-grab touch-none items-start justify-center rounded-t-[inherit] pt-1.5 outline-none after:h-1.25 after:w-9 after:rounded-full after:bg-foreground/20 after:transition-colors hover:after:bg-foreground/30 focus-visible:after:bg-ring active:cursor-grabbing",
+        "absolute inset-x-0 top-0 z-20 flex h-5 cursor-grab touch-none items-start justify-center rounded-t-[inherit] pt-1.5 outline-none after:h-1.25 after:w-9 after:rounded-full after:bg-foreground/20 hover:after:bg-foreground/30 focus-visible:after:bg-ring active:cursor-grabbing",
         className,
       )}
       onClick={toggle}

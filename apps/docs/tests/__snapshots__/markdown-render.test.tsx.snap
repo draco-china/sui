@@ -11,9 +11,9 @@ exports[`markdown renders headings as before 1`] = `
 exports[`markdown renders toc as before 1`] = `
 "<div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><h1 id="_R_-user-content-guide" class="mb-6 scroll-m-20 font-semibold text-2xl first:mt-0 last:mb-0">Guide</h1>
 <h2 id="_R_-user-content-contents" class="mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0">Contents</h2>
-<ul class="my-5 ml-6 list-disc space-y-1">
-<li class="mt-2 pl-1"><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" href="#_R_-user-content-install">Install</a></li>
-<li class="mt-2 pl-1"><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" href="#_R_-user-content-use">Use</a></li>
+<ul class="my-5 ms-6 list-disc space-y-1">
+<li class="mt-2 ps-1"><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" href="#_R_-user-content-install">Install</a></li>
+<li class="mt-2 ps-1"><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" href="#_R_-user-content-use">Use</a></li>
 </ul>
 <h2 id="_R_-user-content-install" class="mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0">Install</h2>
 <h2 id="_R_-user-content-use" class="mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0">Use</h2></div>"
@@ -35,17 +35,17 @@ exports[`markdown renders alerts as before 1`] = `
 `;
 
 exports[`markdown renders blocks as before 1`] = `
-"<div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><blockquote class="my-6 border-primary/60 border-l-2 pl-5 text-muted-foreground italic [&amp;&gt;p]:my-0">
+"<div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><blockquote class="my-6 border-primary/60 border-s-2 ps-5 text-muted-foreground italic [&amp;&gt;p]:my-0">
 <p class="my-5 leading-7 first:mt-0 last:mb-0">Quote</p>
 </blockquote>
 <hr class="my-8 border-border"/>
-<ol class="my-5 ml-6 list-decimal space-y-1">
-<li class="mt-2 pl-1">One</li>
-<li class="mt-2 pl-1">Two</li>
+<ol class="my-5 ms-6 list-decimal space-y-1">
+<li class="mt-2 ps-1">One</li>
+<li class="mt-2 ps-1">Two</li>
 </ol>
-<ul class="my-5 ml-6 list-disc space-y-1 contains-task-list">
-<li class="mt-2 pl-1 task-list-item"><input type="checkbox" disabled="" checked=""/> Done</li>
-<li class="mt-2 pl-1 task-list-item"><input type="checkbox" disabled=""/> Todo</li>
+<ul class="my-5 ms-6 list-disc space-y-1 contains-task-list">
+<li class="mt-2 ps-1 task-list-item"><input type="checkbox" disabled="" checked=""/> Done</li>
+<li class="mt-2 ps-1 task-list-item"><input type="checkbox" disabled=""/> Todo</li>
 </ul>
 <details class="my-5 rounded-lg border bg-muted/25 px-4 py-3"><summary class="cursor-pointer font-medium text-foreground">More</summary>Hidden</details></div>"
 `;
@@ -71,7 +71,7 @@ exports[`markdown renders table as before 1`] = `
 
 
 
-<div class="not-prose my-6 w-full overflow-x-auto rounded-2xl border border-border shadow-sm"><table class="w-full min-w-full border-separate border-spacing-0 text-sm"><thead><tr><th class="border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0" style="text-align:left">Left</th><th class="border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0" style="text-align:center">Center</th><th class="border-border border-r border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-r-0" style="text-align:right">Right</th></tr></thead><tbody class="[&amp;_tr:last-child&gt;*]:border-b-0"><tr><td class="border-border border-r border-b px-4 py-2.5 align-top last:border-r-0" style="text-align:left">a</td><td class="border-border border-r border-b px-4 py-2.5 align-top last:border-r-0" style="text-align:center">b</td><td class="border-border border-r border-b px-4 py-2.5 align-top last:border-r-0" style="text-align:right">c</td></tr></tbody></table></div></div>"
+<div class="not-prose my-6 w-full overflow-x-auto rounded-2xl border border-border"><table class="w-full min-w-full border-separate border-spacing-0 text-sm"><thead><tr><th class="border-border border-e border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-e-0" style="text-align:left">Left</th><th class="border-border border-e border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-e-0" style="text-align:center">Center</th><th class="border-border border-e border-b bg-muted px-4 py-2.5 align-top font-semibold last:border-e-0" style="text-align:right">Right</th></tr></thead><tbody class="[&amp;_tr:last-child&gt;*]:border-b-0"><tr><td class="border-border border-e border-b px-4 py-2.5 align-top last:border-e-0" style="text-align:left">a</td><td class="border-border border-e border-b px-4 py-2.5 align-top last:border-e-0" style="text-align:center">b</td><td class="border-border border-e border-b px-4 py-2.5 align-top last:border-e-0" style="text-align:right">c</td></tr></tbody></table></div></div>"
 `;
 
 exports[`markdown renders code as before 1`] = `
@@ -88,14 +88,14 @@ a+b</div>"
 exports[`markdown renders footnotes as before 1`] = `
 "<div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><p class="my-5 leading-7 first:mt-0 last:mb-0">Claim<sup class="[&amp;&gt;a]:text-sm [&amp;&gt;a]:no-underline"><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" href="#_R_-user-content-_R_-fn-1" id="_R_-user-content-_R_-fnref-1" data-footnote-ref="" aria-describedby="_R_-user-content-footnote-label">1</a></sup></p>
 <section data-footnotes="" class="footnotes"><h2 id="_R_-user-content-footnote-label" class="mt-10 mb-4 scroll-m-20 border-b pb-2 font-semibold text-xl first:mt-0 last:mb-0 sr-only">Footnotes</h2>
-<ol class="my-5 ml-6 list-decimal space-y-1">
-<li class="mt-2 pl-1" id="_R_-user-content-_R_-fn-1">
+<ol class="my-5 ms-6 list-decimal space-y-1">
+<li class="mt-2 ps-1" id="_R_-user-content-_R_-fn-1">
 <p class="my-5 leading-7 first:mt-0 last:mb-0">Source <a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground data-footnote-backref" href="#_R_-user-content-_R_-fnref-1" data-footnote-backref="" aria-label="Back to reference 1">↩</a></p>
 </li>
 </ol>
 </section></div>"
 `;
 
-exports[`markdown renders images as before 1`] = `"<link rel="preload" as="image" href="/lake.png"/><div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><p class="my-5 leading-7 first:mt-0 last:mb-0"><button type="button" data-slot="image" data-state="loading" aria-label="Preview Lake" class="relative inline-flex overflow-hidden align-middle my-6 max-w-full rounded-lg border shadow-sm [&amp;&gt;img]:h-auto [&amp;&gt;img]:w-auto [&amp;&gt;img]:max-w-full cursor-zoom-in p-0 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"><span aria-hidden="true" class="absolute inset-0 animate-pulse bg-muted motion-reduce:animate-none"></span><img src="/lake.png" alt="Lake" class="size-full" style="object-fit:cover"/></button></p></div>"`;
+exports[`markdown renders images as before 1`] = `"<link rel="preload" as="image" href="/lake.png"/><div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><p class="my-5 leading-7 first:mt-0 last:mb-0"><button type="button" data-slot="image" data-state="loading" aria-label="Preview Lake" class="relative inline-flex overflow-hidden align-middle my-6 max-w-full rounded-lg border [&amp;&gt;img]:h-auto [&amp;&gt;img]:w-auto [&amp;&gt;img]:max-w-full cursor-zoom-in p-0 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"><span aria-hidden="true" class="absolute inset-0 animate-pulse bg-muted motion-reduce:animate-none"></span><img src="/lake.png" alt="Lake" class="size-full" style="object-fit:cover"/></button></p></div>"`;
 
 exports[`markdown renders unsafe as before 1`] = `"<div data-slot="markdown-viewer" class="max-w-none text-foreground text-sm [&amp;_.contains-task-list]:list-none [&amp;_.contains-task-list]:pl-0 [&amp;_.task-list-item]:my-1 [&amp;_.task-list-item]:flex [&amp;_.task-list-item]:items-start [&amp;_.task-list-item]:gap-2 [&amp;_.task-list-item_input]:mt-1 [&amp;_.footnotes]:mt-10 [&amp;_.footnotes]:border-t [&amp;_.footnotes]:pt-4 [&amp;_.footnotes]:text-sm"><div class="">Overlay</div><a class="font-medium text-accent-foreground underline underline-offset-4 hover:text-accent-foreground" rel="noopener noreferrer" target="_blank">x</a></div>"`;

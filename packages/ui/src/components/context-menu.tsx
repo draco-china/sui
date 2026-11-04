@@ -254,7 +254,7 @@ function ContextMenuShortcut({
     <span
       data-slot="context-menu-shortcut"
       className={cn(
-        "ms-auto text-muted-foreground text-xs tracking-widest group-focus/context-menu-item:text-accent-foreground",
+        "ms-auto text-muted-foreground text-xs group-focus/context-menu-item:text-accent-foreground",
         className,
       )}
       {...props}

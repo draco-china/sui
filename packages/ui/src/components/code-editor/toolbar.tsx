@@ -60,7 +60,7 @@ export function CodeEditorActions({
   return (
     <div
       className={cn(
-        "ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1",
+        "ms-auto flex shrink-0 flex-wrap items-center justify-end gap-1",
         className,
       )}
     >

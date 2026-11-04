@@ -50,10 +50,12 @@ SUI 使用各平台自带的界面字体，渲染清晰，也不需要下载字�
 | `text-xs` | 12 / 16px | 说明、徽章、菜单中的标签 | `font-normal` 或 `font-medium` |
 | `text-sm` | 14 / 20px | 正文、控件、表格单元格、数据 | `font-normal` |
 | `text-base` | 16 / 24px | 长篇阅读，比如文章 | `font-normal` |
+| `text-base`、`text-lg` | 16 / 24px、18 / 28px | 卡片、对话框、侧边抽屉、底部抽屉和空状态的标题 | `font-semibold` |
 | `text-lg`、`text-xl` | 18 / 28px、20 / 28px | 分区标题 | `font-semibold` |
 | `text-2xl`、`text-3xl` | 24 / 32px、30 / 36px | 页面标题 | `font-semibold` |
 
-- 内容文字一律 14px：正文、按钮、输入框、表格单元格。16px 及以上用于标题和长篇阅读。
+- 内容文字一律 14px：正文、按钮、输入框、表格单元格。16px 及以上用于标题和长篇阅读。唯一的例外是多行输入：Textarea 在 `md` 以下为 16px，避免 iOS 在聚焦时放大页面。
+- 所有标题都用 `font-semibold`，不论字号。14px 的短标签，比如提示、轻提示、列表项的标题，属于强调，用 `font-medium`。
 - 保留阶梯自带的行高，不要用 `leading-none`、`leading-tight` 压缩正文。
 
 ### 字重 [#font-weight-scale]
@@ -127,7 +129,7 @@ SUI 使用各平台自带的界面字体，渲染清晰，也不需要下载字�
 | 浮层 | `bg-popover`，带阴影 | 菜单、弹出框、文字提示 |
 | 覆盖 | Dialog、Sheet、Drawer，带遮罩 | 接管页面的任务 |
 
-- 同一个表面不要同时用边框和投影；需要清晰边缘时用 `ring-1 ring-border`。
+- 同一个表面不要同时用边框和投影。浮层（对话框、侧边抽屉、底部抽屉、弹出框、轻提示）的阴影搭配 `ring-1 ring-foreground/5`，深色模式下为 `ring-foreground/10`。
 - 不要在抬升的卡片里再嵌套抬升的卡片。卡片内部用间距、分隔线或 muted 区域分组。
 - 吸顶的标题栏或吸底的页脚，用边框和滚动内容分开，不用阴影。
 - [玻璃](/zh-CN/docs/components/glass)是用在丰富背景上的浮动控件材质。在减少透明度、减少动态效果和强制颜色模式下，它会变回不透明的填充。

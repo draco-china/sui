@@ -64,7 +64,7 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-3xl px-4.5 py-2.5 font-medium text-sm outline-none transition-all hover:bg-muted focus:bg-muted focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-open:bg-accent data-popup-open:bg-accent data-open:text-accent-foreground data-popup-open:text-accent-foreground data-open:focus:bg-accent data-popup-open:focus:bg-accent data-open:hover:bg-accent data-popup-open:hover:bg-accent",
+  "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-3xl px-4.5 py-2.5 font-medium text-sm outline-none transition-[box-shadow] hover:bg-muted focus:bg-muted focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 data-open:bg-accent data-popup-open:bg-accent data-open:text-accent-foreground data-popup-open:text-accent-foreground data-open:focus:bg-accent data-popup-open:focus:bg-accent data-open:hover:bg-accent data-popup-open:hover:bg-accent",
 );
 
 function NavigationMenuTriggerImplementation({
@@ -147,7 +147,7 @@ function NavigationMenuLinkImplementation({
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "flex items-center gap-1.5 in-data-[slot=navigation-menu-content]:rounded-2xl rounded-3xl p-3 text-sm outline-none transition-all hover:bg-muted focus:bg-muted focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30 data-active:bg-accent data-active:text-accent-foreground data-active:focus:bg-accent data-active:hover:bg-accent [&_svg:not([class*='size-'])]:size-4",
+        "flex items-center gap-1.5 in-data-[slot=navigation-menu-content]:rounded-2xl rounded-3xl p-3 text-sm outline-none transition-[box-shadow] hover:bg-muted focus:bg-muted focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30 data-active:bg-accent data-active:text-accent-foreground data-active:focus:bg-accent data-active:hover:bg-accent [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}

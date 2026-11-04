@@ -89,7 +89,7 @@ function ToastImplementation({
       data-slot="toast"
       className={cn(
         cn(
-          "group/toast pointer-events-auto absolute inset-e-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom select-none rounded-2xl border bg-popover text-popover-foreground shadow-lg outline-none will-change-transform focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+          "group/toast pointer-events-auto absolute inset-e-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom select-none rounded-2xl bg-popover text-popover-foreground shadow-lg outline-none ring-1 ring-foreground/5 will-change-transform focus-visible:ring-3 focus-visible:ring-ring/50 dark:ring-foreground/10",
           // Stacks grow away from the viewport edge: up from the bottom, down from the top.
           "in-data-[toast-side=top]:top-0 in-data-[toast-side=top]:bottom-auto in-data-[toast-side=top]:origin-top [--toast-dir:-1] in-data-[toast-side=top]:[--toast-dir:1]",
           "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-dir)*(var(--toast-offset-y)+var(--toast-index)*var(--gap))+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
