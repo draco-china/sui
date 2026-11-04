@@ -25,20 +25,51 @@ description: 色彩、字体、间距、布局、圆角、层级、图标、动�
 
 ## 字体 [#typography]
 
-字体为 Inter（`--font-sans`，回退到浏览器的无衬线字体）。字号使用 Tailwind 的字号阶梯。
+### 字体族 [#font-family]
 
-| 用途 | 字号 | 字重 |
-| --- | --- | --- |
-| 页面标题 | `text-2xl` 到 `text-3xl` | `font-semibold` |
-| 分区标题 | `text-lg` 到 `text-xl` | `font-semibold` |
-| 正文、控件、数据 | `text-sm`（14px） | `font-normal` |
-| 正文中的强调 | `text-sm` | `font-medium` |
-| 说明、徽章、菜单中的标签 | `text-xs` | `font-normal` 或 `font-medium` |
+SUI 使用各平台自带的界面字体，渲染清晰，也不需要下载字体文件：
 
-- 内容文字一律 14px：正文、按钮、输入框、表格单元格。16px 及以上只用于标题。
-- 用两种字重表达结构：标题用 `font-semibold`，强调用 `font-medium`。不要用 `font-bold`。
-- 标题使用句首大写，字间距保持字体本身的设置。
-- 行内代码比周围文字小一级；表格中的数字用 `tabular-nums` 对齐。
+```css
+--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+  Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+  "Source Han Sans SC", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+  "Segoe UI Symbol", "Noto Color Emoji";
+```
+
+西文在 Apple 平台上用 SF，Windows 上用 Segoe UI，Android 上用 Roboto。中文依次回退到苹方、冬青黑体、微软雅黑，再到 Noto 或思源黑体；emoji 使用各系统的彩色字体。
+
+- 组件里不要另设 `font-family`，统一读取 `--font-sans`（标题用的 `--font-heading` 也指向它）。
+- 需要品牌字体时，在应用里覆盖 `--font-sans`，并把中文和 emoji 的回退字体保留在后面。
+
+### 字号与行高 [#type-scale]
+
+字号和行高使用 Tailwind 的阶梯。一个界面里控制在三到五种字号。
+
+| 工具类 | 字号 / 行高 | 用途 | 字重 |
+| --- | --- | --- | --- |
+| `text-xs` | 12 / 16px | 说明、徽章、菜单中的标签 | `font-normal` 或 `font-medium` |
+| `text-sm` | 14 / 20px | 正文、控件、表格单元格、数据 | `font-normal` |
+| `text-base` | 16 / 24px | 长篇阅读，比如文章 | `font-normal` |
+| `text-lg`、`text-xl` | 18 / 28px、20 / 28px | 分区标题 | `font-semibold` |
+| `text-2xl`、`text-3xl` | 24 / 32px、30 / 36px | 页面标题 | `font-semibold` |
+
+- 内容文字一律 14px：正文、按钮、输入框、表格单元格。16px 及以上用于标题和长篇阅读。
+- 保留阶梯自带的行高，不要用 `leading-none`、`leading-tight` 压缩正文。
+
+### 字重 [#font-weight-scale]
+
+只用三种字重：400（`font-normal`）用于正文，500（`font-medium`）用于强调，600（`font-semibold`）用于标题。不要用 `font-bold`：中文笔画在 700 时会糊在一起，和 600 的差别也不值得这份杂乱。
+
+### 中英混排 [#mixed-text]
+
+- 中文与西文字母、数字之间留一个空格：「默认 `h-9`（36px）」「共 120 条」。
+- 中文不加字间距，西文字间距保持字体本身的设置。
+- 英文标题用句首大写；中文没有大小写，产品名等术语保持原样。
+- 表格和统计数字用 `tabular-nums` 对齐；行内代码比周围文字小一级。
+
+### 文字层级 [#text-levels]
+
+只用两种文字颜色：需要阅读的文字用 `foreground`，说明、占位文字和次要标签用 `muted-foreground`。禁用的控件通过自身的 `disabled` 状态变淡；不要只靠浅色表达禁用、选中或无效。
 
 ## 间距 [#spacing]
 

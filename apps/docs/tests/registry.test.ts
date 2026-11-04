@@ -165,9 +165,10 @@ test("CSS serialization retains !important, nested rules and required global imp
   expect(Object.hasOwn(style?.css ?? {}, '@import "tw-animate-css"')).toBe(
     true,
   );
+  // System fonts with Chinese fallbacks: no web font to download.
   expect(
     Object.hasOwn(style?.css ?? {}, '@import "@fontsource-variable/inter"'),
-  ).toBe(true);
+  ).toBe(false);
   expect(
     Object.keys(style?.css ?? {}).some((key) => key.startsWith("@source")),
   ).toBe(false);

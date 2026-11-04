@@ -6,7 +6,7 @@
 <html data-color="bamboo">
 ```
 
-Add the `dark` class for dark mode. Containers inherit dark mode from a `.dark` ancestor. Without a root `data-color`, or with `data-color="default"`, the Apple-inspired default light and dark tokens in `globals.css` apply: a pale gray canvas, white surfaces, and blue accents in light mode; deep gray surfaces and brighter blue accents in dark mode. Inter remains the shared font. Reset a root theme by choosing `default` and clearing any custom inline accent tokens; no separate default CSS file is needed. Background, text, borders, and destructive colors remain neutral or semantic across the seven themes; primary, accessible links, focus rings, selection, sidebar accents, and chart colors follow the selected palette.
+Add the `dark` class for dark mode. Containers inherit dark mode from a `.dark` ancestor. Without a root `data-color`, or with `data-color="default"`, the Apple-inspired default light and dark tokens in `globals.css` apply: a pale gray canvas, white surfaces, and blue accents in light mode; deep gray surfaces and brighter blue accents in dark mode. Text uses the shared system font stack, with Chinese fallbacks. Reset a root theme by choosing `default` and clearing any custom inline accent tokens; no separate default CSS file is needed. Background, text, borders, and destructive colors remain neutral or semantic across the seven themes; primary, accessible links, focus rings, selection, sidebar accents, and chart colors follow the selected palette.
 
 The global stylesheet loads component styles without importing optional presets. Load a preset after the base stylesheet:
 

@@ -25,20 +25,51 @@ Choose colors by role, never by hue. Each surface token has a matching foregroun
 
 ## Typography [#typography]
 
-Inter is the typeface (`--font-sans`, falling back to the browser's sans-serif). Sizes come from Tailwind's scale.
+### Font family [#font-family]
 
-| Use | Size | Weight |
-| --- | --- | --- |
-| Page title | `text-2xl` to `text-3xl` | `font-semibold` |
-| Section heading | `text-lg` to `text-xl` | `font-semibold` |
-| Body, controls, data | `text-sm` (14px) | `font-normal` |
-| Emphasis inside text | `text-sm` | `font-medium` |
-| Captions, badges, labels in menus | `text-xs` | `font-normal` or `font-medium` |
+SUI uses each platform's own interface font, so text renders sharply and nothing has to download:
 
-- Content text is 14px everywhere: body, buttons, inputs, table cells. 16px and up is for headings.
-- Use two weights for structure: `font-semibold` for headings, `font-medium` for emphasis. Never `font-bold`.
-- Write headings in sentence case and leave tracking as the font sets it.
-- Show inline code a step smaller than the text around it, and align numbers in tables with `tabular-nums`.
+```css
+--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+  Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+  "Source Han Sans SC", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+  "Segoe UI Symbol", "Noto Color Emoji";
+```
+
+Latin text uses SF on Apple platforms, Segoe UI on Windows and Roboto on Android. Chinese falls back to PingFang, Hiragino Sans GB, Microsoft YaHei, then Noto or Source Han Sans; emoji use each system's color font.
+
+- Never set `font-family` inside a component; everything reads `--font-sans` (headings use `--font-heading`, which points to it).
+- For a brand typeface, override `--font-sans` in the app and keep the Chinese and emoji fallbacks after it.
+
+### Size and line height [#type-scale]
+
+Sizes and line heights come from Tailwind's scale. Keep to three to five sizes in one interface.
+
+| Utility | Size / line height | Use | Weight |
+| --- | --- | --- | --- |
+| `text-xs` | 12 / 16px | Captions, badges, labels in menus | `font-normal` or `font-medium` |
+| `text-sm` | 14 / 20px | Body, controls, table cells, data | `font-normal` |
+| `text-base` | 16 / 24px | Long-form reading, such as articles | `font-normal` |
+| `text-lg`, `text-xl` | 18 / 28px, 20 / 28px | Section headings | `font-semibold` |
+| `text-2xl`, `text-3xl` | 24 / 32px, 30 / 36px | Page titles | `font-semibold` |
+
+- Content text is 14px everywhere: body, buttons, inputs, table cells. 16px and up is for headings and long reading.
+- Keep the scale's line heights; don't tighten body text with `leading-none` or `leading-tight`.
+
+### Weight [#font-weight-scale]
+
+Use three weights: 400 (`font-normal`) for text, 500 (`font-medium`) for emphasis, 600 (`font-semibold`) for headings. Never `font-bold`: Chinese strokes run together at 700, and the difference from 600 is not worth the noise.
+
+### Mixed Chinese and Latin text [#mixed-text]
+
+- Put a space between Chinese and Latin letters or numbers: 「默认 `h-9`（36px）」, 「共 120 条」.
+- Never add tracking to Chinese, and leave Latin tracking as the font sets it.
+- Write English headings in sentence case; Chinese has no case, so keep terms such as product names as they are.
+- Align numbers in tables and statistics with `tabular-nums`, and show inline code a step smaller than the text around it.
+
+### Text levels [#text-levels]
+
+Use two text colors: `foreground` for text people read and `muted-foreground` for descriptions, placeholders and secondary labels. Disabled controls fade through their own `disabled` state; don't express disabled, selected or invalid with a lighter color alone.
 
 ## Spacing [#spacing]
 
