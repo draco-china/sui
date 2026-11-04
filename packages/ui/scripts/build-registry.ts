@@ -1,7 +1,12 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import postcss, { type ChildNode, type Container } from "postcss";
+import postcss, {
+  type AtRule,
+  type ChildNode,
+  type Container,
+  type Rule,
+} from "postcss";
 import {
   type RegistryItem,
   registryItemSchema,
@@ -204,9 +209,125 @@ function cssNodes(nodes: readonly ChildNode[]): CssObject {
   return result;
 }
 
+/** A custom variant that is a single media query: `@custom-variant x { @media q { @slot; } }`. */
+function mediaVariants(root: Container) {
+  const variants = new Map<string, string>();
+  root.walkAtRules("custom-variant", (variant) => {
+    const [media, ...rest] = variant.nodes ?? [];
+    if (rest.length || media?.type !== "atrule" || media.name !== "media")
+      return;
+    const [slot, ...others] = media.nodes ?? [];
+    if (others.length || slot?.type !== "atrule" || slot.name !== "slot")
+      return;
+    variants.set(variant.params.trim(), media.params);
+  });
+  return variants;
+}
+
+/** Splits a selector list at top-level commas. */
+function selectorList(selector: string) {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < selector.length; index++) {
+    const char = selector[index];
+    if (char === "(" || char === "[") depth++;
+    else if (char === ")" || char === "]") depth--;
+    else if (char === "," && depth === 0) {
+      parts.push(selector.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  parts.push(selector.slice(start).trim());
+  return parts;
+}
+
+/** A nested selector resolved against its parent, as CSS nesting reads it. */
+function nestedSelector(parent: string, child: string) {
+  const parents = selectorList(parent);
+  return selectorList(child)
+    .flatMap((part) =>
+      parents.map((outer) =>
+        part.includes("&") ? part.replaceAll("&", outer) : `${outer} ${part}`,
+      ),
+    )
+    .join(", ");
+}
+
+/**
+ * Lifts nested rules and at-rules out of style rules. The shadcn CLI merges
+ * CSS objects by key, so an `@variant glass-off` nested in several rules would
+ * collapse into one block beside them and lose its selectors. Flat CSS keeps
+ * each rule's selector: `@variant x` becomes its media query wrapping the rule.
+ */
+export function flattenNesting(root: Container) {
+  const variants = mediaVariants(root);
+  const flattenRule = (rule: Rule) => {
+    let anchor: ChildNode = rule;
+    const lifted: ChildNode[] = [];
+    for (const child of [...(rule.nodes ?? [])]) {
+      if (child.type === "rule") {
+        child.remove();
+        child.selector = nestedSelector(rule.selector, child.selector);
+        lifted.push(child);
+      } else if (
+        child.type === "atrule" &&
+        (child.name === "media" ||
+          child.name === "supports" ||
+          (child.name === "variant" && variants.has(child.params.trim())))
+      ) {
+        child.remove();
+        const wrapper: AtRule = postcss.atRule(
+          child.name === "variant"
+            ? { name: "media", params: variants.get(child.params.trim()) ?? "" }
+            : { name: child.name, params: child.params },
+        );
+        const inner = postcss.rule({ selector: rule.selector });
+        for (const node of [...(child.nodes ?? [])]) {
+          node.remove();
+          inner.append(node);
+        }
+        wrapper.append(inner);
+        lifted.push(wrapper);
+      } else if (lifted.length > 0 && child.type === "decl") {
+        // CSS nesting puts these after the nested rule in the cascade, but the
+        // CLI's CSS object merges rules by selector and cannot keep that order.
+        throw new Error(
+          `Move "${child.prop}" above the nested rules in "${rule.selector}": declarations after a nested rule cannot keep their order in the registry.`,
+        );
+      }
+    }
+    for (const node of lifted) {
+      anchor.after(node);
+      anchor = node;
+    }
+  };
+  const visit = (container: Container) => {
+    for (const node of [...(container.nodes ?? [])]) {
+      if (node.type === "rule") {
+        flattenRule(node);
+        visit(node);
+      } else if (
+        node.type === "atrule" &&
+        node.name !== "keyframes" &&
+        node.name !== "custom-variant" &&
+        node.nodes
+      )
+        visit(node);
+    }
+  };
+  // Lifted nodes land after their rule, so repeat until nothing is nested.
+  let before = "";
+  while (before !== root.toString()) {
+    before = root.toString();
+    visit(root);
+  }
+}
+
 /** Preserve the style tree while allowing the CLI to merge into the user's CSS. */
 export function registryStyles(source: string) {
   const root = postcss.parse(source);
+  flattenNesting(root);
   const cssVars: NonNullable<RegistryItem["cssVars"]> = {
     theme: {},
     light: {},

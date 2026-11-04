@@ -391,3 +391,30 @@ break'; }`);
     content: "'line\\\nbreak'",
   });
 });
+
+test("registry CSS lifts nested variants so each keeps its selector", () => {
+  const result = registryStyles(`@custom-variant off {
+    @media (prefers-reduced-motion: reduce) { @slot; }
+  }
+  .a { color: red; @variant off { color: revert-layer; } &:hover { color: blue; } }
+  .b { color: green; @variant off { color: revert-layer; } }`);
+  const media = result.css["@media (prefers-reduced-motion: reduce)"];
+  expect(media).toEqual({
+    ".a": { color: "revert-layer" },
+    ".b": { color: "revert-layer" },
+  });
+  expect(result.css[".a:hover"]).toEqual({ color: "blue" });
+  expect(result.css[".a"]).toEqual({ color: "red" });
+  const nested = JSON.stringify(result.css);
+  expect(nested).not.toContain("@variant");
+});
+
+test("registry CSS refuses declarations after a nested rule", () => {
+  // The CLI merges rules by selector, so their cascade order would be lost.
+  expect(() =>
+    registryStyles(`@custom-variant off {
+      @media (prefers-reduced-motion: reduce) { @slot; }
+    }
+    .a { color: red; @variant off { color: revert-layer; } outline: none; }`),
+  ).toThrow('Move "outline" above the nested rules in ".a"');
+});
