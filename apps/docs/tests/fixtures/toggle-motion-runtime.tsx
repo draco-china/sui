@@ -255,7 +255,7 @@ assert.equal(transitions, 1);
 await Promise.resolve();
 transitions = 0;
 
-scenario("the toggles forward native refs and draw one 16px icon each");
+scenario("the toggles forward native refs and draw one icon each");
 assert.equal(
   themeRef.current,
   control("theme"),
@@ -280,9 +280,15 @@ assert.equal(
   control("theme").querySelector("svg")?.getAttribute("stroke-width"),
   "2",
 );
+// The language letters sit in a 20px box with a lighter stroke, so they read
+// at the size and weight of the 16px theme icon.
+assert.equal(
+  control("locale").querySelector("svg")?.getAttribute("width"),
+  "20",
+);
 assert.equal(
   control("locale").querySelector("svg")?.getAttribute("stroke-width"),
-  "2",
+  "1.6",
 );
 
 scenario("the theme toggle morphs one persistent path from sun to moon");

@@ -126,15 +126,18 @@ function LocaleIndicator({
   return (
     <svg
       aria-hidden="true"
-      width={16}
-      height={16}
+      // The letters fill less of the box than an icon's glyph does, so the box
+      // is a step larger (20px) with a thinner stroke: they read at the size and
+      // weight of the 16px icons beside them
+      width={20}
+      height={20}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-4 shrink-0"
+      className="size-5 shrink-0"
       data-slot="locale-toggle-icon"
       data-locale={option?.value}
     >
