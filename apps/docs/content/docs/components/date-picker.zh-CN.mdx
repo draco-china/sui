@@ -69,6 +69,7 @@ const [date, setDate] = useState<Date>();
 | `locale` | `string` | 运行时 locale。 |
 | `labels` | `DateTimeLabelOverrides` | 按 locale 默认为中文或英文。 |
 | `name`、`id`、`disabled` | | 表单字段名、第一个分段的 id、禁用。 |
+| `prefix` | `ReactNode` | 显示在字段内、值之前的标签，用于筛选行；仍需用 `aria-label` 为字段命名。 |
 | `calendarProps` | `Partial<PropsBase>` | 透传给 Calendar。 |
 | `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 作用于输入框和面板。 |
 

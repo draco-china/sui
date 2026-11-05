@@ -1,0 +1,240 @@
+---
+title: Data Form
+description: 可以手动组装、也可以由字段配置生成的表单，支持联动、校验、列表、分步和弹层。
+component: true
+---
+
+<ComponentPreview name="data-form-demo" align="start" />
+
+## 安装 [#installation]
+
+```npm
+npx shadcn@latest add @sui/data-form
+```
+
+通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
+
+```tsx
+import { DataForm, DataFormItem } from "@workspace/ui/components/data-form"
+```
+
+## 使用 [#usage]
+
+用 `DataFormItem` 包住任意控件即可。它用 [Field](/zh-CN/docs/components/field) 加上标签、说明和错误，绑定值和失焦事件，并设置 `aria-invalid`、`aria-required` 和 `aria-describedby`。控件自己的 props 保持不变。
+
+```tsx
+<DataForm onFinish={async (values) => save(values)}>
+  <DataFormItem name="title" label="标题" required>
+    <Input placeholder="例如 Safari 中导出失败" />
+  </DataFormItem>
+  <DataFormItem name="urgent" label="影响正常工作">
+    <Checkbox />
+  </DataFormItem>
+</DataForm>
+```
+
+也可以把字段描述一次，由 `valueType` 决定控件。两种写法生成相同的结构，可以混用：先渲染 `fields`，再渲染 `children`。
+
+```tsx
+<DataForm
+  fields={[
+    { name: "name", label: "姓名", required: true },
+    { name: "role", label: "角色", valueType: "select", valueEnum: { admin: "管理员", viewer: "访客" } },
+    { name: "notifications", label: "接收产品更新邮件", valueType: "switch" },
+  ]}
+  onFinish={save}
+/>
+```
+
+`DataForm` 只是这些部件的默认组合。页面需要不同的排布时，直接组合部件：
+
+<ComponentPreview name="data-form-composition" align="start" />
+
+| 部件 | 渲染 |
+| --- | --- |
+| `DataFormRoot` | `<form>` 及其上下文；接收 `form`、`layout`、`columns` 和 `collapse` |
+| `DataFormFields` | 表单的 `fields`，或传入的字段 |
+| `DataFormField` | 按值类型渲染的单个字段，与 `fields` 中的一项同形 |
+| `DataFormItem` | 任意控件，加上框架并完成绑定 |
+| `DataFormGroup` | 带标题的分组，用间距而不是卡片分隔 |
+| `DataFormList` | 一组重复的字段行 |
+| `DataFormFieldSet` | 多个控件组成一个值 |
+| `DataFormDependency` | 根据指定字段的值渲染内容 |
+| `DataFormErrorSummary` | 表单级错误；长表单提交失败后列出需要修改的字段 |
+| `DataFormFooter`、`DataFormReset`、`DataFormSubmit` | 按钮：重置在提交之前，请求进行中显示加载状态 |
+| `DataFormCancel` | 取消按钮，在 `dialog()` 等插件为表单提供取消操作时显示 |
+| `DataFormFill` | 标记固定高度的容器：其中字段区域滚动，按钮区始终可见 |
+
+## 值类型 [#value-types]
+
+每种值类型都有 `edit` 控件和 `read` 展示。`readonly` 表单使用 `read` 展示，空值显示为浅色短横线。
+
+| `valueType` | 控件 | 值 |
+| --- | --- | --- |
+| `text`、`password`、`textarea` | Input、Textarea | `string` |
+| `digit`、`money`、`percent` | 数字输入；只读时用 `Intl.NumberFormat` 和 `fieldProps.format` 格式化 | `number` |
+| `digitRange` | 两个数字输入 | `[from, to]` |
+| `select`、`multiSelect` | Select；选项超过 10 个时出现搜索框 | `string`、`string[]` |
+| `radio`、`checkboxGroup` | RadioGroup、Checkbox 列表 | `string`、`string[]` |
+| `checkbox`、`switch`、`boolean` | Checkbox、Switch、是/否选择 | `boolean` |
+| `date`、`dateTime`、`dateRange`、`dateTimeRange` | DatePicker | `Date`、`[Date, Date]` |
+| `time`、`timeRange` | TimePicker | `"hh:mm"`、`[from, to]` |
+| `color`、`tags`、`slider` | ColorPicker、TagInput、Slider | `string`、`string[]`、`number` |
+
+`number`、`enum`、`numberRange`、`datetime` 和 `datetimeRange` 分别是 `digit`、`select`、`digitRange`、`dateTime` 和 `dateTimeRange` 的别名，与 DataTable 使用的名称一致。日期类型默认保存 `Date`；设置 `fieldProps.valueFormat: "string"` 则保存本地 `yyyy-mm-dd` 字符串。
+
+所有内置类型的编辑和只读展示：
+
+<ComponentPreview name="data-form-value-types" align="start" />
+
+按[数据录入模式](/zh-CN/docs/design-patterns#data-entry)的建议，根据选项数量选择控件：开关类用 `switch` 或 `checkbox`，2 到 5 个选项用 `radio`，更多用 `select`。自定义类型用 `ValueTypeProvider` 注册一次，DataForm 按名称读取。
+
+```tsx
+<ValueTypeProvider valueTypes={{ rating: { edit: (props) => <Rating {...props} />, text: ({ value }) => `${value} / 5` } }}>
+  <App />
+</ValueTypeProvider>
+```
+
+定义里还可以设置 `lightMode`（在 light 行中的位置）、`prefix`（在控件内显示标签）、`dateMode`（日期如何提交）和 `persist: false`（像密码一样不写入草稿）。
+
+选项来源的优先级是 `request`、`options`、`valueEnum`。`valueEnum` 还为只读展示中的每个选项提供徽标颜色 `color`。
+
+## 字段联动 [#linked-fields]
+
+联动可以写函数，也可以写 JSON。函数接收当前的值：
+
+```tsx
+{
+  name: "city",
+  valueType: "select",
+  dependencies: ["province"],
+  clearOnChange: true,
+  disabled: (values) => !values.province,
+  options: (values) => citiesOf(values.province),
+}
+```
+
+JSON reactions 使用与 DataTable 筛选相同的 12 种操作符，不会执行任何代码，因此可以由服务端下发：
+
+```json
+{
+  "name": "taxId",
+  "reactions": [{
+    "when": { "logic": "and", "rules": [{ "field": "invoice", "operator": "eq", "value": "company" }] },
+    "fulfill": { "required": true },
+    "otherwise": { "hidden": true, "value": null }
+  }]
+}
+```
+
+<ComponentPreview name="data-form-reactions" align="start" />
+
+每个字段只订阅自己读取的值，因此一次修改只会重新渲染依赖它的字段。reactions 会自动声明依赖；函数写法请写上 `dependencies`，否则该字段会订阅所有值。`clearOnChange` 只在用户修改所依赖的字段时清空当前字段；加载、恢复草稿或 `reset` 写入的是一组配套的值，不会清空。
+
+同一属性在多处设置时，后面的优先：字段自身的值、JSON reactions、函数写法、表单的 `readonly`、`access`。被隐藏的字段保留值，但不参与提交和校验；位于其他步骤或被收起的字段只是不在视图中，仍会提交和校验。
+
+`serializeFields` 把 `fields` 转为 JSON，遇到函数时报错并指出路径。`parseFields` 用 `dataFormSchema` 校验 JSON，并拒绝未注册的值类型。
+
+## 校验 [#validation]
+
+字段在失焦和提交时校验，不会在每次按键时校验，错误显示在字段下方。`required` 会添加校验、星号和 `aria-required`。`validators` 在每个阶段接收函数或 Standard Schema，`onChangeAsync` 会在停止输入 `debounceMs` 后执行。
+
+把 Zod 等 schema 传给 `validator`，可以在提交时校验整个表单，之后在失焦时再次校验。隐藏字段的错误会被忽略。
+
+`onFinish` 接收提交数据。返回或抛出 `{ fields, form }`，错误会显示在对应字段下方和表单上方的提示中；修改字段后，该字段的错误消失。
+
+<ComponentPreview name="data-form-validation" align="start" />
+
+提交失败后，焦点移到第一个出错的字段。出错字段达到 3 个及以上时，顶部会列出摘要，点击每一项可跳到对应字段。
+
+## 列表和分组 [#lists-and-groups]
+
+`DataFormList` 重复一组字段。添加一行后焦点进入新行，删除一行后焦点移到相邻行，两者都会播报给读屏软件。可以设置 `min`、`max` 和 `sortable`。
+
+<ComponentPreview name="data-form-list" align="start" />
+
+## 只读和权限 [#read-only-and-permissions]
+
+`readonly` 用每个值的 `read` 展示，因此详情页和编辑页可以共用一份字段配置。`access` 把字段名（或一个函数）映射为 `edit`、`readonly` 或 `hidden`，优先级高于其他所有规则。对象可以直接内联书写；函数需要 memo。
+
+<ComponentPreview name="data-form-readonly" align="start" />
+
+只读的值仍会提交，因为编辑表单需要回传 id 这类字段。不想提交时，用 `transform` 处理，或用 `access` 隐藏。
+
+## 分步 [#steps]
+
+`steps()` 把表单分成几步，字段通过 `step` 加入某一步。“下一步”只校验当前步骤，“上一步”保留已填的值，最后一步提交全部数据。所有字段始终挂载，最终提交失败时会回到第一个出错的步骤。
+
+<ComponentPreview name="data-form-steps" align="start" />
+
+## 对话框和侧边栏 [#dialogs-and-sheets]
+
+`dialog()` 把表单放进 Dialog，手机上改为底部 Drawer；`sheet()` 从边缘打开，列表保持可见。两者都保持挂载，字段滚动时按钮始终可见，有未保存的修改时关闭前会先确认，提交成功后自动关闭并重置。取消按钮代替重置按钮；同时使用 `steps()` 时，无论插件顺序如何，取消都会和上一步、下一步一起显示。
+
+<ComponentPreview name="data-form-overlay" align="start" />
+
+## 筛选 [#filters]
+
+`layout="grid"` 配合 `collapse` 是查询表单：先显示前几个字段和“展开”按钮，再是重置和查询。展开和收起时高度平滑过渡，新出现的字段淡入；开启减少动态效果时不播放动画。收起的字段仍然挂载，值和校验都会保留。`layout="light"` 配合 `submitOn="change"` 把每个字段显示为一个紧凑按钮并概括当前值；超过 `collapse.count` 的字段收进一个“筛选”弹层，一起应用。每个字段可以用 `lightMode` 指定位置：`inline` 把控件连同标签直接放在这一行，`popover` 显示为点开控件的紧凑按钮，`more` 无论数量多少都放进“筛选”弹层。日期和时间选择器默认 `inline`，其他控件默认 `popover`。
+
+<ComponentPreview name="data-form-filters" align="start" />
+
+## 提交 [#submission]
+
+提交数据会依次：去掉隐藏字段；执行每个字段的 `transform`（返回对象时用多个键替换该字段，例如 `{ startAt, endAt }`）；把日期写成本地 `yyyy-mm-dd`（`dateFormatter`）；`omitNil` 时去掉 `null` 和 `undefined`；最后执行表单的 `transform`。`convertValue` 把存储的值转换成控件需要的形状；只处理已有的值，起始值请用 `initialValue` 设置。
+
+`request` 加载初始值，加载期间控件位置显示骨架屏。重置会回到 `request` 或 `reset(values)` 最近一次设置的值。按 `Cmd`/`Ctrl` + `Enter` 提交。
+
+## 插件 [#plugins]
+
+| 插件 | 作用 |
+| --- | --- |
+| `dialog(options)`、`sheet(options)` | 弹层，支持 `title`、`description`、`trigger`、`open`、`onOpenChange` |
+| `steps(options)` | 由 `items: [{ key, title, description }]` 定义的步骤；`current` 和 `onCurrentChange` 用于受控 |
+| `persistDraft({ key })` | 把未提交的修改连同当前步骤保存到 localStorage，并提示恢复；提交成功后清除草稿。不会保存密码和被隐藏的字段 |
+| `confirmLeave()` | 有未保存的修改时，离开页面前先确认 |
+
+插件是一个带 `name` 的对象，可以包含 `setup`（作为 hook 运行）、`wrapForm`、`slots`（`header`、`footer`）、`isFieldShown`、`beforeSubmit`、`onSubmitInvalid`、`onFinished` 和 `onReset`。`onCancel` 让所有按钮区都显示取消按钮；`persistKeys` 指定草稿要保存的插件状态，例如分步插件用它保存当前步骤。插件列表需要 memo。
+
+## 文案 [#labels]
+
+默认为英文。传入 `labels={dataFormLabelsZhCN}` 使用中文，也可以单独覆盖某几项。schema 产生的校验文案由 schema 自己提供。
+
+## API [#api]
+
+| 属性 | 说明 |
+| --- | --- |
+| `fields` | 字段配置。 |
+| `children` | 渲染在 `fields` 之后的内容，例如 `DataFormItem`。 |
+| `defaultValues` | 初始值。 |
+| `request` | 加载初始值。 |
+| `onFinish` | 接收提交数据；可以返回 `{ fields, form }`。 |
+| `onFinishFailed` | 校验失败或 `onFinish` 抛错时调用。 |
+| `validator` | 用于整个表单的 Standard Schema 或函数。 |
+| `layout` | `vertical`（默认）、`horizontal`、`grid` 或 `light`。 |
+| `columns` | 宽容器下的网格列数。 |
+| `collapse` | `true`，或 `{ count, defaultCollapsed }`。 |
+| `submitOn` | `submit`（默认）或 `change`。 |
+| `readonly`、`access` | 只读展示和字段权限。 |
+| `submitter` | `false` 隐藏按钮；传入节点则替换按钮。 |
+| `stickyFooter` | 长页面中让按钮始终可见。 |
+| `transform`、`convertValue`、`dateFormatter`、`omitNil` | 调整提交数据。 |
+| `plugins`、`labels`、`valueTypes` | 插件、文案和自定义值类型。 |
+| `actionRef` | 接收 `{ submit, reset, validate, validateFields, setValues, setErrors }`。`validate()` 与提交时一样运行字段和表单校验，表单有效时返回 `true`。 |
+| `form` | 由 `useDataForm` 创建的表单，替代上面的选项。 |
+
+字段配置：
+
+| 字段 | 说明 |
+| --- | --- |
+| `name` | 点路径或方括号路径。 |
+| `label`、`description`、`tooltip`、`placeholder` | 控件周围的文字。 |
+| `valueType`、`valueEnum`、`options`、`request`、`fieldProps` | 控件及其选项。 |
+| `hidden`、`required`、`disabled`、`readonly` | 一个值，或由当前值计算的函数。 |
+| `reactions`、`dependencies`、`clearOnChange` | 联动。 |
+| `validators` | `onBlur`、`onSubmit`、`onChange`、`onBlurAsync`、`onChangeAsync`、`debounceMs`。 |
+| `initialValue`、`convertValue`、`transform` | 值的读入和写出。 |
+| `colSpan`、`step`、`className`、`render` | 布局位置和自定义控件。 |
+| `lightMode` | light 布局中的位置：`inline`、`popover` 或 `more`。 |
+
+设计参考了 Ant Design ProForm 的字段配置、值类型和弹层表单，以及 Formily 的字段联动；状态管理基于 [TanStack Form](https://tanstack.com/form)。

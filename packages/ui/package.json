@@ -65,6 +65,7 @@
     "./lib/date-time-field": "./src/lib/date-time-field.tsx",
     "./lib/lazy-component": "./src/lib/lazy-component.tsx",
     "./components/code-editor": "./src/components/code-editor/index.tsx",
+    "./components/data-form": "./src/components/data-form/index.tsx",
     "./components/data-table": "./src/components/data-table/index.tsx",
     "./components/image": "./src/components/image/index.tsx",
     "./components/*": "./src/components/*.tsx",

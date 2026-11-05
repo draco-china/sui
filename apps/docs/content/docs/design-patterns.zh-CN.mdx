@@ -36,7 +36,7 @@ description: 在导航、操作、数据录入、数据展示、浮层、反馈�
 
 ## 数据录入 [#data-entry]
 
-- 表单用 [Field](/zh-CN/docs/components/field) 组合标签、说明和错误信息，需要校验时用 [TanStack Form 区块](/zh-CN/docs/blocks/tanstack-form)。
+- 表单用 [DataForm](/zh-CN/docs/components/data-form) 构建，它在 [Field](/zh-CN/docs/components/field) 的基础上加入校验、字段联动、分步和弹层表单。只有几个控件且不需要提交时，直接用 Field。
 - 每个字段都有可见的标签。占位文字只说明格式，不能当作唯一的标签。
 - 按选项数量选择控件：开关或复选框表示开和关，两到五项用单选按钮，再多用下拉选择，很长的列表用带搜索框（`SelectSearch`）的下拉选择。
 - 在字段失去焦点或提交时校验，不要每输入一个字符就校验；错误信息用 `destructive` 文字显示在字段下方，并保留用户已经输入的内容。

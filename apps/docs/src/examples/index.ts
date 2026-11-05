@@ -22,6 +22,16 @@ export const examples = {
   "data-table-virtual": () => import("./variants/data-table-virtual"),
   "data-table-composition": () => import("./variants/data-table-composition"),
   "data-table-chips": () => import("./variants/data-table-chips"),
+  "data-form-demo": () => import("./variants/data-form-demo"),
+  "data-form-value-types": () => import("./variants/data-form-value-types"),
+  "data-form-composition": () => import("./variants/data-form-composition"),
+  "data-form-reactions": () => import("./variants/data-form-reactions"),
+  "data-form-validation": () => import("./variants/data-form-validation"),
+  "data-form-list": () => import("./variants/data-form-list"),
+  "data-form-readonly": () => import("./variants/data-form-readonly"),
+  "data-form-steps": () => import("./variants/data-form-steps"),
+  "data-form-overlay": () => import("./variants/data-form-overlay"),
+  "data-form-filters": () => import("./variants/data-form-filters"),
   "block-form-report": () => import("./variants/block-form-report"),
   "block-form-profile": () => import("./variants/block-form-profile"),
   "block-delete-resource": () => import("./variants/block-delete-resource"),
@@ -671,6 +681,19 @@ export const sourceFiles = {
   "data-table-composition": () =>
     import("./variants/data-table-composition.tsx?raw"),
   "data-table-chips": () => import("./variants/data-table-chips.tsx?raw"),
+  "data-form-demo": () => import("./variants/data-form-demo.tsx?raw"),
+  "data-form-value-types": () =>
+    import("./variants/data-form-value-types.tsx?raw"),
+  "data-form-composition": () =>
+    import("./variants/data-form-composition.tsx?raw"),
+  "data-form-reactions": () => import("./variants/data-form-reactions.tsx?raw"),
+  "data-form-validation": () =>
+    import("./variants/data-form-validation.tsx?raw"),
+  "data-form-list": () => import("./variants/data-form-list.tsx?raw"),
+  "data-form-readonly": () => import("./variants/data-form-readonly.tsx?raw"),
+  "data-form-steps": () => import("./variants/data-form-steps.tsx?raw"),
+  "data-form-overlay": () => import("./variants/data-form-overlay.tsx?raw"),
+  "data-form-filters": () => import("./variants/data-form-filters.tsx?raw"),
   "block-form-report": () => import("./variants/block-form-report.tsx?raw"),
   "block-form-profile": () => import("./variants/block-form-profile.tsx?raw"),
   "block-delete-resource": () =>

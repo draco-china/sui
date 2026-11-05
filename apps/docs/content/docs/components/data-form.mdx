@@ -1,0 +1,240 @@
+---
+title: Data Form
+description: A form built by hand or from field configuration, with linked fields, validation, lists, steps and overlays.
+component: true
+---
+
+<ComponentPreview name="data-form-demo" align="start" />
+
+## Installation
+
+```npm
+npx shadcn@latest add @sui/data-form
+```
+
+Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
+
+```tsx
+import { DataForm, DataFormItem } from "@workspace/ui/components/data-form"
+```
+
+## Usage
+
+Wrap any control in `DataFormItem`. It adds the label, description and error from [Field](/docs/components/field), binds the value and blur, and sets `aria-invalid`, `aria-required` and `aria-describedby`. The control keeps its own props.
+
+```tsx
+<DataForm onFinish={async (values) => save(values)}>
+  <DataFormItem name="title" label="Title" required>
+    <Input placeholder="e.g. Export fails on Safari" />
+  </DataFormItem>
+  <DataFormItem name="urgent" label="Blocks my work">
+    <Checkbox />
+  </DataFormItem>
+</DataForm>
+```
+
+Or describe fields once and let their `valueType` pick the control. Both write the same markup and can be mixed: `fields` render first, then `children`.
+
+```tsx
+<DataForm
+  fields={[
+    { name: "name", label: "Name", required: true },
+    { name: "role", label: "Role", valueType: "select", valueEnum: { admin: "Admin", viewer: "Viewer" } },
+    { name: "notifications", label: "Email me product updates", valueType: "switch" },
+  ]}
+  onFinish={save}
+/>
+```
+
+`DataForm` is the default arrangement of smaller parts. Compose them when a page needs a different one:
+
+<ComponentPreview name="data-form-composition" align="start" />
+
+| Part | Renders |
+| --- | --- |
+| `DataFormRoot` | The `<form>` and its providers; takes `form`, `layout`, `columns` and `collapse` |
+| `DataFormFields` | The form's `fields`, or the ones passed |
+| `DataFormField` | One field by its value type, the same shape as an item of `fields` |
+| `DataFormItem` | Any control, framed and bound |
+| `DataFormGroup` | A titled group, separated by space rather than a card |
+| `DataFormList` | Rows of the same fields |
+| `DataFormFieldSet` | Several controls that make one value |
+| `DataFormDependency` | Content drawn from the values of named fields |
+| `DataFormErrorSummary` | The form's own error, and a list of fields after a failed submit of a long form |
+| `DataFormFooter`, `DataFormReset`, `DataFormSubmit` | The buttons: Reset before Submit, a spinner while the request is in flight |
+| `DataFormCancel` | Cancel, when a plugin such as `dialog()` gives the form one |
+| `DataFormFill` | Marks a fixed-height frame: inside it the fields scroll and the footer stays in view |
+
+## Value types
+
+Each value type has an `edit` control and a `read` view. The read view is used by `readonly` forms and shows empty values as a muted dash.
+
+| `valueType` | Control | Value |
+| --- | --- | --- |
+| `text`, `password`, `textarea` | Input, Textarea | `string` |
+| `digit`, `money`, `percent` | Number input; read with `Intl.NumberFormat` and `fieldProps.format` | `number` |
+| `digitRange` | Two number inputs | `[from, to]` |
+| `select`, `multiSelect` | Select; a search box appears past 10 options | `string`, `string[]` |
+| `radio`, `checkboxGroup` | RadioGroup, Checkbox list | `string`, `string[]` |
+| `checkbox`, `switch`, `boolean` | Checkbox, Switch, Yes/No select | `boolean` |
+| `date`, `dateTime`, `dateRange`, `dateTimeRange` | DatePicker | `Date`, `[Date, Date]` |
+| `time`, `timeRange` | TimePicker | `"hh:mm"`, `[from, to]` |
+| `color`, `tags`, `slider` | ColorPicker, TagInput, Slider | `string`, `string[]`, `number` |
+
+`number`, `enum`, `numberRange`, `datetime` and `datetimeRange` are aliases of `digit`, `select`, `digitRange`, `dateTime` and `dateTimeRange`, the names DataTable uses. Date types keep `Date` values; `fieldProps.valueFormat: "string"` keeps local `yyyy-mm-dd` strings instead.
+
+Every built-in type, in its edit and read-only views:
+
+<ComponentPreview name="data-form-value-types" align="start" />
+
+Pick by option count, as the [data entry pattern](/docs/design-patterns#data-entry) suggests: `switch` or `checkbox` for on and off, `radio` for two to five options, `select` for more. Register your own types once with `ValueTypeProvider`; DataForm reads them by name.
+
+```tsx
+<ValueTypeProvider valueTypes={{ rating: { edit: (props) => <Rating {...props} />, text: ({ value }) => `${value} / 5` } }}>
+  <App />
+</ValueTypeProvider>
+```
+
+A definition can also set `lightMode` (where it sits in a light row), `prefix` (it shows a label inside), `dateMode` (how its dates are submitted) and `persist: false` (kept out of drafts, as passwords are).
+
+Options come from `request`, then `options`, then `valueEnum`. `valueEnum` also gives each option a badge `color` in read-only views.
+
+## Linked fields
+
+Link fields with functions or with JSON. A function receives the current values:
+
+```tsx
+{
+  name: "city",
+  valueType: "select",
+  dependencies: ["province"],
+  clearOnChange: true,
+  disabled: (values) => !values.province,
+  options: (values) => citiesOf(values.province),
+}
+```
+
+JSON reactions use the same twelve operators as DataTable filters and never evaluate code, so a server can send them:
+
+```json
+{
+  "name": "taxId",
+  "reactions": [{
+    "when": { "logic": "and", "rules": [{ "field": "invoice", "operator": "eq", "value": "company" }] },
+    "fulfill": { "required": true },
+    "otherwise": { "hidden": true, "value": null }
+  }]
+}
+```
+
+<ComponentPreview name="data-form-reactions" align="start" />
+
+Each field follows only the values it reads, so a change renders the fields that depend on it and no others. Reactions declare their fields; list `dependencies` for function props, or the field follows every value. `clearOnChange` empties a field when someone edits a field it depends on; loading, restoring a draft or `reset` set values that belong together and clear nothing.
+
+When the same property is set in several places, the later one wins: the field's own value, JSON reactions, function props, the form's `readonly`, then `access`. A hidden field keeps its value but is left out of submission and validation; fields on another step or behind Expand are only out of view, so they are sent and checked.
+
+`serializeFields` turns `fields` into JSON and stops at the first function, naming its path. `parseFields` checks JSON against `dataFormSchema` and rejects value types that are not registered.
+
+## Validation
+
+Fields validate when they lose focus and on submit, never on each keystroke, and the message appears under the field. `required` adds a check, an asterisk and `aria-required`. `validators` take a function or a Standard Schema per phase, and `onChangeAsync` waits `debounceMs` after typing stops.
+
+Pass a schema such as Zod to `validator` to check the whole form on submit, then on blur. Errors for hidden fields are dropped.
+
+`onFinish` receives the payload. Return or throw `{ fields, form }` and the messages land under their fields and in an alert above the form; editing a field clears its message.
+
+<ComponentPreview name="data-form-validation" align="start" />
+
+After a failed submit, focus moves to the first invalid field. In a form with three or more errors, a summary lists them, and each entry moves focus to its field.
+
+## Lists and groups
+
+`DataFormList` repeats a set of fields. Adding a row moves focus into it, removing one moves focus to a neighbor, and both are announced to screen readers. Set `min`, `max` and `sortable`.
+
+<ComponentPreview name="data-form-list" align="start" />
+
+## Read-only and permissions
+
+`readonly` shows every value through its read view, so one set of fields serves both a detail page and an edit page. `access` maps field names, or a function, to `edit`, `readonly` or `hidden`; it wins over every other rule. An inline map can be written in place; memoize a function.
+
+<ComponentPreview name="data-form-readonly" align="start" />
+
+Read-only values are submitted, as an edit form needs ids. Use `transform`, or `access` to hide a field, to leave one out.
+
+## Steps
+
+`steps()` splits the form. Fields join a step with `step`. Next validates the current step only, Previous keeps the values, and the last step submits everything. Every field stays mounted, so a failed final submit returns to the first step with an error.
+
+<ComponentPreview name="data-form-steps" align="start" />
+
+## Dialogs and sheets
+
+`dialog()` puts the form in a Dialog, and a bottom Drawer on phones; `sheet()` opens it from an edge while the list stays in view. Both stay mounted, keep the buttons in view while the fields scroll, ask before discarding changes, and close and reset after a successful submit. Cancel takes Reset's place, and joins the steps' Previous and Next when `steps()` is in the list too, in either order.
+
+<ComponentPreview name="data-form-overlay" align="start" />
+
+## Filters
+
+`layout="grid"` with `collapse` is a query form: the first fields and an Expand button, then Reset and Search. Expanding and collapsing animate the height while the extra fields fade in, and drop the motion under reduced motion; collapsed fields stay mounted, so their values and validation remain. `layout="light"` with `submitOn="change"` shows each field as a compact button that sums up its value; fields past `collapse.count` share one Filters popover and apply together. Set `lightMode` per field to choose: `inline` puts the control itself on the row with its label, `popover` a compact button that opens it, and `more` the Filters popover whatever the count. Date and time pickers are `inline` by default, other controls `popover`.
+
+<ComponentPreview name="data-form-filters" align="start" />
+
+## Submission
+
+The payload leaves out hidden fields, then applies each field's `transform` (return an object to replace the field with several keys, such as `{ startAt, endAt }`), writes dates as local `yyyy-mm-dd` (`dateFormatter`), drops `null` and `undefined` with `omitNil`, and finally runs the form's `transform`. `convertValue` reads stored values into the shape a control uses; it runs only on values that are present, so give a starting value with `initialValue`.
+
+`request` loads the initial values, with skeletons in place of the controls. Reset returns to the values `request` or `reset(values)` last set. `Cmd`/`Ctrl` + `Enter` submits.
+
+## Plugins
+
+| Plugin | Adds |
+| --- | --- |
+| `dialog(options)`, `sheet(options)` | An overlay with `title`, `description`, `trigger`, `open`, `onOpenChange` |
+| `steps(options)` | Steps from `items: [{ key, title, description }]`; `current` and `onCurrentChange` to control them |
+| `persistDraft({ key })` | Keeps unsent changes in localStorage, with the current step, and offers to restore them; a successful submit clears the draft. Passwords and hidden fields are never stored |
+| `confirmLeave()` | Asks before leaving the page with unsaved changes |
+
+A plugin is an object with a `name` and any of `setup` (runs as a hook), `wrapForm`, `slots` (`header`, `footer`), `isFieldShown`, `beforeSubmit`, `onSubmitInvalid`, `onFinished` and `onReset`. `onCancel` gives every footer a Cancel button, and `persistKeys` names the plugin state a saved draft keeps, as the steps keep the current step. Memoize the plugin list.
+
+## Labels
+
+English is the default. Pass `labels={dataFormLabelsZhCN}` for Chinese, or override individual entries. Validation messages from a schema come from the schema.
+
+## API
+
+| Prop | Description |
+| --- | --- |
+| `fields` | Field configuration. |
+| `children` | Content after `fields`, such as `DataFormItem`. |
+| `defaultValues` | Initial values. |
+| `request` | Loads the initial values. |
+| `onFinish` | Receives the payload; may return `{ fields, form }`. |
+| `onFinishFailed` | Called when validation fails or `onFinish` throws. |
+| `validator` | A Standard Schema or function for the whole form. |
+| `layout` | `vertical` (default), `horizontal`, `grid` or `light`. |
+| `columns` | Grid columns on wide containers. |
+| `collapse` | `true`, or `{ count, defaultCollapsed }`. |
+| `submitOn` | `submit` (default) or `change`. |
+| `readonly`, `access` | Read-only views and per-field permissions. |
+| `submitter` | `false` hides the buttons; a node replaces them. |
+| `stickyFooter` | Keeps the buttons in view on a long page. |
+| `transform`, `convertValue`, `dateFormatter`, `omitNil` | Payload shaping. |
+| `plugins`, `labels`, `valueTypes` | Plugins, text and custom value types. |
+| `actionRef` | Receives `{ submit, reset, validate, validateFields, setValues, setErrors }`. `validate()` runs field and form validators, as submit does, and resolves `true` when the form is valid. |
+| `form` | A form from `useDataForm`, instead of the options above. |
+
+Field configuration:
+
+| Field | Description |
+| --- | --- |
+| `name` | A dot or bracket path. |
+| `label`, `description`, `tooltip`, `placeholder` | Text around the control. |
+| `valueType`, `valueEnum`, `options`, `request`, `fieldProps` | The control and its options. |
+| `hidden`, `required`, `disabled`, `readonly` | A value or a function of the values. |
+| `reactions`, `dependencies`, `clearOnChange` | Linking. |
+| `validators` | `onBlur`, `onSubmit`, `onChange`, `onBlurAsync`, `onChangeAsync`, `debounceMs`. |
+| `initialValue`, `convertValue`, `transform` | Values in and out. |
+| `colSpan`, `step`, `className`, `render` | Placement and a custom control. |
+| `lightMode` | `inline`, `popover` or `more` in a light layout. |
+
+The design draws on Ant Design ProForm for field configuration, value types and overlay forms, and on Formily for field reactions; state runs on [TanStack Form](https://tanstack.com/form).

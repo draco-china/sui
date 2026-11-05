@@ -53,6 +53,7 @@ const [time, setTime] = useState<string>();
 | `hourCycle` | `"h12" \| "h23"` | 跟随 `locale`。 |
 | `locale`、`labels` | `string`、`DateTimeLabelOverrides` | 同 Date Picker。 |
 | `name`、`id`、`disabled` | | 表单字段名、第一个分段的 id、禁用。 |
+| `prefix` | `ReactNode` | 显示在字段内、值之前的标签，用于筛选行；仍需用 `aria-label` 为字段命名。 |
 | `glass`、`frosted` | `boolean \| GlassConfig`、`boolean` | 作用于输入框和滚轮。 |
 
 导出 `TimePicker`、`TimePickerProps`、`TimeValue`、`TimeRange`、`HourCycle`、`dateTimeLabels`、`dateTimeLabelsZhCN`。

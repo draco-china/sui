@@ -59,6 +59,8 @@ interface DatePickerBaseProps extends GlassProps {
   "aria-label"?: string;
   "aria-labelledby"?: string;
   "aria-invalid"?: boolean;
+  /** A label inside the field, before the date, as filter rows show it. */
+  prefix?: ReactNode;
   /** Further Calendar props, such as `captionLayout` or `numberOfMonths`. */
   calendarProps?: Partial<PropsBase>;
 }
@@ -255,6 +257,7 @@ function SingleDatePicker(props: DatePickerSingleProps) {
         invalid={invalid}
         glass={props.glass}
         frosted={props.frosted}
+        prefix={props.prefix}
         className={props.className}
         onClear={value ? () => setValue(undefined) : undefined}
         overlay={
@@ -422,6 +425,7 @@ function RangeDatePicker(props: DatePickerRangeProps) {
         invalid={invalid}
         glass={props.glass}
         frosted={props.frosted}
+        prefix={props.prefix}
         // A range is as wide as its two dates, not the row it sits in.
         className={cn("w-fit max-w-full", props.className)}
         onClear={

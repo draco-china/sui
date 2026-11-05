@@ -2,7 +2,7 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ClockIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import {
   type DateTimeLabelOverrides,
   type DateTimeParts,
@@ -40,6 +40,8 @@ interface TimePickerBaseProps extends GlassProps {
   disabled?: boolean;
   /** Submits the time string through hidden inputs. */
   name?: string;
+  /** A label inside the field, before the time, as filter rows show it. */
+  prefix?: ReactNode;
   /** Lands on the first segment. */
   id?: string;
   className?: string;
@@ -138,6 +140,7 @@ function TimePicker(props: TimePickerProps) {
         invalid={props["aria-invalid"]}
         glass={props.glass}
         frosted={props.frosted}
+        prefix={props.prefix}
         className={props.className}
         onClear={
           hasValue

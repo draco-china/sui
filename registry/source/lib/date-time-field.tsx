@@ -390,6 +390,8 @@ export interface PickerFrameProps extends GlassProps {
   disabled?: boolean;
   invalid?: boolean;
   className?: string;
+  /** A label inside the field, before the value, as filter rows show it. */
+  prefix?: ReactNode;
 }
 
 /** The panel opens against the whole field, not just its icon button. */
@@ -407,6 +409,7 @@ export function PickerFrame({
   className,
   glass,
   frosted,
+  prefix,
 }: PickerFrameProps) {
   const anchor = useRef<HTMLDivElement>(null);
   return (
@@ -422,6 +425,11 @@ export function PickerFrame({
           className,
         )}
       >
+        {prefix ? (
+          <InputGroupAddon className="whitespace-nowrap text-muted-foreground">
+            {prefix}
+          </InputGroupAddon>
+        ) : null}
         {children}
         <InputGroupAddon align="inline-end" className="gap-0.5">
           {onClear && !disabled && (
