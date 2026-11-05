@@ -64,7 +64,7 @@ Requests are cancelled when parameters change, so late responses never replace n
 
 Columns with `keyword` share the toolbar search box. Enum columns get quick filters with option counts. Features beyond the core are plugins: `density()`, `columnSettings()` (visibility, drag ordering, pinning and header-edge width handles) and `exportCsv()` (current page, every match, or the selection).
 
-The toolbar stays on one row. The search box and filters scroll sideways and the actions stay at the end. Date range columns sit on the row next to the quick filters, with `search.presets` for quick ranges such as the last seven days. Past `maxFilters` (2 by default), the first filter stays and the rest share one Filters button (`DataTableMoreFilters`), applied together. On phones only the search box stays on the row. The `toolbarSearch` slot adds inputs right after the search box, and `DataTableChoiceMenu` is an icon button with a single-choice menu for toolbar options.
+The toolbar stays on one row. The search box and filters scroll sideways and the actions stay at the end. Date range columns sit on the row next to the quick filters, with `search.presets` for quick ranges such as the last seven days. Past `maxFilters` (2 by default), the first filter stays and the rest share one Filters button (`DataTableMoreFilters`), applied together. The filters are a light [Data Form](/docs/components/data-form): each quick filter is a compact button that sums up its value and applies at once, and the Filters panel is a draft form applied with Apply. Add `lightForm({ maxFilters })` to set it among other plugins. A column chooses where its quick filter goes with `filter: "inline"` (its dropdown on the row), `"popover"` (the default, with option counts) or `"more"` (always in Filters); date ranges take `search: { lightMode }`. On phones only the search box stays on the row. The `toolbarSearch` slot adds inputs right after the search box, and `DataTableChoiceMenu` is an icon button with a single-choice menu for toolbar options.
 
 <ComponentPreview name="data-table-toolbar" align="start" />
 
@@ -86,6 +86,8 @@ The toolbar stays on one row. The search box and filters scroll sideways and the
 
 `queryForm()` builds a collapsible multi-field form from columns with `search`. Fields apply together when submitted. Field types are `text`, `number`, `numberRange`, `select`, `multiSelect`, `date`, `dateRange`, `datetimeRange`, `boolean` and `custom` (with `render`). Use `order` and `colSpan` for placement, `options` as a function and `dependencies` for linked fields such as province and city, `searchOnly` for fields without a table column, and `transform` to rename request parameters, for example a date range to `{ createdFrom, createdTo }`.
 
+The form is a [Data Form](/docs/components/data-form) grid, so `search` also takes field options such as `reactions`, `validators`, `valueType` and `fieldProps`. Values keep the shapes the table stores, such as local date strings, so URL sync and requests read them as before.
+
 <ComponentPreview name="data-table-query-form" align="start" />
 
 ## Advanced filter
@@ -93,6 +95,20 @@ The toolbar stays on one row. The search box and filters scroll sideways and the
 `advancedFilter()` adds a builder for field, operator and value rules joined with AND or OR. Operators follow the value type of each column. Pass `storageKey` to save named views in local storage.
 
 <ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## Editing rows [#editing-rows]
+
+`editable({ onSave })` edits a row in place. Each data column becomes the control of its value type, with the same validation and linking as a [Data Form](/docs/components/data-form) field; `form` on a column adds field options such as `required`, or `form: false` keeps it as text. Enter in a text field saves and Escape cancels; keys inside a select or calendar stay with that control. The Edit, Save and Cancel buttons sit in a column pinned to the end, kept out of column settings and exports. Return or throw `{ fields, form }` from `onSave` to show errors in the row; the row stays open until a save succeeds, and the page updates its own rows.
+
+<ComponentPreview name="data-table-editable" align="start" />
+
+`access` maps column keys to `hidden`, which leaves a column out of the table, its filters and its exports, or `readonly`, which keeps `editable()` from editing it. An inline map can be written in place; a function is compared by identity, so memoize it.
+
+## Forms from columns [#forms-from-columns]
+
+`toFormFields(columns)` turns the table's columns into DataForm fields, so one definition serves the table, its filters, its row editing and its create and edit forms. The table's value types are DataForm value types too (a `boolean` column edits as a `switch`), `valueEnum` becomes the options, and `form` on a column adds field options or leaves it out.
+
+<ComponentPreview name="data-table-form" align="start" />
 
 ## Clearing conditions [#clearing-conditions]
 
@@ -162,7 +178,7 @@ A plugin is an object with a `name` and any of these hooks into the core:
 
 | Field | Purpose |
 | --- | --- |
-| `slots` | Render into `header`, `toolbarStart`, `toolbarSearch`, `toolbarEnd` or `floating` |
+| `slots` | Render into `header`, `toolbarStart`, `toolbarSearch`, `toolbarFilters` (replaces the filters on the row), `toolbarEnd` or `floating` |
 | `columns` | Add utility columns, such as checkboxes or handles |
 | `features` | Turn on `virtual`, `dragSort`, `expandable` or `resizable` |
 | `defaultView`, `initialView`, `renderView` | The starting view, a view restored for the reader (it wins over `defaultView`), or the rows in a view other than the table |
@@ -193,6 +209,7 @@ English is the default. Pass `labels={dataTableLabelsZhCN}` for Chinese, or over
 | `layout` | `fill` (default) or `auto`. |
 | `responsive` | Cards on narrow screens; defaults to `true`. |
 | `loading` | Loading state for local data. |
+| `access` | Column permissions by key: `hidden` or `readonly`. |
 | `labels` | Text overrides. |
 | `actionRef` | Receives `{ reload, reset }`. |
 | `table` | A table from `useDataTable`, instead of the options above. |

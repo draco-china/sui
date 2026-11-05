@@ -13,10 +13,12 @@ import {
   requestSearch,
   sortRows,
   toCsv,
+  toFormFields,
   views,
   writeUrlState,
 } from "@workspace/ui/components/data-table";
 import {
+  formatValue,
   normalizeColumns,
   optionText,
 } from "@workspace/ui/components/data-table/columns";
@@ -439,5 +441,47 @@ describe("views", () => {
     );
     expect(html).toContain('data-slot="data-table-grid"');
     expect(html).toContain('data-slot="data-table-view"');
+  });
+});
+
+describe("forms from columns", () => {
+  test("toFormFields maps value types and honors form options", () => {
+    const fields = toFormFields<Row>([
+      { key: "name", title: "Name", form: { required: true } },
+      {
+        key: "status",
+        title: "Status",
+        valueEnum: [{ value: "on", label: "On" }],
+      },
+      {
+        key: "amount",
+        title: "Spend",
+        valueType: "money",
+        format: { currency: "CNY" },
+      },
+      { key: "createdAt", title: "Created", valueType: "date", form: false },
+      { id: "actions", render: () => null },
+    ] as DataTableColumn<Row>[]);
+    expect(fields.map((field) => [field.name, field.valueType])).toEqual([
+      ["name", "text"],
+      // DataForm registers the table's names, `enum` among them.
+      ["status", "enum"],
+      ["amount", "money"],
+    ]);
+    expect(fields[0]?.required).toBe(true);
+    expect(fields[2]?.fieldProps).toEqual({ format: { currency: "CNY" } });
+  });
+
+  test("cells format through the shared value types", () => {
+    const context = {
+      locale: "en-US",
+      labels: dataTableLabels,
+      format: undefined,
+    };
+    expect(formatValue("boolean", "false", context)).toBe("No");
+    expect(formatValue("boolean", 1, context)).toBe("Yes");
+    expect(formatValue("money", 12.5, context)).toBe("$12.50");
+    expect(formatValue("percent", 12.5, context)).toBe("12.5%");
+    expect(formatValue("date", "2026-01-02", context)).toBe("Jan 2, 2026");
   });
 });

@@ -2411,6 +2411,7 @@
         "@dnd-kit/core@6.3.1",
         "@dnd-kit/sortable@10.0.0",
         "@dnd-kit/utilities@3.2.2",
+        "@tanstack/react-form@^1.33.5",
         "class-variance-authority@^0.7.1",
         "cmdk@^1.1.1",
         "cn@^0.4.0",
@@ -2425,6 +2426,11 @@
       "devDependencies": [],
       "registryDependencies": [],
       "files": [
+        {
+          "path": "packages/ui/src/components/alert.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert.tsx"
+        },
         {
           "path": "packages/ui/src/components/badge.tsx",
           "type": "registry:ui",
@@ -2456,6 +2462,11 @@
           "target": "@ui/checkbox.tsx"
         },
         {
+          "path": "packages/ui/src/components/color-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/color-picker.tsx"
+        },
+        {
           "path": "packages/ui/src/components/command.tsx",
           "type": "registry:ui",
           "target": "@ui/command.tsx"
@@ -2469,6 +2480,126 @@
           "path": "packages/ui/src/components/copy-text.tsx",
           "type": "registry:ui",
           "target": "@ui/copy-text.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/conditions.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/conditions.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/context.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/context.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/dom.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/dom.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/engine.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/engine.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/field-shell.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/field-shell.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/field.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/fields.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/fields.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/labels.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/labels.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/light-field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/light-field.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/light-overflow.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/light-overflow.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/parts.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/parts.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/path.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/path.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/types.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/types.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/use-data-form.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/use-data-form.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/use-field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/use-field.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/choice.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/choice.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/date.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/date.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/index.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/misc.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/misc.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/number.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/number.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/prefix.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/prefix.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/shared.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/shared.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/text.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-form/value-types/types.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-form/value-types/types.ts"
         },
         {
           "path": "packages/ui/src/components/data-table/column-header.tsx",
@@ -2496,14 +2627,19 @@
           "target": "@ui/data-table/data-table.tsx"
         },
         {
-          "path": "packages/ui/src/components/data-table/date-field.tsx",
-          "type": "registry:ui",
-          "target": "@ui/data-table/date-field.tsx"
-        },
-        {
           "path": "packages/ui/src/components/data-table/engine.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/engine.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/filter-controls.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/filter-controls.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/form-fields.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-table/form-fields.ts"
         },
         {
           "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
@@ -2551,6 +2687,11 @@
           "target": "@ui/data-table/plugins/drag-sort.tsx"
         },
         {
+          "path": "packages/ui/src/components/data-table/plugins/editable.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/editable.tsx"
+        },
+        {
           "path": "packages/ui/src/components/data-table/plugins/expandable.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/expandable.tsx"
@@ -2559,6 +2700,11 @@
           "path": "packages/ui/src/components/data-table/plugins/index.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/index.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/plugins/light-form.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/light-form.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/plugins/persist.ts",
@@ -2631,6 +2777,11 @@
           "target": "@ui/feedback.tsx"
         },
         {
+          "path": "packages/ui/src/components/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        },
+        {
           "path": "packages/ui/src/components/input-group.tsx",
           "type": "registry:ui",
           "target": "@ui/input-group.tsx"
@@ -2644,6 +2795,11 @@
           "path": "packages/ui/src/components/label.tsx",
           "type": "registry:ui",
           "target": "@ui/label.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/loader.tsx",
+          "type": "registry:ui",
+          "target": "@ui/loader.tsx"
         },
         {
           "path": "packages/ui/src/components/long-text.tsx",
@@ -2666,6 +2822,11 @@
           "target": "@ui/popover.tsx"
         },
         {
+          "path": "packages/ui/src/components/radio-group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/radio-group.tsx"
+        },
+        {
           "path": "packages/ui/src/components/select.tsx",
           "type": "registry:ui",
           "target": "@ui/select.tsx"
@@ -2681,9 +2842,29 @@
           "target": "@ui/skeleton.tsx"
         },
         {
+          "path": "packages/ui/src/components/slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/slider.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/switch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/switch.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/tag-input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/tag-input.tsx"
+        },
+        {
           "path": "packages/ui/src/components/textarea.tsx",
           "type": "registry:ui",
           "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/time-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/time-picker.tsx"
         },
         {
           "path": "packages/ui/src/components/tooltip.tsx",
@@ -2719,6 +2900,11 @@
           "path": "packages/ui/src/lib/bottom-sheet.ts",
           "type": "registry:lib",
           "target": "@lib/bottom-sheet.ts"
+        },
+        {
+          "path": "packages/ui/src/lib/color/model.ts",
+          "type": "registry:lib",
+          "target": "@lib/color/model.ts"
         },
         {
           "path": "packages/ui/src/lib/date-time-field.tsx",
@@ -11158,14 +11344,19 @@
           "target": "@ui/data-table/data-table.tsx"
         },
         {
-          "path": "packages/ui/src/components/data-table/date-field.tsx",
-          "type": "registry:ui",
-          "target": "@ui/data-table/date-field.tsx"
-        },
-        {
           "path": "packages/ui/src/components/data-table/engine.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/engine.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/filter-controls.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/filter-controls.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/form-fields.ts",
+          "type": "registry:ui",
+          "target": "@ui/data-table/form-fields.ts"
         },
         {
           "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
@@ -11213,6 +11404,11 @@
           "target": "@ui/data-table/plugins/drag-sort.tsx"
         },
         {
+          "path": "packages/ui/src/components/data-table/plugins/editable.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/editable.tsx"
+        },
+        {
           "path": "packages/ui/src/components/data-table/plugins/expandable.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/expandable.tsx"
@@ -11221,6 +11417,11 @@
           "path": "packages/ui/src/components/data-table/plugins/index.ts",
           "type": "registry:ui",
           "target": "@ui/data-table/plugins/index.ts"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/plugins/light-form.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/plugins/light-form.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/plugins/persist.ts",
@@ -11935,8 +12136,9 @@
           "@/components/ui/data-table/content",
           "@/components/ui/data-table/context",
           "@/components/ui/data-table/data-table",
-          "@/components/ui/data-table/date-field",
           "@/components/ui/data-table/engine",
+          "@/components/ui/data-table/filter-controls",
+          "@/components/ui/data-table/form-fields",
           "@/components/ui/data-table/icon-tooltip",
           "@/components/ui/data-table",
           "@/components/ui/data-table/labels",
@@ -11946,8 +12148,10 @@
           "@/components/ui/data-table/plugins/bulk-actions",
           "@/components/ui/data-table/plugins/column-settings",
           "@/components/ui/data-table/plugins/drag-sort",
+          "@/components/ui/data-table/plugins/editable",
           "@/components/ui/data-table/plugins/expandable",
           "@/components/ui/data-table/plugins",
+          "@/components/ui/data-table/plugins/light-form",
           "@/components/ui/data-table/plugins/persist",
           "@/components/ui/data-table/plugins/query-form",
           "@/components/ui/data-table/plugins/toolbar-buttons",

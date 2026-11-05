@@ -3,8 +3,15 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { CopyText } from "@workspace/ui/components/copy-text";
 import { LongText } from "@workspace/ui/components/long-text";
-import { isValidElement, type ReactNode } from "react";
-import { getPath, isEmptyValue, toTime } from "./engine";
+import type { ReactNode } from "react";
+import {
+  type DataFormLabels,
+  dataFormLabelsZhCN,
+  resolveDataFormLabels,
+} from "../data-form/labels";
+import { builtInValueTypes, valueText } from "../data-form/value-types";
+import { findOption, nodeText } from "../data-form/value-types/shared";
+import { getPath, isEmptyValue } from "./engine";
 import type { DataTableLabels } from "./labels";
 import type {
   DataTableColumn,
@@ -19,74 +26,66 @@ import type {
 type Format = DataTableDataColumn<unknown>["format"];
 
 interface FormatContext {
-  readonly locale: string | undefined;
   readonly labels: DataTableLabels;
   readonly format: Format;
   readonly valueEnum?: readonly DataTableOption[];
 }
 
-function formatNumber(value: unknown, locale?: string, options?: Format) {
-  const number = Number(value);
-  if (Number.isNaN(number)) return String(value);
-  return new Intl.NumberFormat(locale, options).format(number);
+const formLabelCache = new WeakMap<DataTableLabels, DataFormLabels>();
+
+/** DataForm's labels with the table's locale and its shared words. */
+export function tableFormLabels(labels: DataTableLabels): DataFormLabels {
+  let cached = formLabelCache.get(labels);
+  if (!cached) {
+    const base = resolveDataFormLabels(
+      labels.locale?.startsWith("zh") ? dataFormLabelsZhCN : undefined,
+    );
+    cached = {
+      ...base,
+      locale: labels.locale,
+      yes: labels.yes,
+      no: labels.no,
+      any: labels.any,
+      reset: labels.reset,
+      query: labels.query,
+      expand: labels.expand,
+      collapse: labels.collapse,
+      filters: labels.moreFilters,
+      apply: labels.applyFilter,
+      rangeStart: labels.rangeStart,
+      rangeEnd: labels.rangeEnd,
+      search: labels.optionSearch,
+      noOptions: labels.noOptions,
+      selected: labels.selected,
+    };
+    formLabelCache.set(labels, cached);
+  }
+  return cached;
 }
 
-// toTime reads a calendar date as local midnight, so it formats as that day.
-function formatDate(value: unknown, locale?: string, options?: Format) {
-  const time = toTime(value);
-  if (time === undefined) return String(value);
-  return new Intl.DateTimeFormat(locale, options).format(time);
-}
+const noFieldProps = {};
 
-function optionLabel(value: unknown, options?: readonly DataTableOption[]) {
-  return options?.find((option) => option.value === String(value));
-}
-
-/** Plain text of a value, shared by cells, chips and CSV exports. */
-const textFormatters: Record<
-  DataTableValueType,
-  (value: unknown, context: FormatContext) => string
-> = {
-  text: (value) => String(value),
-  number: (value, { locale, format }) => formatNumber(value, locale, format),
-  money: (value, { locale, format }) =>
-    formatNumber(value, locale, {
-      style: "currency",
-      currency: "USD",
-      ...format,
-    }),
-  percent: (value, { locale, format }) =>
-    formatNumber(Number(value) / 100, locale, {
-      style: "percent",
-      maximumFractionDigits: 2,
-      ...format,
-    }),
-  date: (value, { locale, format }) =>
-    formatDate(value, locale, format ?? { dateStyle: "medium" }),
-  datetime: (value, { locale, format }) =>
-    formatDate(
-      value,
-      locale,
-      format ?? { dateStyle: "medium", timeStyle: "short" },
-    ),
-  enum: (value, { valueEnum }) => {
-    const label = optionLabel(value, valueEnum)?.label;
-    return typeof label === "string" ? label : String(value);
-  },
-  boolean: (value, { labels }) => (value ? labels.yes : labels.no),
-};
-
+/**
+ * Plain text of a value, shared by cells, chips and CSV exports. It goes
+ * through DataForm's value types, which register the table's type names,
+ * so a value reads the same in a table and in a read-only form.
+ */
 export function formatValue(
   valueType: DataTableValueType,
   value: unknown,
   context: FormatContext,
 ) {
   if (isEmptyValue(value)) return "";
-  return textFormatters[valueType](value, context);
+  return valueText(builtInValueTypes[valueType], {
+    value,
+    options: context.valueEnum ?? [],
+    fieldProps: context.format ? { format: context.format } : noFieldProps,
+    labels: tableFormLabels(context.labels),
+  });
 }
 
 function renderEnum(value: unknown, options?: readonly DataTableOption[]) {
-  const option = optionLabel(value, options);
+  const option = options && findOption(options, value);
   if (!option) return String(value);
   return <Badge variant={option.color ?? "secondary"}>{option.label}</Badge>;
 }
@@ -101,16 +100,6 @@ const defaultSearchTypes: Record<DataTableValueType, DataTableSearchType> = {
   enum: "select",
   boolean: "boolean",
 };
-
-/** The text inside a node, through elements such as a badge. */
-function nodeText(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(nodeText).join("");
-  if (isValidElement<{ children?: ReactNode }>(node))
-    return nodeText(node.props.children);
-  return "";
-}
 
 /** Filter controls list an option by its text; table cells keep its label. */
 export function optionText(option: DataTableOption) {
@@ -128,7 +117,6 @@ export function normalizeColumns<TData>(
   columns: readonly DataTableColumn<TData>[],
   labels: DataTableLabels,
 ): NormalizedColumn<TData>[] {
-  const locale = labels.locale;
   return columns.map((config) => {
     if (config.key === undefined) {
       const display = config as DataTableDisplayColumn<TData>;
@@ -154,7 +142,6 @@ export function normalizeColumns<TData>(
     const valueType: DataTableValueType =
       column.valueType ?? (column.valueEnum ? "enum" : "text");
     const context: FormatContext = {
-      locale,
       labels,
       format: column.format,
       valueEnum: column.valueEnum,
@@ -199,7 +186,11 @@ export function normalizeColumns<TData>(
       search,
       sortable: !!column.sortable || !!column.sorter,
       keyword: !!column.keyword,
-      filter: column.filter ?? (valueType === "enum" && !!column.valueEnum),
+      filter:
+        column.filter === undefined
+          ? valueType === "enum" && !!column.valueEnum
+          : column.filter !== false,
+      filterMode: typeof column.filter === "string" ? column.filter : undefined,
       searchOnly: !!column.searchOnly,
       renderCell,
       getValue,
@@ -212,11 +203,16 @@ export function normalizeColumns<TData>(
   });
 }
 
-/** A fixed-width column for plugin controls such as checkboxes and handles. */
+/**
+ * A fixed-width column for plugin controls such as checkboxes and handles,
+ * left out of column settings and exports. It sits at the start unless
+ * `layout.fixed` is `"end"`.
+ */
 export function utilityColumn<TData>(
   id: string,
   renderCell: (row: TData, index: number) => ReactNode,
   title: ReactNode = "",
+  layout: Pick<DataTableDisplayColumn<TData>, "width" | "align" | "fixed"> = {},
 ): NormalizedColumn<TData> {
   return {
     id,
@@ -225,7 +221,7 @@ export function utilityColumn<TData>(
     valueType: "text",
     display: true,
     utility: true,
-    config: { id, width: 40, render: () => null },
+    config: { id, width: 40, render: () => null, ...layout },
     sortable: false,
     keyword: false,
     filter: false,

@@ -175,7 +175,7 @@ JSON reactions 使用与 DataTable 筛选相同的 12 种操作符，不会执�
 
 ## 筛选 [#filters]
 
-`layout="grid"` 配合 `collapse` 是查询表单：先显示前几个字段和“展开”按钮，再是重置和查询。展开和收起时高度平滑过渡，新出现的字段淡入；开启减少动态效果时不播放动画。收起的字段仍然挂载，值和校验都会保留。`layout="light"` 配合 `submitOn="change"` 把每个字段显示为一个紧凑按钮并概括当前值；超过 `collapse.count` 的字段收进一个“筛选”弹层，一起应用。每个字段可以用 `lightMode` 指定位置：`inline` 把控件连同标签直接放在这一行，`popover` 显示为点开控件的紧凑按钮，`more` 无论数量多少都放进“筛选”弹层。日期和时间选择器默认 `inline`，其他控件默认 `popover`。
+`layout="grid"` 配合 `collapse` 是查询表单：先显示前几个字段和“展开”按钮，再是重置和查询。展开和收起时高度平滑过渡，新出现的字段淡入；开启减少动态效果时不播放动画。收起的字段仍然挂载，值和校验都会保留。`layout="light"` 配合 `submitOn="change"` 把每个字段显示为一个紧凑按钮并概括当前值；超过 `collapse.count` 的字段收进一个“筛选”弹层，一起应用。每个字段可以用 `lightMode` 指定位置：`inline` 把控件连同标签直接放在这一行，`popover` 显示为点开控件的紧凑按钮，`more` 无论数量多少都放进“筛选”弹层。日期和时间选择器默认 `inline`，其他控件默认 `popover`。[Data Table](/zh-CN/docs/components/data-table) 的查询表单和工具栏筛选就是这两种布局。
 
 <ComponentPreview name="data-form-filters" align="start" />
 

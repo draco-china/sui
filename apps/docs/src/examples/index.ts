@@ -22,6 +22,8 @@ export const examples = {
   "data-table-virtual": () => import("./variants/data-table-virtual"),
   "data-table-composition": () => import("./variants/data-table-composition"),
   "data-table-chips": () => import("./variants/data-table-chips"),
+  "data-table-editable": () => import("./variants/data-table-editable"),
+  "data-table-form": () => import("./variants/data-table-form"),
   "data-form-demo": () => import("./variants/data-form-demo"),
   "data-form-value-types": () => import("./variants/data-form-value-types"),
   "data-form-composition": () => import("./variants/data-form-composition"),
@@ -681,6 +683,8 @@ export const sourceFiles = {
   "data-table-composition": () =>
     import("./variants/data-table-composition.tsx?raw"),
   "data-table-chips": () => import("./variants/data-table-chips.tsx?raw"),
+  "data-table-editable": () => import("./variants/data-table-editable.tsx?raw"),
+  "data-table-form": () => import("./variants/data-table-form.tsx?raw"),
   "data-form-demo": () => import("./variants/data-form-demo.tsx?raw"),
   "data-form-value-types": () =>
     import("./variants/data-form-value-types.tsx?raw"),

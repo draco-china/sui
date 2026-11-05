@@ -10,6 +10,9 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { accessOf } from "@/components/ui/data-form/engine";
+import type { DataFormAccessMap } from "@/components/ui/data-form/types";
+import { useStableAccess } from "@/components/ui/data-form/use-data-form";
 import { normalizeColumns, utilityColumn } from "@/components/ui/data-table/columns";
 import { useDataTableContext } from "@/components/ui/data-table/context";
 import { countFacets, filterRows, requestSearch, sortRows } from "@/components/ui/data-table/engine";
@@ -58,6 +61,12 @@ export interface UseDataTableOptions<TData> {
   readonly labels?: DataTableLabelOverrides;
   /** Shows the loading state for local data, such as while a query runs. */
   readonly loading?: boolean;
+  /**
+   * Per-column permissions by key or id: `hidden` leaves the column out of
+   * the table, its filters and its exports; `readonly` keeps `editable()`
+   * from editing it.
+   */
+  readonly access?: DataFormAccessMap;
 }
 
 type TableActions<TData> = Pick<
@@ -103,7 +112,19 @@ function initialColumnState<TData>(
   return { visibility, order: [], pinning, widths: {} };
 }
 
-/** Utility columns stay at the start; pinned columns move to the edges. */
+/**
+ * Where a column is pinned: the reader's choice, or for a column added by a
+ * plugin (such as row actions), its own `fixed`.
+ */
+export function pinnedSide<TData>(
+  column: NormalizedColumn<TData>,
+  state: DataTableColumnState,
+) {
+  if (column.id in state.pinning) return state.pinning[column.id];
+  return column.config.fixed;
+}
+
+/** Utility columns stay at their edge; pinned columns move to the edges. */
 export function orderColumns<TData>(
   columns: readonly NormalizedColumn<TData>[],
   state: DataTableColumnState,
@@ -124,13 +145,18 @@ export function orderColumns<TData>(
     )
     .map((entry) => entry.column);
   const pinned = (side: "start" | "end") =>
-    data.filter((column) => state.pinning[column.id] === side);
-  const free = data.filter((column) => !state.pinning[column.id]);
+    data.filter((column) => pinnedSide(column, state) === side);
+  const free = data.filter((column) => !pinnedSide(column, state));
+  const utility = (side: "start" | "end") =>
+    columns.filter(
+      (column) => column.utility && (column.config.fixed ?? "start") === side,
+    );
   return [
-    ...columns.filter((column) => column.utility),
+    ...utility("start"),
     ...pinned("start"),
     ...free,
     ...pinned("end"),
+    ...utility("end"),
   ];
 }
 
@@ -270,9 +296,15 @@ export function useDataTable<TData>(
     [rowKey],
   );
 
+  // An inline `access={{ ... }}` keeps the columns, and the forms built
+  // from them, while it says the same.
+  const access = useStableAccess(options.access);
   const baseColumns = useMemo(
-    () => normalizeColumns(columnConfigs, labels),
-    [columnConfigs, labels],
+    () =>
+      normalizeColumns(columnConfigs, labels).filter(
+        (column) => accessOf(access, column.key ?? column.id) !== "hidden",
+      ),
+    [columnConfigs, labels, access],
   );
 
   // Plugins restore from the address bar and storage, which the server cannot
@@ -668,6 +700,7 @@ export function useDataTable<TData>(
     selection,
     labels,
     locale: labels.locale,
+    access,
     plugins,
     features,
     paginated: paginated && !features.dragSort,

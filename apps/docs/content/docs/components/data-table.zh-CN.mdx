@@ -62,7 +62,7 @@ const columns: DataTableColumn<User>[] = [
 
 带 `keyword` 的列共用工具栏搜索框；枚举列自动生成带计数的快速筛选。核心之外的功能都是插件：`density()` 切换密度，`columnSettings()` 提供列显隐、拖拽排序、固定列以及表头边缘的列宽拖拽，`exportCsv()` 导出当前页、全部匹配结果或选中行。
 
-工具栏始终保持一行：搜索框和筛选项可以横向滚动，操作按钮固定在末尾。日期范围列和快速筛选并排放在这一行，`search.presets` 提供最近七天这类快捷范围。筛选项超过 `maxFilters`（默认 2）时，第一个留在行内，其余收进一个「筛选」按钮（`DataTableMoreFilters`），一起应用。手机上这一行只保留搜索框。`toolbarSearch` 插槽可以在搜索框后面加输入控件，`DataTableChoiceMenu` 是带单选菜单的图标按钮，用于工具栏选项。
+工具栏始终保持一行：搜索框和筛选项可以横向滚动，操作按钮固定在末尾。日期范围列和快速筛选并排放在这一行，`search.presets` 提供最近七天这类快捷范围。筛选项超过 `maxFilters`（默认 2）时，第一个留在行内，其余收进一个「筛选」按钮（`DataTableMoreFilters`），一起应用。这些筛选是一个轻量的 [Data Form](/zh-CN/docs/components/data-form)：每个快速筛选是一个概括当前值的紧凑按钮，修改后立即生效；「筛选」面板是一份草稿表单，点「应用」后一起生效。需要和其他插件一起设置时，加上 `lightForm({ maxFilters })`。每列可以指定快速筛选的位置：`filter: "inline"` 把下拉框直接放在这一行，`"popover"`（默认）显示为带选项计数的按钮，`"more"` 始终放进「筛选」；日期范围用 `search: { lightMode }`。手机上这一行只保留搜索框。`toolbarSearch` 插槽可以在搜索框后面加输入控件，`DataTableChoiceMenu` 是带单选菜单的图标按钮，用于工具栏选项。
 
 <ComponentPreview name="data-table-toolbar" align="start" />
 
@@ -84,6 +84,8 @@ const columns: DataTableColumn<User>[] = [
 
 `queryForm()` 根据带 `search` 的列生成可折叠的多字段表单，提交后所有条件一起生效。字段类型包括 `text`、`number`、`numberRange`、`select`、`multiSelect`、`date`、`dateRange`、`datetimeRange`、`boolean` 和 `custom`（配合 `render`）。用 `order` 与 `colSpan` 控制位置；`options` 可以是函数，配合 `dependencies` 实现省市联动；`searchOnly` 用于只参与查询、不显示在表格中的字段；`transform` 改写请求参数，例如把日期范围转为 `{ createdFrom, createdTo }`。
 
+查询表单是一个网格布局的 [Data Form](/zh-CN/docs/components/data-form)，因此 `search` 也接受 `reactions`、`validators`、`valueType`、`fieldProps` 等字段选项。值保持表格存储的形状（例如本地日期字符串），URL 同步和请求读取的值与之前一致。
+
 <ComponentPreview name="data-table-query-form" align="start" />
 
 ## 高级筛选 [#advanced-filter]
@@ -91,6 +93,20 @@ const columns: DataTableColumn<User>[] = [
 `advancedFilter()` 提供“字段 + 运算符 + 值”的条件构建器，条件之间可选“全部满足”或“满足任一”。可用运算符随列的值类型变化。传入 `storageKey` 可将命名视图保存到本地存储。
 
 <ComponentPreview name="data-table-advanced-filter" align="start" />
+
+## 行内编辑 [#editing-rows]
+
+`editable({ onSave })` 在原位编辑一行。每个数据列变成对应值类型的控件，校验和联动与 [Data Form](/zh-CN/docs/components/data-form) 字段一致；列上的 `form` 可以添加 `required` 等字段选项，`form: false` 则保持为文本。在文本框中按 Enter 保存，按 Esc 取消；在下拉框或日历中按键只作用于该控件。编辑、保存和取消按钮位于固定在末尾的一列，不出现在列设置和导出中。`onSave` 返回或抛出 `{ fields, form }` 时，错误显示在这一行中；保存成功前这一行保持编辑状态，行数据由页面自己更新。
+
+<ComponentPreview name="data-table-editable" align="start" />
+
+`access` 把列的 key 映射为 `hidden` 或 `readonly`：`hidden` 会把这一列从表格、筛选和导出中去掉，`readonly` 让 `editable()` 不编辑这一列。对象可以直接内联书写；函数按引用比较，需要 memo。
+
+## 由列生成表单 [#forms-from-columns]
+
+`toFormFields(columns)` 把表格的列转换为 DataForm 字段，同一份定义同时用于表格、筛选、行内编辑以及新建和编辑表单。表格的值类型同样是 DataForm 的值类型（`boolean` 列编辑时是 `switch`），`valueEnum` 变为选项，列上的 `form` 可以添加字段选项或把这一列排除。
+
+<ComponentPreview name="data-table-form" align="start" />
 
 ## 清除条件 [#clearing-conditions]
 
@@ -160,7 +176,7 @@ const columns: DataTableColumn<User>[] = [
 
 | 字段 | 用途 |
 | --- | --- |
-| `slots` | 渲染到 `header`、`toolbarStart`、`toolbarSearch`、`toolbarEnd` 或 `floating` |
+| `slots` | 渲染到 `header`、`toolbarStart`、`toolbarSearch`、`toolbarFilters`（替换行内的筛选）、`toolbarEnd` 或 `floating` |
 | `columns` | 添加工具列，如复选框或拖拽手柄 |
 | `features` | 开启 `virtual`、`dragSort`、`expandable` 或 `resizable` |
 | `defaultView`、`initialView`、`renderView` | 初始视图、为用户恢复的视图（优先于 `defaultView`），或在表格以外的视图里渲染行 |
@@ -191,6 +207,7 @@ const columns: DataTableColumn<User>[] = [
 | `layout` | `fill`（默认）或 `auto`。 |
 | `responsive` | 窄屏显示为卡片，默认 `true`。 |
 | `loading` | 本地数据的加载状态。 |
+| `access` | 按列 key 设置权限：`hidden` 或 `readonly`。 |
 | `labels` | 文案覆盖。 |
 | `actionRef` | 获得 `{ reload, reset }`。 |
 | `table` | 来自 `useDataTable` 的实例，用于替代上面的选项。 |

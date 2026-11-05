@@ -246,7 +246,10 @@ assert.equal(table?.total, 23, "Typing does not apply the draft");
 await act(async () => {
   fireEvent.submit(form);
 });
-assert.deepEqual(table?.state.query.search, { name: "Row 1" });
+// Submitting runs the form's (possibly async) validation first.
+await waitFor(() =>
+  assert.deepEqual(table?.state.query.search, { name: "Row 1" }),
+);
 assert.equal(table?.total, 11);
 
 scenario("URL sync writes state and keeps unrelated parameters");

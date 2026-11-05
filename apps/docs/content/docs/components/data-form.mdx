@@ -175,7 +175,7 @@ Read-only values are submitted, as an edit form needs ids. Use `transform`, or `
 
 ## Filters
 
-`layout="grid"` with `collapse` is a query form: the first fields and an Expand button, then Reset and Search. Expanding and collapsing animate the height while the extra fields fade in, and drop the motion under reduced motion; collapsed fields stay mounted, so their values and validation remain. `layout="light"` with `submitOn="change"` shows each field as a compact button that sums up its value; fields past `collapse.count` share one Filters popover and apply together. Set `lightMode` per field to choose: `inline` puts the control itself on the row with its label, `popover` a compact button that opens it, and `more` the Filters popover whatever the count. Date and time pickers are `inline` by default, other controls `popover`.
+`layout="grid"` with `collapse` is a query form: the first fields and an Expand button, then Reset and Search. Expanding and collapsing animate the height while the extra fields fade in, and drop the motion under reduced motion; collapsed fields stay mounted, so their values and validation remain. `layout="light"` with `submitOn="change"` shows each field as a compact button that sums up its value; fields past `collapse.count` share one Filters popover and apply together. Set `lightMode` per field to choose: `inline` puts the control itself on the row with its label, `popover` a compact button that opens it, and `more` the Filters popover whatever the count. Date and time pickers are `inline` by default, other controls `popover`. [Data Table](/docs/components/data-table)'s query form and toolbar filters are these two layouts.
 
 <ComponentPreview name="data-form-filters" align="start" />
 

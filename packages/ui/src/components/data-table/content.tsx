@@ -32,6 +32,7 @@ import type {
   DataTableInstance,
   NormalizedColumn,
 } from "./types";
+import { pinnedSide } from "./use-data-table";
 
 /** Beyond this many rows, layout animation costs more than it shows. */
 const ANIMATED_ROW_LIMIT = 100;
@@ -54,8 +55,8 @@ function pinSide(
   table: DataTableInstance<unknown>,
   column: NormalizedColumn<unknown>,
 ) {
-  if (column.utility) return "start";
-  return table.columnState.pinning[column.id];
+  if (column.utility) return column.config.fixed ?? "start";
+  return pinnedSide(column, table.columnState);
 }
 
 /** Sticky offsets from measured header widths, so pinned columns stack. */

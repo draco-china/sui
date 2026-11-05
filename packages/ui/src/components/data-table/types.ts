@@ -1,35 +1,15 @@
 import type { DatePickerPreset } from "@workspace/ui/components/date-picker";
 import type { ComponentProps, ReactNode } from "react";
+import type { FilterOperator } from "../data-form/conditions";
+import type { Path, PathValue } from "../data-form/path";
+import type {
+  DataFormAccessMap,
+  DataFormFieldConfig,
+  DataFormLightMode,
+} from "../data-form/types";
 import type { DataTableLabels } from "./labels";
 
-type Primitive = string | number | boolean | bigint | symbol | null | undefined;
-type Depth = [never, 0, 1, 2];
-
-/** Dot paths into a row, three levels deep: `"name" | "profile.city"`. */
-export type Path<T, D extends number = 3> = [D] extends [never]
-  ? never
-  : T extends Primitive | Date | readonly unknown[]
-    ? never
-    : {
-        [K in keyof T & string]: T[K] extends
-          | Primitive
-          | Date
-          | readonly unknown[]
-          ? K
-          : K | `${K}.${Path<NonNullable<T[K]>, Depth[D]>}`;
-      }[keyof T & string];
-
-/** The value type at a dot path. */
-export type PathValue<
-  T,
-  P extends string,
-> = P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-    ? PathValue<NonNullable<T[K]>, Rest>
-    : unknown
-  : P extends keyof T
-    ? T[P]
-    : unknown;
+export type { Path, PathValue } from "../data-form/path";
 
 export type DataTableValueType =
   | "text"
@@ -60,7 +40,26 @@ export interface DataTableOption {
   readonly color?: "default" | "secondary" | "destructive" | "outline";
 }
 
-export interface DataTableSearchConfig {
+/**
+ * DataForm field options a query field takes as well, such as `reactions`,
+ * `validators` and `valueType`; the keys below keep their table meaning.
+ */
+type SearchFormOptions = Omit<
+  DataFormFieldConfig,
+  | "name"
+  | "label"
+  | "placeholder"
+  | "initialValue"
+  | "colSpan"
+  | "options"
+  | "dependencies"
+  | "transform"
+  | "render"
+  | "step"
+  | "convertValue"
+>;
+
+export interface DataTableSearchConfig extends SearchFormOptions {
   readonly type?: DataTableSearchType;
   readonly label?: ReactNode;
   readonly placeholder?: string;
@@ -119,8 +118,12 @@ export interface DataTableDataColumn<
   readonly sorter?: (a: TData, b: TData) => number;
   /** Includes the column in the toolbar keyword search. */
   readonly keyword?: boolean;
-  /** Adds a quick multi-select filter to the toolbar. */
-  readonly filter?: boolean;
+  /**
+   * Adds a quick multi-select filter to the toolbar. `inline` puts its
+   * dropdown on the row, `popover` (the default) a button with option
+   * counts, `more` the Filters panel.
+   */
+  readonly filter?: boolean | DataFormLightMode;
   /** Adds the column to the query form. */
   readonly search?: boolean | DataTableSearchConfig;
   /** Hides the column in the table while keeping it searchable. */
@@ -129,6 +132,11 @@ export interface DataTableDataColumn<
   readonly copyable?: boolean;
   /** Text written to CSV exports. */
   readonly exportValue?: (value: PathValue<TData, TKey>, row: TData) => string;
+  /**
+   * How the column appears in forms made with `toFormFields` and edited by
+   * `editable()`: DataForm field options, or `false` to leave it out.
+   */
+  readonly form?: false | Partial<Omit<DataFormFieldConfig, "name">>;
 }
 
 export interface DataTableDisplayColumn<TData> extends ColumnBase {
@@ -158,6 +166,8 @@ export interface NormalizedColumn<TData> {
   readonly sortable: boolean;
   readonly keyword: boolean;
   readonly filter: boolean;
+  /** Where the quick filter sits on the toolbar, when `filter` names it. */
+  readonly filterMode?: DataFormLightMode;
   readonly searchOnly: boolean;
   /** Plugin columns: selection, drag handles and expand toggles. */
   readonly utility?: boolean;
@@ -172,19 +182,7 @@ export interface SortItem {
   readonly order: SortOrder;
 }
 
-export type FilterOperator =
-  | "eq"
-  | "neq"
-  | "contains"
-  | "startsWith"
-  | "gt"
-  | "gte"
-  | "lt"
-  | "lte"
-  | "between"
-  | "in"
-  | "notIn"
-  | "isEmpty";
+export type { FilterOperator };
 
 export interface FilterRule {
   readonly id: string;
@@ -274,6 +272,8 @@ export type DataTableSlot =
   | "header"
   /** More inputs right after the keyword search, before the filters. */
   | "toolbarSearch"
+  /** The filters on the row; the lightForm plugin fills it. */
+  | "toolbarFilters"
   | "toolbarStart"
   | "toolbarEnd"
   | "floating";
@@ -359,6 +359,7 @@ export interface DataTableInstance<TData> extends DataTableActions {
   readonly selection: DataTableSelection<TData> | undefined;
   readonly labels: DataTableLabels;
   readonly locale: string | undefined;
+  readonly access: DataFormAccessMap | undefined;
   readonly plugins: readonly DataTablePlugin<TData>[];
   readonly features: DataTableFeatures;
   hasPlugin(name: string): boolean;

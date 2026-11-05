@@ -22,8 +22,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { optionText } from "../columns";
 import { useDataTableContext } from "../context";
-import { DataTableDateField, DataTableDateRangeField } from "../date-field";
 import { isEmptyValue } from "../engine";
+import { DataTableValueControl } from "../filter-controls";
 import { menuLabel } from "../menu";
 import type {
   DataTableInstance,
@@ -140,17 +140,14 @@ function RuleValue({
       />
     );
   if (column.valueType === "date" || column.valueType === "datetime") {
-    const Field =
-      rule.operator === "between"
-        ? DataTableDateRangeField
-        : DataTableDateField;
+    const time = column.valueType === "datetime" ? "dateTime" : "date";
     return (
-      <Field
-        time={column.valueType === "datetime"}
-        className="h-8 flex-1"
+      <DataTableValueControl
+        type={rule.operator === "between" ? `${time}Range` : time}
         label={column.titleText}
         value={rule.value}
         onChange={onChange}
+        fieldProps={{ className: "flex-1" }}
       />
     );
   }
@@ -309,11 +306,7 @@ function AdvancedFilter({ storageKey }: { storageKey?: string }) {
     >
       <PopoverTrigger
         render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 border-dashed px-2.5 sm:px-3"
-          />
+          <Button variant="outline" size="sm" className="h-8 px-2.5 sm:px-3" />
         }
       >
         {/* Its own icon: on phones it shows alone, beside 筛选's */}

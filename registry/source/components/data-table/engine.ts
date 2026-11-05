@@ -1,51 +1,28 @@
+import {
+  compareValues,
+  includesText,
+  isEmptyValue,
+  listHas,
+  matchesRule,
+  toNumber,
+  toTime,
+} from "@/components/ui/data-form/conditions";
+import { asPair } from "@/components/ui/data-form/value-types/shared";
 import type {
   DataTableQuery,
   DataTableSearchType,
   FilterGroup,
-  FilterOperator,
-  FilterRule,
   NormalizedColumn,
   SortItem,
 } from "@/components/ui/data-table/types";
 
-/** Reads a dot path such as `profile.city`. */
-export function getPath(row: unknown, path: string): unknown {
-  let value = row;
-  for (const part of path.split(".")) {
-    if (value === null || value === undefined) return undefined;
-    value = (value as Record<string, unknown>)[part];
-  }
-  return value;
-}
-
-export function isEmptyValue(value: unknown): boolean {
-  if (value === undefined || value === null || value === "") return true;
-  if (Array.isArray(value)) return value.every(isEmptyValue);
-  return false;
-}
-
-export function toTime(value: unknown): number | undefined {
-  if (value instanceof Date) return value.getTime();
-  if (typeof value === "number") return value;
-  if (typeof value !== "string" || value === "") return undefined;
-  // Date-only strings parse as UTC midnight; read them as local days instead.
-  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (day) return new Date(+day[1], +day[2] - 1, +day[3]).getTime();
-  const time = Date.parse(value);
-  return Number.isNaN(time) ? undefined : time;
-}
-
-function toNumber(value: unknown): number | undefined {
-  if (value === "" || value === null || value === undefined) return undefined;
-  const number = Number(value);
-  return Number.isNaN(number) ? undefined : number;
-}
-
-function includesText(cell: unknown, value: unknown) {
-  return String(cell ?? "")
-    .toLocaleLowerCase()
-    .includes(String(value).toLocaleLowerCase());
-}
+export {
+  isEmptyValue,
+  isFilterOperator,
+  matchesRule,
+  toTime,
+} from "@/components/ui/data-form/conditions";
+export { getPath } from "@/components/ui/data-form/path";
 
 /** A date input value covers its whole day; a datetime value is exact. */
 function rangeEnd(value: unknown, wholeDay: boolean) {
@@ -65,10 +42,6 @@ function inRange(
   return true;
 }
 
-function asRange(value: unknown): readonly unknown[] {
-  return Array.isArray(value) ? value : [];
-}
-
 const searchMatchers: Record<
   DataTableSearchType,
   (cell: unknown, value: unknown) => boolean
@@ -76,20 +49,19 @@ const searchMatchers: Record<
   text: includesText,
   number: (cell, value) => toNumber(cell) === toNumber(value),
   numberRange: (cell, value) => {
-    const [start, end] = asRange(value);
+    const [start, end] = asPair(value);
     return inRange(toNumber(cell), toNumber(start), toNumber(end));
   },
   select: (cell, value) => String(cell) === String(value),
-  multiSelect: (cell, value) =>
-    asRange(value).some((item) => String(item) === String(cell)),
+  multiSelect: (cell, value) => listHas(value, cell),
   date: (cell, value) =>
     inRange(toTime(cell), toTime(value), rangeEnd(value, true)),
   dateRange: (cell, value) => {
-    const [start, end] = asRange(value);
+    const [start, end] = asPair(value);
     return inRange(toTime(cell), toTime(start), rangeEnd(end, true));
   },
   datetimeRange: (cell, value) => {
-    const [start, end] = asRange(value);
+    const [start, end] = asPair(value);
     return inRange(toTime(cell), toTime(start), rangeEnd(end, false));
   },
   boolean: (cell, value) => String(Boolean(cell)) === String(value),
@@ -102,50 +74,6 @@ export function matchesSearch(
   value: unknown,
 ) {
   return searchMatchers[type](cell, value);
-}
-
-function compareValues(a: unknown, b: unknown) {
-  const left = toNumber(a) ?? toTime(a);
-  const right = toNumber(b) ?? toTime(b);
-  if (left !== undefined && right !== undefined) return left - right;
-  return String(a ?? "").localeCompare(String(b ?? ""));
-}
-
-const ruleMatchers: Record<
-  FilterRule["operator"],
-  (cell: unknown, value: unknown) => boolean
-> = {
-  eq: (cell, value) => compareValues(cell, value) === 0,
-  neq: (cell, value) => compareValues(cell, value) !== 0,
-  contains: includesText,
-  startsWith: (cell, value) =>
-    String(cell ?? "")
-      .toLocaleLowerCase()
-      .startsWith(String(value).toLocaleLowerCase()),
-  gt: (cell, value) => compareValues(cell, value) > 0,
-  gte: (cell, value) => compareValues(cell, value) >= 0,
-  lt: (cell, value) => compareValues(cell, value) < 0,
-  lte: (cell, value) => compareValues(cell, value) <= 0,
-  between: (cell, value) => {
-    const [start, end] = asRange(value);
-    const afterStart = isEmptyValue(start) || compareValues(cell, start) >= 0;
-    const beforeEnd = isEmptyValue(end) || compareValues(cell, end) <= 0;
-    return afterStart && beforeEnd;
-  },
-  in: (cell, value) =>
-    asRange(value).some((item) => String(item) === String(cell)),
-  notIn: (cell, value) =>
-    !asRange(value).some((item) => String(item) === String(cell)),
-  isEmpty: (cell) => isEmptyValue(cell),
-};
-
-export function isFilterOperator(value: unknown): value is FilterOperator {
-  return typeof value === "string" && Object.hasOwn(ruleMatchers, value);
-}
-
-export function matchesRule(rule: FilterRule, cell: unknown) {
-  if (rule.operator !== "isEmpty" && isEmptyValue(rule.value)) return true;
-  return ruleMatchers[rule.operator](cell, rule.value);
 }
 
 function matchesGroup<TData>(

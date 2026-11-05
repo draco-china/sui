@@ -17,6 +17,13 @@ export {
   toCsv,
 } from "./engine";
 export {
+  DataTableOptionList,
+  DataTableOptionSelect,
+  DataTableValueControl,
+  isRangeColumn,
+} from "./filter-controls";
+export { columnField, toFormFields } from "./form-fields";
+export {
   type DataTableLabelOverrides,
   type DataTableLabels,
   dataTableLabels,
@@ -29,13 +36,23 @@ export {
   type BulkAction,
   bulkActions,
   columnSettings,
+  DataTableFacetedFilter,
+  DataTableFilterFields,
+  DataTableLightFilters,
+  type DataTableLightFiltersProps,
+  DataTableMoreFilters,
+  DataTableRangeFilter,
   type DragSortOptions,
   density,
   dragSort,
+  type EditableOptions,
   type ExpandableOptions,
   type ExportCsvOptions,
+  editable,
   expandable,
   exportCsv,
+  type LightFormOptions,
+  lightForm,
   type PersistOptions,
   type ProPluginsOptions,
   persist,
@@ -54,16 +71,10 @@ export {
 } from "./plugins";
 export {
   DataTableChoiceMenu,
-  DataTableFacetedFilter,
   DataTableFilterChips,
-  DataTableFilterFields,
-  DataTableMoreFilters,
-  DataTableOptionList,
-  DataTableRangeFilter,
   DataTableSearch,
   DataTableSlotContent,
   DataTableToolbar,
-  isRangeColumn,
 } from "./toolbar";
 export type {
   DataTableActions,
