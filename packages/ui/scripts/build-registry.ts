@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, extname, join, relative, resolve } from "node:path";
+import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import postcss, {
   type AtRule,
@@ -153,8 +153,11 @@ function installRule(path: string) {
 
 function canonicalImport(path: string) {
   const { rule, rest } = installRule(path);
-  // CSS extensions are part of an import; TS extensions are resolved by the app.
-  return `${rule.alias}${rest.replace(/(?:\.d)?\.(?:tsx?|jsx?)$/, "")}`;
+  // CSS extensions are part of an import; TS extensions and a folder's
+  // index are resolved by the app.
+  return `${rule.alias}${rest
+    .replace(/(?:\.d)?\.(?:tsx?|jsx?)$/, "")
+    .replace(/(?:^|\/)index$/, "")}`;
 }
 
 function fileDefinition(path: string, content: string) {
@@ -575,8 +578,7 @@ function registryItem(
       .map((path) => fileDefinition(path, installedContent(context, path))),
     ...context.styles,
     docs:
-      entries.some((path) => path.endsWith("/code-editor.tsx")) ||
-      name === "sui"
+      name === "code-editor" || name === "sui"
         ? "CodeEditor uses locally bundled Monaco Workers and requires a Vite-compatible ?worker loader. Keep the installed worker.d.ts in your TypeScript include paths."
         : undefined,
     meta: {
@@ -609,9 +611,14 @@ export async function createRegistry() {
   };
   const item = (name: string, type: RegistryItem["type"], entries: string[]) =>
     registryItem(context, name, type, entries);
+  // A component is a file in components/, or a folder whose index.tsx
+  // exports it with the files it is made of.
   const components = tree.paths.filter(
     (path) =>
-      dirname(path) === join(sourceRoot, "components") && path.endsWith(".tsx"),
+      path.endsWith(".tsx") &&
+      (dirname(path) === join(sourceRoot, "components") ||
+        (basename(path) === "index.tsx" &&
+          dirname(dirname(path)) === join(sourceRoot, "components"))),
   );
   const blocks = tree.paths.filter(
     (path) =>
@@ -643,7 +650,9 @@ export async function createRegistry() {
   ];
   const items = entries.map((path) =>
     item(
-      relative(dirname(path), path).replace(/\.tsx$/, ""),
+      basename(path) === "index.tsx"
+        ? basename(dirname(path))
+        : basename(path, ".tsx"),
       components.includes(path) ? "registry:ui" : "registry:block",
       [path],
     ),

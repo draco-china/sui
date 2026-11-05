@@ -13,14 +13,18 @@ const uiRoot = join(appRoot, "../../packages/ui/src");
 const contentRoot = join(appRoot, "content/docs");
 const exportedNames = new Map<string, Set<string>>();
 const docs = [...new Bun.Glob("**/*.mdx").scanSync(contentRoot)].sort();
-// Icon primitives back other components and have no page of their own.
-const componentSlugs = readdirSync(join(uiRoot, "components"))
-  .filter(
-    (file) =>
-      file.endsWith(".tsx") &&
-      !["copy-icon.tsx", "morph-icon.tsx"].includes(file),
-  )
-  .map((file) => file.slice(0, -4))
+// A component is a file, or a folder whose index.tsx exports it. Icon
+// primitives back other components and have no page of their own.
+const componentSlugs = readdirSync(join(uiRoot, "components"), {
+  withFileTypes: true,
+})
+  .flatMap((entry) => {
+    if (entry.isFile() && entry.name.endsWith(".tsx"))
+      return [entry.name.slice(0, -4)];
+    const index = join(uiRoot, "components", entry.name, "index.tsx");
+    return entry.isDirectory() && existsSync(index) ? [entry.name] : [];
+  })
+  .filter((slug) => !["copy-icon", "morph-icon"].includes(slug))
   .sort();
 
 function exportsOf(path: string) {
@@ -73,7 +77,10 @@ function workspaceFile(specifier: string) {
     (relative.startsWith("layouts/") && relative !== "layouts/types")
       ? ".tsx"
       : ".ts";
-  return join(uiRoot, `${relative}${extension}`);
+  const file = join(uiRoot, `${relative}${extension}`);
+  // A component with its own folder exports from its index.tsx.
+  const index = join(uiRoot, relative, "index.tsx");
+  return !existsSync(file) && existsSync(index) ? index : file;
 }
 
 describe("documentation coverage", () => {

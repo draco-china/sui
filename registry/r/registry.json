@@ -1023,11 +1023,6 @@
           "target": "@ui/button.tsx"
         },
         {
-          "path": "packages/ui/src/components/code-editor.tsx",
-          "type": "registry:ui",
-          "target": "@ui/code-editor.tsx"
-        },
-        {
           "path": "packages/ui/src/components/code-editor/code-editor.tsx",
           "type": "registry:ui",
           "target": "@ui/code-editor/code-editor.tsx"
@@ -1041,6 +1036,11 @@
           "path": "packages/ui/src/components/code-editor/context.tsx",
           "type": "registry:ui",
           "target": "@ui/code-editor/context.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/code-editor/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code-editor/index.tsx"
         },
         {
           "path": "packages/ui/src/components/code-editor/labels.ts",
@@ -2010,11 +2010,6 @@
           "target": "@ui/copy-text.tsx"
         },
         {
-          "path": "packages/ui/src/components/data-table.tsx",
-          "type": "registry:ui",
-          "target": "@ui/data-table.tsx"
-        },
-        {
           "path": "packages/ui/src/components/data-table/column-header.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/column-header.tsx"
@@ -2053,6 +2048,11 @@
           "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/icon-tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/index.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/labels.ts",
@@ -3197,11 +3197,6 @@
           "target": "@ui/feedback.tsx"
         },
         {
-          "path": "packages/ui/src/components/image.tsx",
-          "type": "registry:ui",
-          "target": "@ui/image.tsx"
-        },
-        {
           "path": "packages/ui/src/components/image/group.tsx",
           "type": "registry:ui",
           "target": "@ui/image/group.tsx"
@@ -3210,6 +3205,11 @@
           "path": "packages/ui/src/components/image/image.tsx",
           "type": "registry:ui",
           "target": "@ui/image/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/index.tsx"
         },
         {
           "path": "packages/ui/src/components/image/labels.ts",
@@ -8817,11 +8817,6 @@
           "target": "@ui/feedback.tsx"
         },
         {
-          "path": "packages/ui/src/components/image.tsx",
-          "type": "registry:ui",
-          "target": "@ui/image.tsx"
-        },
-        {
           "path": "packages/ui/src/components/image/group.tsx",
           "type": "registry:ui",
           "target": "@ui/image/group.tsx"
@@ -8830,6 +8825,11 @@
           "path": "packages/ui/src/components/image/image.tsx",
           "type": "registry:ui",
           "target": "@ui/image/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/index.tsx"
         },
         {
           "path": "packages/ui/src/components/image/labels.ts",
@@ -10372,11 +10372,6 @@
           "target": "@ui/checkbox.tsx"
         },
         {
-          "path": "packages/ui/src/components/code-editor.tsx",
-          "type": "registry:ui",
-          "target": "@ui/code-editor.tsx"
-        },
-        {
           "path": "packages/ui/src/components/code-editor/code-editor.tsx",
           "type": "registry:ui",
           "target": "@ui/code-editor/code-editor.tsx"
@@ -10390,6 +10385,11 @@
           "path": "packages/ui/src/components/code-editor/context.tsx",
           "type": "registry:ui",
           "target": "@ui/code-editor/context.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/code-editor/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/code-editor/index.tsx"
         },
         {
           "path": "packages/ui/src/components/code-editor/labels.ts",
@@ -10502,11 +10502,6 @@
           "target": "@ui/copy-text.tsx"
         },
         {
-          "path": "packages/ui/src/components/data-table.tsx",
-          "type": "registry:ui",
-          "target": "@ui/data-table.tsx"
-        },
-        {
           "path": "packages/ui/src/components/data-table/column-header.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/column-header.tsx"
@@ -10545,6 +10540,11 @@
           "path": "packages/ui/src/components/data-table/icon-tooltip.tsx",
           "type": "registry:ui",
           "target": "@ui/data-table/icon-tooltip.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/data-table/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table/index.tsx"
         },
         {
           "path": "packages/ui/src/components/data-table/labels.ts",
@@ -10687,11 +10687,6 @@
           "target": "@ui/hover-card.tsx"
         },
         {
-          "path": "packages/ui/src/components/image.tsx",
-          "type": "registry:ui",
-          "target": "@ui/image.tsx"
-        },
-        {
           "path": "packages/ui/src/components/image/group.tsx",
           "type": "registry:ui",
           "target": "@ui/image/group.tsx"
@@ -10700,6 +10695,11 @@
           "path": "packages/ui/src/components/image/image.tsx",
           "type": "registry:ui",
           "target": "@ui/image/image.tsx"
+        },
+        {
+          "path": "packages/ui/src/components/image/index.tsx",
+          "type": "registry:ui",
+          "target": "@ui/image/index.tsx"
         },
         {
           "path": "packages/ui/src/components/image/labels.ts",
@@ -11239,17 +11239,17 @@
           "@/components/ui/card",
           "@/components/ui/carousel",
           "@/components/ui/checkbox",
-          "@/components/ui/code-editor",
           "@/components/ui/code-editor/code-editor",
           "@/components/ui/code-editor/content",
           "@/components/ui/code-editor/context",
+          "@/components/ui/code-editor",
           "@/components/ui/code-editor/labels",
           "@/components/ui/code-editor/languages",
           "@/components/ui/code-editor/monaco/monaco-client",
           "@/components/ui/code-editor/monaco/monaco-features",
           "@/components/ui/code-editor/monaco/monaco-theme",
           "@/components/ui/code-editor/monaco/monaco-workers",
-          "@/components/ui/code-editor/plugins/index",
+          "@/components/ui/code-editor/plugins",
           "@/components/ui/code-editor/plugins/language-select",
           "@/components/ui/code-editor/plugins/preview",
           "@/components/ui/code-editor/plugins/toolbar-buttons",
@@ -11265,7 +11265,6 @@
           "@/components/ui/copy-button",
           "@/components/ui/copy-icon",
           "@/components/ui/copy-text",
-          "@/components/ui/data-table",
           "@/components/ui/data-table/column-header",
           "@/components/ui/data-table/columns",
           "@/components/ui/data-table/content",
@@ -11274,6 +11273,7 @@
           "@/components/ui/data-table/date-field",
           "@/components/ui/data-table/engine",
           "@/components/ui/data-table/icon-tooltip",
+          "@/components/ui/data-table",
           "@/components/ui/data-table/labels",
           "@/components/ui/data-table/menu",
           "@/components/ui/data-table/pagination",
@@ -11282,7 +11282,7 @@
           "@/components/ui/data-table/plugins/column-settings",
           "@/components/ui/data-table/plugins/drag-sort",
           "@/components/ui/data-table/plugins/expandable",
-          "@/components/ui/data-table/plugins/index",
+          "@/components/ui/data-table/plugins",
           "@/components/ui/data-table/plugins/persist",
           "@/components/ui/data-table/plugins/query-form",
           "@/components/ui/data-table/plugins/toolbar-buttons",
@@ -11302,9 +11302,9 @@
           "@/components/ui/field",
           "@/components/ui/glass",
           "@/components/ui/hover-card",
-          "@/components/ui/image",
           "@/components/ui/image/group",
           "@/components/ui/image/image",
+          "@/components/ui/image",
           "@/components/ui/image/labels",
           "@/components/ui/image/preview",
           "@/components/ui/image/transform",

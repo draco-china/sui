@@ -13,6 +13,12 @@ npx shadcn@latest add @sui/image
 
 通过 shadcn CLI 安装组件源码，或使用共享的 `@workspace/ui` 包。按照[安装指南](/zh-CN/docs/installation)配置 registry、加载样式并选择导入别名。
 
+<Callout>
+  Image 安装为 `components/ui/image/index.tsx`。如果是从 SUI 5.4
+  或更早版本安装的，更新后请删除旧的 `components/ui/image.tsx`：与文件夹同名的文件优先于文件夹里的
+  index，导入会继续指向旧版本。参见[更新已安装源码](/zh-CN/docs/registry#updating-source)。
+</Callout>
+
 ## 使用 [#usage]
 
 ```tsx

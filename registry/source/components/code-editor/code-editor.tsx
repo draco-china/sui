@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CodeEditorContent } from "@/components/ui/code-editor/content";
-import { defaultPlugins } from "@/components/ui/code-editor/plugins/index";
+import { defaultPlugins } from "@/components/ui/code-editor/plugins";
 import { CodeEditorRoot } from "@/components/ui/code-editor/root";
 import {
   CodeEditorActions,

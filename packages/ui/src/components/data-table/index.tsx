@@ -1,12 +1,12 @@
-export { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
-export { formatValue } from "@/components/ui/data-table/columns";
+export { DataTableColumnHeader } from "./column-header";
+export { formatValue } from "./columns";
 export {
   DataTableContent,
   type DataTableContentProps,
   DataTableStatus,
-} from "@/components/ui/data-table/content";
-export { DataTableProvider, useDataTableContext } from "@/components/ui/data-table/context";
-export { DataTable, type DataTableProps } from "@/components/ui/data-table/data-table";
+} from "./content";
+export { DataTableProvider, useDataTableContext } from "./context";
+export { DataTable, type DataTableProps } from "./data-table";
 export {
   filterRows,
   getPath,
@@ -15,14 +15,14 @@ export {
   requestSearch,
   sortRows,
   toCsv,
-} from "@/components/ui/data-table/engine";
+} from "./engine";
 export {
   type DataTableLabelOverrides,
   type DataTableLabels,
   dataTableLabels,
   dataTableLabelsZhCN,
-} from "@/components/ui/data-table/labels";
-export { DataTablePagination } from "@/components/ui/data-table/pagination";
+} from "./labels";
+export { DataTablePagination } from "./pagination";
 export {
   type AdvancedFilterOptions,
   advancedFilter,
@@ -51,7 +51,7 @@ export {
   views,
   virtual,
   writeUrlState,
-} from "@/components/ui/data-table/plugins/index";
+} from "./plugins";
 export {
   DataTableChoiceMenu,
   DataTableFacetedFilter,
@@ -64,7 +64,7 @@ export {
   DataTableSlotContent,
   DataTableToolbar,
   isRangeColumn,
-} from "@/components/ui/data-table/toolbar";
+} from "./toolbar";
 export type {
   DataTableActions,
   DataTableColumn,
@@ -96,9 +96,9 @@ export type {
   NormalizedColumn,
   SortItem,
   SortOrder,
-} from "@/components/ui/data-table/types";
+} from "./types";
 export {
   type DataTablePaginationOptions,
   type UseDataTableOptions,
   useDataTable,
-} from "@/components/ui/data-table/use-data-table";
+} from "./use-data-table";

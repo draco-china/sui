@@ -14,6 +14,14 @@ npx shadcn@latest add @sui/data-table
 
 Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
 
+<Callout>
+  DataTable installs as `components/ui/data-table/index.tsx`. If you installed it
+  from SUI 5.4 or earlier, delete the old `components/ui/data-table.tsx` after
+  updating: a file beside the folder wins over its index, so imports would
+  keep the old version. See [Update installed
+  source](/docs/registry#updating-source).
+</Callout>
+
 ```tsx
 import { DataTable, type DataTableColumn } from "@workspace/ui/components/data-table"
 ```

@@ -1,12 +1,12 @@
-export { DataTableColumnHeader } from "./data-table/column-header";
-export { formatValue } from "./data-table/columns";
+export { DataTableColumnHeader } from "@/components/ui/data-table/column-header";
+export { formatValue } from "@/components/ui/data-table/columns";
 export {
   DataTableContent,
   type DataTableContentProps,
   DataTableStatus,
-} from "./data-table/content";
-export { DataTableProvider, useDataTableContext } from "./data-table/context";
-export { DataTable, type DataTableProps } from "./data-table/data-table";
+} from "@/components/ui/data-table/content";
+export { DataTableProvider, useDataTableContext } from "@/components/ui/data-table/context";
+export { DataTable, type DataTableProps } from "@/components/ui/data-table/data-table";
 export {
   filterRows,
   getPath,
@@ -15,14 +15,14 @@ export {
   requestSearch,
   sortRows,
   toCsv,
-} from "./data-table/engine";
+} from "@/components/ui/data-table/engine";
 export {
   type DataTableLabelOverrides,
   type DataTableLabels,
   dataTableLabels,
   dataTableLabelsZhCN,
-} from "./data-table/labels";
-export { DataTablePagination } from "./data-table/pagination";
+} from "@/components/ui/data-table/labels";
+export { DataTablePagination } from "@/components/ui/data-table/pagination";
 export {
   type AdvancedFilterOptions,
   advancedFilter,
@@ -51,7 +51,7 @@ export {
   views,
   virtual,
   writeUrlState,
-} from "./data-table/plugins";
+} from "@/components/ui/data-table/plugins";
 export {
   DataTableChoiceMenu,
   DataTableFacetedFilter,
@@ -64,7 +64,7 @@ export {
   DataTableSlotContent,
   DataTableToolbar,
   isRangeColumn,
-} from "./data-table/toolbar";
+} from "@/components/ui/data-table/toolbar";
 export type {
   DataTableActions,
   DataTableColumn,
@@ -96,9 +96,9 @@ export type {
   NormalizedColumn,
   SortItem,
   SortOrder,
-} from "./data-table/types";
+} from "@/components/ui/data-table/types";
 export {
   type DataTablePaginationOptions,
   type UseDataTableOptions,
   useDataTable,
-} from "./data-table/use-data-table";
+} from "@/components/ui/data-table/use-data-table";

@@ -1,20 +1,20 @@
-export { CodeEditor, type CodeEditorProps } from "@/components/ui/code-editor/code-editor";
-export { CodeEditorContent } from "@/components/ui/code-editor/content";
+export { CodeEditor, type CodeEditorProps } from "./code-editor";
+export { CodeEditorContent } from "./content";
 export {
   CodeEditorProvider,
   useCodeEditorContext,
-} from "@/components/ui/code-editor/context";
+} from "./context";
 export {
   type CodeEditorLabelOverrides,
   type CodeEditorLabels,
   codeEditorLabels,
   codeEditorLabelsZhCN,
-} from "@/components/ui/code-editor/labels";
+} from "./labels";
 export {
   type CodeEditorLanguageOption,
   codeEditorLanguages,
   normalizeLanguage,
-} from "@/components/ui/code-editor/languages";
+} from "./languages";
 export {
   copy,
   defaultPlugins,
@@ -24,15 +24,15 @@ export {
   languageSelect,
   type PreviewOptions,
   preview,
-} from "@/components/ui/code-editor/plugins/index";
-export { CodeEditorRoot, type CodeEditorRootProps } from "@/components/ui/code-editor/root";
+} from "./plugins";
+export { CodeEditorRoot, type CodeEditorRootProps } from "./root";
 export {
   CodeEditorActions,
   CodeEditorTitle,
   CodeEditorToolbar,
   CodeEditorToolbarButton,
   type CodeEditorToolbarProps,
-} from "@/components/ui/code-editor/toolbar";
+} from "./toolbar";
 export type {
   CodeEditorFullscreenConfig,
   CodeEditorFullscreenMode,
@@ -43,8 +43,8 @@ export type {
   CodeEditorViewMode,
   MonacoEditorInstance,
   MonacoEditorOptions,
-} from "@/components/ui/code-editor/types";
+} from "./types";
 export {
   type UseCodeEditorOptions,
   useCodeEditor,
-} from "@/components/ui/code-editor/use-code-editor";
+} from "./use-code-editor";

@@ -49,6 +49,8 @@ CLI 根据别名重写导入，文档工作区路径的替换方式见[导入映
 
 通过 [CLI](/zh-CN/docs/cli#review-an-update) 预览变更后，再更新组件与共享依赖。安装属于源码复制，文件不会自动跟随组件库变更。保留应用的包管理器锁文件，并检查样式与本地修改。
 
+由多个文件组成的组件安装到自己的文件夹，并从其中的 `index.tsx` 导出，例如 CodeEditor、Image 和 DataTable。从 SUI 5.4 或更早版本安装的 CodeEditor、Image 和 DataTable 还在文件夹旁带有一个 `components/ui/<name>.tsx`。更新后请删除它：它优先于文件夹里的 index，导入会继续指向旧版本。
+
 LLM 文档由文档站的[纯文本接口](/zh-CN/docs/llms-txt)提供。Registry JSON 用于安装数据，MCP 客户端则单独启动 shadcn stdio 服务。
 
 

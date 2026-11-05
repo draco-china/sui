@@ -2,20 +2,20 @@ export {
   ImageGroup,
   type ImageGroupPreviewConfig,
   type ImageGroupProps,
-} from "./image/group";
+} from "./group";
 export {
   Image,
   type ImagePreviewConfig,
   type ImageProps,
-} from "./image/image";
+} from "./image";
 export {
   type ImageLabelOverrides,
   type ImageLabels,
   imageLabels,
   imageLabelsZhCN,
-} from "./image/labels";
+} from "./labels";
 export {
   ImagePreview,
   type ImagePreviewItem,
   type ImagePreviewProps,
-} from "./image/preview";
+} from "./preview";

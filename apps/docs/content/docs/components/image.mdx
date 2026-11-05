@@ -13,6 +13,14 @@ npx shadcn@latest add @sui/image
 
 Install with the shadcn CLI or use the shared `@workspace/ui` package. Follow the [installation guide](/docs/installation) to configure the registry, load styles, and choose import aliases.
 
+<Callout>
+  Image installs as `components/ui/image/index.tsx`. If you installed it
+  from SUI 5.4 or earlier, delete the old `components/ui/image.tsx` after
+  updating: a file beside the folder wins over its index, so imports would
+  keep the old version. See [Update installed
+  source](/docs/registry#updating-source).
+</Callout>
+
 ## Usage [#usage]
 
 ```tsx
