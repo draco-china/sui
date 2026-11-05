@@ -1,14 +1,11 @@
 import { mock } from "bun:test";
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
-import { Window as HappyWindow } from "happy-dom";
+import { installDom } from "../support/dom";
 import { scenario } from "../support/scenario";
 import { cssForHappyDOM } from "./css-color";
 
-const window = new HappyWindow({
-  url: "http://localhost",
-}) as unknown as Window &
-  typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
+const window = installDom("http://localhost");
 const document = window.document;
 const themeCSS = readFileSync(
   new URL("../../../../packages/ui/src/styles/globals.css", import.meta.url),
@@ -48,21 +45,10 @@ Object.defineProperty(document, "hidden", {
   get: () => hidden,
 });
 Object.assign(globalThis, {
-  window,
-  document,
-  Element: window.Element,
-  HTMLElement: window.HTMLElement,
-  SVGElement: window.SVGElement,
   innerWidth: 1024,
   innerHeight: 768,
-  Node: window.Node,
-  getComputedStyle: window.getComputedStyle.bind(window),
-  IS_REACT_ACT_ENVIRONMENT: true,
 });
-Object.defineProperty(globalThis, "navigator", {
-  value: window.navigator,
-  configurable: true,
-});
+
 const mediaListeners = new Set<() => void>();
 // Motion keeps one page-wide reduced-motion listener for its own lifetime.
 const ownListeners = (listeners: Iterable<unknown>) =>

@@ -1,11 +1,10 @@
 import { strict as assert } from "node:assert";
-import { Window as HappyWindow } from "happy-dom";
 import { applyQRCodeFinderGeometry } from "../../../../packages/ui/src/lib/qr-code/finder";
+import { installDom } from "../support/dom";
 import { scenario } from "../support/scenario";
 
-const window = new HappyWindow() as unknown as Window &
-  typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
-Object.assign(globalThis, { window, document: window.document });
+const window = installDom("about:blank");
+
 const { default: QRCodeStyling } = await import("qr-code-styling");
 
 function close(actual: number, expected: number) {

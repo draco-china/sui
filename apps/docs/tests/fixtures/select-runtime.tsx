@@ -1,38 +1,10 @@
 import { strict as assert } from "node:assert";
-import { Window as HappyWindow } from "happy-dom";
+import { installDom } from "../support/dom";
 import { scenario } from "../support/scenario";
 
-const window = new HappyWindow({
-  url: "http://localhost",
-  width: 1280,
-  height: 800,
-}) as unknown as Window &
-  typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
+const window = installDom("http://localhost", { width: 1280, height: 800 });
 const document = window.document;
-Object.assign(globalThis, {
-  window,
-  document,
-  HTMLElement: window.HTMLElement,
-  HTMLInputElement: window.HTMLInputElement,
-  HTMLButtonElement: window.HTMLButtonElement,
-  Element: window.Element,
-  Node: window.Node,
-  Document: window.Document,
-  DocumentFragment: window.DocumentFragment,
-  ShadowRoot: window.ShadowRoot,
-  SVGElement: window.SVGElement,
-  MutationObserver: window.MutationObserver,
-  ResizeObserver: window.ResizeObserver,
-  KeyboardEvent: window.KeyboardEvent,
-  getComputedStyle: window.getComputedStyle.bind(window),
-  requestAnimationFrame: window.requestAnimationFrame.bind(window),
-  cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
-  IS_REACT_ACT_ENVIRONMENT: true,
-});
-Object.defineProperty(globalThis, "navigator", {
-  configurable: true,
-  value: window.navigator,
-});
+
 const { act } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { fireEvent } = await import("@testing-library/react");

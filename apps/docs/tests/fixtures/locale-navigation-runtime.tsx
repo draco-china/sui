@@ -1,38 +1,18 @@
 import { strict as assert } from "node:assert";
-import { Window as HappyWindow } from "happy-dom";
+import { installDom } from "../support/dom";
 import { scenario } from "../support/scenario";
 
-const window = new HappyWindow({
-  url: "http://localhost/docs/test?preview=1#example",
-}) as unknown as Window &
-  typeof globalThis & { happyDOM: { close: () => Promise<void> } };
+const window = installDom("http://localhost/docs/test?preview=1#example");
 const document = window.document;
 Object.assign(globalThis, {
-  window,
-  document,
   localStorage: window.localStorage,
   innerWidth: 1024,
   innerHeight: 768,
   scrollX: 0,
   scrollY: 0,
-  HTMLElement: window.HTMLElement,
-  Element: window.Element,
-  Node: window.Node,
-  Document: window.Document,
-  ShadowRoot: window.ShadowRoot,
-  SVGElement: window.SVGElement,
-  HTMLIFrameElement: window.HTMLIFrameElement,
-  HTMLInputElement: window.HTMLInputElement,
-  HTMLButtonElement: window.HTMLButtonElement,
-  MutationObserver: window.MutationObserver,
   CSS: window.CSS,
-  getComputedStyle: window.getComputedStyle.bind(window),
-  IS_REACT_ACT_ENVIRONMENT: true,
 });
-Object.defineProperty(globalThis, "navigator", {
-  value: window.navigator,
-  configurable: true,
-});
+
 class Observer {
   observe() {}
   unobserve() {}

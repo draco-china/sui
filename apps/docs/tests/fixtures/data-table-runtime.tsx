@@ -1,38 +1,13 @@
 import { strict as assert } from "node:assert";
-import { Window as HappyWindow } from "happy-dom";
+import { installDom, waitFor } from "../support/dom";
 import { scenario } from "../support/scenario";
 
-const window = new HappyWindow({
-  url: "http://localhost/users?tab=all",
+const window = installDom("http://localhost/users?tab=all", {
   width: 1280,
   height: 800,
-}) as unknown as Window &
-  typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
+});
 const document = window.document;
-Object.assign(globalThis, {
-  window,
-  document,
-  HTMLElement: window.HTMLElement,
-  HTMLInputElement: window.HTMLInputElement,
-  HTMLButtonElement: window.HTMLButtonElement,
-  Element: window.Element,
-  Node: window.Node,
-  Document: window.Document,
-  DocumentFragment: window.DocumentFragment,
-  ShadowRoot: window.ShadowRoot,
-  SVGElement: window.SVGElement,
-  MutationObserver: window.MutationObserver,
-  ResizeObserver: window.ResizeObserver,
-  KeyboardEvent: window.KeyboardEvent,
-  getComputedStyle: window.getComputedStyle.bind(window),
-  requestAnimationFrame: window.requestAnimationFrame.bind(window),
-  cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
-  IS_REACT_ACT_ENVIRONMENT: true,
-});
-Object.defineProperty(globalThis, "navigator", {
-  configurable: true,
-  value: window.navigator,
-});
+
 const { MotionGlobalConfig } = await import("motion/react");
 // Exit animations would keep leaving rows mounted between assertions.
 MotionGlobalConfig.skipAnimations = true;
@@ -101,8 +76,7 @@ await act(async () => root.render(<Probe />));
 assert.equal(bodyRows().length, 10);
 assert.ok(document.body.textContent?.includes("23 rows"));
 await act(async () => table?.setPage(3));
-await settle(50);
-assert.equal(bodyRows().length, 3);
+await waitFor(() => assert.equal(bodyRows().length, 3));
 await act(async () => table?.toggleSort("amount"));
 await act(async () => table?.toggleSort("amount"));
 assert.deepEqual(table?.state.sort, [{ key: "amount", order: "desc" }]);
@@ -116,8 +90,7 @@ await act(async () => {
   fireEvent.change(input, { target: { value: "Row 2" } });
 });
 assert.equal(table?.state.query.keyword, "", "Keyword waits for the debounce");
-await settle(350);
-assert.equal(table?.state.query.keyword, "Row 2");
+await waitFor(() => assert.equal(table?.state.query.keyword, "Row 2"));
 assert.equal(table?.total, 5);
 await act(async () => table?.setFilter("status", ["off"]));
 assert.deepEqual(cellText(), ["Row 22"]);
@@ -259,8 +232,7 @@ const toggle = document.querySelector<HTMLElement>(
 );
 assert.ok(toggle);
 await act(async () => fireEvent.click(toggle));
-await settle(20);
-assert.ok(document.body.textContent?.includes("detail 1"));
+await waitFor(() => assert.ok(document.body.textContent?.includes("detail 1")));
 
 scenario("query form applies fields together on submit");
 await act(async () => root.render(<Probe plugins={[ui.queryForm<Row>()]} />));

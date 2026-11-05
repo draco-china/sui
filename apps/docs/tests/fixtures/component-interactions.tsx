@@ -1,37 +1,14 @@
 import { strict as assert } from "node:assert";
-import { Window as HappyWindow } from "happy-dom";
+import { installDom } from "../support/dom";
 import { scenario } from "../support/scenario";
 
-const window = new HappyWindow({
-  url: "http://localhost",
-}) as unknown as Window &
-  typeof globalThis & { happyDOM: { abort: () => Promise<void> } };
+const window = installDom("http://localhost");
 window.document.write("<!doctype html><html><head></head><body></body></html>");
 Object.defineProperty(window.document, "compatMode", {
   value: "CSS1Compat",
   configurable: true,
 });
-Object.assign(globalThis, {
-  window,
-  document: window.document,
-  Element: window.Element,
-  HTMLElement: window.HTMLElement,
-  HTMLInputElement: window.HTMLInputElement,
-  HTMLButtonElement: window.HTMLButtonElement,
-  HTMLIFrameElement: window.HTMLIFrameElement,
-  Node: window.Node,
-  DocumentFragment: window.DocumentFragment,
-  MutationObserver: window.MutationObserver,
-  ResizeObserver: window.ResizeObserver,
-  getComputedStyle: window.getComputedStyle.bind(window),
-  requestAnimationFrame: window.requestAnimationFrame.bind(window),
-  cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
-  IS_REACT_ACT_ENVIRONMENT: true,
-});
-Object.defineProperty(globalThis, "navigator", {
-  value: window.navigator,
-  configurable: true,
-});
+
 const { act, createRef, useRef } = await import("react");
 const { render, fireEvent, cleanup } = await import("@testing-library/react");
 const { Calendar, CalendarDayButton } = await import(
