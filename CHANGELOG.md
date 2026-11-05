@@ -1,3 +1,10 @@
+## [5.5.0](https://github.com/draco-china/sui/compare/v5.4.0...v5.5.0) (2026-11-05)
+
+### Features
+
+* **data-form:** add DataForm for composed and configured forms ([70976be](https://github.com/draco-china/sui/commit/70976be9a9dac4acf2b4a9d1707b42c36581c0e4))
+* **data-table:** run filters and forms on DataForm ([af505aa](https://github.com/draco-china/sui/commit/af505aa59d3aa8cadb90278ef87f5af21029608a))
+
 ## [5.4.0](https://github.com/draco-china/sui/compare/v5.3.1...v5.4.0) (2026-11-04)
 
 ### Features
